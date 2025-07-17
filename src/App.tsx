@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Camera, Home, User, ImageIcon, Trophy, Settings, Film } from 'lucide-react';
+import React from 'react';
+import { Camera, Home, User, ImageIcon, Trophy, Settings, Film, ArrowLeft, Zap, ChevronUp, RefreshCw } from 'lucide-react';
 import CameraView from './components/CameraView';
 import HomeView from './components/HomeView';
 import ProfileView from './components/ProfileView';
@@ -8,7 +8,7 @@ import ChallengesView from './components/ChallengesView';
 import { AppProvider, useAppContext } from './context/AppContext';
 
 function AppContent() {
-  const { currentView, setCurrentView, user } = useAppContext();
+  const { currentView, setCurrentView, flashMode, setFlashMode, setShowFilmModal } = useAppContext();
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -30,22 +30,57 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       {/* Top Navigation */}
-      <nav className="bg-gray-800 border-b border-gray-700 px-4 py-3">
+      <nav className={`bg-gray-800 border-b border-gray-700 px-4 py-3 transition-colors duration-300 ${
+        currentView === 'camera' ? 'bg-transparent border-transparent absolute top-0 left-0 right-0 z-20' : ''
+      }`}>
         <div className="flex items-center justify-between max-w-6xl mx-auto">
-          <div className="flex items-center space-x-2">
-            <Film className="w-7 h-7 text-amber-400" />
-            <h1 className="text-xl font-bold text-amber-400 whitespace-nowrap overflow-hidden text-ellipsis font-recoleta">Filmique</h1>
-          </div>
-          <div className="flex items-center space-x-3">
-            <button className="p-2 hover:bg-gray-700 rounded-full transition-colors min-h-[44px] min-w-[44px]">
-              <Settings className="w-5 h-5" />
-            </button>
+          {currentView !== 'camera' && (
+            <div className="flex items-center space-x-2">
+              <Film className="w-7 h-7 text-amber-400" />
+              <h1 className="text-xl font-bold text-amber-400 whitespace-nowrap overflow-hidden text-ellipsis font-recoleta">Filmique</h1>
+            </div>
+          )}
+
+          <div className={`flex items-center w-full ${currentView === 'camera' ? 'justify-between' : 'justify-end'}`}>
+            {currentView === 'camera' ? (
+              <>
+                <button
+                  onClick={() => setFlashMode(prev => {
+                    if (prev === 'off') return 'on';
+                    if (prev === 'on') return 'auto';
+                    return 'off';
+                  })}
+                  className="p-2 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full transition-colors min-h-[44px] min-w-[44px]"
+                  aria-label="Toggle Flash"
+                >
+                  <Zap className={`w-5 h-5 ${flashMode === 'on' ? 'text-amber-400' : 'text-white'}`} />
+                </button>
+                <button 
+                  onClick={() => setShowFilmModal(true)}
+                  className="p-2 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full transition-colors min-h-[44px] min-w-[44px]"
+                  aria-label="Change Film"
+                >
+                  <Film className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => setCurrentView('home')}
+                  className="p-2 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full transition-colors min-h-[44px] min-w-[44px]"
+                  aria-label="Exit Camera"
+                >
+                  <ArrowLeft className="w-5 h-5 text-white" />
+                </button>
+              </>
+            ) : (
+              <button className="p-2 hover:bg-gray-700 rounded-full transition-colors min-h-[44px] min-w-[44px]">
+                <Settings className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-6xl mx-auto w-full">
+      <main className="flex-1 max-w-6xl mx-auto w-full flex">
         {renderCurrentView()}
       </main>
 
@@ -59,8 +94,8 @@ function AppContent() {
             onClick={() => setCurrentView('home')}
             className={`flex flex-col items-center p-2 transition-colors min-h-[44px] min-w-[44px] ${
               currentView === 'home' 
-                ? 'text-amber-400 bg-gray-700 rounded-full' 
-                : 'text-gray-400 hover:text-amber-400 hover:bg-amber-100 rounded-full'
+                ? 'text-amber-400' 
+                : 'text-gray-400 hover:text-amber-400'
             }`}
             aria-label="Home"
           >
@@ -70,8 +105,8 @@ function AppContent() {
             onClick={() => setCurrentView('albums')}
             className={`flex flex-col items-center p-2 transition-colors min-h-[44px] min-w-[44px] ${
               currentView === 'albums' 
-                ? 'text-amber-400 bg-gray-700 rounded-full' 
-                : 'text-gray-400 hover:text-amber-400 hover:bg-amber-100 rounded-full'
+                ? 'text-amber-400' 
+                : 'text-gray-400 hover:text-amber-400'
             }`}
             aria-label="Albums"
           >
@@ -96,8 +131,8 @@ function AppContent() {
             onClick={() => setCurrentView('challenges')}
             className={`flex flex-col items-center p-2 transition-colors min-h-[44px] min-w-[44px] ${
               currentView === 'challenges' 
-                ? 'text-amber-400 bg-gray-700 rounded-full' 
-                : 'text-gray-400 hover:text-amber-400 hover:bg-amber-100 rounded-full'
+                ? 'text-amber-400' 
+                : 'text-gray-400 hover:text-amber-400'
             }`}
             aria-label="Challenges"
           >
@@ -107,8 +142,8 @@ function AppContent() {
             onClick={() => setCurrentView('profile')}
             className={`flex flex-col items-center p-2 transition-colors min-h-[44px] min-w-[44px] ${
               currentView === 'profile' 
-                ? 'text-amber-400 bg-gray-700 rounded-full' 
-                : 'text-gray-400 hover:text-amber-400 hover:bg-amber-100 rounded-full'
+                ? 'text-amber-400' 
+                : 'text-gray-400 hover:text-amber-400'
             }`}
             aria-label="Profile"
           >

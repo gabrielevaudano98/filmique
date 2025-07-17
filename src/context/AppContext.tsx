@@ -85,6 +85,10 @@ interface AppContextType {
   setChallenges: (challenges: Challenge[]) => void;
   cameraMode: 'simple' | 'pro';
   setCameraMode: (mode: 'simple' | 'pro') => void;
+  flashMode: 'off' | 'on' | 'auto';
+  setFlashMode: (mode: 'off' | 'on' | 'auto') => void;
+  showFilmModal: boolean;
+  setShowFilmModal: (show: boolean) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -119,6 +123,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [feed, setFeed] = useState<Post[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
+  const [flashMode, setFlashMode] = useState<'off' | 'on' | 'auto'>('off');
+  const [showFilmModal, setShowFilmModal] = useState(false);
 
   // Initialize with sample data
   useEffect(() => {
@@ -222,7 +228,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       challenges,
       setChallenges,
       cameraMode,
-      setCameraMode
+      setCameraMode,
+      flashMode,
+      setFlashMode,
+      showFilmModal,
+      setShowFilmModal
     }}>
       {children}
     </AppContext.Provider>
