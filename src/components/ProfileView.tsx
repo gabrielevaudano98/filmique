@@ -40,7 +40,7 @@ const ProfileView: React.FC = () => {
               </span>
             </div>
             <div>
-              <h1 className="text-2xl font-bold">{user.username}</h1>
+              <h1 className="text-2xl font-bold font-recoleta">{user.username}</h1>
               <p className="text-amber-100">Level {user.level} Photographer</p>
               <div className="flex items-center space-x-4 mt-2 text-sm">
                 <div className="flex items-center space-x-1">
@@ -88,7 +88,7 @@ const ProfileView: React.FC = () => {
       {/* Subscription Status */}
       <div className="bg-gray-800 rounded-xl p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Subscription</h2>
+          <h2 className="text-xl font-bold font-recoleta">Subscription</h2>
           <div className={`px-3 py-1 rounded-full text-sm font-medium ${
             user.subscription === 'premium' 
               ? 'bg-purple-500 text-white'
@@ -138,13 +138,13 @@ const ProfileView: React.FC = () => {
         <div className="space-y-6">
           {/* Recent Rolls */}
           <div className="bg-gray-800 rounded-xl p-6">
-            <h3 className="text-lg font-semibold mb-4">Recent Rolls</h3>
+            <h3 className="text-lg font-semibold mb-4 font-recoleta">Recent Rolls</h3>
             <div className="space-y-3">
               {completedRolls.slice(0, 3).map((roll) => (
                 <div key={roll.id} className="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
                   <Film className="w-5 h-5 text-amber-400" />
                   <div className="flex-1">
-                    <div className="font-medium">{roll.filmType}</div>
+                    <div className="font-medium font-recoleta">{roll.filmType}</div>
                     <div className="text-sm text-gray-400">
                       {roll.photos.length} photos • {roll.createdDate.toLocaleDateString()}
                     </div>
@@ -174,7 +174,7 @@ const ProfileView: React.FC = () => {
                   achievement.earned ? 'text-amber-400' : 'text-gray-500'
                 }`} />
                 <div className="flex-1">
-                  <h3 className={`font-semibold ${
+                  <h3 className={`font-semibold font-recoleta ${
                     achievement.earned ? 'text-white' : 'text-gray-400'
                   }`}>
                     {achievement.name}
@@ -195,7 +195,7 @@ const ProfileView: React.FC = () => {
       {activeTab === 'settings' && (
         <div className="space-y-4">
           <div className="bg-gray-800 rounded-lg p-4">
-            <h3 className="font-semibold mb-4">Account Settings</h3>
+            <h3 className="font-semibold mb-4 font-recoleta">Account Settings</h3>
             <div className="space-y-3">
               <button className="w-full text-left p-3 hover:bg-gray-700 rounded-lg transition-colors">
                 Edit Profile
@@ -213,7 +213,7 @@ const ProfileView: React.FC = () => {
           </div>
           
           <div className="bg-gray-800 rounded-lg p-4">
-            <h3 className="font-semibold mb-4">App Preferences</h3>
+            <h3 className="font-semibold mb-4 font-recoleta">App Preferences</h3>
             <div className="space-y-3">
               <button className="w-full text-left p-3 hover:bg-gray-700 rounded-lg transition-colors">
                 Camera Settings

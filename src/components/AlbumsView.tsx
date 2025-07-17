@@ -21,7 +21,7 @@ const AlbumsView: React.FC = () => {
   return (
     <div className="p-3 sm:p-4 space-y-4 sm:space-y-6 pb-safe">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl sm:text-2xl font-bold">My Albums</h1>
+        <h1 className="text-xl sm:text-2xl font-bold font-recoleta">My Albums</h1>
         <button className="bg-amber-500 hover:bg-amber-600 px-3 sm:px-4 py-2 sm:py-3 rounded-lg flex items-center space-x-2 transition-colors min-h-[44px] text-sm sm:text-base">
           <Plus className="w-4 h-4" />
           <span className="hidden sm:inline">New Album</span>
@@ -31,7 +31,7 @@ const AlbumsView: React.FC = () => {
 
       {/* Active Roll Status */}
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-4 sm:p-6 text-white">
-        <h2 className="text-lg sm:text-xl font-bold mb-2">Current Progress</h2>
+        <h2 className="text-lg sm:text-xl font-bold mb-2 font-recoleta">Current Progress</h2>
         <p className="text-blue-100 mb-3 sm:mb-4 text-sm sm:text-base">Your photography journey continues</p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           <div className="text-center">
@@ -65,7 +65,7 @@ const AlbumsView: React.FC = () => {
             <div className="p-3 sm:p-4 border-b border-gray-700">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-amber-400 text-sm sm:text-base">{roll.filmType}</h3>
+                  <h3 className="font-semibold text-amber-400 text-sm sm:text-base font-recoleta">{roll.filmType}</h3>
                   <p className="text-sm text-gray-400">
                     {roll.photos.length} photos
                   </p>
@@ -156,7 +156,7 @@ const AlbumsView: React.FC = () => {
           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
             <Package className="w-8 h-8 text-gray-500" />
           </div>
-          <h3 className="text-lg sm:text-xl font-semibold mb-2">No completed rolls yet</h3>
+          <h3 className="text-lg sm:text-xl font-semibold mb-2 font-recoleta">No completed rolls yet</h3>
           <p className="text-gray-400 mb-6 text-sm sm:text-base">
             Start shooting to create your first film roll and build your collection
           </p>
@@ -172,7 +172,7 @@ const AlbumsView: React.FC = () => {
           <div className="bg-gray-800 rounded-t-xl sm:rounded-xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-700">
               <div>
-                <h2 className="text-lg sm:text-xl font-bold">{selectedRollData.filmType}</h2>
+                <h2 className="text-lg sm:text-xl font-bold font-recoleta">{selectedRollData.filmType}</h2>
                 <p className="text-gray-400">{selectedRollData.photos.length} photos</p>
               </div>
               <div className="flex items-center space-x-2">

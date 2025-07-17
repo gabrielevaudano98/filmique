@@ -23,10 +23,10 @@ const HomeView: React.FC = () => {
   return (
     <div className="p-3 sm:p-4 space-y-4 sm:space-y-6 pb-safe">
       {/* Current Roll Status */}
-      <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-4 sm:p-6 text-white">
+      <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-4 sm:p-6 text-white shadow-xl">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg sm:text-xl font-bold mb-2">Current Roll</h2>
+            <h2 className="text-lg sm:text-xl font-bold mb-2 font-recoleta">Current Roll</h2>
             {activeRoll ? (
               <>
                 <p className="text-amber-100 text-sm sm:text-base">{activeRoll.filmType}</p>
@@ -39,7 +39,7 @@ const HomeView: React.FC = () => {
                 <p className="text-amber-100 text-sm sm:text-base">No active roll</p>
                 <button 
                   onClick={() => setCurrentView('camera')}
-                  className="mt-3 bg-white bg-opacity-20 hover:bg-opacity-30 px-4 py-3 rounded-lg transition-colors flex items-center space-x-2 min-h-[44px]"
+                  className="mt-3 bg-amber-600 hover:bg-amber-700 text-white shadow-md px-4 py-3 rounded-lg transition-colors flex items-center space-x-2 min-h-[44px] font-semibold"
                 >
                   <Camera className="w-4 h-4" />
                   <span className="text-sm sm:text-base">Start shooting</span>
@@ -49,7 +49,7 @@ const HomeView: React.FC = () => {
           </div>
           <div className="text-right">
             {activeRoll && (
-              <div className="bg-white bg-opacity-20 rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center">
+              <div className="bg-white bg-opacity-30 rounded-full w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center shadow-lg">
                 <span className="text-lg sm:text-2xl font-bold">
                   {Math.round((activeRoll.shotsUsed / activeRoll.capacity) * 100)}%
                 </span>
@@ -66,7 +66,7 @@ const HomeView: React.FC = () => {
             <Star className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-sm sm:text-base">Daily Streak</h3>
+            <h3 className="font-semibold text-sm sm:text-base font-recoleta">Daily Streak</h3>
             <p className="text-gray-400 text-sm">{user.streak} days in a row!</p>
           </div>
           <div className="ml-auto text-xl sm:text-2xl font-bold text-orange-400">
@@ -77,7 +77,7 @@ const HomeView: React.FC = () => {
 
       {/* Community Feed */}
       <div className="space-y-6">
-        <h2 className="text-xl sm:text-2xl font-bold px-1">Community Feed</h2>
+        <h2 className="text-xl sm:text-2xl font-bold px-1 font-recoleta">Community Feed</h2>
         
         {feed.map((post) => (
           <div key={post.id} className="bg-gray-800 rounded-xl overflow-hidden">
@@ -90,7 +90,7 @@ const HomeView: React.FC = () => {
                   </span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-sm sm:text-base">{post.username}</h3>
+                  <h3 className="font-semibold text-sm sm:text-base font-recoleta">{post.username}</h3>
                   <p className="text-gray-400 text-sm flex items-center">
                     <Clock className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     {post.timestamp.toLocaleDateString()}
@@ -152,7 +152,6 @@ const HomeView: React.FC = () => {
                 
                 <div className="flex items-center space-x-2 text-gray-400 text-xs sm:text-sm">
                   <Camera className="w-4 h-4" />
-                  <span>Full Roll</span>
                 </div>
               </div>
             </div>

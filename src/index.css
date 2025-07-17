@@ -1,3 +1,5 @@
+@import url('https://fonts.cdnfonts.com/css/recoleta');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,7 +11,7 @@
   }
   
   .safe-area-bottom {
-    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
   }
   
   /* Touch optimization */
