@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export interface User {
-  id: string;
+  id: string | null; // Allow null for logged-out state
   username: string;
   email: string;
   level: number;
@@ -72,7 +72,7 @@ export interface Challenge {
 
 interface AppContextType {
   user: User;
-  setUser: (user: User) => void;
+  setUser: (user: User | null) => void; // Allow null for logout
   currentView: string;
   setCurrentView: (view: string) => void;
   activeRoll: FilmRoll | null;
@@ -101,21 +101,25 @@ export const useAppContext = () => {
   return context;
 };
 
+// Default logged-out user state
+const defaultLoggedOutUser: User = {
+  id: null, username: '', email: '', level: 0, xp: 0, credits: 0, streak: 0,
+  subscription: 'free', followersCount: 0, followingCount: 0, totalRolls: 0, totalPhotos: 0
+};
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User>({
-    id: '1',
-    username: 'photographer_23',
-    email: 'user@example.com',
-    level: 5,
-    xp: 2340,
-    credits: 45,
-    streak: 7,
-    subscription: 'plus',
-    followersCount: 234,
-    followingCount: 156,
-    totalRolls: 23,
-    totalPhotos: 456
-  });
+  const [user, setUserState] = useState<User>(defaultLoggedOutUser);
+
+  const setUser = (userData: User | null) => {
+    if (userData === null) {
+      // Handle logout: reset user state and potentially clear local storage/tokens
+      setUserState(defaultLoggedOutUser);
+      localStorage.removeItem('appUserData'); // Example: clear stored user data
+    } else {
+      setUserState(userData);
+      localStorage.setItem('appUserData', JSON.stringify(userData)); // Example: store user data
+    }
+  };
 
   const [currentView, setCurrentView] = useState('home');
   const [activeRoll, setActiveRoll] = useState<FilmRoll | null>(null);
@@ -126,92 +130,128 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [flashMode, setFlashMode] = useState<'off' | 'on' | 'auto'>('off');
   const [showFilmModal, setShowFilmModal] = useState(false);
 
-  // Initialize with sample data
+  // Initialize user state from localStorage on mount
   useEffect(() => {
-    // Sample completed rolls
-    const sampleRolls: FilmRoll[] = [
-      {
+    const storedUserData = localStorage.getItem('appUserData');
+    if (storedUserData) {
+      try {
+        const parsedUserData = JSON.parse(storedUserData);
+        // Basic validation to ensure it's a User object
+        if (parsedUserData && parsedUserData.id) {
+          setUserState(parsedUserData);
+        } else {
+          localStorage.removeItem('appUserData'); // Clear invalid data
+        }
+      } catch (error) {
+        console.error("Failed to parse user data from localStorage:", error);
+        localStorage.removeItem('appUserData'); // Clear corrupted data
+      }
+    }
+
+    // Sample data initialization (only if no user data is found)
+    if (!storedUserData) {
+      const sampleUser: User = {
         id: '1',
-        filmType: 'Kodak Gold 200',
-        capacity: 24,
-        shotsUsed: 24,
-        isCompleted: true,
-        isUnlocked: true,
-        createdDate: new Date('2024-01-10'),
-        photos: Array.from({ length: 24 }, (_, i) => ({
-          id: `photo-${i}`,
+        username: 'photographer_23',
+        email: 'user@example.com',
+        level: 5,
+        xp: 2340,
+        credits: 45,
+        streak: 7,
+        subscription: 'plus',
+        followersCount: 234,
+        followingCount: 156,
+        totalRolls: 23,
+        totalPhotos: 456
+      };
+      setUserState(sampleUser);
+      localStorage.setItem('appUserData', JSON.stringify(sampleUser));
+
+      // Sample completed rolls
+      const sampleRolls: FilmRoll[] = [
+        {
+          id: '1',
+          filmType: 'Kodak Gold 200',
+          capacity: 24,
+          shotsUsed: 24,
+          isCompleted: true,
+          isUnlocked: true,
+          createdDate: new Date('2024-01-10'),
+          photos: Array.from({ length: 24 }, (_, i) => ({
+            id: `photo-${i}`,
+            rollId: '1',
+            url: `https://images.pexels.com/photos/247851/pexels-photo-247851.jpeg?auto=compress&cs=tinysrgb&w=800`,
+            thumbnail: `https://images.pexels.com/photos/247851/pexels-photo-247851.jpeg?auto=compress&cs=tinysrgb&w=400`,
+            metadata: {
+              iso: 200,
+              aperture: 'f/5.6',
+              shutterSpeed: '1/125',
+              focal: '50mm',
+              timestamp: new Date()
+            }
+          }))
+        }
+      ];
+
+      // Sample feed posts
+      const sampleFeed: Post[] = [
+        {
+          id: '1',
+          userId: '2',
+          username: 'street_wanderer',
           rollId: '1',
-          url: `https://images.pexels.com/photos/247851/pexels-photo-247851.jpeg?auto=compress&cs=tinysrgb&w=800`,
-          thumbnail: `https://images.pexels.com/photos/247851/pexels-photo-247851.jpeg?auto=compress&cs=tinysrgb&w=400`,
-          metadata: {
-            iso: 200,
-            aperture: 'f/5.6',
-            shutterSpeed: '1/125',
-            focal: '50mm',
-            timestamp: new Date()
-          }
-        }))
-      }
-    ];
+          photos: Array.from({ length: 12 }, (_, i) => ({
+            id: `feed-photo-${i}`,
+            rollId: '1',
+            url: `https://images.pexels.com/photos/2882566/pexels-photo-2882566.jpeg?auto=compress&cs=tinysrgb&w=800`,
+            thumbnail: `https://images.pexels.com/photos/2882566/pexels-photo-2882566.jpeg?auto=compress&cs=tinysrgb&w=400`,
+            metadata: {
+              iso: 400,
+              aperture: 'f/2.8',
+              shutterSpeed: '1/60',
+              focal: '35mm',
+              timestamp: new Date()
+            }
+          })),
+          caption: 'Street photography session with Tri-X 400. Love the grain and contrast! 📸',
+          likes: 127,
+          comments: 23,
+          timestamp: new Date('2024-01-15'),
+          isLiked: false
+        }
+      ];
 
-    // Sample feed posts
-    const sampleFeed: Post[] = [
-      {
-        id: '1',
-        userId: '2',
-        username: 'street_wanderer',
-        rollId: '1',
-        photos: Array.from({ length: 12 }, (_, i) => ({
-          id: `feed-photo-${i}`,
-          rollId: '1',
-          url: `https://images.pexels.com/photos/2882566/pexels-photo-2882566.jpeg?auto=compress&cs=tinysrgb&w=800`,
-          thumbnail: `https://images.pexels.com/photos/2882566/pexels-photo-2882566.jpeg?auto=compress&cs=tinysrgb&w=400`,
-          metadata: {
-            iso: 400,
-            aperture: 'f/2.8',
-            shutterSpeed: '1/60',
-            focal: '35mm',
-            timestamp: new Date()
-          }
-        })),
-        caption: 'Street photography session with Tri-X 400. Love the grain and contrast! 📸',
-        likes: 127,
-        comments: 23,
-        timestamp: new Date('2024-01-15'),
-        isLiked: false
-      }
-    ];
+      // Sample challenges
+      const sampleChallenges: Challenge[] = [
+        {
+          id: '1',
+          title: 'Daily Shooter',
+          description: 'Take 5 photos today',
+          type: 'daily',
+          reward: { xp: 50, credits: 10 },
+          progress: 3,
+          target: 5,
+          isCompleted: false,
+          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+        },
+        {
+          id: '2',
+          title: 'Film Explorer',
+          description: 'Try 3 different film types this week',
+          type: 'weekly',
+          reward: { xp: 200, credits: 25, badge: 'Film Explorer' },
+          progress: 1,
+          target: 3,
+          isCompleted: false,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        }
+      ];
 
-    // Sample challenges
-    const sampleChallenges: Challenge[] = [
-      {
-        id: '1',
-        title: 'Daily Shooter',
-        description: 'Take 5 photos today',
-        type: 'daily',
-        reward: { xp: 50, credits: 10 },
-        progress: 3,
-        target: 5,
-        isCompleted: false,
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-      },
-      {
-        id: '2',
-        title: 'Film Explorer',
-        description: 'Try 3 different film types this week',
-        type: 'weekly',
-        reward: { xp: 200, credits: 25, badge: 'Film Explorer' },
-        progress: 1,
-        target: 3,
-        isCompleted: false,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-      }
-    ];
-
-    setCompletedRolls(sampleRolls);
-    setFeed(sampleFeed);
-    setChallenges(sampleChallenges);
-  }, []);
+      setCompletedRolls(sampleRolls);
+      setFeed(sampleFeed);
+      setChallenges(sampleChallenges);
+    }
+  }, []); // Empty dependency array ensures this runs only once on mount
 
   return (
     <AppContext.Provider value={{

@@ -1,10 +1,11 @@
 import React from 'react';
-import { Camera, Home, User, ImageIcon, Trophy, Settings, Film, ArrowLeft, Zap, ChevronUp, RefreshCw } from 'lucide-react';
+import { Camera, Home, User, ImageIcon, Trophy, Settings, Film, ArrowLeft, Zap } from 'lucide-react';
 import CameraView from './components/CameraView';
 import HomeView from './components/HomeView';
 import ProfileView from './components/ProfileView';
 import AlbumsView from './components/AlbumsView';
 import ChallengesView from './components/ChallengesView';
+import SettingsView from './components/SettingsView';
 import { AppProvider, useAppContext } from './context/AppContext';
 
 function AppContent() {
@@ -22,6 +23,8 @@ function AppContent() {
         return <AlbumsView />;
       case 'challenges':
         return <ChallengesView />;
+      case 'settings':
+        return <SettingsView />;
       default:
         return <HomeView />;
     }
@@ -30,10 +33,11 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       {/* Top Navigation */}
-      <nav className={`bg-gray-800 border-b border-gray-700 px-4 py-3 transition-colors duration-300 ${
-        currentView === 'camera' ? 'bg-transparent border-transparent absolute top-0 left-0 right-0 z-20' : ''
+      <nav className={`bg-gray-800 border-b border-gray-700 px-4 py-2 transition-colors duration-300 ${
+        currentView === 'camera' ? 'bg-transparent border-transparent absolute top-0 left-0 right-0 z-20 pt-safe' : ''
       }`}>
         <div className="flex items-center justify-between max-w-6xl mx-auto">
+          {/* Left side: Filmique logo for all non-camera views */}
           {currentView !== 'camera' && (
             <div className="flex items-center space-x-2">
               <Film className="w-7 h-7 text-amber-400" />
@@ -41,37 +45,51 @@ function AppContent() {
             </div>
           )}
 
+          {/* Right side: Conditional buttons */}
           <div className={`flex items-center w-full ${currentView === 'camera' ? 'justify-between' : 'justify-end'}`}>
             {currentView === 'camera' ? (
               <>
+                {/* Camera specific buttons */}
                 <button
                   onClick={() => setFlashMode(prev => {
                     if (prev === 'off') return 'on';
                     if (prev === 'on') return 'auto';
                     return 'off';
                   })}
-                  className="p-2 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full transition-colors min-h-[44px] min-w-[44px]"
+                  className="flex items-center justify-center w-11 h-11 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full transition-colors"
                   aria-label="Toggle Flash"
                 >
                   <Zap className={`w-5 h-5 ${flashMode === 'on' ? 'text-amber-400' : 'text-white'}`} />
                 </button>
-                <button 
+                <button
                   onClick={() => setShowFilmModal(true)}
-                  className="p-2 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full transition-colors min-h-[44px] min-w-[44px]"
+                  className="flex items-center justify-center w-11 h-11 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full transition-colors"
                   aria-label="Change Film"
                 >
                   <Film className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => setCurrentView('home')}
-                  className="p-2 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full transition-colors min-h-[44px] min-w-[44px]"
+                  className="flex items-center justify-center w-11 h-11 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full transition-colors"
                   aria-label="Exit Camera"
                 >
                   <ArrowLeft className="w-5 h-5 text-white" />
                 </button>
               </>
-            ) : (
-              <button className="p-2 hover:bg-gray-700 rounded-full transition-colors min-h-[44px] min-w-[44px]">
+            ) : currentView === 'settings' ? ( // Back button for settings page
+              <button
+                onClick={() => setCurrentView('home')} // Go back to home from settings
+                className="flex items-center justify-center w-11 h-11 hover:bg-gray-700 rounded-full transition-colors"
+                aria-label="Back to Home"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            ) : ( // Settings button for home, albums, challenges, profile
+              <button
+                onClick={() => setCurrentView('settings')}
+                className="flex items-center justify-center w-11 h-11 hover:bg-gray-700 rounded-full transition-colors"
+                aria-label="Settings"
+              >
                 <Settings className="w-5 h-5" />
               </button>
             )}
@@ -80,7 +98,7 @@ function AppContent() {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-6xl mx-auto w-full flex">
+      <main className={`flex-1 max-w-6xl mx-auto w-full flex ${currentView !== 'settings' ? 'px-4 py-4' : ''}`}>
         {renderCurrentView()}
       </main>
 
@@ -89,36 +107,34 @@ function AppContent() {
         currentView === 'camera' ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'
       }`}>
         <div className="flex items-center justify-around max-w-md mx-auto py-1">
-          {/* Left side buttons */}
           <button
             onClick={() => setCurrentView('home')}
-            className={`flex flex-col items-center p-2 transition-colors min-h-[44px] min-w-[44px] ${
-              currentView === 'home' 
-                ? 'text-amber-400' 
+            className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${
+              currentView === 'home'
+                ? 'text-amber-400'
                 : 'text-gray-400 hover:text-amber-400'
             }`}
             aria-label="Home"
           >
-            <Home className="w-5 h-5 sm:w-6 sm:h-6" />
+            <Home className="w-6 h-6" />
           </button>
           <button
             onClick={() => setCurrentView('albums')}
-            className={`flex flex-col items-center p-2 transition-colors min-h-[44px] min-w-[44px] ${
-              currentView === 'albums' 
-                ? 'text-amber-400' 
+            className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${
+              currentView === 'albums'
+                ? 'text-amber-400'
                 : 'text-gray-400 hover:text-amber-400'
             }`}
             aria-label="Albums"
           >
-            <ImageIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+            <ImageIcon className="w-6 h-6" />
           </button>
 
-          {/* Centered Camera Button */}
           <button
             onClick={() => setCurrentView('camera')}
             className={`flex items-center justify-center w-14 h-14 rounded-full shadow-2xl transition-all duration-300 ease-in-out translate-y-[-12px] ring-2 ring-amber-300 ring-offset-2 ring-offset-gray-800
-              ${currentView === 'camera' 
-                ? 'bg-gray-700 text-gray-400 border-4 border-gray-600' 
+              ${currentView === 'camera'
+                ? 'bg-gray-700 text-gray-400 border-4 border-gray-600'
                 : 'bg-amber-500 text-white hover:bg-amber-400 border-4 border-amber-200'}
             `}
             aria-label="Camera"
@@ -126,28 +142,27 @@ function AppContent() {
             <Camera className="w-7 h-7" />
           </button>
 
-          {/* Right side buttons */}
           <button
             onClick={() => setCurrentView('challenges')}
-            className={`flex flex-col items-center p-2 transition-colors min-h-[44px] min-w-[44px] ${
-              currentView === 'challenges' 
-                ? 'text-amber-400' 
+            className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${
+              currentView === 'challenges'
+                ? 'text-amber-400'
                 : 'text-gray-400 hover:text-amber-400'
             }`}
             aria-label="Challenges"
           >
-            <Trophy className="w-5 h-5 sm:w-6 sm:h-6" />
+            <Trophy className="w-6 h-6" />
           </button>
           <button
             onClick={() => setCurrentView('profile')}
-            className={`flex flex-col items-center p-2 transition-colors min-h-[44px] min-w-[44px] ${
-              currentView === 'profile' 
-                ? 'text-amber-400' 
+            className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${
+              currentView === 'profile'
+                ? 'text-amber-400'
                 : 'text-gray-400 hover:text-amber-400'
             }`}
             aria-label="Profile"
           >
-            <User className="w-5 h-5 sm:w-6 sm:h-6" />
+            <User className="w-6 h-6" />
           </button>
         </div>
       </nav>

@@ -1,33 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Aperture, RefreshCw, Film, ChevronUp, ChevronDown } from 'lucide-react';
+import { Aperture, RefreshCw, Film, Lock, ImageIcon } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
+import RangeSelector from './RangeSelector';
 
 type ProControl = 'iso' | 'aperture' | 'shutterSpeed' | 'focus';
-
-const ProControlSlider: React.FC<{
-  options: (string | number)[];
-  value: string | number;
-  onChange: (value: any) => void;
-}> = ({ options, value, onChange }) => (
-  <div className="w-full overflow-x-auto no-scrollbar py-2">
-    <div className="flex items-center justify-start w-max mx-auto space-x-2 px-4">
-      {options.map((opt) => (
-        <button
-          key={opt}
-          onClick={() => onChange(opt)}
-          className={`px-4 py-2 rounded-full text-sm font-mono transition-colors duration-200 ${
-            value === opt
-              ? 'bg-amber-500 text-white'
-              : 'bg-gray-700 bg-opacity-50 text-gray-300 hover:bg-gray-600'
-          }`}
-        >
-          {opt.toString().replace('f/', '')}
-        </button>
-      ))}
-    </div>
-  </div>
-);
 
 const CameraView: React.FC = () => {
   const {
@@ -44,7 +21,9 @@ const CameraView: React.FC = () => {
   
   const [hasPermission, setHasPermission] = useState<boolean | null>(true);
   const [activeProControl, setActiveProControl] = useState<ProControl | null>(null);
-  const [showProControls, setShowProControls] = useState(false);
+  
+  const zoomLevels = useMemo(() => ['0.5x', '1x', '2x'], []);
+  const [zoom, setZoom] = useState('1x');
 
   const [manualSettings, setManualSettings] = useState({
     iso: 400,
@@ -89,6 +68,7 @@ const CameraView: React.FC = () => {
         aperture: cameraMode === 'pro' ? manualSettings.aperture : 'f/5.6',
         shutterSpeed: cameraMode === 'pro' ? manualSettings.shutterSpeed : '1/125',
         focal: cameraMode === 'pro' ? `${manualSettings.focus}mm` : '50mm',
+        zoom,
         timestamp: new Date()
       }
     };
@@ -147,6 +127,12 @@ const CameraView: React.FC = () => {
     { id: 'focus', label: 'F', value: `${manualSettings.focus}mm` },
   ];
 
+  const cycleZoom = () => {
+    const currentIndex = zoomLevels.indexOf(zoom);
+    const nextIndex = (currentIndex + 1) % zoomLevels.length;
+    setZoom(zoomLevels[nextIndex]);
+  };
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-black text-white">
       {/* Camera Viewfinder */}
@@ -163,60 +149,64 @@ const CameraView: React.FC = () => {
 
       {/* Bottom Controls */}
       <div className="bg-black bg-opacity-50 pt-4 pb-safe select-none">
-        <div className="flex flex-col items-center space-y-4">
+        <div className="flex flex-col items-center space-y-3">
+          
           {/* Pro Controls Panel */}
           {cameraMode === 'pro' && (
-            <div className="w-full flex flex-col items-center gap-3 px-2">
-              <button onClick={() => setShowProControls(!showProControls)} className="p-1">
-                {showProControls ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronUp className="w-5 h-5 text-gray-400" />}
-              </button>
-              {showProControls && (
-                <>
-                  <div className="flex items-center justify-center space-x-4">
-                    {proControls.map(c => (
-                      <button key={c.id} onClick={() => setActiveProControl(c.id as ProControl)} className={`flex flex-col items-center gap-1 ${activeProControl === c.id ? 'text-amber-400' : 'text-gray-300'}`}>
-                        <span className="text-xs font-bold">{c.label}</span>
-                        <span className="text-xs">{c.value}</span>
-                      </button>
-                    ))}
-                  </div>
-                  {activeProControl === 'iso' && <ProControlSlider options={isoOptions} value={manualSettings.iso} onChange={v => setManualSettings({...manualSettings, iso: v})} />}
-                  {activeProControl === 'aperture' && <ProControlSlider options={apertureOptions} value={manualSettings.aperture} onChange={v => setManualSettings({...manualSettings, aperture: v})} />}
-                  {activeProControl === 'shutterSpeed' && <ProControlSlider options={shutterSpeedOptions} value={manualSettings.shutterSpeed} onChange={v => setManualSettings({...manualSettings, shutterSpeed: v})} />}
-                  {activeProControl === 'focus' && (
-                     <div className="w-full max-w-xs px-4 pt-2">
-                        <input type="range" min="24" max="200" value={manualSettings.focus} onChange={e => setManualSettings({...manualSettings, focus: Number(e.target.value)})} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500" />
-                     </div>
-                  )}
-                </>
-              )}
+            <div className="w-full flex flex-col items-center gap-2 px-2 min-h-[80px]">
+              <div className="flex items-center justify-center space-x-6">
+                {proControls.map(c => (
+                  <button key={c.id} onClick={() => setActiveProControl(activeProControl === c.id ? null : c.id as ProControl)} className={`flex flex-col items-center gap-1 transition-colors ${activeProControl === c.id ? 'text-amber-400' : 'text-gray-300 hover:text-white'}`}>
+                    <span className="text-xs font-bold">{c.label}</span>
+                    <span className="text-xs">{c.value}</span>
+                  </button>
+                ))}
+              </div>
+              <div className="h-20 w-full">
+                {activeProControl === 'iso' && <RangeSelector options={isoOptions} value={manualSettings.iso} onChange={v => setManualSettings({...manualSettings, iso: v as number})} />}
+                {activeProControl === 'aperture' && <RangeSelector options={apertureOptions} value={manualSettings.aperture} onChange={v => setManualSettings({...manualSettings, aperture: v as string})} />}
+                {activeProControl === 'shutterSpeed' && <RangeSelector options={shutterSpeedOptions} value={manualSettings.shutterSpeed} onChange={v => setManualSettings({...manualSettings, shutterSpeed: v as string})} />}
+                {activeProControl === 'focus' && (
+                   <div className="w-full max-w-xs px-4 pt-2">
+                      <input type="range" min="24" max="200" value={manualSettings.focus} onChange={e => setManualSettings({...manualSettings, focus: Number(e.target.value)})} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500" />
+                   </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Mode Selector */}
-          <div className="flex items-center justify-center space-x-6 font-recoleta text-base">
-            <button onClick={() => setCameraMode('simple')} className={cameraMode === 'simple' ? 'text-amber-400 font-bold' : 'text-white'}>SIMPLE</button>
-            <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-amber-400 font-bold' : 'text-white'}>PRO</button>
-          </div>
-
           {/* Main Action Row */}
-          <div className="w-full flex items-center justify-around px-4">
-            <button onClick={() => setCurrentView('albums')} className="w-14 h-14 rounded-lg bg-gray-800 flex items-center justify-center overflow-hidden">
-              {lastPhotoThumbnail ? (
-                <img src={lastPhotoThumbnail} alt="Last photo" className="w-full h-full object-cover" />
-              ) : (
-                <ImageIcon className="w-6 h-6 text-gray-400" />
-              )}
-            </button>
+          <div className="w-full flex items-center justify-between px-6">
+            {/* Zoom Button */}
             <button
-              onClick={handleTakePhoto}
-              disabled={activeRoll?.isCompleted}
-              aria-label="Take Photo"
-              className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95"
+              onClick={cycleZoom}
+              className="w-10 h-10 rounded-full bg-neutral-800 text-white flex items-center justify-center transition-transform hover:scale-105"
             >
-              {activeRoll?.isCompleted && <Lock className="w-8 h-8 text-gray-500" />}
+              {zoom}
             </button>
-            <button className="w-14 h-14 rounded-full bg-gray-800 flex items-center justify-center">
+
+            <div className="flex flex-col items-center gap-3">
+              {/* Pro/Simple Mode Buttons */}
+              <div className="flex items-center justify-center space-x-6 font-recoleta text-base h-6">
+                <button onClick={() => setCameraMode('simple')} className={cameraMode === 'simple' ? 'text-amber-400 font-bold' : 'text-white'}>PHOTO</button>
+                <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-amber-400 font-bold' : 'text-white'}>PRO</button>
+              </div>
+
+              {/* Click Button with Larger Gray Circle */}
+              <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
+                <button
+                  onClick={handleTakePhoto}
+                  disabled={activeRoll?.isCompleted}
+                  aria-label="Take Photo"
+                  className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200"
+                >
+                  {activeRoll?.isCompleted && <Lock className="w-8 h-8 text-gray-500" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Camera Switch Button */}
+            <button className="w-14 h-14 rounded-full bg-neutral-800 flex items-center justify-center transition-transform hover:scale-105">
               <RefreshCw className="w-6 h-6 text-white" />
             </button>
           </div>
