@@ -38,6 +38,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
   const handleStartRoll = () => {
     if (canAfford && selectedFilm.unlocked) {
       onStartRoll(selectedFilm.name, selectedCapacity.shots);
+      onClose(); // Close the modal after starting the roll
     }
   };
 

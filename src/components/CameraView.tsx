@@ -25,11 +25,24 @@ const CameraView: React.FC = () => {
   const zoomLevels = useMemo(() => ['0.5x', '1x', '2x'], []);
   const [zoom, setZoom] = useState('1x');
 
-  const [manualSettings, setManualSettings] = useState({
+  const focusOptions = useMemo(() => {
+    const options: (number | string)[] = [
+      0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10,
+      12, 15, 20, 25, 30, 40, 50, 75, 100, 200, 500, 1000, '∞'
+    ];
+    return options;
+  }, []);
+
+  const [manualSettings, setManualSettings] = useState<{
+    iso: number;
+    aperture: string;
+    shutterSpeed: string;
+    focus: number | string; // Allow string for '∞'
+  }>({
     iso: 400,
     aperture: 'f/5.6',
     shutterSpeed: '1/125',
-    focus: 50
+    focus: 10 // Initial focus value
   });
 
   const filmTypes = useMemo(() => [
@@ -67,7 +80,7 @@ const CameraView: React.FC = () => {
         iso: cameraMode === 'pro' ? manualSettings.iso : 400,
         aperture: cameraMode === 'pro' ? manualSettings.aperture : 'f/5.6',
         shutterSpeed: cameraMode === 'pro' ? manualSettings.shutterSpeed : '1/125',
-        focal: cameraMode === 'pro' ? `${manualSettings.focus}mm` : '50mm',
+        focal: cameraMode === 'pro' ? (typeof manualSettings.focus === 'number' ? `${manualSettings.focus}m` : manualSettings.focus) : '50mm',
         zoom,
         timestamp: new Date()
       }
@@ -117,14 +130,18 @@ const CameraView: React.FC = () => {
   }
 
   const isoOptions = [100, 200, 400, 800, 1600, 3200];
-  const apertureOptions = ['f/1.4', 'f/2.0', 'f/2.8', 'f/4.0', 'f/5.6', 'f/8.0', 'f/11'];
-  const shutterSpeedOptions = ['1/30', '1/60', '1/125', '1/250', '1/500', '1/1000'];
+  const apertureOptions = [
+    'f/1.0', 'f/1.4', 'f/2.0', 'f/2.8', 'f/4.0', 'f/5.6', 'f/8.0', 'f/11', 'f/16', 'f/22', 'f/32'
+  ];
+  const shutterSpeedOptions = [
+    '1', '1/2', '1/4', '1/8', '1/15', '1/30', '1/60', '1/125', '1/250', '1/500', '1/1000', '1/2000', '1/4000', '1/8000'
+  ];
 
   const proControls = [
     { id: 'iso', label: 'ISO', value: manualSettings.iso },
     { id: 'aperture', label: 'AP', value: manualSettings.aperture.replace('f/', '') },
     { id: 'shutterSpeed', label: 'S', value: manualSettings.shutterSpeed },
-    { id: 'focus', label: 'F', value: `${manualSettings.focus}mm` },
+    { id: 'focus', label: 'F', value: typeof manualSettings.focus === 'number' ? `${manualSettings.focus}m` : manualSettings.focus },
   ];
 
   const cycleZoom = () => {
@@ -163,20 +180,18 @@ const CameraView: React.FC = () => {
                 ))}
               </div>
               <div className="h-20 w-full">
-                {activeProControl === 'iso' && <RangeSelector options={isoOptions} value={manualSettings.iso} onChange={v => setManualSettings({...manualSettings, iso: v as number})} />}
-                {activeProControl === 'aperture' && <RangeSelector options={apertureOptions} value={manualSettings.aperture} onChange={v => setManualSettings({...manualSettings, aperture: v as string})} />}
-                {activeProControl === 'shutterSpeed' && <RangeSelector options={shutterSpeedOptions} value={manualSettings.shutterSpeed} onChange={v => setManualSettings({...manualSettings, shutterSpeed: v as string})} />}
+                {activeProControl === 'iso' && <RangeSelector options={isoOptions} value={manualSettings.iso} onChange={v => setManualSettings({...manualSettings, iso: v as number})} type="iso" />}
+                {activeProControl === 'aperture' && <RangeSelector options={apertureOptions} value={manualSettings.aperture} onChange={v => setManualSettings({...manualSettings, aperture: v as string})} type="aperture" />}
+                {activeProControl === 'shutterSpeed' && <RangeSelector options={shutterSpeedOptions} value={manualSettings.shutterSpeed} onChange={v => setManualSettings({...manualSettings, shutterSpeed: v as string})} type="shutterSpeed" />}
                 {activeProControl === 'focus' && (
-                   <div className="w-full max-w-xs px-4 pt-2">
-                      <input type="range" min="24" max="200" value={manualSettings.focus} onChange={e => setManualSettings({...manualSettings, focus: Number(e.target.value)})} className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500" />
-                   </div>
+                   <RangeSelector options={focusOptions} value={manualSettings.focus} onChange={v => setManualSettings({...manualSettings, focus: v as number | string})} type="focus" />
                 )}
               </div>
             </div>
           )}
 
           {/* Main Action Row */}
-          <div className="w-full flex items-center justify-between px-6">
+          <div className="w-full flex items-center justify-between px-6 mt-6"> {/* Added mt-6 here */}
             {/* Zoom Button */}
             <button
               onClick={cycleZoom}
@@ -185,15 +200,15 @@ const CameraView: React.FC = () => {
               {zoom}
             </button>
 
-            <div className="flex flex-col items-center gap-3">
+            <div className="flex flex-col items-center gap-1">
               {/* Pro/Simple Mode Buttons */}
-              <div className="flex items-center justify-center space-x-6 font-recoleta text-base h-6">
+              <div className="flex items-center justify-center space-x-6 font-sans text-base py-4"> {/* Changed py-2 to py-4 */}
                 <button onClick={() => setCameraMode('simple')} className={cameraMode === 'simple' ? 'text-amber-400 font-bold' : 'text-white'}>PHOTO</button>
                 <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-amber-400 font-bold' : 'text-white'}>PRO</button>
               </div>
 
               {/* Click Button with Larger Gray Circle */}
-              <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
+              <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700 mb-4"> {/* Added mb-4 */}
                 <button
                   onClick={handleTakePhoto}
                   disabled={activeRoll?.isCompleted}

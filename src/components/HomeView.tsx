@@ -20,10 +20,21 @@ const HomeView: React.FC = () => {
     console.log('Share post:', postId);
   };
 
+  const handleCurrentRollClick = () => {
+    if (activeRoll) {
+      setCurrentView('camera');
+    } else {
+      setShowFilmModal(true);
+    }
+  };
+
   return (
     <div className="p-4 sm:p-6 space-y-6 pb-safe w-full">
       {/* Current Roll Status */}
-      <div className="bg-gradient-to-br from-amber-600 to-orange-600 rounded-2xl p-5 sm:p-7 text-white shadow-xl transform transition-all duration-300 hover:scale-[1.01] cursor-pointer">
+      <div 
+        onClick={handleCurrentRollClick}
+        className="bg-gradient-to-br from-amber-600 to-orange-600 rounded-2xl p-5 sm:p-7 text-white shadow-xl transform transition-all duration-300 hover:scale-[1.01] cursor-pointer"
+      >
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold mb-2 font-recoleta">Current Roll</h2>
@@ -44,7 +55,10 @@ const HomeView: React.FC = () => {
               <>
                 <p className="text-amber-100 text-sm sm:text-base mb-4">No active roll. Time to load up!</p>
                 <button 
-                  onClick={() => setShowFilmModal(true)}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent the parent div's onClick from firing
+                    setShowFilmModal(true);
+                  }}
                   className="mt-3 bg-amber-700 hover:bg-amber-800 text-white shadow-md px-5 py-3 rounded-xl transition-colors flex items-center space-x-2 min-h-[48px] font-semibold text-base"
                 >
                   <Film className="w-5 h-5" />

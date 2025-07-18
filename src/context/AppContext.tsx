@@ -1,33 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useMemo } from 'react';
 
-export interface User {
-  id: string | null; // Allow null for logged-out state
-  username: string;
-  email: string;
-  level: number;
-  xp: number;
-  credits: number;
-  streak: number;
-  subscription: 'free' | 'plus' | 'premium';
-  followersCount: number;
-  followingCount: number;
-  totalRolls: number;
-  totalPhotos: number;
-}
-
-export interface FilmRoll {
-  id: string;
-  filmType: string;
-  capacity: number;
-  shotsUsed: number;
-  isCompleted: boolean;
-  isUnlocked: boolean;
-  unlockDate?: Date;
-  createdDate: Date;
-  photos: Photo[];
-}
-
-export interface Photo {
+interface Photo {
   id: string;
   rollId: string;
   url: string;
@@ -37,58 +10,74 @@ export interface Photo {
     aperture: string;
     shutterSpeed: string;
     focal: string;
+    zoom: string;
     timestamp: Date;
   };
 }
 
-export interface Post {
+interface Roll {
   id: string;
-  userId: string;
-  username: string;
-  rollId: string;
+  filmType: string;
+  capacity: number;
+  shotsUsed: number;
+  isCompleted: boolean;
+  isUnlocked: boolean;
+  createdDate: Date;
   photos: Photo[];
-  caption: string;
-  likes: number;
-  comments: number;
-  timestamp: Date;
-  isLiked: boolean;
 }
 
-export interface Challenge {
+interface User {
+  id: string;
+  username: string;
+  email: string;
+  level: number;
+  credits: number;
+  streak: number;
+  subscription: 'free' | 'plus' | 'premium'; // Added subscription property
+}
+
+interface Challenge {
   id: string;
   title: string;
   description: string;
   type: 'daily' | 'weekly' | 'special';
+  progress: number;
+  target: number;
   reward: {
     xp: number;
     credits: number;
     badge?: string;
   };
-  progress: number;
-  target: number;
-  isCompleted: boolean;
   expiresAt?: Date;
+  isCompleted: boolean;
 }
 
 interface AppContextType {
-  user: User;
-  setUser: (user: User | null) => void; // Allow null for logout
   currentView: string;
   setCurrentView: (view: string) => void;
-  activeRoll: FilmRoll | null;
-  setActiveRoll: (roll: FilmRoll | null) => void;
-  completedRolls: FilmRoll[];
-  setCompletedRolls: (rolls: FilmRoll[]) => void;
-  feed: Post[];
-  setFeed: (posts: Post[]) => void;
-  challenges: Challenge[];
-  setChallenges: (challenges: Challenge[]) => void;
-  cameraMode: 'simple' | 'pro';
-  setCameraMode: (mode: 'simple' | 'pro') => void;
-  flashMode: 'off' | 'on' | 'auto';
-  setFlashMode: (mode: 'off' | 'on' | 'auto') => void;
+  flashMode: 'on' | 'off' | 'auto';
+  setFlashMode: (mode: 'on' | 'off' | 'auto') => void;
   showFilmModal: boolean;
   setShowFilmModal: (show: boolean) => void;
+  activeRoll: Roll | null;
+  setActiveRoll: (roll: Roll | null) => void;
+  user: User;
+  feed: {
+    id: string;
+    username: string;
+    timestamp: Date;
+    photos: { id: string; thumbnail: string }[];
+    caption: string;
+    likes: number;
+    comments: number;
+    isLiked: boolean;
+    rollId: string;
+  }[];
+  completedRolls: Roll[];
+  cameraMode: 'simple' | 'pro';
+  setCameraMode: (mode: 'simple' | 'pro') => void;
+  challenges: Challenge[];
+  setChallenges: React.Dispatch<React.SetStateAction<Challenge[]>>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -101,179 +90,132 @@ export const useAppContext = () => {
   return context;
 };
 
-// Default logged-out user state
-const defaultLoggedOutUser: User = {
-  id: null, username: '', email: '', level: 0, xp: 0, credits: 0, streak: 0,
-  subscription: 'free', followersCount: 0, followingCount: 0, totalRolls: 0, totalPhotos: 0
-};
+interface AppProviderProps {
+  children: React.ReactNode;
+}
 
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUserState] = useState<User>(defaultLoggedOutUser);
-
-  const setUser = (userData: User | null) => {
-    if (userData === null) {
-      // Handle logout: reset user state and potentially clear local storage/tokens
-      setUserState(defaultLoggedOutUser);
-      localStorage.removeItem('appUserData'); // Example: clear stored user data
-    } else {
-      setUserState(userData);
-      localStorage.setItem('appUserData', JSON.stringify(userData)); // Example: store user data
-    }
-  };
-
+export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [currentView, setCurrentView] = useState('home');
-  const [activeRoll, setActiveRoll] = useState<FilmRoll | null>(null);
-  const [completedRolls, setCompletedRolls] = useState<FilmRoll[]>([]);
-  const [feed, setFeed] = useState<Post[]>([]);
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
-  const [flashMode, setFlashMode] = useState<'off' | 'on' | 'auto'>('off');
+  const [flashMode, setFlashMode] = useState<'on' | 'off' | 'auto'>('off');
   const [showFilmModal, setShowFilmModal] = useState(false);
+  const [activeRoll, setActiveRoll] = useState<Roll | null>(null);
+  const [completedRolls, setCompletedRolls] = useState<Roll[]>([]);
+  const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
 
-  // Initialize user state from localStorage on mount
-  useEffect(() => {
-    const storedUserData = localStorage.getItem('appUserData');
-    if (storedUserData) {
-      try {
-        const parsedUserData = JSON.parse(storedUserData);
-        // Basic validation to ensure it's a User object
-        if (parsedUserData && parsedUserData.id) {
-          setUserState(parsedUserData);
-        } else {
-          localStorage.removeItem('appUserData'); // Clear invalid data
-        }
-      } catch (error) {
-        console.error("Failed to parse user data from localStorage:", error);
-        localStorage.removeItem('appUserData'); // Clear corrupted data
-      }
-    }
+  const user: User = useMemo(() => ({
+    id: 'user-123',
+    username: 'TestUser',
+    email: 'test@example.com',
+    level: 1,
+    credits: 100,
+    streak: 5,
+    subscription: 'free' // Initialized subscription
+  }), []);
 
-    // Sample data initialization (only if no user data is found)
-    if (!storedUserData) {
-      const sampleUser: User = {
-        id: '1',
-        username: 'photographer_23',
-        email: 'user@example.com',
-        level: 5,
-        xp: 2340,
-        credits: 45,
-        streak: 7,
-        subscription: 'plus',
-        followersCount: 234,
-        followingCount: 156,
-        totalRolls: 23,
-        totalPhotos: 456
-      };
-      setUserState(sampleUser);
-      localStorage.setItem('appUserData', JSON.stringify(sampleUser));
+  const feed = useMemo(() => [
+    {
+      id: 'post-1',
+      username: 'Alice',
+      timestamp: new Date(),
+      photos: [
+        { id: 'photo-1', thumbnail: 'https://images.pexels.com/photos/17820068/pexels-photo-17820068/free-photo-of-a-woman-in-a-field-of-flowers.jpeg?auto=compress&cs=tinysrgb&w=200' },
+        { id: 'photo-2', thumbnail: 'https://images.pexels.com/photos/17820068/pexels-photo-17820068/free-photo-of-a-woman-in-a-field-of-flowers.jpeg?auto=compress&cs=tinysrgb&w=200' },
+        { id: 'photo-3', thumbnail: 'https://images.pexels.com/photos/17820068/pexels-photo-17820068/free-photo-of-a-woman-in-a-field-of-flowers.jpeg?auto=compress&cs=tinysrgb&w=200' },
+        { id: 'photo-4', thumbnail: 'https://images.pexels.com/photos/17820068/pexels-photo-17820068/free-photo-of-a-woman-in-a-field-of-flowers.jpeg?auto=compress&cs=tinysrgb&w=200' },
+        { id: 'photo-5', thumbnail: 'https://images.pexels.com/photos/17820068/pexels-photo-17820068/free-photo-of-a-woman-in-a-field-of-flowers.jpeg?auto=compress&cs=tinysrgb&w=200' },
+        { id: 'photo-6', thumbnail: 'https://images.pexels.com/photos/17820068/pexels-photo-17820068/free-photo-of-a-woman-in-a-field-of-flowers.jpeg?auto=compress&cs=tinysrgb&w=200' },
+      ],
+      caption: 'Enjoying the golden hour.',
+      likes: 120,
+      comments: 20,
+      isLiked: false,
+      rollId: '1'
+    },
+    {
+      id: 'post-2',
+      username: 'Bob',
+      timestamp: new Date(),
+      photos: [
+        { id: 'photo-7', thumbnail: 'https://images.pexels.com/photos/17820068/pexels-photo-17820068/free-photo-of-a-woman-in-a-field-of-flowers.jpeg?auto=compress&cs=tinysrgb&w=200' },
+        { id: 'photo-8', thumbnail: 'https://images.pexels.com/photos/17820068/pexels-photo-17820068/free-photo-of-a-woman-in-a-field-of-flowers.jpeg?auto=compress&cs=tinysrgb&w=200' },
+        { id: 'photo-9', thumbnail: 'https://images.pexels.com/photos/17820068/pexels-photo-17820068/free-photo-of-a-woman-in-a-field-of-flowers.jpeg?auto=compress&cs=tinysrgb&w=200' },
+        { id: 'photo-10', thumbnail: 'https://images.pexels.com/photos/17820068/pexels-photo-17820068/free-photo-of-a-woman-in-a-field-of-flowers.jpeg?auto=compress&cs=tinysrgb&w=200' },
+        { id: 'photo-11', thumbnail: 'https://images.pexels.com/photos/17820068/pexels-photo-17820068/free-photo-of-a-woman-in-a-field-of-flowers.jpeg?auto=compress&cs=tinysrgb&w=200' },
+        { id: 'photo-12', thumbnail: 'https://images.pexels.com/photos/17820068/pexels-photo-17820068/free-photo-of-a-woman-in-a-field-of-flowers.jpeg?auto=compress&cs=tinysrgb&w=200' },
+      ],
+      caption: 'Chasing sunsets.',
+      likes: 85,
+      comments: 15,
+      isLiked: true,
+      rollId: '2'
+    },
+  ], []);
 
-      // Sample completed rolls
-      const sampleRolls: FilmRoll[] = [
-        {
-          id: '1',
-          filmType: 'Kodak Gold 200',
-          capacity: 24,
-          shotsUsed: 24,
-          isCompleted: true,
-          isUnlocked: true,
-          createdDate: new Date('2024-01-10'),
-          photos: Array.from({ length: 24 }, (_, i) => ({
-            id: `photo-${i}`,
-            rollId: '1',
-            url: `https://images.pexels.com/photos/247851/pexels-photo-247851.jpeg?auto=compress&cs=tinysrgb&w=800`,
-            thumbnail: `https://images.pexels.com/photos/247851/pexels-photo-247851.jpeg?auto=compress&cs=tinysrgb&w=400`,
-            metadata: {
-              iso: 200,
-              aperture: 'f/5.6',
-              shutterSpeed: '1/125',
-              focal: '50mm',
-              timestamp: new Date()
-            }
-          }))
-        }
-      ];
+  const [challenges, setChallenges] = useState<Challenge[]>([
+    {
+      id: 'c1',
+      title: 'Daily Photo Streak',
+      description: 'Take a photo every day for 3 days.',
+      type: 'daily',
+      progress: 2,
+      target: 3,
+      reward: { xp: 50, credits: 10 },
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // Expires in 24 hours
+      isCompleted: false,
+    },
+    {
+      id: 'c2',
+      title: 'Weekly Explorer',
+      description: 'Use 3 different film types in a week.',
+      type: 'weekly',
+      progress: 1,
+      target: 3,
+      reward: { xp: 150, credits: 30, badge: 'Explorer Badge' },
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Expires in 7 days
+      isCompleted: false,
+    },
+    {
+      id: 'c3',
+      title: 'Pro Mode Master',
+      description: 'Take 10 photos using Pro Mode.',
+      type: 'special',
+      progress: 10,
+      target: 10,
+      reward: { xp: 200, credits: 50, badge: 'Pro Master' },
+      isCompleted: false, // Will be completed after this render
+    },
+    {
+      id: 'c4',
+      title: 'First Roll Completed',
+      description: 'Develop your first film roll.',
+      type: 'special',
+      progress: 1,
+      target: 1,
+      reward: { xp: 100, credits: 20 },
+      isCompleted: true, // Already completed
+    },
+  ]);
 
-      // Sample feed posts
-      const sampleFeed: Post[] = [
-        {
-          id: '1',
-          userId: '2',
-          username: 'street_wanderer',
-          rollId: '1',
-          photos: Array.from({ length: 12 }, (_, i) => ({
-            id: `feed-photo-${i}`,
-            rollId: '1',
-            url: `https://images.pexels.com/photos/2882566/pexels-photo-2882566.jpeg?auto=compress&cs=tinysrgb&w=800`,
-            thumbnail: `https://images.pexels.com/photos/2882566/pexels-photo-2882566.jpeg?auto=compress&cs=tinysrgb&w=400`,
-            metadata: {
-              iso: 400,
-              aperture: 'f/2.8',
-              shutterSpeed: '1/60',
-              focal: '35mm',
-              timestamp: new Date()
-            }
-          })),
-          caption: 'Street photography session with Tri-X 400. Love the grain and contrast! 📸',
-          likes: 127,
-          comments: 23,
-          timestamp: new Date('2024-01-15'),
-          isLiked: false
-        }
-      ];
-
-      // Sample challenges
-      const sampleChallenges: Challenge[] = [
-        {
-          id: '1',
-          title: 'Daily Shooter',
-          description: 'Take 5 photos today',
-          type: 'daily',
-          reward: { xp: 50, credits: 10 },
-          progress: 3,
-          target: 5,
-          isCompleted: false,
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
-        },
-        {
-          id: '2',
-          title: 'Film Explorer',
-          description: 'Try 3 different film types this week',
-          type: 'weekly',
-          reward: { xp: 200, credits: 25, badge: 'Film Explorer' },
-          progress: 1,
-          target: 3,
-          isCompleted: false,
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        }
-      ];
-
-      setCompletedRolls(sampleRolls);
-      setFeed(sampleFeed);
-      setChallenges(sampleChallenges);
-    }
-  }, []); // Empty dependency array ensures this runs only once on mount
+  const value = useMemo(() => ({
+    currentView,
+    setCurrentView,
+    flashMode,
+    setFlashMode,
+    showFilmModal,
+    setShowFilmModal,
+    activeRoll,
+    setActiveRoll,
+    user,
+    feed,
+    completedRolls,
+    cameraMode,
+    setCameraMode,
+    challenges,
+    setChallenges,
+  }), [currentView, setCurrentView, flashMode, setFlashMode, showFilmModal, setShowFilmModal, activeRoll, setActiveRoll, user, feed, completedRolls, cameraMode, setCameraMode, challenges, setChallenges]);
 
   return (
-    <AppContext.Provider value={{
-      user,
-      setUser,
-      currentView,
-      setCurrentView,
-      activeRoll,
-      setActiveRoll,
-      completedRolls,
-      setCompletedRolls,
-      feed,
-      setFeed,
-      challenges,
-      setChallenges,
-      cameraMode,
-      setCameraMode,
-      flashMode,
-      setFlashMode,
-      showFilmModal,
-      setShowFilmModal
-    }}>
+    <AppContext.Provider value={value}>
       {children}
     </AppContext.Provider>
   );

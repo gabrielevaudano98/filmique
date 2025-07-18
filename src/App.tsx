@@ -39,9 +39,9 @@ function AppContent() {
         <div className="flex items-center justify-between max-w-6xl mx-auto">
           {/* Left side: Filmique logo for all non-camera views */}
           {currentView !== 'camera' && (
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center justify-center flex-grow font-recoleta"> {/* Added justify-center and flex-grow */}
               <Film className="w-7 h-7 text-amber-400" />
-              <h1 className="text-xl font-bold text-amber-400 whitespace-nowrap overflow-hidden text-ellipsis font-recoleta">Filmique</h1>
+              <h1 className="text-xl font-bold text-amber-400 whitespace-nowrap overflow-hidden text-ellipsis ml-2">Filmique</h1> {/* Added ml-2 */}
             </div>
           )}
 
