@@ -26,6 +26,17 @@ interface Roll {
   photos: Photo[];
 }
 
+interface Album {
+  id: string;
+  title: string;
+  coverImage: string;
+  rollIds: string[];
+  photoCount: number;
+  rollCount: number;
+  type: 'personal' | 'shared' | 'public';
+  createdAt: Date;
+}
+
 interface User {
   id: string;
   username: string;
@@ -74,6 +85,7 @@ interface AppContextType {
     rollId: string;
   }[];
   completedRolls: Roll[];
+  albums: Album[];
   cameraMode: 'simple' | 'pro';
   setCameraMode: (mode: 'simple' | 'pro') => void;
   challenges: Challenge[];
@@ -149,7 +161,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       isCompleted: true,
       isUnlocked: true,
       createdDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-      photos: generatePhotos('roll-1', 24, 1),
+      photos: generatePhotos('roll-1', 24, 2),
     },
     {
       id: 'roll-2',
@@ -159,7 +171,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       isCompleted: true,
       isUnlocked: false,
       createdDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      photos: generatePhotos('roll-2', 36, 2),
+      photos: generatePhotos('roll-2', 36, 1),
     },
     {
       id: 'roll-3',
@@ -170,6 +182,29 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       isUnlocked: true,
       createdDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
       photos: generatePhotos('roll-3', 12, 3),
+    },
+  ]);
+
+  const [albums, setAlbums] = useState<Album[]>([
+    {
+      id: 'album-1',
+      title: 'Summer in the City',
+      rollIds: ['roll-1'],
+      photoCount: 24,
+      rollCount: 1,
+      coverImage: 'https://images.pexels.com/photos/374845/pexels-photo-374845.jpeg?auto=compress&cs=tinysrgb&w=800&h=1067&dpr=1',
+      type: 'personal',
+      createdAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: 'album-2',
+      title: 'Portraits of Strangers',
+      rollIds: ['roll-2'],
+      photoCount: 36,
+      rollCount: 1,
+      coverImage: 'https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&w=800&h=1067&dpr=1',
+      type: 'public',
+      createdAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000),
     },
   ]);
 
@@ -271,11 +306,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     user,
     feed,
     completedRolls,
+    albums,
     cameraMode,
     setCameraMode,
     challenges,
     setChallenges,
-  }), [currentView, flashMode, showFilmModal, activeRoll, user, feed, completedRolls, cameraMode, challenges]);
+  }), [currentView, flashMode, showFilmModal, activeRoll, user, feed, completedRolls, albums, cameraMode, challenges]);
 
   return (
     <AppContext.Provider value={value}>
