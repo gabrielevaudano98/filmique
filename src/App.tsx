@@ -6,9 +6,10 @@ import ProfileView from './components/ProfileView';
 import AlbumsView from './components/AlbumsView';
 import ChallengesView from './components/ChallengesView';
 import SettingsView from './components/SettingsView';
-import { AppProvider, useAppContext } from './context/AppContext';
+import { useAppContext } from './context/AppContext'; // Removed AppProvider import
+import TopBar from './components/TopBar';
 
-function AppContent() {
+function App() { // Renamed AppContent to App
   const { currentView, setCurrentView, flashMode, setFlashMode, setShowFilmModal } = useAppContext();
 
   const renderCurrentView = () => {
@@ -33,69 +34,7 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
       {/* Top Navigation */}
-      <nav className={`bg-gray-800 border-b border-gray-700 px-4 py-2 transition-colors duration-300 ${
-        currentView === 'camera' ? 'bg-transparent border-transparent absolute top-0 left-0 right-0 z-20 pt-safe' : ''
-      }`}>
-        <div className="flex items-center justify-between max-w-6xl mx-auto">
-          {/* Left side: Filmique logo for all non-camera views */}
-          {currentView !== 'camera' && (
-            <div className="flex items-center justify-center flex-grow font-recoleta"> {/* Added justify-center and flex-grow */}
-              <Film className="w-7 h-7 text-amber-400" />
-              <h1 className="text-xl font-bold text-amber-400 whitespace-nowrap overflow-hidden text-ellipsis ml-2">Filmique</h1> {/* Added ml-2 */}
-            </div>
-          )}
-
-          {/* Right side: Conditional buttons */}
-          <div className={`flex items-center w-full ${currentView === 'camera' ? 'justify-between' : 'justify-end'}`}>
-            {currentView === 'camera' ? (
-              <>
-                {/* Camera specific buttons */}
-                <button
-                  onClick={() => setFlashMode(prev => {
-                    if (prev === 'off') return 'on';
-                    if (prev === 'on') return 'auto';
-                    return 'off';
-                  })}
-                  className="flex items-center justify-center w-11 h-11 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full transition-colors"
-                  aria-label="Toggle Flash"
-                >
-                  <Zap className={`w-5 h-5 ${flashMode === 'on' ? 'text-amber-400' : 'text-white'}`} />
-                </button>
-                <button
-                  onClick={() => setShowFilmModal(true)}
-                  className="flex items-center justify-center w-11 h-11 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full transition-colors"
-                  aria-label="Change Film"
-                >
-                  <Film className="w-5 h-5" />
-                </button>
-                <button
-                  onClick={() => setCurrentView('home')}
-                  className="flex items-center justify-center w-11 h-11 bg-black bg-opacity-20 hover:bg-opacity-40 rounded-full transition-colors"
-                  aria-label="Exit Camera"
-                >
-                  <ArrowLeft className="w-5 h-5 text-white" />
-                </button>
-              </>
-            ) : currentView === 'settings' ? ( // Back button for settings page
-              <button
-                onClick={() => setCurrentView('home')} // Go back to home from settings
-                className="flex items-center justify-center w-11 h-11 hover:bg-gray-700 rounded-full transition-colors"
-                aria-label="Back to Home"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-            ) : ( // Settings button for home, albums, challenges, profile
-              <button
-                onClick={() => setCurrentView('settings')}
-                className="flex items-center justify-center w-11 h-11 hover:bg-gray-700 rounded-full transition-colors"
-                aria-label="Settings"
-              >
-                <Settings className="w-5 h-5" />
-              </button>
-            )}
-          </div>
-        </div>
-      </nav>
+      <TopBar />
 
       {/* Main Content */}
       <main className={`flex-1 max-w-6xl mx-auto w-full flex ${currentView !== 'settings' ? 'px-4 py-4' : ''}`}>
@@ -167,14 +106,6 @@ function AppContent() {
         </div>
       </nav>
     </div>
-  );
-}
-
-function App() {
-  return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
   );
 }
 

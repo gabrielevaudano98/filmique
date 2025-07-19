@@ -28,7 +28,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
   onStartRoll,
   onClose
 }) => {
-  const { user, activeRoll } = useAppContext();
+  const { user, activeRoll, setCurrentView } = useAppContext();
   const [selectedFilm, setSelectedFilm] = useState<FilmType>(filmTypes.find(f => f.unlocked) || filmTypes[0]);
   const [selectedCapacity, setSelectedCapacity] = useState<CapacityOption>(capacityOptions[0]);
 
@@ -39,6 +39,14 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
     if (canAfford && selectedFilm.unlocked) {
       onStartRoll(selectedFilm.name, selectedCapacity.shots);
       onClose(); // Close the modal after starting the roll
+    }
+  };
+
+  const handleCloseModal = () => {
+    onClose();
+    // If no film is active, and the user cancels, go back to home
+    if (!activeRoll) {
+      setCurrentView('home');
     }
   };
 
@@ -53,7 +61,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
           <div className="flex items-center justify-between p-4 sm:p-5">
             <h2 className="text-xl sm:text-2xl font-bold font-recoleta">{activeRoll ? 'Change Film' : 'Load New Film'}</h2>
             <button
-              onClick={onClose}
+              onClick={handleCloseModal}
               className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center"
             >
               <X className="w-5 h-5" />
@@ -174,7 +182,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
           {/* Action Buttons */}
           <div className="flex space-x-3 pb-safe">
             <button
-              onClick={onClose}
+              onClick={handleCloseModal}
               className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 rounded-xl transition-colors min-h-[52px] text-base font-semibold"
             >
               Cancel
