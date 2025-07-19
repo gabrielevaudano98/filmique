@@ -26,11 +26,24 @@ const CameraView: React.FC = () => {
   const [zoom, setZoom] = useState('1x');
 
   const focusOptions = useMemo(() => {
-    const options: (number | string)[] = [
-      0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10,
-      12, 15, 20, 25, 30, 40, 50, 75, 100, 200, 500, 1000, '∞'
-    ];
-    return options;
+    const options: (number | string)[] = [];
+    // Exponential growth for focus from 0.1m to 1000m
+    for (let i = 0; i <= 100; i++) {
+      const val = 0.1 * Math.exp(i * 0.069); // Adjust multiplier for desired range/steps
+      if (val <= 1000) { // Cap at 1000m
+        options.push(parseFloat(val.toFixed(1)));
+      }
+    }
+    // Add common close-up values and infinity
+    options.unshift(0); // 0m for macro/closest focus
+    options.push('∞');
+    
+    // Filter out duplicates and sort numerically before adding infinity
+    const uniqueSortedOptions = Array.from(new Set(options))
+      .filter(val => typeof val === 'number')
+      .sort((a, b) => (a as number) - (b as number));
+
+    return [...uniqueSortedOptions, '∞'];
   }, []);
 
   const [manualSettings, setManualSettings] = useState<{

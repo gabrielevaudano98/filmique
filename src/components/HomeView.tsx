@@ -25,6 +25,7 @@ const HomeView: React.FC = () => {
       setCurrentView('camera');
     } else {
       setShowFilmModal(true);
+      setCurrentView('camera'); // Ensure navigation to camera view when clicking the main div
     }
   };
 
@@ -58,6 +59,7 @@ const HomeView: React.FC = () => {
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent the parent div's onClick from firing
                     setShowFilmModal(true);
+                    setCurrentView('camera'); // Navigate to camera view
                   }}
                   className="mt-3 bg-amber-700 hover:bg-amber-800 text-white shadow-md px-5 py-3 rounded-xl transition-colors flex items-center space-x-2 min-h-[48px] font-semibold text-base"
                 >

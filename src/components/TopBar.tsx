@@ -1,19 +1,31 @@
 import React from 'react';
-import { Film, ImageIcon } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const TopBar: React.FC = () => {
   const { setCurrentView } = useAppContext();
 
   return (
-    <div className="w-full flex items-center justify-between px-4 py-4 pt-4 bg-black text-white"> {/* Added pt-4 here */}
-      <button onClick={() => setCurrentView('film-rolls')} className="p-2">
-        <Film className="w-6 h-6" />
-      </button>
-      <h1 className="text-xl font-bold">FILMIQUE</h1>
-      <button onClick={() => setCurrentView('gallery')} className="p-2">
-        <ImageIcon className="w-6 h-6" />
-      </button>
+    <div className="w-full flex items-center justify-between px-4 py-4 bg-black text-white z-20">
+      {/* Left: Empty space to balance centering */}
+      <div className="flex-1 flex justify-start">
+      </div>
+
+      {/* Center: Logo */}
+      <div className="flex-1 flex justify-center">
+        <h1 className="text-2xl font-recoleta font-bold text-amber-400">Filmique</h1>
+      </div>
+
+      {/* Right: Settings */}
+      <div className="flex-1 flex justify-end">
+        <button
+          onClick={() => setCurrentView('settings')}
+          className="p-2 rounded-full bg-neutral-800 flex items-center justify-center transition-colors hover:bg-neutral-700"
+          aria-label="Settings"
+        >
+          <Settings className="w-5 h-5 text-gray-400" />
+        </button>
+      </div>
     </div>
   );
 };
