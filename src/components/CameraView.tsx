@@ -310,7 +310,7 @@ const CameraView: React.FC = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden text-white camera-modal bg-black">
+    <div className={`h-screen flex flex-col overflow-hidden text-white camera-modal ${isNative ? 'bg-transparent' : 'bg-black'}`}>
       <header className="w-full bg-black text-white px-4 flex items-center justify-between relative z-40 h-16 py-3 pt-safe flex-shrink-0">
         <button
           onClick={() => setCurrentView('rolls')}
@@ -334,7 +334,7 @@ const CameraView: React.FC = () => {
       <canvas ref={canvasRef} className="hidden"></canvas>
       
       <div className="flex-1 flex items-center justify-center relative overflow-hidden">
-        <div className={`w-full h-full max-w-full max-h-full ${aspectRatioClass} relative bg-black overflow-hidden flex items-center justify-center`}>
+        <div className={`w-full h-full max-w-full max-h-full ${aspectRatioClass} relative ${isNative ? 'bg-transparent' : 'bg-black'} overflow-hidden flex items-center justify-center`}>
           {!isNative && (
             <video
               ref={videoRef}
@@ -351,7 +351,7 @@ const CameraView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-gray-900 pb-safe select-none flex-shrink-0 flex flex-col justify-center h-[35vh] min-h-[260px] max-h-[340px]">
+      <div className="bg-gray-900 pb-safe select-none flex-shrink-0 flex flex-col justify-center h-[30vh] min-h-[240px] max-h-[300px]">
         <div className="flex flex-col items-center justify-center">
           {cameraMode === 'pro' && !isNative && (
             <div className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2">
