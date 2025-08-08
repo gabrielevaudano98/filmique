@@ -333,7 +333,7 @@ const CameraView: React.FC = () => {
       
       <canvas ref={canvasRef} className="hidden"></canvas>
       
-      <div className="flex-1 flex items-center justify-center relative">
+      <div className="flex-1 flex items-center justify-center relative overflow-hidden">
         <div className={`w-full h-full max-w-full max-h-full ${aspectRatioClass} relative bg-black overflow-hidden flex items-center justify-center`}>
           {!isNative && (
             <video
@@ -351,7 +351,7 @@ const CameraView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-gray-900 pt-2 pb-safe select-none flex-shrink-0">
+      <div className="bg-gray-900 pb-safe select-none flex-shrink-0 flex flex-col justify-center h-[35vh] min-h-[260px] max-h-[340px]">
         <div className="flex flex-col items-center justify-center">
           {cameraMode === 'pro' && !isNative && (
             <div className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2">
