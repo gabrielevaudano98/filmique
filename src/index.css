@@ -5,12 +5,6 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --camera-view-background-color: transparent;
-  }
-  .camera-view-background {
-    background-color: var(--camera-view-background-color) !important;
-  }
   body {
     font-family: 'Inter', sans-serif;
   }
@@ -70,6 +64,22 @@
     scrollbar-width: none;  /* Firefox */
   }
 }
+
+/* Styles for Capacitor Camera View */
+body.camera-running {
+  --background: transparent !important;
+  --ion-background-color: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Hide everything in the app except elements with .camera-modal */
+body.camera-running > * {
+  display: none;
+}
+body.camera-running .camera-modal {
+  display: flex; /* Or block, depending on your layout */
+}
+
 
 /* Base mobile optimizations */
 html {

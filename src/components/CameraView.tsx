@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { CameraView as NativeCameraView, CameraViewOptions } from 'capacitor-camera-view';
+import { CameraView as NativeCameraView } from 'capacitor-camera-view';
 import { RefreshCw, Film, Lock, Camera } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
@@ -28,7 +28,6 @@ const CameraView: React.FC = () => {
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const cameraPreviewRef = useRef<HTMLDivElement>(null);
 
   const [isNative, setIsNative] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -48,7 +47,6 @@ const CameraView: React.FC = () => {
     focus: 1, // Stored as meters
   });
 
-  // Add a debug label state
   const [debugLabel, setDebugLabel] = useState('Initializing...');
 
   const updateDebug = (message: string) => {
@@ -69,10 +67,6 @@ const CameraView: React.FC = () => {
 
     const startNativeCamera = async () => {
       updateDebug('Starting native camera setup...');
-      document.documentElement.classList.add('camera-view-background');
-      document.body.classList.add('camera-view-background');
-      document.getElementById('root')?.classList.add('camera-view-background');
-      updateDebug('Transparent background classes added.');
       
       try {
         updateDebug('Checking native permissions...');
@@ -81,23 +75,10 @@ const CameraView: React.FC = () => {
 
         if (permissions.camera === 'granted') {
           setHasPermission(true);
-          updateDebug('Permission already granted.');
-          if (cameraPreviewRef.current) {
-            const rect = cameraPreviewRef.current.getBoundingClientRect();
-            updateDebug(`Camera preview rect: ${JSON.stringify(rect)}`);
-            const options: CameraViewOptions = {
-              x: rect.x,
-              y: rect.y,
-              width: rect.width,
-              height: rect.height,
-              toBack: true,
-            };
-            updateDebug('Starting native camera with options...');
-            await NativeCameraView.startCamera(options);
-            updateDebug('Native camera started successfully.');
-          } else {
-            updateDebug('Error: cameraPreviewRef.current is null.');
-          }
+          updateDebug('Permission already granted. Starting camera...');
+          await NativeCameraView.start({});
+          document.body.classList.add('camera-running');
+          updateDebug('Native camera started and body class added.');
         } else {
           updateDebug('Requesting camera permissions...');
           const request = await NativeCameraView.requestPermissions();
@@ -120,11 +101,9 @@ const CameraView: React.FC = () => {
 
     return () => {
       updateDebug('Cleaning up native camera effect.');
-      NativeCameraView.stopCamera().then(() => updateDebug('Native camera stopped.'));
-      document.documentElement.classList.remove('camera-view-background');
-      document.body.classList.remove('camera-view-background');
-      document.getElementById('root')?.classList.remove('camera-view-background');
-      updateDebug('Transparent background classes removed.');
+      document.body.classList.remove('camera-running');
+      NativeCameraView.stop().then(() => updateDebug('Native camera stopped.'));
+      updateDebug('Body class removed.');
     };
   }, [isNative]);
 
@@ -254,7 +233,7 @@ const CameraView: React.FC = () => {
       try {
         const result = await NativeCameraView.capture({ quality: 90 });
         updateDebug('Native capture successful. Converting base64 to blob.');
-        const base64Response = await fetch(`data:image/jpeg;base64,${result.value}`);
+        const base64Response = await fetch(`data:image/jpeg;base64,${result.photo}`);
         imageBlob = await base64Response.blob();
         updateDebug(`Blob created, size: ${imageBlob.size} bytes.`);
       } catch (e) {
@@ -353,15 +332,13 @@ const CameraView: React.FC = () => {
   }
 
   return (
-    <div className={`flex-1 flex flex-col overflow-hidden text-white ${isNative ? 'camera-view-background' : 'bg-black'}`}>
+    <div className={`flex-1 flex flex-col overflow-hidden text-white camera-modal ${isNative ? '' : 'bg-black'}`}>
       <div className="absolute top-20 left-2 bg-black bg-opacity-50 text-white text-xs p-2 rounded-md z-50 max-w-xs">
         Debug: {debugLabel}
       </div>
       <canvas ref={canvasRef} className="hidden"></canvas>
       <div className="flex-1 relative flex items-center justify-center">
-        {isNative ? (
-          <div ref={cameraPreviewRef} className="w-full h-full camera-view-background"></div>
-        ) : (
+        {!isNative && (
           <video
             ref={videoRef}
             autoPlay
@@ -376,7 +353,7 @@ const CameraView: React.FC = () => {
         )}
       </div>
 
-      <div className={`${isNative ? 'camera-view-background' : 'bg-black bg-opacity-50'} pt-4 pb-safe select-none`}>
+      <div className={`${isNative ? '' : 'bg-black bg-opacity-50'} pt-4 pb-safe select-none`}>
         <div className="flex flex-col items-center space-y-3">
           {cameraMode === 'pro' && !isNative && (
             <div className="w-full flex flex-col items-center gap-2 px-2 min-h-[80px]">
