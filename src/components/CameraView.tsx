@@ -246,15 +246,23 @@ const CameraView: React.FC = () => {
       }
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      
+      // Set canvas to 3:2 aspect ratio of the video's height
+      const videoHeight = video.videoHeight;
+      const videoWidth = video.videoWidth;
+      
+      canvas.width = videoHeight * 3 / 2;
+      canvas.height = videoHeight;
+
+      const sourceX = (videoWidth - canvas.width) / 2;
+
       const context = canvas.getContext('2d');
       if (context) {
         if (isFrontCamera) {
           context.translate(canvas.width, 0);
           context.scale(-1, 1);
         }
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        context.drawImage(video, sourceX, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
         updateDebug('Drew video frame to canvas.');
       }
       await new Promise<void>(resolve => {
@@ -337,28 +345,31 @@ const CameraView: React.FC = () => {
   }
 
   return (
-    <div className={`flex-1 flex flex-col overflow-hidden text-white camera-modal ${isNative ? '' : 'bg-black'}`}>
+    <div className="flex-1 flex flex-col overflow-hidden text-white camera-modal bg-black">
       <div className="absolute top-20 left-2 bg-black bg-opacity-50 text-white text-xs p-2 rounded-md z-50 max-w-xs">
         Debug: {debugLabel}
       </div>
       <canvas ref={canvasRef} className="hidden"></canvas>
-      <div className="flex-1 relative flex items-center justify-center">
-        {!isNative && (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
-          />
-        )}
-        {activeRoll && (
-          <div className="absolute top-16 left-1/2 -translate-x-1/2 bg-black bg-opacity-30 rounded-full px-3 py-1 text-xs font-mono">
-            {activeRoll.film_type} &middot; {activeRoll.shots_used}/{activeRoll.capacity}
-          </div>
-        )}
+      
+      <div className="flex-1 flex items-center justify-center">
+        <div className="w-full aspect-[3/2] relative bg-black overflow-hidden">
+          {!isNative && (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
+            />
+          )}
+          {activeRoll && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black bg-opacity-30 rounded-full px-3 py-1 text-xs font-mono">
+              {activeRoll.film_type} &middot; {activeRoll.shots_used}/{activeRoll.capacity}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className={`${isNative ? '' : 'bg-black bg-opacity-50'} pt-4 pb-safe select-none`}>
+      <div className="bg-gray-900 pt-4 pb-safe select-none">
         <div className="flex flex-col items-center space-y-3">
           {cameraMode === 'pro' && !isNative && (
             <div className="w-full flex flex-col items-center gap-2 px-2 min-h-[80px]">
