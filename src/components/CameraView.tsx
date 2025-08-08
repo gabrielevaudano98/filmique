@@ -247,14 +247,30 @@ const CameraView: React.FC = () => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       
-      // Set canvas to 3:2 aspect ratio of the video's height
-      const videoHeight = video.videoHeight;
       const videoWidth = video.videoWidth;
-      
-      canvas.width = videoHeight * 3 / 2;
-      canvas.height = videoHeight;
+      const videoHeight = video.videoHeight;
+      const videoAspectRatio = videoWidth / videoHeight;
+      const targetAspectRatio = 3 / 2;
 
-      const sourceX = (videoWidth - canvas.width) / 2;
+      let sWidth, sHeight, sx, sy;
+
+      if (videoAspectRatio > targetAspectRatio) {
+        // Video is wider than target (e.g., 16:9), crop horizontally
+        sHeight = videoHeight;
+        sWidth = videoHeight * targetAspectRatio;
+        sx = (videoWidth - sWidth) / 2;
+        sy = 0;
+      } else {
+        // Video is taller than target (e.g., 9:16 portrait), crop vertically
+        sWidth = videoWidth;
+        sHeight = videoWidth / targetAspectRatio;
+        sx = 0;
+        sy = (videoHeight - sHeight) / 2;
+      }
+
+      // Set canvas dimensions to the cropped size for a 3:2 landscape photo
+      canvas.width = sWidth;
+      canvas.height = sHeight;
 
       const context = canvas.getContext('2d');
       if (context) {
@@ -262,9 +278,11 @@ const CameraView: React.FC = () => {
           context.translate(canvas.width, 0);
           context.scale(-1, 1);
         }
-        context.drawImage(video, sourceX, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
+        // Draw the cropped part of the video onto the canvas
+        context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
         updateDebug('Drew video frame to canvas.');
       }
+
       await new Promise<void>(resolve => {
         canvas.toBlob(blob => {
           imageBlob = blob;
