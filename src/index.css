@@ -5,6 +5,12 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --camera-view-background-color: transparent;
+  }
+  .camera-view-background {
+    background-color: var(--camera-view-background-color) !important;
+  }
   body {
     font-family: 'Inter', sans-serif;
   }

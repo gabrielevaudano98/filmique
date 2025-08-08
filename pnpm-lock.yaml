@@ -23,6 +23,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.54.0
         version: 2.54.0
+      capacitor-camera-view:
+        specifier: ^1.2.0
+        version: 1.2.0(@capacitor/core@7.4.2)
       lucide-react:
         specifier: ^0.344.0
         version: 0.344.0(react@18.3.1)
@@ -808,6 +811,11 @@ packages:
 
   caniuse-lite@1.0.30001731:
     resolution: {integrity: sha512-lDdp2/wrOmTRWuoB5DpfNkC0rJDU8DqRa6nYL6HK6sytw70QMopt/NIc/9SM7ylItlBWfACXk0tEn37UWM/+mg==}
+
+  capacitor-camera-view@1.2.0:
+    resolution: {integrity: sha512-avR78TqxVmuA4eAukF6rNIsxRfeagryE/vNNLKUmCLIhS606bBQNaCTa9R8MQXXN5dgPe+TVsrgzWz6wpRX2ag==}
+    peerDependencies:
+      '@capacitor/core': '>=7.0.0'
 
   chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
@@ -2505,6 +2513,10 @@ snapshots:
   camelcase-css@2.0.1: {}
 
   caniuse-lite@1.0.30001731: {}
+
+  capacitor-camera-view@1.2.0(@capacitor/core@7.4.2):
+    dependencies:
+      '@capacitor/core': 7.4.2
 
   chalk@4.1.2:
     dependencies:
