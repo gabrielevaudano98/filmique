@@ -351,10 +351,10 @@ const CameraView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-gray-900 pt-4 pb-safe select-none flex-shrink-0">
-        <div className="flex flex-col items-center space-y-3">
+      <div className="bg-gray-900 pt-2 pb-safe select-none flex-shrink-0">
+        <div className="flex flex-col items-center justify-center">
           {cameraMode === 'pro' && !isNative && (
-            <div className="w-full flex flex-col items-center gap-2 px-2 min-h-[80px]">
+            <div className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2">
               <div className="flex items-center justify-center space-x-6">
                 {proControls.map(c => (
                   <button key={c.id} onClick={() => setActiveProControl(activeProControl === c.id ? null : c.id)} className={`flex flex-col items-center gap-1 transition-colors ${activeProControl === c.id ? 'text-amber-400' : 'text-gray-300 hover:text-white'}`}>
@@ -371,24 +371,24 @@ const CameraView: React.FC = () => {
             </div>
           )}
 
-          <div className="w-full flex items-center justify-between px-6 mt-6">
-            <button onClick={cycleZoom} disabled={isNative || zoomLevels.length <= 1} className="w-10 h-10 rounded-full bg-neutral-800 text-white flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
+          <div className="w-full flex items-center justify-around px-4 py-2">
+            <button onClick={cycleZoom} disabled={isNative || zoomLevels.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 text-white flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
               {!isNative && `${zoom.toFixed(1)}x`}
             </button>
 
-            <div className="flex flex-col items-center gap-1">
-              <div className="flex items-center justify-center space-x-6 font-sans text-base py-4">
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex items-center justify-center space-x-6 font-sans text-base">
                 <button onClick={() => setCameraMode('simple')} className={cameraMode === 'simple' ? 'text-amber-400 font-bold' : 'text-white'}>PHOTO</button>
                 {!isNative && <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-amber-400 font-bold' : 'text-white'}>PRO</button>}
               </div>
-              <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700 mb-4">
+              <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
                 <button onClick={handleTakePhoto} disabled={activeRoll?.is_completed} aria-label="Take Photo" className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200">
                   {activeRoll?.is_completed && <Lock className="w-8 h-8 text-gray-500" />}
                 </button>
               </div>
             </div>
 
-            <button onClick={switchCamera} disabled={!isNative && cameras.length <= 1} className="w-14 h-14 rounded-full bg-neutral-800 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
+            <button onClick={switchCamera} disabled={!isNative && cameras.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
               <RefreshCw className="w-6 h-6 text-white" />
             </button>
           </div>
