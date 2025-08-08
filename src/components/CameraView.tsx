@@ -48,6 +48,24 @@ const CameraView: React.FC = () => {
   });
 
   const [debugLabel, setDebugLabel] = useState('Initializing...');
+  const [aspectRatioClass, setAspectRatioClass] = useState('aspect-[3/2]');
+  const [targetAspectRatio, setTargetAspectRatio] = useState(3 / 2);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setAspectRatioClass('aspect-[2/3]');
+        setTargetAspectRatio(2 / 3);
+      } else {
+        setAspectRatioClass('aspect-[3/2]');
+        setTargetAspectRatio(3 / 2);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const updateDebug = (message: string) => {
     console.log(`[CameraView Debug] ${message}`);
@@ -250,25 +268,23 @@ const CameraView: React.FC = () => {
       const videoWidth = video.videoWidth;
       const videoHeight = video.videoHeight;
       const videoAspectRatio = videoWidth / videoHeight;
-      const targetAspectRatio = 3 / 2;
 
       let sWidth, sHeight, sx, sy;
 
       if (videoAspectRatio > targetAspectRatio) {
-        // Video is wider than target (e.g., 16:9), crop horizontally
+        // Video is wider than target, crop horizontally
         sHeight = videoHeight;
         sWidth = videoHeight * targetAspectRatio;
         sx = (videoWidth - sWidth) / 2;
         sy = 0;
       } else {
-        // Video is taller than target (e.g., 9:16 portrait), crop vertically
+        // Video is taller than target, crop vertically
         sWidth = videoWidth;
         sHeight = videoWidth / targetAspectRatio;
         sx = 0;
         sy = (videoHeight - sHeight) / 2;
       }
 
-      // Set canvas dimensions to the cropped size for a 3:2 landscape photo
       canvas.width = sWidth;
       canvas.height = sHeight;
 
@@ -278,7 +294,6 @@ const CameraView: React.FC = () => {
           context.translate(canvas.width, 0);
           context.scale(-1, 1);
         }
-        // Draw the cropped part of the video onto the canvas
         context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
         updateDebug('Drew video frame to canvas.');
       }
@@ -370,7 +385,7 @@ const CameraView: React.FC = () => {
       <canvas ref={canvasRef} className="hidden"></canvas>
       
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-full aspect-[3/2] relative bg-black overflow-hidden">
+        <div className={`w-full h-full max-w-full max-h-full ${aspectRatioClass} relative bg-black overflow-hidden flex items-center justify-center`}>
           {!isNative && (
             <video
               ref={videoRef}
