@@ -18,7 +18,7 @@ const TopBar: React.FC = () => {
   );
 
   return (
-    <header className={`w-full bg-gray-900 text-white px-4 flex items-center justify-between relative z-40 transition-all duration-300 border-b border-gray-700/80 h-16 py-3`}>
+    <header className={`w-full bg-gray-900 text-white px-4 flex items-center justify-between relative z-40 transition-all duration-300 border-b border-gray-700/80 h-16 py-3 pt-safe`}>
       {isCameraView ? (
         <>
           <button
