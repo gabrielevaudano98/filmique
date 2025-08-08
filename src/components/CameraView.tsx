@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { CameraView as NativeCameraView } from 'capacitor-camera-view';
-import { RefreshCw, Film, Lock, Camera } from 'lucide-react';
+import { RefreshCw, Film, Lock, Camera, ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
 import RangeSelector from './RangeSelector';
@@ -24,6 +24,7 @@ const CameraView: React.FC = () => {
     showFilmModal,
     setShowFilmModal,
     takePhoto,
+    setCurrentView,
   } = useAppContext();
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -47,7 +48,6 @@ const CameraView: React.FC = () => {
     focus: 1, // Stored as meters
   });
 
-  const [debugLabel, setDebugLabel] = useState('Initializing...');
   const [aspectRatioClass, setAspectRatioClass] = useState('aspect-[3/2]');
   const [targetAspectRatio, setTargetAspectRatio] = useState(3 / 2);
 
@@ -67,73 +67,51 @@ const CameraView: React.FC = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const updateDebug = (message: string) => {
-    console.log(`[CameraView Debug] ${message}`);
-    setDebugLabel(message);
-  };
-
   useEffect(() => {
     const native = Capacitor.isNativePlatform();
     setIsNative(native);
-    updateDebug(`Platform detected: ${native ? 'Native' : 'Web'}`);
   }, []);
 
   // Effect for NATIVE camera
   useEffect(() => {
     if (!isNative) return;
-    updateDebug('Native camera effect triggered.');
 
     const startNativeCamera = async () => {
-      updateDebug('Starting native camera setup...');
-      
       try {
-        updateDebug('Checking native permissions...');
         const permissions = await NativeCameraView.checkPermissions();
-        updateDebug(`Initial permission status: ${permissions.camera}`);
-
         if (permissions.camera === 'granted') {
           setHasPermission(true);
-          updateDebug('Permission already granted. Starting camera...');
           await NativeCameraView.start({});
           document.body.classList.add('camera-running');
-          updateDebug('Native camera started and body class added.');
         } else {
-          updateDebug('Requesting camera permissions...');
           const request = await NativeCameraView.requestPermissions();
-          updateDebug(`Permission request result: ${request.camera}`);
           if (request.camera === 'granted') {
             setHasPermission(true);
-            updateDebug('Permission granted after request. Restarting camera setup.');
             startNativeCamera(); // Recurse to start camera
           } else {
             setHasPermission(false);
-            updateDebug('Permission denied.');
           }
         }
       } catch (e) {
-        updateDebug(`Error in native camera setup: ${e}`);
+        console.error(e);
+        setHasPermission(false);
       }
     };
 
     startNativeCamera();
 
     return () => {
-      updateDebug('Cleaning up native camera effect.');
       document.body.classList.remove('camera-running');
-      NativeCameraView.stop().then(() => updateDebug('Native camera stopped.'));
-      updateDebug('Body class removed.');
+      NativeCameraView.stop();
     };
   }, [isNative]);
 
   // Effect for WEB camera
   useEffect(() => {
     if (isNative) return;
-    updateDebug('Web camera effect triggered.');
 
     const setupCamera = async () => {
-      updateDebug('Setting up web camera...');
       if (stream) {
-        updateDebug('Stopping existing stream.');
         stream.getTracks().forEach(track => track.stop());
       }
 
@@ -141,51 +119,41 @@ const CameraView: React.FC = () => {
         const constraints: MediaStreamConstraints = {
           video: { deviceId: activeCameraId ? { exact: activeCameraId } : undefined },
         };
-        updateDebug(`Requesting media with constraints: ${JSON.stringify(constraints)}`);
         const newStream = await navigator.mediaDevices.getUserMedia(constraints);
-        updateDebug('Got user media stream.');
         setStream(newStream);
         setHasPermission(true);
 
         if (videoRef.current) {
           videoRef.current.srcObject = newStream;
-          updateDebug('Stream attached to video element.');
         }
 
         const videoTrack = newStream.getVideoTracks()[0];
         const settings = videoTrack.getSettings();
-        updateDebug(`Video track settings: ${JSON.stringify(settings)}`);
         setIsFrontCamera(settings.facingMode === 'user');
 
         const trackCapabilities = videoTrack.getCapabilities();
         setCapabilities(trackCapabilities);
-        updateDebug(`Track capabilities: ${JSON.stringify(trackCapabilities)}`);
 
         if (trackCapabilities.zoom?.max && trackCapabilities.zoom.max > 1) {
           const { min, max } = trackCapabilities.zoom;
           const levels = [min, min + (max - min) * 0.25, min + (max - min) * 0.5, min + (max - min) * 0.75, max].map(z => parseFloat(z.toFixed(1)));
           setZoomLevels(levels);
           setZoom(min);
-          updateDebug(`Zoom levels set: ${JSON.stringify(levels)}`);
         } else {
           setZoomLevels([1]);
           setZoom(1);
-          updateDebug('Zoom not supported or max zoom is 1.');
         }
 
         if (cameras.length === 0) {
-          updateDebug('Enumerating devices...');
           const devices = await navigator.mediaDevices.enumerateDevices();
           const videoDevices = devices.filter(d => d.kind === 'videoinput');
           setCameras(videoDevices);
-          updateDebug(`Found ${videoDevices.length} video devices.`);
           if (!activeCameraId && videoDevices.length > 0) {
             setActiveCameraId(videoDevices[0].deviceId);
-            updateDebug(`Set active camera to first device: ${videoDevices[0].deviceId}`);
           }
         }
       } catch (err) {
-        updateDebug(`Error accessing web camera: ${err}`);
+        console.error(err);
         setHasPermission(false);
       }
     };
@@ -193,78 +161,57 @@ const CameraView: React.FC = () => {
     setupCamera();
 
     return () => {
-      updateDebug('Cleaning up web camera effect.');
       stream?.getTracks().forEach(track => track.stop());
     };
   }, [isNative, activeCameraId]);
 
   const switchCamera = () => {
-    updateDebug('switchCamera called.');
     if (isNative) {
-      updateDebug('Flipping native camera.');
       NativeCameraView.flipCamera();
     } else {
       if (cameras.length > 1) {
         const currentIndex = cameras.findIndex(c => c.deviceId === activeCameraId);
         const nextIndex = (currentIndex + 1) % cameras.length;
-        updateDebug(`Switching web camera from index ${currentIndex} to ${nextIndex}`);
         setActiveCameraId(cameras[nextIndex].deviceId);
-      } else {
-        updateDebug('Cannot switch web camera, only one device found.');
       }
     }
   };
 
   const cycleZoom = () => {
-    updateDebug('cycleZoom called.');
-    if (isNative) {
-      updateDebug('Zoom not supported on native.');
-      return;
-    }
-    if (zoomLevels.length > 1) {
-      const currentIndex = zoomLevels.indexOf(zoom);
-      const nextIndex = (currentIndex + 1) % zoomLevels.length;
-      const newZoom = zoomLevels[nextIndex];
-      setZoom(newZoom);
-      updateDebug(`Cycling zoom to ${newZoom}`);
+    if (isNative || zoomLevels.length <= 1) return;
+    
+    const currentIndex = zoomLevels.indexOf(zoom);
+    const nextIndex = (currentIndex + 1) % zoomLevels.length;
+    const newZoom = zoomLevels[nextIndex];
+    setZoom(newZoom);
 
-      const videoTrack = stream?.getVideoTracks()[0];
-      if (videoTrack && capabilities?.zoom) {
-        videoTrack.applyConstraints({ advanced: [{ zoom: newZoom }] });
-        updateDebug('Applied zoom constraint to video track.');
-      }
+    const videoTrack = stream?.getVideoTracks()[0];
+    if (videoTrack && capabilities?.zoom) {
+      videoTrack.applyConstraints({ advanced: [{ zoom: newZoom }] });
     }
   };
 
   const handleTakePhoto = async () => {
-    updateDebug('handleTakePhoto called.');
     if (!activeRoll || activeRoll.is_completed) {
-      updateDebug('No active roll or roll completed. Showing film modal.');
       setShowFilmModal(true);
       return;
     }
 
     let imageBlob: Blob | null = null;
-    updateDebug(`Capturing photo on ${isNative ? 'native' : 'web'} platform.`);
 
     if (isNative) {
       try {
         const result = await NativeCameraView.capture({ quality: 90 });
-        updateDebug('Native capture successful. Converting base64 to blob.');
         const base64Response = await fetch(`data:image/jpeg;base64,${result.photo}`);
         imageBlob = await base64Response.blob();
-        updateDebug(`Blob created, size: ${imageBlob.size} bytes.`);
       } catch (e) {
-        updateDebug(`Error during native capture: ${e}`);
+        console.error(e);
       }
     } else {
-      if (!videoRef.current || !canvasRef.current) {
-        updateDebug("Error: Video or canvas ref not available for web capture.");
-        return;
-      }
+      if (!videoRef.current || !canvasRef.current) return;
+      
       const video = videoRef.current;
       const canvas = canvasRef.current;
-      
       const videoWidth = video.videoWidth;
       const videoHeight = video.videoHeight;
       const videoAspectRatio = videoWidth / videoHeight;
@@ -272,13 +219,11 @@ const CameraView: React.FC = () => {
       let sWidth, sHeight, sx, sy;
 
       if (videoAspectRatio > targetAspectRatio) {
-        // Video is wider than target, crop horizontally
         sHeight = videoHeight;
         sWidth = videoHeight * targetAspectRatio;
         sx = (videoWidth - sWidth) / 2;
         sy = 0;
       } else {
-        // Video is taller than target, crop vertically
         sWidth = videoWidth;
         sHeight = videoWidth / targetAspectRatio;
         sx = 0;
@@ -295,52 +240,32 @@ const CameraView: React.FC = () => {
           context.scale(-1, 1);
         }
         context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-        updateDebug('Drew video frame to canvas.');
       }
 
-      await new Promise<void>(resolve => {
-        canvas.toBlob(blob => {
-          imageBlob = blob;
-          updateDebug(`Web blob created, size: ${blob?.size || 0} bytes.`);
-          resolve();
-        }, 'image/jpeg', 0.9);
-      });
+      imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
     }
 
     if (imageBlob) {
-      updateDebug('Image blob is available. Preparing metadata.');
       const metadata = {
         iso: cameraMode === 'pro' && !isNative ? manualSettings.iso : 400,
-        aperture: 'N/A',
         shutterSpeed: cameraMode === 'pro' && !isNative ? formatShutterSpeed(manualSettings.shutterSpeed) : '1/125',
-        focal: cameraMode === 'pro' && !isNative ? `${manualSettings.focus}m` : 'auto',
         zoom: `${zoom}x`,
-        timestamp: new Date().toISOString(),
       };
-      updateDebug(`Metadata: ${JSON.stringify(metadata)}`);
-      updateDebug('Calling takePhoto context function...');
       await takePhoto(imageBlob, metadata);
-      updateDebug('takePhoto context function finished.');
-    } else {
-      updateDebug('Failed to create image blob. Photo not taken.');
     }
   };
 
   const filmTypes = useMemo(() => {
     if (!profile) return [];
     return [
-      // --- Color Negative ---
       { name: 'Kodak Gold 200', capacity: 24, price: 0, unlocked: true },
       { name: 'Kodak Portra 400', capacity: 36, price: 2, unlocked: true },
       { name: 'Kodak Ektar 100', capacity: 36, price: 4, unlocked: true },
       { name: 'Fujifilm Superia 400', capacity: 24, price: 1, unlocked: true },
       { name: 'Cinestill 800T', capacity: 36, price: 5, unlocked: true },
       { name: 'Agfa Vista 200', capacity: 24, price: 1, unlocked: true },
-      // --- Color Positive (Slide) ---
       { name: 'Fujifilm Velvia 50', capacity: 24, price: 5, unlocked: true },
-      // --- Creative ---
       { name: 'LomoChrome Purple', capacity: 24, price: 7, unlocked: true },
-      // --- Black & White ---
       { name: 'Ilford HP5 Plus', capacity: 36, price: 3, unlocked: true },
       { name: 'Kodak Tri-X 400', capacity: 36, price: 3, unlocked: true },
       { name: 'Fomapan 100 Classic', capacity: 36, price: 2, unlocked: true },
@@ -358,7 +283,6 @@ const CameraView: React.FC = () => {
 
   useEffect(() => {
     if (!activeRoll && !showFilmModal) {
-      updateDebug('No active roll found, forcing film selection modal.');
       setShowFilmModal(true);
     }
   }, [activeRoll, showFilmModal, setShowFilmModal]);
@@ -379,20 +303,37 @@ const CameraView: React.FC = () => {
   };
 
   if (hasPermission === null) {
-    return <div className="flex-1 flex items-center justify-center bg-black text-white">Initializing Camera...</div>;
+    return <div className="h-screen flex items-center justify-center bg-black text-white">Initializing Camera...</div>;
   }
   if (hasPermission === false) {
-    return <div className="flex-1 flex items-center justify-center bg-black text-red-400 p-4 text-center">Camera access denied. Please enable camera permissions in your browser or device settings.</div>;
+    return <div className="h-screen flex items-center justify-center bg-black text-red-400 p-4 text-center">Camera access denied. Please enable camera permissions in your browser or device settings.</div>;
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden text-white camera-modal bg-black">
-      <div className="absolute top-20 left-2 bg-black bg-opacity-50 text-white text-xs p-2 rounded-md z-50 max-w-xs">
-        Debug: {debugLabel}
-      </div>
+    <div className="h-screen flex flex-col overflow-hidden text-white camera-modal bg-black">
+      <header className="w-full bg-black text-white px-4 flex items-center justify-between relative z-40 h-16 py-3 pt-safe flex-shrink-0">
+        <button
+          onClick={() => setCurrentView('rolls')}
+          className="text-gray-300 hover:text-white transition-colors flex items-center gap-1 text-base p-2"
+          aria-label="Go back to rolls"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <h1 className="text-xl font-bold font-recoleta text-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <span className="text-amber-400">Filmique</span>
+        </h1>
+        <button
+          onClick={() => setShowFilmModal(true)}
+          className="text-gray-300 hover:text-white transition-colors flex items-center gap-1.5 text-base font-medium p-2"
+          aria-label="Change film"
+        >
+          <Film className="w-5 h-5" />
+        </button>
+      </header>
+      
       <canvas ref={canvasRef} className="hidden"></canvas>
       
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center relative">
         <div className={`w-full h-full max-w-full max-h-full ${aspectRatioClass} relative bg-black overflow-hidden flex items-center justify-center`}>
           {!isNative && (
             <video
@@ -403,14 +344,14 @@ const CameraView: React.FC = () => {
             />
           )}
           {activeRoll && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black bg-opacity-30 rounded-full px-3 py-1 text-xs font-mono">
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black bg-opacity-30 rounded-full px-3 py-1 text-xs font-mono z-10">
               {activeRoll.film_type} &middot; {activeRoll.shots_used}/{activeRoll.capacity}
             </div>
           )}
         </div>
       </div>
 
-      <div className="bg-gray-900 pt-4 pb-safe select-none">
+      <div className="bg-gray-900 pt-4 pb-safe select-none flex-shrink-0">
         <div className="flex flex-col items-center space-y-3">
           {cameraMode === 'pro' && !isNative && (
             <div className="w-full flex flex-col items-center gap-2 px-2 min-h-[80px]">
