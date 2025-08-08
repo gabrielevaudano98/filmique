@@ -67,17 +67,20 @@
 
 /* Styles for Capacitor Camera View */
 body.camera-running {
+  visibility: hidden;
   --background: transparent !important;
   --ion-background-color: transparent !important;
   background-color: transparent !important;
 }
 
-/* Hide everything in the app except elements with .camera-modal */
-body.camera-running > * {
-  display: none;
-}
-body.camera-running .camera-modal {
-  display: flex; /* Or block, depending on your layout */
+/*
+  When the camera is running, we hide the entire body,
+  but then make the specific camera component visible again.
+  This allows the native camera view (which is behind the webview)
+  to show through, while still rendering our UI on top.
+*/
+.camera-modal {
+  visibility: visible;
 }
 
 
