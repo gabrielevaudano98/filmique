@@ -37,5 +37,33 @@ export const filmPresets: { [key: string]: FilterPreset } = {
     grain: 20,
     vignette: 0.2,
   },
+  'Fujifilm Superia 400': {
+    brightness: 1.0,
+    contrast: 1.1,
+    saturate: 1.15,
+    hueRotate: -5, // slight green/cyan shift
+    grain: 12,
+  },
+  'Cinestill 800T': {
+    brightness: 1.1,
+    contrast: 1.1,
+    saturate: 1.2,
+    hueRotate: 5, // slight blue/magenta shift
+    grain: 18,
+    vignette: 0.1,
+  },
+  'Agfa Vista 200': {
+    brightness: 1.08,
+    contrast: 1.05,
+    saturate: 1.25, // known for vibrant reds
+    grain: 9,
+  },
+  'LomoChrome Purple': {
+    brightness: 1.1,
+    contrast: 1.1,
+    saturate: 1.3,
+    hueRotate: 280, // dramatic color shift
+    grain: 15,
+  },
   'default': {}
 };

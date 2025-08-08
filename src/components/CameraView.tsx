@@ -289,9 +289,13 @@ const CameraView: React.FC = () => {
     if (!profile) return [];
     return [
       { name: 'Kodak Gold 200', capacity: 24, price: 0, unlocked: true },
-      { name: 'Kodak Portra 400', capacity: 36, price: 0, unlocked: true },
-      { name: 'Ilford HP5 Plus', capacity: 36, price: 5, unlocked: profile.level >= 3 },
-      { name: 'Kodak Tri-X 400', capacity: 36, price: 5, unlocked: profile.level >= 5 },
+      { name: 'Kodak Portra 400', capacity: 36, price: 2, unlocked: true },
+      { name: 'Ilford HP5 Plus', capacity: 36, price: 3, unlocked: true },
+      { name: 'Kodak Tri-X 400', capacity: 36, price: 3, unlocked: true },
+      { name: 'Fujifilm Superia 400', capacity: 24, price: 1, unlocked: true },
+      { name: 'Cinestill 800T', capacity: 36, price: 5, unlocked: true },
+      { name: 'Agfa Vista 200', capacity: 24, price: 1, unlocked: true },
+      { name: 'LomoChrome Purple', capacity: 24, price: 7, unlocked: true },
     ];
   }, [profile]);
 
