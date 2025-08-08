@@ -48,60 +48,95 @@ const CameraView: React.FC = () => {
     focus: 1, // Stored as meters
   });
 
+  // Add a debug label state
+  const [debugLabel, setDebugLabel] = useState('Initializing...');
+
+  const updateDebug = (message: string) => {
+    console.log(`[CameraView Debug] ${message}`);
+    setDebugLabel(message);
+  };
+
   useEffect(() => {
-    setIsNative(Capacitor.isNativePlatform());
+    const native = Capacitor.isNativePlatform();
+    setIsNative(native);
+    updateDebug(`Platform detected: ${native ? 'Native' : 'Web'}`);
   }, []);
 
   // Effect for NATIVE camera
   useEffect(() => {
     if (!isNative) return;
+    updateDebug('Native camera effect triggered.');
 
     const startNativeCamera = async () => {
+      updateDebug('Starting native camera setup...');
       document.documentElement.classList.add('camera-view-background');
       document.body.classList.add('camera-view-background');
       document.getElementById('root')?.classList.add('camera-view-background');
+      updateDebug('Transparent background classes added.');
       
-      const permissions = await NativeCameraView.checkPermissions();
-      if (permissions.camera === 'granted') {
-        setHasPermission(true);
-        if (cameraPreviewRef.current) {
-          const rect = cameraPreviewRef.current.getBoundingClientRect();
-          const options: CameraViewOptions = {
-            x: rect.x,
-            y: rect.y,
-            width: rect.width,
-            height: rect.height,
-            toBack: true,
-          };
-          await NativeCameraView.startCamera(options);
-        }
-      } else {
-        const request = await NativeCameraView.requestPermissions();
-        if (request.camera === 'granted') {
+      try {
+        updateDebug('Checking native permissions...');
+        const permissions = await NativeCameraView.checkPermissions();
+        updateDebug(`Initial permission status: ${permissions.camera}`);
+
+        if (permissions.camera === 'granted') {
           setHasPermission(true);
-          startNativeCamera();
+          updateDebug('Permission already granted.');
+          if (cameraPreviewRef.current) {
+            const rect = cameraPreviewRef.current.getBoundingClientRect();
+            updateDebug(`Camera preview rect: ${JSON.stringify(rect)}`);
+            const options: CameraViewOptions = {
+              x: rect.x,
+              y: rect.y,
+              width: rect.width,
+              height: rect.height,
+              toBack: true,
+            };
+            updateDebug('Starting native camera with options...');
+            await NativeCameraView.startCamera(options);
+            updateDebug('Native camera started successfully.');
+          } else {
+            updateDebug('Error: cameraPreviewRef.current is null.');
+          }
         } else {
-          setHasPermission(false);
+          updateDebug('Requesting camera permissions...');
+          const request = await NativeCameraView.requestPermissions();
+          updateDebug(`Permission request result: ${request.camera}`);
+          if (request.camera === 'granted') {
+            setHasPermission(true);
+            updateDebug('Permission granted after request. Restarting camera setup.');
+            startNativeCamera(); // Recurse to start camera
+          } else {
+            setHasPermission(false);
+            updateDebug('Permission denied.');
+          }
         }
+      } catch (e) {
+        updateDebug(`Error in native camera setup: ${e}`);
       }
     };
 
     startNativeCamera();
 
     return () => {
-      NativeCameraView.stopCamera();
+      updateDebug('Cleaning up native camera effect.');
+      NativeCameraView.stopCamera().then(() => updateDebug('Native camera stopped.'));
       document.documentElement.classList.remove('camera-view-background');
       document.body.classList.remove('camera-view-background');
       document.getElementById('root')?.classList.remove('camera-view-background');
+      updateDebug('Transparent background classes removed.');
     };
   }, [isNative]);
 
   // Effect for WEB camera
   useEffect(() => {
     if (isNative) return;
+    updateDebug('Web camera effect triggered.');
 
     const setupCamera = async () => {
+      updateDebug('Setting up web camera...');
       if (stream) {
+        updateDebug('Stopping existing stream.');
         stream.getTracks().forEach(track => track.stop());
       }
 
@@ -109,48 +144,51 @@ const CameraView: React.FC = () => {
         const constraints: MediaStreamConstraints = {
           video: { deviceId: activeCameraId ? { exact: activeCameraId } : undefined },
         };
+        updateDebug(`Requesting media with constraints: ${JSON.stringify(constraints)}`);
         const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+        updateDebug('Got user media stream.');
         setStream(newStream);
         setHasPermission(true);
 
         if (videoRef.current) {
           videoRef.current.srcObject = newStream;
+          updateDebug('Stream attached to video element.');
         }
 
         const videoTrack = newStream.getVideoTracks()[0];
         const settings = videoTrack.getSettings();
+        updateDebug(`Video track settings: ${JSON.stringify(settings)}`);
         setIsFrontCamera(settings.facingMode === 'user');
 
         const trackCapabilities = videoTrack.getCapabilities();
         setCapabilities(trackCapabilities);
+        updateDebug(`Track capabilities: ${JSON.stringify(trackCapabilities)}`);
 
         if (trackCapabilities.zoom?.max && trackCapabilities.zoom.max > 1) {
           const { min, max } = trackCapabilities.zoom;
-          setZoomLevels(
-            [
-              min,
-              min + (max - min) * 0.25,
-              min + (max - min) * 0.5,
-              min + (max - min) * 0.75,
-              max,
-            ].map(z => parseFloat(z.toFixed(1)))
-          );
+          const levels = [min, min + (max - min) * 0.25, min + (max - min) * 0.5, min + (max - min) * 0.75, max].map(z => parseFloat(z.toFixed(1)));
+          setZoomLevels(levels);
           setZoom(min);
+          updateDebug(`Zoom levels set: ${JSON.stringify(levels)}`);
         } else {
           setZoomLevels([1]);
           setZoom(1);
+          updateDebug('Zoom not supported or max zoom is 1.');
         }
 
         if (cameras.length === 0) {
+          updateDebug('Enumerating devices...');
           const devices = await navigator.mediaDevices.enumerateDevices();
           const videoDevices = devices.filter(d => d.kind === 'videoinput');
           setCameras(videoDevices);
+          updateDebug(`Found ${videoDevices.length} video devices.`);
           if (!activeCameraId && videoDevices.length > 0) {
             setActiveCameraId(videoDevices[0].deviceId);
+            updateDebug(`Set active camera to first device: ${videoDevices[0].deviceId}`);
           }
         }
       } catch (err) {
-        console.error("Error accessing camera:", err);
+        updateDebug(`Error accessing web camera: ${err}`);
         setHasPermission(false);
       }
     };
@@ -158,52 +196,73 @@ const CameraView: React.FC = () => {
     setupCamera();
 
     return () => {
+      updateDebug('Cleaning up web camera effect.');
       stream?.getTracks().forEach(track => track.stop());
     };
   }, [isNative, activeCameraId]);
 
   const switchCamera = () => {
+    updateDebug('switchCamera called.');
     if (isNative) {
+      updateDebug('Flipping native camera.');
       NativeCameraView.flipCamera();
     } else {
       if (cameras.length > 1) {
         const currentIndex = cameras.findIndex(c => c.deviceId === activeCameraId);
         const nextIndex = (currentIndex + 1) % cameras.length;
+        updateDebug(`Switching web camera from index ${currentIndex} to ${nextIndex}`);
         setActiveCameraId(cameras[nextIndex].deviceId);
+      } else {
+        updateDebug('Cannot switch web camera, only one device found.');
       }
     }
   };
 
   const cycleZoom = () => {
-    if (isNative) return; // Zoom not supported in native plugin
+    updateDebug('cycleZoom called.');
+    if (isNative) {
+      updateDebug('Zoom not supported on native.');
+      return;
+    }
     if (zoomLevels.length > 1) {
       const currentIndex = zoomLevels.indexOf(zoom);
       const nextIndex = (currentIndex + 1) % zoomLevels.length;
       const newZoom = zoomLevels[nextIndex];
       setZoom(newZoom);
+      updateDebug(`Cycling zoom to ${newZoom}`);
 
       const videoTrack = stream?.getVideoTracks()[0];
       if (videoTrack && capabilities?.zoom) {
         videoTrack.applyConstraints({ advanced: [{ zoom: newZoom }] });
+        updateDebug('Applied zoom constraint to video track.');
       }
     }
   };
 
   const handleTakePhoto = async () => {
+    updateDebug('handleTakePhoto called.');
     if (!activeRoll || activeRoll.is_completed) {
+      updateDebug('No active roll or roll completed. Showing film modal.');
       setShowFilmModal(true);
       return;
     }
 
     let imageBlob: Blob | null = null;
+    updateDebug(`Capturing photo on ${isNative ? 'native' : 'web'} platform.`);
 
     if (isNative) {
-      const result = await NativeCameraView.capture({ quality: 90 });
-      const base64Response = await fetch(`data:image/jpeg;base64,${result.value}`);
-      imageBlob = await base64Response.blob();
+      try {
+        const result = await NativeCameraView.capture({ quality: 90 });
+        updateDebug('Native capture successful. Converting base64 to blob.');
+        const base64Response = await fetch(`data:image/jpeg;base64,${result.value}`);
+        imageBlob = await base64Response.blob();
+        updateDebug(`Blob created, size: ${imageBlob.size} bytes.`);
+      } catch (e) {
+        updateDebug(`Error during native capture: ${e}`);
+      }
     } else {
       if (!videoRef.current || !canvasRef.current) {
-        console.error("Video or canvas ref not available");
+        updateDebug("Error: Video or canvas ref not available for web capture.");
         return;
       }
       const video = videoRef.current;
@@ -217,16 +276,19 @@ const CameraView: React.FC = () => {
           context.scale(-1, 1);
         }
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        updateDebug('Drew video frame to canvas.');
       }
       await new Promise<void>(resolve => {
         canvas.toBlob(blob => {
           imageBlob = blob;
+          updateDebug(`Web blob created, size: ${blob?.size || 0} bytes.`);
           resolve();
         }, 'image/jpeg', 0.9);
       });
     }
 
     if (imageBlob) {
+      updateDebug('Image blob is available. Preparing metadata.');
       const metadata = {
         iso: cameraMode === 'pro' && !isNative ? manualSettings.iso : 400,
         aperture: 'N/A',
@@ -235,7 +297,12 @@ const CameraView: React.FC = () => {
         zoom: `${zoom}x`,
         timestamp: new Date().toISOString(),
       };
+      updateDebug(`Metadata: ${JSON.stringify(metadata)}`);
+      updateDebug('Calling takePhoto context function...');
       await takePhoto(imageBlob, metadata);
+      updateDebug('takePhoto context function finished.');
+    } else {
+      updateDebug('Failed to create image blob. Photo not taken.');
     }
   };
 
@@ -257,7 +324,10 @@ const CameraView: React.FC = () => {
   ], []);
 
   useEffect(() => {
-    if (!activeRoll && !showFilmModal) setShowFilmModal(true);
+    if (!activeRoll && !showFilmModal) {
+      updateDebug('No active roll found, forcing film selection modal.');
+      setShowFilmModal(true);
+    }
   }, [activeRoll, showFilmModal, setShowFilmModal]);
 
   const proControls = [
@@ -275,11 +345,18 @@ const CameraView: React.FC = () => {
     return options;
   };
 
-  if (hasPermission === null) return <div className="flex-1 flex items-center justify-center bg-black text-white">Initializing Camera...</div>;
-  if (hasPermission === false) return <div className="flex-1 flex items-center justify-center bg-black text-red-400 p-4 text-center">Camera access denied. Please enable camera permissions in your browser or device settings.</div>;
+  if (hasPermission === null) {
+    return <div className="flex-1 flex items-center justify-center bg-black text-white">Initializing Camera...</div>;
+  }
+  if (hasPermission === false) {
+    return <div className="flex-1 flex items-center justify-center bg-black text-red-400 p-4 text-center">Camera access denied. Please enable camera permissions in your browser or device settings.</div>;
+  }
 
   return (
     <div className={`flex-1 flex flex-col overflow-hidden text-white ${isNative ? 'camera-view-background' : 'bg-black'}`}>
+      <div className="absolute top-20 left-2 bg-black bg-opacity-50 text-white text-xs p-2 rounded-md z-50 max-w-xs">
+        Debug: {debugLabel}
+      </div>
       <canvas ref={canvasRef} className="hidden"></canvas>
       <div className="flex-1 relative flex items-center justify-center">
         {isNative ? (
