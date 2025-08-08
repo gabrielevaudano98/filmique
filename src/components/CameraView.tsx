@@ -291,6 +291,7 @@ const CameraView: React.FC = () => {
       { name: 'Kodak Gold 200', capacity: 24, price: 0, unlocked: true },
       { name: 'Kodak Portra 400', capacity: 36, price: 0, unlocked: true },
       { name: 'Ilford HP5 Plus', capacity: 36, price: 5, unlocked: profile.level >= 3 },
+      { name: 'Kodak Tri-X 400', capacity: 36, price: 5, unlocked: profile.level >= 5 },
     ];
   }, [profile]);
 

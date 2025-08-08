@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useMemo, useEffect, useCall
 import { supabase } from '../integrations/supabase/client';
 import { Session } from '@supabase/supabase-js';
 import toast from 'react-hot-toast';
+import { applyFilter } from '../utils/imageProcessor';
+import { filmPresets } from '../utils/filters';
 
 // Type Definitions
 export interface UserProfile {
@@ -316,14 +318,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!profile) return;
     const cost = 1 + Math.ceil(0.2 * roll.shots_used);
     if (profile.credits < cost) {
-      alert("Not enough credits.");
+      toast.error("Not enough credits.");
       return;
     }
-    await supabase.from('profiles').update({ credits: profile.credits - cost }).eq('id', profile.id);
-    const { data: updatedRoll } = await supabase.from('rolls').update({ developed_at: new Date().toISOString() }).eq('id', roll.id).select('*, photos(*)').single();
-    await refreshProfile();
-    if (updatedRoll) {
-      setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
+
+    const toastId = toast.loading('Developing your film... This may take a moment.');
+
+    try {
+      await supabase.from('profiles').update({ credits: profile.credits - cost }).eq('id', profile.id);
+
+      const preset = filmPresets[roll.film_type] || filmPresets['default'];
+
+      if (preset && roll.photos && roll.photos.length > 0) {
+        await Promise.all(roll.photos.map(async (photo) => {
+          const filteredBlob = await applyFilter(photo.url, preset);
+          const url = new URL(photo.url);
+          const path = url.pathname.substring(url.pathname.indexOf('/photos/') + '/photos/'.length);
+          
+          const { error: uploadError } = await supabase.storage
+            .from('photos')
+            .update(path, filteredBlob, {
+              cacheControl: '3600',
+              upsert: true,
+              contentType: 'image/jpeg'
+            });
+
+          if (uploadError) {
+            throw new Error(`Failed to upload filtered photo: ${uploadError.message}`);
+          }
+        }));
+      }
+
+      const { data: updatedRoll } = await supabase.from('rolls').update({ developed_at: new Date().toISOString() }).eq('id', roll.id).select('*, photos(*)').single();
+      
+      await refreshProfile();
+      if (updatedRoll) {
+        setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
+      }
+
+      toast.success('Roll developed successfully!', { id: toastId });
+
+    } catch (error: any) {
+      console.error("Development failed:", error);
+      toast.error(error.message || 'Something went wrong during development.', { id: toastId });
     }
   };
 
