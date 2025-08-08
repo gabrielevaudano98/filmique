@@ -54,19 +54,23 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
           {step === 'select_roll' && (
             <div className="space-y-3">
               {unpostedRolls.length > 0 ? (
-                unpostedRolls.map(roll => (
-                  <button
-                    key={roll.id}
-                    onClick={() => handleSelectRoll(roll)}
-                    className="w-full flex items-center p-3 rounded-lg text-left transition-colors bg-gray-700/50 hover:bg-gray-700"
-                  >
-                    <img src={roll.photos?.[0]?.thumbnail_url || ''} alt="Roll thumbnail" className="w-16 h-16 rounded-md object-cover bg-gray-600 mr-4" />
-                    <div>
-                      <p className="font-semibold text-white">{roll.title || roll.film_type}</p>
-                      <p className="text-xs text-gray-400">{roll.shots_used} photos • Developed {new Date(roll.developed_at!).toLocaleDateString()}</p>
-                    </div>
-                  </button>
-                ))
+                unpostedRolls.map(roll => {
+                  const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
+                  const thumbnailUrl = roll.photos?.[0]?.thumbnail_url || '';
+                  return (
+                    <button
+                      key={roll.id}
+                      onClick={() => handleSelectRoll(roll)}
+                      className="w-full flex items-center p-3 rounded-lg text-left transition-colors bg-gray-700/50 hover:bg-gray-700"
+                    >
+                      <img src={`${thumbnailUrl}${cacheBuster}`} alt="Roll thumbnail" className="w-16 h-16 rounded-md object-cover bg-gray-600 mr-4" />
+                      <div>
+                        <p className="font-semibold text-white">{roll.title || roll.film_type}</p>
+                        <p className="text-xs text-gray-400">{roll.shots_used} photos • Developed {new Date(roll.developed_at!).toLocaleDateString()}</p>
+                      </div>
+                    </button>
+                  );
+                })
               ) : (
                 <p className="text-center text-gray-500 py-8">You have no developed rolls to post.</p>
               )}
@@ -76,9 +80,12 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
           {step === 'write_caption' && selectedRoll && (
             <div className="space-y-4">
               <div className="grid grid-cols-4 gap-1 max-h-48 overflow-y-auto rounded-lg">
-                {selectedRoll.photos?.map(photo => (
-                  <img key={photo.id} src={photo.thumbnail_url} alt="Photo preview" className="aspect-square w-full object-cover bg-gray-700" />
-                ))}
+                {selectedRoll.photos?.map(photo => {
+                  const cacheBuster = selectedRoll.developed_at ? `?t=${new Date(selectedRoll.developed_at).getTime()}` : '';
+                  return (
+                    <img key={photo.id} src={`${photo.thumbnail_url}${cacheBuster}`} alt="Photo preview" className="aspect-square w-full object-cover bg-gray-700" />
+                  );
+                })}
               </div>
               <textarea
                 value={caption}

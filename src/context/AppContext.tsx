@@ -60,7 +60,7 @@ export interface Post {
   caption: string;
   created_at: string;
   profiles: { username: string; avatar_url: string };
-  rolls: { film_type: string, photos: Photo[] };
+  rolls: { film_type: string, photos: Photo[], developed_at?: string };
   likes: { user_id: string }[];
   comments: Comment[];
   isLiked?: boolean;
@@ -74,7 +74,7 @@ export interface Album {
   cover_image_url: string | null;
   type: 'personal' | 'shared' | 'public';
   created_at: string;
-  album_rolls?: { roll_id: string, rolls: { photos: Photo[] } }[];
+  album_rolls?: { roll_id: string, rolls: { photos: Photo[], developed_at?: string } }[];
   photoCount?: number;
   rollCount?: number;
 }
@@ -185,7 +185,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // 2. Fetch all posts
     const { data: allPostsData, error } = await supabase.from('posts')
-      .select('*, profiles(username, avatar_url), rolls!inner(film_type, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))')
+      .select('*, profiles(username, avatar_url), rolls!inner(film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))')
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -371,7 +371,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const selectAlbum = async (albumId: string) => {
-    const { data } = await supabase.from('albums').select('*, album_rolls(*, rolls(*, photos(*)))').eq('id', albumId).single();
+    const { data } = await supabase.from('albums').select('*, album_rolls(*, rolls(*, developed_at, photos(*)))').eq('id', albumId).single();
     if (data) {
       setSelectedAlbum(data as any);
       setCurrentView('albumDetail');

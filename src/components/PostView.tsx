@@ -22,6 +22,8 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
     setIsSubmittingComment(false);
   };
 
+  const cacheBuster = post.rolls.developed_at ? `?t=${new Date(post.rolls.developed_at).getTime()}` : '';
+
   return (
     <div className="bg-gray-800 rounded-2xl overflow-hidden shadow-lg">
       <div className="p-4 border-b border-gray-700/50 flex items-center justify-between">
@@ -54,7 +56,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
         <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-0.5 bg-gray-700">
           {post.rolls.photos.slice(0, 16).map((photo: any) => (
             <div key={photo.id} className="aspect-square bg-gray-700 overflow-hidden">
-              <img src={photo.thumbnail_url} alt="Post photo" className="w-full h-full object-cover" />
+              <img src={`${photo.thumbnail_url}${cacheBuster}`} alt="Post photo" className="w-full h-full object-cover" />
             </div>
           ))}
         </div>

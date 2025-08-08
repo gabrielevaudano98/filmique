@@ -11,7 +11,15 @@ const AlbumDetailView: React.FC = () => {
 
   useEffect(() => {
     if (selectedAlbum?.album_rolls) {
-      const allPhotos = selectedAlbum.album_rolls.flatMap((ar: any) => ar.rolls.photos || []);
+      const allPhotos = selectedAlbum.album_rolls.flatMap((ar: any) => {
+        const roll = ar.rolls;
+        if (!roll || !roll.photos) return [];
+        const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
+        return roll.photos.map((photo: Photo) => ({
+          ...photo,
+          thumbnail_url: `${photo.thumbnail_url}${cacheBuster}`
+        }));
+      });
       setPhotos(allPhotos);
     }
   }, [selectedAlbum]);

@@ -24,6 +24,8 @@ const RollDetailView: React.FC = () => {
     ? new Date(selectedRoll.developed_at)
     : new Date(new Date(selectedRoll.completed_at!).getTime() + 7 * 24 * 60 * 60 * 1000);
 
+  const cacheBuster = selectedRoll.developed_at ? `?t=${new Date(selectedRoll.developed_at).getTime()}` : '';
+
   return (
     <div className="flex flex-col w-full">
       {/* Header */}
@@ -55,7 +57,7 @@ const RollDetailView: React.FC = () => {
           {selectedRoll.photos.map(photo => (
             <div key={photo.id} className="aspect-square bg-gray-800 rounded-lg overflow-hidden group cursor-pointer">
               <img 
-                src={photo.thumbnail_url} 
+                src={`${photo.thumbnail_url}${cacheBuster}`} 
                 alt="User Photo" 
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
               />

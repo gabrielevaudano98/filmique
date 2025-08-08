@@ -10,13 +10,16 @@ interface DevelopedRollCardProps {
 
 const DevelopedRollCard: React.FC<DevelopedRollCardProps> = ({ roll, onSelect, onRename }) => {
   const developedDate = new Date(roll.developed_at || roll.completed_at!).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
+  const thumbnailUrl = roll.photos?.[0]?.thumbnail_url;
+  const finalThumbnailUrl = thumbnailUrl ? `${thumbnailUrl}${cacheBuster}` : `https://placehold.co/400x400/1f2937/9ca3af?text=${roll.film_type}`;
 
   return (
     <div className="group relative aspect-[4/5] cursor-pointer transition-transform duration-300 ease-in-out hover:-translate-y-2" onClick={onSelect}>
       <div className="w-full h-full bg-gray-800 rounded-lg shadow-xl overflow-hidden flex flex-col border-2 border-gray-700/50">
         <div className="w-full aspect-square bg-gray-700 overflow-hidden">
           <img
-            src={roll.photos?.[0]?.thumbnail_url || `https://placehold.co/400x400/1f2937/9ca3af?text=${roll.film_type}`}
+            src={finalThumbnailUrl}
             alt={roll.title || roll.film_type}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
