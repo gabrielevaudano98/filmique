@@ -11,7 +11,7 @@ install! 'cocoapods', :disable_input_output_paths => true
 def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/.pnpm/@capacitor+ios@7.4.2_@capacitor+core@7.4.2/node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/.pnpm/@capacitor+ios@7.4.2_@capacitor+core@7.4.2/node_modules/@capacitor/ios'
-
+  pod 'CapacitorCameraView', :path => '../../node_modules/.pnpm/capacitor-camera-view@1.2.0_@capacitor+core@7.4.2/node_modules/capacitor-camera-view'
 end
 
 target 'App' do
