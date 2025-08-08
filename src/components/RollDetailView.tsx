@@ -1,23 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ArrowLeft, Download, Printer, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Download, Trash2, Image as ImageIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import PhotoDetailModal from './PhotoDetailModal';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
+import { Photo } from '../context/AppContext';
 
 const RollDetailView: React.FC = () => {
-  const { selectedRoll, setCurrentView, setSelectedRoll } = useAppContext();
+  const { selectedRoll, setCurrentView, setSelectedRoll, downloadRoll, deleteRoll } = useAppContext();
+  const [photoToView, setPhotoToView] = useState<Photo | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (!selectedRoll) {
-    setCurrentView('profile');
+    setCurrentView('rolls');
     return null;
   }
 
   const handleBack = () => {
     setSelectedRoll(null);
-    setCurrentView('profile');
+    setCurrentView('rolls');
   };
 
-  const handleComingSoon = (feature: string) => {
-    toast(`${feature} feature coming soon!`, { icon: '🚧' });
+  const handleDownloadRoll = () => {
+    downloadRoll(selectedRoll);
+  };
+
+  const handleDeleteRoll = () => {
+    deleteRoll(selectedRoll.id);
+    setShowDeleteConfirm(false);
   };
 
   const developedDate = selectedRoll.developed_at 
@@ -32,14 +42,14 @@ const RollDetailView: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <button onClick={handleBack} className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors p-2 -ml-2">
           <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Profile</span>
+          <span className="font-medium">Back to Rolls</span>
         </button>
         <div className="flex items-center space-x-2">
-          <button onClick={() => handleComingSoon('Download')} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold p-2 rounded-lg transition-colors">
+          <button onClick={handleDownloadRoll} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold p-2 rounded-lg transition-colors">
             <Download className="w-5 h-5" />
           </button>
-          <button onClick={() => handleComingSoon('Print')} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold p-2 rounded-lg transition-colors">
-            <Printer className="w-5 h-5" />
+          <button onClick={() => setShowDeleteConfirm(true)} className="bg-red-900/70 hover:bg-red-800/80 text-white font-semibold p-2 rounded-lg transition-colors">
+            <Trash2 className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -55,7 +65,7 @@ const RollDetailView: React.FC = () => {
       {selectedRoll.photos && selectedRoll.photos.length > 0 ? (
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1 sm:gap-2">
           {selectedRoll.photos.map(photo => (
-            <div key={photo.id} className="aspect-square bg-gray-800 rounded-lg overflow-hidden group cursor-pointer">
+            <div key={photo.id} className="aspect-square bg-gray-800 rounded-lg overflow-hidden group cursor-pointer" onClick={() => setPhotoToView(photo)}>
               <img 
                 src={`${photo.thumbnail_url}${cacheBuster}`} 
                 alt="User Photo" 
@@ -72,6 +82,19 @@ const RollDetailView: React.FC = () => {
             It looks like there was an issue loading the photos for this roll.
           </p>
         </div>
+      )}
+
+      {photoToView && <PhotoDetailModal photo={photoToView} onClose={() => setPhotoToView(null)} />}
+      
+      {showDeleteConfirm && (
+        <ConfirmDeleteModal
+          isOpen={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          onConfirm={handleDeleteRoll}
+          title="Delete Roll"
+          message={`Are you sure you want to permanently delete "${selectedRoll.title || selectedRoll.film_type}"? All ${selectedRoll.shots_used} photos and related posts will be lost forever.`}
+          confirmText="Delete"
+        />
       )}
     </div>
   );

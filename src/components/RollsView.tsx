@@ -1,7 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Film, RefreshCw, ImageIcon, Camera } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { Roll } from '../context/AppContext';
 import NameRollModal from './NameRollModal';
 import RollsControls from './RollsControls';
 import DevelopedRollCard from './DevelopedRollCard';
@@ -24,11 +23,10 @@ const getRemainingTime = (completedAt: string) => {
 };
 
 const RollsView: React.FC = () => {
-  const { profile, activeRoll, completedRolls, developRoll, setCurrentView, setSelectedRoll, setShowFilmModal } = useAppContext();
+  const { profile, activeRoll, completedRolls, developRoll, setCurrentView, setSelectedRoll, setShowFilmModal, setRollToName } = useAppContext();
   
   const [activeTab, setActiveTab] = useState<'developed' | 'developing'>('developed');
-  const [rollToName, setRollToName] = useState<Roll | null>(null);
-
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('newest');
   const [selectedFilm, setSelectedFilm] = useState('all');
@@ -100,8 +98,6 @@ const RollsView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full space-y-6">
-      {rollToName && <NameRollModal roll={rollToName} onClose={() => setRollToName(null)} />}
-      
       <div onClick={handleCurrentRollClick} className="bg-gradient-to-br from-amber-600 to-orange-600 rounded-2xl p-5 text-white shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer">
         <div className="flex items-center justify-between">
           <div>

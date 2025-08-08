@@ -4,6 +4,8 @@ import { Session } from '@supabase/supabase-js';
 import toast from 'react-hot-toast';
 import { applyFilter } from '../utils/imageProcessor';
 import { filmPresets } from '../utils/filters';
+import JSZip from 'jszip';
+import { saveAs } from 'file-saver';
 
 // Type Definitions
 export interface UserProfile {
@@ -130,6 +132,11 @@ interface AppContextType {
   createPost: (rollId: string, caption: string) => Promise<void>;
   addComment: (postId: string, content: string) => Promise<void>;
   searchUsers: (query: string) => Promise<UserProfile[] | null>;
+  rollToName: Roll | null;
+  setRollToName: (roll: Roll | null) => void;
+  deleteRoll: (rollId: string) => Promise<void>;
+  downloadPhoto: (photo: Photo) => Promise<void>;
+  downloadRoll: (roll: Roll) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -157,6 +164,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
+  const [rollToName, setRollToName] = useState<Roll | null>(null);
 
   const refreshProfile = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -307,7 +315,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (updatedRoll.is_completed) {
         setActiveRoll(null);
         setCompletedRolls(prev => [updatedRoll, ...prev]);
-        setCurrentView('rolls'); // Navigate to rolls view on completion
+        setRollToName(updatedRoll);
       } else {
         setActiveRoll(updatedRoll);
       }
@@ -396,6 +404,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return false;
     }
     setCompletedRolls(prev => prev.map(r => (r.id === rollId ? { ...r, title } : r)));
+    if (selectedRoll?.id === rollId) {
+      setSelectedRoll(prev => prev ? { ...prev, title } : null);
+    }
     return true;
   };
 
@@ -462,9 +473,70 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return data;
   };
 
+  const deleteRoll = async (rollId: string) => {
+    if (!profile) return;
+    const toastId = toast.loading('Deleting roll...');
+    try {
+      const { data: posts } = await supabase.from('posts').select('id').eq('roll_id', rollId);
+      const postIds = posts?.map(p => p.id) || [];
+      if (postIds.length > 0) {
+        await supabase.from('likes').delete().in('post_id', postIds);
+        await supabase.from('comments').delete().in('post_id', postIds);
+      }
+      await supabase.from('posts').delete().eq('roll_id', rollId);
+      await supabase.from('album_rolls').delete().eq('roll_id', rollId);
+      const { data: photos } = await supabase.from('photos').select('url').eq('roll_id', rollId);
+      if (photos && photos.length > 0) {
+        const photoPaths = photos.map(p => new URL(p.url).pathname.split('/photos/')[1]);
+        await supabase.storage.from('photos').remove(photoPaths);
+      }
+      await supabase.from('photos').delete().eq('roll_id', rollId);
+      await supabase.from('rolls').delete().eq('id', rollId);
+      setCompletedRolls(prev => prev.filter(r => r.id !== rollId));
+      setSelectedRoll(null);
+      setCurrentView('rolls');
+      toast.success('Roll deleted successfully.', { id: toastId });
+    } catch (error: any) {
+      toast.error(`Failed to delete roll: ${error.message}`, { id: toastId });
+    }
+  };
+
+  const downloadPhoto = async (photo: Photo) => {
+    try {
+      const response = await fetch(photo.url);
+      const blob = await response.blob();
+      saveAs(blob, photo.url.split('/').pop() || 'photo.jpg');
+      toast.success('Photo download started!');
+    } catch (error) {
+      toast.error('Could not download photo.');
+    }
+  };
+
+  const downloadRoll = async (roll: Roll) => {
+    if (!roll.photos || roll.photos.length === 0) {
+      toast.error("No photos to download.");
+      return;
+    }
+    const toastId = toast.loading(`Zipping ${roll.photos.length} photos...`);
+    try {
+      const zip = new JSZip();
+      const photoPromises = roll.photos.map(async (photo) => {
+        const response = await fetch(photo.url);
+        const blob = await response.blob();
+        zip.file(photo.url.split('/').pop() || 'photo.jpg', blob);
+      });
+      await Promise.all(photoPromises);
+      const content = await zip.generateAsync({ type: 'blob' });
+      saveAs(content, `${roll.title?.replace(/ /g, '_') || 'roll'}.zip`);
+      toast.success('Roll download started!', { id: toastId });
+    } catch (error) {
+      toast.error('Could not download roll.', { id: toastId });
+    }
+  };
+
   const value = useMemo(() => ({
-    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, searchUsers
-  }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, authStep, verificationEmail, selectedRoll, selectedAlbum, handleFollow, handleLike, refreshProfile]);
+    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll
+  }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, authStep, verificationEmail, selectedRoll, selectedAlbum, rollToName, handleFollow, handleLike, refreshProfile]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

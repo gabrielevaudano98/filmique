@@ -52,7 +52,11 @@ const NameRollModal: React.FC<NameRollModalProps> = ({ roll, onClose }) => {
               placeholder="e.g., Beach Trip"
               className="w-full bg-gray-700 border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-white focus:ring-amber-500 focus:border-amber-500"
               required
+              maxLength={20}
             />
+          </div>
+          <div className="text-right text-xs text-gray-500 mt-1 pr-1">
+            {title.length}/20
           </div>
           {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
           <div className="mt-6 flex justify-end space-x-3">

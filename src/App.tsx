@@ -13,9 +13,10 @@ import { useAppContext } from './context/AppContext';
 import TopBar from './components/TopBar';
 import RollDetailView from './components/RollDetailView';
 import AlbumDetailView from './components/AlbumDetailView';
+import NameRollModal from './components/NameRollModal';
 
 function App() {
-  const { session, profile, isLoading, currentView, setCurrentView, authStep } = useAppContext();
+  const { session, profile, isLoading, currentView, setCurrentView, authStep, rollToName, setRollToName } = useAppContext();
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -27,6 +28,16 @@ function App() {
       case 'rollDetail': return <RollDetailView />;
       case 'albumDetail': return <AlbumDetailView />;
       default: return <RollsView />;
+    }
+  };
+
+  const handleNamingModalClose = () => {
+    const justNamedRoll = rollToName;
+    setRollToName(null);
+    // If the roll didn't have a title, it was the first time naming it.
+    // Navigate to rolls view to see the completed rolls.
+    if (justNamedRoll && !justNamedRoll.title) {
+      setCurrentView('rolls');
     }
   };
 
@@ -52,13 +63,20 @@ function App() {
   if (profile && !profile.has_completed_onboarding) {
     return <OnboardingView />;
   }
-
+  
   if (currentView === 'camera') {
-    return <CameraView />;
+    // The naming modal needs to be available on top of the camera view too
+    return (
+      <>
+        {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
+        <CameraView />
+      </>
+    );
   }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+      {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
       <TopBar />
       <main className={`flex-1 max-w-6xl mx-auto w-full flex pb-28 ${currentView !== 'settings' ? 'px-4 py-4' : ''}`}>
         {renderCurrentView()}
