@@ -1,0 +1,111 @@
+import React, { useState, useMemo } from 'react';
+import { X, Film, ArrowLeft, Send } from 'lucide-react';
+import { useAppContext } from '../context/AppContext';
+import { Roll } from '../context/AppContext';
+
+interface CreatePostModalProps {
+  onClose: () => void;
+  unpostedRolls: Roll[];
+}
+
+const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRolls }) => {
+  const { createPost } = useAppContext();
+  const [step, setStep] = useState<'select_roll' | 'write_caption'>('select_roll');
+  const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
+  const [caption, setCaption] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSelectRoll = (roll: Roll) => {
+    setSelectedRoll(roll);
+    setStep('write_caption');
+  };
+
+  const handleBack = () => {
+    setSelectedRoll(null);
+    setStep('select_roll');
+  };
+
+  const handlePublish = async () => {
+    if (!selectedRoll || !caption.trim()) return;
+    setIsLoading(true);
+    await createPost(selectedRoll.id, caption);
+    setIsLoading(false);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-gray-800 rounded-2xl max-w-lg w-full flex flex-col max-h-[80vh] shadow-2xl">
+        <div className="flex-shrink-0 p-5 border-b border-gray-700 flex items-center justify-between">
+          {step === 'write_caption' && (
+            <button onClick={handleBack} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full -ml-2">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          )}
+          <h2 className="text-xl font-bold font-recoleta text-white">
+            {step === 'select_roll' ? 'Select a Roll to Post' : 'Write a Caption'}
+          </h2>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="overflow-y-auto no-scrollbar p-5">
+          {step === 'select_roll' && (
+            <div className="space-y-3">
+              {unpostedRolls.length > 0 ? (
+                unpostedRolls.map(roll => (
+                  <button
+                    key={roll.id}
+                    onClick={() => handleSelectRoll(roll)}
+                    className="w-full flex items-center p-3 rounded-lg text-left transition-colors bg-gray-700/50 hover:bg-gray-700"
+                  >
+                    <img src={roll.photos?.[0]?.thumbnail_url || ''} alt="Roll thumbnail" className="w-16 h-16 rounded-md object-cover bg-gray-600 mr-4" />
+                    <div>
+                      <p className="font-semibold text-white">{roll.title || roll.film_type}</p>
+                      <p className="text-xs text-gray-400">{roll.shots_used} photos • Developed {new Date(roll.developed_at!).toLocaleDateString()}</p>
+                    </div>
+                  </button>
+                ))
+              ) : (
+                <p className="text-center text-gray-500 py-8">You have no developed rolls to post.</p>
+              )}
+            </div>
+          )}
+
+          {step === 'write_caption' && selectedRoll && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-4 gap-1 max-h-48 overflow-y-auto rounded-lg">
+                {selectedRoll.photos?.map(photo => (
+                  <img key={photo.id} src={photo.thumbnail_url} alt="Photo preview" className="aspect-square w-full object-cover bg-gray-700" />
+                ))}
+              </div>
+              <textarea
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="Write a caption..."
+                rows={4}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:ring-amber-500 focus:border-amber-500"
+              />
+            </div>
+          )}
+        </div>
+
+        {step === 'write_caption' && (
+          <div className="flex-shrink-0 p-5 border-t border-gray-700">
+            <button
+              onClick={handlePublish}
+              disabled={isLoading || !caption.trim()}
+              className="w-full py-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            >
+              <Send className="w-4 h-4" />
+              <span>{isLoading ? 'Publishing...' : 'Publish Post'}</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default CreatePostModal;

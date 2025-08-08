@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Filmique</string>
+    <string name="title_activity_main">Filmique</string>
+    <string name="package_name">com.example.filmique</string>
+    <string name="custom_url_scheme">com.example.filmique</string>
+</resources>

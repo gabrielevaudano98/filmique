@@ -1,0 +1,433 @@
+import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
+import { supabase } from '../integrations/supabase/client';
+import { Session } from '@supabase/supabase-js';
+import toast from 'react-hot-toast';
+
+// Type Definitions
+export interface UserProfile {
+  id: string;
+  username: string;
+  email: string;
+  avatar_url: string;
+  level: number;
+  credits: number;
+  streak: number;
+  subscription: 'free' | 'plus' | 'premium';
+  updated_at: string;
+  first_name: string | null;
+  last_name: string | null;
+  has_completed_onboarding: boolean;
+}
+
+export interface Photo {
+  id: string;
+  user_id: string;
+  roll_id: string;
+  url: string;
+  thumbnail_url: string;
+  metadata: any;
+  created_at: string;
+}
+
+export interface Roll {
+  id:string;
+  user_id: string;
+  film_type: string;
+  capacity: number;
+  shots_used: number;
+  is_completed: boolean;
+  created_at: string;
+  completed_at?: string;
+  developed_at?: string;
+  photos?: Photo[];
+  title?: string | null;
+}
+
+export interface Comment {
+  id: string;
+  content: string;
+  created_at: string;
+  profiles: { username: string; avatar_url: string };
+  user_id: string;
+}
+
+export interface Post {
+  id: string;
+  user_id: string;
+  roll_id: string;
+  caption: string;
+  created_at: string;
+  profiles: { username: string; avatar_url: string };
+  rolls: { film_type: string, photos: Photo[] };
+  likes: { user_id: string }[];
+  comments: Comment[];
+  isLiked?: boolean;
+  isFollowed?: boolean;
+}
+
+export interface Album {
+  id: string;
+  user_id: string;
+  title: string;
+  cover_image_url: string | null;
+  type: 'personal' | 'shared' | 'public';
+  created_at: string;
+  album_rolls?: { roll_id: string, rolls: { photos: Photo[] } }[];
+  photoCount?: number;
+  rollCount?: number;
+}
+
+export interface Challenge {
+  id: string;
+  title: string;
+  description: string;
+  type: 'daily' | 'weekly' | 'special';
+  target: number;
+  reward: { xp: number; credits: number; badge?: string };
+  expires_at?: string;
+  progress?: number;
+  isCompleted?: boolean;
+}
+
+interface AppContextType {
+  session: Session | null;
+  profile: UserProfile | null;
+  isLoading: boolean;
+  currentView: string;
+  setCurrentView: (view: string) => void;
+  cameraMode: 'simple' | 'pro';
+  setCameraMode: (mode: 'simple' | 'pro') => void;
+  showFilmModal: boolean;
+  setShowFilmModal: (show: boolean) => void;
+  activeRoll: Roll | null;
+  completedRolls: Roll[];
+  feed: Post[];
+  albums: Album[];
+  challenges: Challenge[];
+  startNewRoll: (filmType: string, capacity: number) => Promise<void>;
+  takePhoto: (imageBlob: Blob, metadata: any) => Promise<void>;
+  setFeed: React.Dispatch<React.SetStateAction<Post[]>>;
+  setChallenges: React.Dispatch<React.SetStateAction<Challenge[]>>;
+  refreshProfile: () => Promise<void>;
+  authStep: 'login' | 'otp';
+  setAuthStep: (step: 'login' | 'otp') => void;
+  verificationEmail: string;
+  handleLogin: (email: string) => Promise<void>;
+  handleVerifyOtp: (token: string) => Promise<void>;
+  selectedRoll: Roll | null;
+  setSelectedRoll: (roll: Roll | null) => void;
+  developRoll: (roll: Roll) => Promise<void>;
+  selectedAlbum: Album | null;
+  setSelectedAlbum: (album: Album | null) => void;
+  selectAlbum: (albumId: string) => Promise<void>;
+  createAlbum: (title: string) => Promise<void>;
+  updateAlbumRolls: (albumId: string, rollIds: string[]) => Promise<void>;
+  updateRollTitle: (rollId: string, title: string) => Promise<boolean>;
+  handleLike: (postId: string, isLiked?: boolean) => Promise<void>;
+  handleFollow: (userId: string, isFollowed?: boolean) => Promise<void>;
+  createPost: (rollId: string, caption: string) => Promise<void>;
+  addComment: (postId: string, content: string) => Promise<void>;
+  searchUsers: (query: string) => Promise<UserProfile[] | null>;
+}
+
+const AppContext = createContext<AppContextType | undefined>(undefined);
+
+export const useAppContext = () => {
+  const context = useContext(AppContext);
+  if (!context) throw new Error('useAppContext must be used within an AppProvider');
+  return context;
+};
+
+export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentView, setCurrentView] = useState('rolls');
+  const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
+  const [showFilmModal, setShowFilmModal] = useState(false);
+  const [authStep, setAuthStep] = useState<'login' | 'otp'>('login');
+  const [verificationEmail, setVerificationEmail] = useState('');
+
+  const [activeRoll, setActiveRoll] = useState<Roll | null>(null);
+  const [completedRolls, setCompletedRolls] = useState<Roll[]>([]);
+  const [feed, setFeed] = useState<Post[]>([]);
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
+  const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
+
+  const refreshProfile = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+      setProfile(data);
+    }
+  }, []);
+
+  const fetchAlbums = useCallback(async (userId: string) => {
+    const { data } = await supabase.from('albums').select('*, album_rolls(rolls(shots_used))').eq('user_id', userId);
+    if (data) {
+      const albumsWithCounts = data.map(album => ({
+        ...album,
+        rollCount: album.album_rolls.length,
+        photoCount: album.album_rolls.reduce((sum, ar: any) => sum + ar.rolls.shots_used, 0),
+      }));
+      setAlbums(albumsWithCounts as any);
+    }
+  }, []);
+
+  const fetchFeed = useCallback(async (userId: string) => {
+    // 1. Get followed users
+    const { data: followingData } = await supabase.from('followers').select('following_id').eq('follower_id', userId);
+    const followedUserIds = new Set(followingData?.map(f => f.following_id) || []);
+
+    // 2. Fetch all posts
+    const { data: allPostsData, error } = await supabase.from('posts')
+      .select('*, profiles(username, avatar_url), rolls!inner(film_type, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error || !allPostsData) {
+      console.error("Error fetching feed:", error);
+      setFeed([]);
+      return;
+    }
+
+    // 3. Augment and separate posts
+    const followingFeed: Post[] = [];
+    const discoveryFeed: Post[] = [];
+
+    allPostsData.forEach(post => {
+      const augmentedPost = {
+        ...post,
+        isLiked: post.likes.some(like => like.user_id === userId),
+        isFollowed: followedUserIds.has(post.user_id),
+      } as Post;
+
+      if (augmentedPost.user_id === userId || followedUserIds.has(augmentedPost.user_id)) {
+        followingFeed.push(augmentedPost);
+      } else {
+        discoveryFeed.push(augmentedPost);
+      }
+    });
+
+    // 4. Sort discovery feed by popularity
+    discoveryFeed.sort((a, b) => {
+      const scoreA = a.likes.length + (a.comments?.length || 0);
+      const scoreB = b.likes.length + (b.comments?.length || 0);
+      if (scoreB !== scoreA) {
+        return scoreB - scoreA;
+      }
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
+    // 5. Combine and set state
+    setFeed([...followingFeed, ...discoveryFeed]);
+  }, []);
+
+  const handleLogin = async (email: string) => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.signInWithOtp({ email });
+    if (error) alert(error.message);
+    else {
+      setVerificationEmail(email);
+      setAuthStep('otp');
+    }
+    setIsLoading(false);
+  };
+
+  const handleVerifyOtp = async (token: string) => {
+    setIsLoading(true);
+    const { error } = await supabase.auth.verifyOtp({ email: verificationEmail, token, type: 'email' });
+    if (error) alert(error.message);
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    if (!profile) return;
+    const fetchData = async () => {
+      const { data: rollsData } = await supabase.from('rolls').select('*, photos(*)').eq('user_id', profile.id).order('created_at', { ascending: false });
+      if (rollsData) {
+        setActiveRoll(rollsData.find(r => !r.is_completed) || null);
+        setCompletedRolls(rollsData.filter(r => r.is_completed));
+      }
+      fetchFeed(profile.id);
+      fetchAlbums(profile.id);
+    };
+    fetchData();
+  }, [profile, fetchAlbums, fetchFeed]);
+
+  useEffect(() => {
+    const fetchInitialSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      if (session?.user) {
+        const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        setProfile(data);
+      }
+      setIsLoading(false);
+    };
+    fetchInitialSession();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session?.user) refreshProfile();
+      else {
+        setProfile(null);
+        setAuthStep('login');
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [refreshProfile]);
+
+  const startNewRoll = async (filmType: string, capacity: number) => {
+    if (!profile) return;
+    if (activeRoll) {
+      await supabase.storage.from('photos').remove([`${profile.id}/${activeRoll.id}`]);
+      await supabase.from('rolls').delete().eq('id', activeRoll.id);
+    }
+    const { data } = await supabase.from('rolls').insert({ user_id: profile.id, film_type: filmType, capacity }).select().single();
+    if (data) setActiveRoll(data);
+    setShowFilmModal(false);
+  };
+
+  const takePhoto = async (imageBlob: Blob, metadata: any) => {
+    if (!profile || !activeRoll || activeRoll.is_completed) return;
+    const filePath = `${profile.id}/${activeRoll.id}/${Date.now()}.jpeg`;
+    await supabase.storage.from('photos').upload(filePath, imageBlob, { contentType: 'image/jpeg', upsert: false });
+    const { data: urlData } = supabase.storage.from('photos').getPublicUrl(filePath);
+    await supabase.from('photos').insert({ user_id: profile.id, roll_id: activeRoll.id, url: urlData.publicUrl, thumbnail_url: urlData.publicUrl, metadata });
+    const newShotsUsed = activeRoll.shots_used + 1;
+    const isCompleted = newShotsUsed >= activeRoll.capacity;
+    const updatePayload: any = { shots_used: newShotsUsed, is_completed: isCompleted };
+    if (isCompleted) updatePayload.completed_at = new Date().toISOString();
+    const { data: updatedRoll } = await supabase.from('rolls').update(updatePayload).eq('id', activeRoll.id).select('*, photos(*)').single();
+    if (updatedRoll) {
+      if (updatedRoll.is_completed) {
+        setActiveRoll(null);
+        setCompletedRolls(prev => [updatedRoll, ...prev]);
+        setCurrentView('rolls'); // Navigate to rolls view on completion
+      } else {
+        setActiveRoll(updatedRoll);
+      }
+    }
+  };
+
+  const developRoll = async (roll: Roll) => {
+    if (!profile) return;
+    const cost = 1 + Math.ceil(0.2 * roll.shots_used);
+    if (profile.credits < cost) {
+      alert("Not enough credits.");
+      return;
+    }
+    await supabase.from('profiles').update({ credits: profile.credits - cost }).eq('id', profile.id);
+    const { data: updatedRoll } = await supabase.from('rolls').update({ developed_at: new Date().toISOString() }).eq('id', roll.id).select('*, photos(*)').single();
+    await refreshProfile();
+    if (updatedRoll) {
+      setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
+    }
+  };
+
+  const createAlbum = async (title: string) => {
+    if (!profile) return;
+    const { data } = await supabase.from('albums').insert({ user_id: profile.id, title }).select().single();
+    if (data) await fetchAlbums(profile.id);
+  };
+
+  const selectAlbum = async (albumId: string) => {
+    const { data } = await supabase.from('albums').select('*, album_rolls(*, rolls(*, photos(*)))').eq('id', albumId).single();
+    if (data) {
+      setSelectedAlbum(data as any);
+      setCurrentView('albumDetail');
+    }
+  };
+
+  const updateAlbumRolls = async (albumId: string, rollIds: string[]) => {
+    await supabase.from('album_rolls').delete().eq('album_id', albumId);
+    if (rollIds.length > 0) {
+      const newLinks = rollIds.map(roll_id => ({ album_id: albumId, roll_id }));
+      await supabase.from('album_rolls').insert(newLinks);
+    }
+    await selectAlbum(albumId);
+    if (profile) await fetchAlbums(profile.id);
+  };
+
+  const updateRollTitle = async (rollId: string, title: string): Promise<boolean> => {
+    if (!profile) return false;
+    const { error } = await supabase.from('rolls').update({ title }).eq('id', rollId).eq('user_id', profile.id);
+    if (error) {
+      console.error('Error updating roll title:', error);
+      return false;
+    }
+    setCompletedRolls(prev => prev.map(r => (r.id === rollId ? { ...r, title } : r)));
+    return true;
+  };
+
+  const handleLike = async (postId: string, isLiked?: boolean) => {
+    if (!profile) return;
+    if (isLiked) {
+      await supabase.from('likes').delete().match({ user_id: profile.id, post_id: postId });
+    } else {
+      await supabase.from('likes').insert({ user_id: profile.id, post_id: postId });
+    }
+    if (profile) fetchFeed(profile.id);
+  };
+
+  const handleFollow = async (userId: string, isFollowed?: boolean) => {
+    if (!profile) return;
+    if (isFollowed) {
+      await supabase.from('followers').delete().match({ follower_id: profile.id, following_id: userId });
+    } else {
+      await supabase.from('followers').insert({ follower_id: profile.id, following_id: userId });
+    }
+    if (profile) fetchFeed(profile.id);
+  };
+
+  const createPost = async (rollId: string, caption: string) => {
+    if (!profile) return;
+    const { error } = await supabase.from('posts').insert({
+      user_id: profile.id,
+      roll_id: rollId,
+      caption: caption,
+    });
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Post published!');
+      fetchFeed(profile.id);
+    }
+  };
+
+  const addComment = async (postId: string, content: string) => {
+    if (!profile) return;
+    const { error } = await supabase.from('comments').insert({
+      post_id: postId,
+      user_id: profile.id,
+      content: content,
+    });
+    if (error) {
+      toast.error(error.message);
+    } else {
+      fetchFeed(profile.id);
+    }
+  };
+
+  const searchUsers = async (query: string): Promise<UserProfile[] | null> => {
+    if (!query.trim()) return [];
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .ilike('username', `%${query}%`)
+      .limit(10);
+    if (error) {
+      toast.error(error.message);
+      return null;
+    }
+    return data;
+  };
+
+  const value = useMemo(() => ({
+    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, searchUsers
+  }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, authStep, verificationEmail, selectedRoll, selectedAlbum, handleFollow, handleLike, refreshProfile]);
+
+  return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
+};
