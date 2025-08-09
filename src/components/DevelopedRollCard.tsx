@@ -24,14 +24,17 @@ const DevelopedRollCard: React.FC<DevelopedRollCardProps> = ({ roll, onSelect, o
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </div>
-        <div className="p-3 flex-1 flex flex-col justify-between">
+        <div className="p-3 flex-1 flex flex-col justify-between bg-gray-800">
           <div>
             <h4 className="font-bold text-white truncate font-recoleta text-base leading-tight">{roll.title || roll.film_type}</h4>
             <p className="text-xs text-gray-400">{roll.film_type}</p>
           </div>
           <div className="flex items-center justify-between text-xs text-gray-500 mt-2">
             <span>{developedDate}</span>
-            <span className="flex items-center gap-1"><ImageIcon className="w-3 h-3" />{roll.shots_used}</span>
+            <span className="flex items-center gap-1.5">
+              <ImageIcon className="w-4 h-4" />
+              {roll.shots_used}
+            </span>
           </div>
         </div>
       </div>

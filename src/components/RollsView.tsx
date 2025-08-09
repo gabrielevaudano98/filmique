@@ -165,7 +165,11 @@ const RollsView: React.FC = () => {
                 <div className="space-y-8">
                   {Object.entries(groupedRolls).map(([groupTitle, rollsInGroup]) => (
                     <div key={groupTitle}>
-                      <h3 className="text-lg font-bold text-white mb-4 font-recoleta">{groupTitle}</h3>
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="flex-grow h-px bg-gray-700/50"></div>
+                        <h3 className="text-base font-semibold text-gray-300 font-recoleta tracking-wider flex-shrink-0">{groupTitle}</h3>
+                        <div className="flex-grow h-px bg-gray-700/50"></div>
+                      </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {rollsInGroup.map(roll => (
                           <DevelopedRollCard

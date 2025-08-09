@@ -108,7 +108,7 @@ const ProfileView: React.FC = () => {
             ) : (
               <div onClick={() => setIsEditingBio(true)} className="mt-1 text-gray-400 text-sm group cursor-pointer">
                 {profile.bio || <span className="italic">No bio yet. Click to add one.</span>}
-                <Edit className="w-3 h-3 text-gray-500 inline-block ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Edit className="w-4 h-4 text-gray-500 inline-block ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             )}
           </div>
