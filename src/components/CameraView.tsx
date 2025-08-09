@@ -19,7 +19,6 @@ const CameraView: React.FC = () => {
     cameraMode,
     setCameraMode,
     activeRoll,
-    profile,
     startNewRoll,
     showFilmModal,
     setShowFilmModal,
@@ -255,24 +254,6 @@ const CameraView: React.FC = () => {
     }
   };
 
-  const filmTypes = useMemo(() => {
-    if (!profile) return [];
-    return [
-      { name: 'Kodak Gold 200', capacity: 24, price: 0, unlocked: true },
-      { name: 'Kodak Portra 400', capacity: 36, price: 2, unlocked: true },
-      { name: 'Kodak Ektar 100', capacity: 36, price: 4, unlocked: true },
-      { name: 'Fujifilm Superia 400', capacity: 24, price: 1, unlocked: true },
-      { name: 'Cinestill 800T', capacity: 36, price: 5, unlocked: true },
-      { name: 'Agfa Vista 200', capacity: 24, price: 1, unlocked: true },
-      { name: 'Fujifilm Velvia 50', capacity: 24, price: 5, unlocked: true },
-      { name: 'LomoChrome Purple', capacity: 24, price: 7, unlocked: true },
-      { name: 'Ilford HP5 Plus', capacity: 36, price: 3, unlocked: true },
-      { name: 'Kodak Tri-X 400', capacity: 36, price: 3, unlocked: true },
-      { name: 'Fomapan 100 Classic', capacity: 36, price: 2, unlocked: true },
-      { name: 'Ilford Delta 3200', capacity: 36, price: 6, unlocked: true },
-    ];
-  }, [profile]);
-
   const capacityOptions = useMemo(() => [
     { shots: 4, name: 'Mini', price: 0 },
     { shots: 12, name: 'Short', price: 1 },
@@ -395,7 +376,7 @@ const CameraView: React.FC = () => {
         </div>
       </div>
 
-      {showFilmModal && <FilmSelectionModal filmTypes={filmTypes} capacityOptions={capacityOptions} onStartRoll={startNewRoll} onClose={() => setShowFilmModal(false)} />}
+      {showFilmModal && <FilmSelectionModal capacityOptions={capacityOptions} onStartRoll={startNewRoll} onClose={() => setShowFilmModal(false)} />}
     </div>
   );
 };
