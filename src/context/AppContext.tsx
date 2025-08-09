@@ -160,6 +160,7 @@ interface AppContextType {
   handleFollow: (userId: string, isFollowed?: boolean) => Promise<void>;
   createPost: (rollId: string, caption: string) => Promise<void>;
   addComment: (postId: string, postOwnerId: string, content: string) => Promise<void>;
+  deleteComment: (commentId: string) => Promise<void>;
   searchUsers: (query: string) => Promise<UserProfile[] | null>;
   rollToName: Roll | null;
   setRollToName: (roll: Roll | null) => void;
@@ -552,6 +553,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const deleteComment = useCallback(async (commentId: string) => {
+    if (!profile) return;
+    const { error } = await supabase.from('comments').delete().eq('id', commentId);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success('Comment deleted');
+      fetchFeed(profile.id);
+    }
+  }, [profile, fetchFeed]);
+
   const searchUsers = async (query: string): Promise<UserProfile[] | null> => {
     if (!query.trim()) return [];
     const { data, error } = await supabase
@@ -628,8 +640,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const value = useMemo(() => ({
-    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll, fetchNotifications, markNotificationsAsRead, followersCount, followingCount
-  }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, authStep, verificationEmail, selectedRoll, selectedAlbum, rollToName, handleFollow, handleLike, refreshProfile, recordActivity, fetchNotifications, markNotificationsAsRead, followersCount, followingCount]);
+    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, deleteComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll, fetchNotifications, markNotificationsAsRead, followersCount, followingCount
+  }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, authStep, verificationEmail, selectedRoll, selectedAlbum, rollToName, handleFollow, handleLike, refreshProfile, recordActivity, fetchNotifications, markNotificationsAsRead, followersCount, followingCount, deleteComment]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

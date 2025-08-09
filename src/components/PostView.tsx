@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Clock, Camera, UserPlus, Check, Send, Shield } from 'lucide-react';
+import { Heart, MessageCircle, Clock, Camera, UserPlus, Check, Send, Shield, Trash2 } from 'lucide-react';
 import { useAppContext, Post } from '../context/AppContext';
 
 interface PostViewProps {
@@ -7,7 +7,7 @@ interface PostViewProps {
 }
 
 const PostView: React.FC<PostViewProps> = ({ post }) => {
-  const { profile, handleLike, handleFollow, addComment } = useAppContext();
+  const { profile, handleLike, handleFollow, addComment, deleteComment } = useAppContext();
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
@@ -89,12 +89,21 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
         
         <div className="border-t border-gray-700/50 pt-4 space-y-3">
           {post.comments.map(comment => (
-            <div key={comment.id} className="flex items-start space-x-3">
+            <div key={comment.id} className="flex items-start space-x-3 group">
               <img src={comment.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${comment.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-gray-700 mt-1" />
               <div className="bg-gray-700/50 rounded-lg px-3 py-2 flex-1">
                 <p className="font-semibold text-sm text-white">{comment.profiles.username}</p>
                 <p className="text-gray-300 text-sm">{comment.content}</p>
               </div>
+              {comment.user_id === profile.id && (
+                <button 
+                  onClick={() => deleteComment(comment.id)}
+                  className="p-2 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="Delete comment"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
           ))}
           <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-2">
