@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef } from 'react';
-import { Award, Edit, Image as ImageIcon, Plus, Save, User } from 'lucide-react';
+import { Award, Edit, Image as ImageIcon, Plus, Save, User, Settings } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import XPBar from './XPBar';
 import BadgeIcon from './BadgeIcon';
@@ -15,7 +15,7 @@ const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ va
 );
 
 const ProfileView: React.FC = () => {
-  const { profile, feed, followersCount, followingCount, userBadges, completedRolls, updateProfileDetails } = useAppContext();
+  const { profile, feed, followersCount, followingCount, userBadges, completedRolls, updateProfileDetails, setCurrentView } = useAppContext();
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'posts' | 'badges'>('posts');
   const [isEditingBio, setIsEditingBio] = useState(false);
@@ -60,6 +60,11 @@ const ProfileView: React.FC = () => {
         />
       )}
       <div className="relative flex-1 flex flex-col bg-gray-900 text-white">
+        <div className="absolute top-4 right-4 z-10">
+            <button onClick={() => setCurrentView('settings')} className="h-10 w-10 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 transition-colors">
+                <Settings className="w-5 h-5 text-white" />
+            </button>
+        </div>
         <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-gray-800 to-gray-900 -z-10"></div>
         
         <div className="flex flex-col items-center pt-8 px-4">

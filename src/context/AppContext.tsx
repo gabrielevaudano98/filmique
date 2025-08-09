@@ -208,6 +208,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
 
+  const refreshProfile = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+      setProfile(data);
+    }
+  }, []);
+
   const recordActivity = useCallback(async (activityType: string, entityId: string, entityOwnerId?: string) => {
     if (!profile) return;
     try {
@@ -218,15 +226,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch (error) {
       console.error('Failed to record activity:', error);
     }
-  }, [profile]);
-
-  const refreshProfile = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-      const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-      setProfile(data);
-    }
-  }, []);
+  }, [profile, refreshProfile]);
 
   const fetchFollowCounts = useCallback(async (userId: string) => {
     const { count: followers } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', userId);
@@ -641,7 +641,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const updateProfileDetails = async (details: { bio?: string; avatarFile?: File }) => {
+  const updateProfileDetails = useCallback(async (details: { bio?: string; avatarFile?: File }) => {
     if (!profile) return;
 
     const updatePayload: { bio?: string; avatar_url?: string } = {};
@@ -686,11 +686,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             await refreshProfile();
         }
     }
-  };
+  }, [profile, refreshProfile]);
 
   const value = useMemo(() => ({
     session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, deleteComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll, fetchNotifications, markNotificationsAsRead, followersCount, followingCount, updateProfileDetails
-  }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, authStep, verificationEmail, selectedRoll, selectedAlbum, rollToName, handleFollow, handleLike, refreshProfile, recordActivity, fetchNotifications, markNotificationsAsRead, followersCount, followingCount, deleteComment]);
+  }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, authStep, verificationEmail, selectedRoll, selectedAlbum, rollToName, handleFollow, handleLike, refreshProfile, recordActivity, fetchNotifications, markNotificationsAsRead, followersCount, followingCount, deleteComment, updateProfileDetails]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
