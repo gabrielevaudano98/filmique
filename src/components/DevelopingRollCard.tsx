@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Film, Clock, Zap } from 'lucide-react';
 import { Roll, UserProfile } from '../context/AppContext';
 
@@ -6,17 +6,53 @@ interface DevelopingRollCardProps {
   roll: Roll;
   profile: UserProfile | null;
   onDevelop: (roll: Roll) => void;
-  getRemainingTime: (completedAt: string) => string;
 }
 
-const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, onDevelop, getRemainingTime }) => {
-  const cost = 1 + Math.ceil(0.2 * roll.shots_used);
-  const canAfford = (profile?.credits || 0) >= cost;
+const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, onDevelop }) => {
+  const [currentTime, setCurrentTime] = useState(() => new Date().getTime());
+
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      setCurrentTime(new Date().getTime());
+    }, 1000); // Update every second
+    return () => clearInterval(timerId);
+  }, []);
 
   const completedTime = new Date(roll.completed_at!).getTime();
   const thirtySixHoursInMillis = 36 * 60 * 60 * 1000;
   const readyTime = completedTime + thirtySixHoursInMillis;
-  const progress = Math.min(100, ((new Date().getTime() - completedTime) / (readyTime - completedTime)) * 100);
+  const remainingMillis = readyTime - currentTime;
+
+  const getRemainingTime = () => {
+    if (remainingMillis <= 0) return "Ready!";
+    const hours = Math.floor(remainingMillis / (1000 * 60 * 60));
+    const minutes = Math.floor((remainingMillis % (1000 * 60 * 60)) / (1000 * 60));
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    return `${minutes}m`;
+  };
+
+  const calculateCost = () => {
+    const thirtyMinutesInMillis = 30 * 60 * 1000;
+    if (remainingMillis <= thirtyMinutesInMillis) {
+      return 0;
+    }
+
+    const initialCost = 1 + Math.ceil(0.2 * roll.shots_used);
+    if (initialCost <= 1) {
+      return 1;
+    }
+
+    const timeWindowForCost = thirtySixHoursInMillis - thirtyMinutesInMillis;
+    const remainingTimeInWindow = remainingMillis - thirtyMinutesInMillis;
+    const remainingPortion = Math.max(0, remainingTimeInWindow / timeWindowForCost);
+    
+    const dynamicCost = 1 + (initialCost - 1) * remainingPortion;
+    return Math.ceil(dynamicCost);
+  };
+
+  const cost = calculateCost();
+  const canAfford = (profile?.credits || 0) >= cost;
+  const progress = Math.min(100, ((currentTime - completedTime) / (readyTime - completedTime)) * 100);
 
   return (
     <div className="bg-gray-800 rounded-xl p-4 space-y-4">
@@ -37,7 +73,7 @@ const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, 
           <span>Developing...</span>
           <span className="flex items-center">
             <Clock className="w-3 h-3 mr-1.5" />
-            {getRemainingTime(roll.completed_at!)}
+            {getRemainingTime()}
           </span>
         </div>
         <div className="w-full bg-gray-700 rounded-full h-1.5">

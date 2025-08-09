@@ -7,21 +7,6 @@ import DevelopedRollCard from './DevelopedRollCard';
 import DevelopingRollCard from './DevelopingRollCard';
 import { isRollDeveloped, isRollDeveloping } from '../utils/rollUtils';
 
-const getRemainingTime = (completedAt: string) => {
-  const completedTime = new Date(completedAt).getTime();
-  const thirtySixHoursInMillis = 36 * 60 * 60 * 1000;
-  const readyTime = completedTime + thirtySixHoursInMillis;
-  const remainingMillis = readyTime - new Date().getTime();
-
-  if (remainingMillis <= 0) return "Ready!";
-
-  const hours = Math.floor(remainingMillis / (1000 * 60 * 60));
-  const minutes = Math.floor((remainingMillis % (1000 * 60 * 60)) / (1000 * 60));
-  
-  if (hours > 0) return `${hours}h ${minutes}m`;
-  return `${minutes}m`;
-};
-
 const RollsView: React.FC = () => {
   const { profile, activeRoll, completedRolls, developRoll, setCurrentView, setSelectedRoll, setShowFilmModal, setRollToName } = useAppContext();
   
@@ -192,7 +177,6 @@ const RollsView: React.FC = () => {
                     roll={roll}
                     profile={profile}
                     onDevelop={developRoll}
-                    getRemainingTime={getRemainingTime}
                   />
                 ))
               ) : (
