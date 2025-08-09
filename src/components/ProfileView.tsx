@@ -1,14 +1,15 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Award, Edit, Image as ImageIcon, Grid, Settings, User, CheckCircle, Loader } from 'lucide-react';
+import { Award, Edit, Grid, Settings, User, CheckCircle, Loader } from 'lucide-react';
 import { useAppContext, Post } from '../context/AppContext';
 import BadgeIcon from './BadgeIcon';
 import PostDetailModal from './PostDetailModal';
 import { useDebounce } from '../hooks/useDebounce';
 
+// Stat component, made leaner
 const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ value, label }) => (
   <div className="text-center">
-    <p className="text-xl font-bold text-white">{value}</p>
-    <p className="text-sm text-gray-400">{label}</p>
+    <p className="text-lg font-bold text-white">{value}</p>
+    <p className="text-xs text-gray-400">{label}</p>
   </div>
 );
 
@@ -20,10 +21,11 @@ const ProfileView: React.FC = () => {
   const [bioText, setBioText] = useState(profile?.bio || '');
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [isSavingBio, setIsSavingBio] = useState(false);
-  const debouncedBio = useDebounce(bioText, 1500);
+  const debouncedBio = useDebounce(bioText, 1000);
   const isBioChanged = useMemo(() => bioText !== (profile?.bio || ''), [bioText, profile?.bio]);
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
+  const bioInputRef = useRef<HTMLTextAreaElement>(null);
 
   const posts = useMemo(() => {
     if (!profile) return [];
@@ -37,18 +39,26 @@ const ProfileView: React.FC = () => {
   };
 
   const handleSaveBio = async () => {
-    if (!isBioChanged || bioText.length > 255) return;
+    if (!isBioChanged || bioText.length > 150) return;
     setIsSavingBio(true);
     await updateProfileDetails({ bio: bioText });
     setIsSavingBio(false);
-    setIsEditingBio(false);
   };
 
+  // Auto-save on debounce
   useEffect(() => {
     if (isEditingBio && isBioChanged && debouncedBio === bioText) {
       handleSaveBio();
     }
-  }, [debouncedBio]);
+  }, [debouncedBio, isEditingBio, isBioChanged, bioText]);
+
+  // Focus the textarea when editing starts
+  useEffect(() => {
+    if (isEditingBio) {
+      bioInputRef.current?.focus();
+      bioInputRef.current?.select();
+    }
+  }, [isEditingBio]);
 
   if (!profile) {
     return <div className="text-white p-6">Loading profile...</div>;
@@ -59,24 +69,29 @@ const ProfileView: React.FC = () => {
       {selectedPost && <PostDetailModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
       
       <div className="flex-1 flex flex-col bg-gray-900 text-white">
-        {/* Header */}
-        <div className="px-4 pt-4">
+        {/* Top Header */}
+        <div className="flex items-center justify-between px-4 py-2">
+          <h2 className="text-xl font-bold font-recoleta">{profile.username}</h2>
+          <button onClick={() => setCurrentView('settings')} className="p-2">
+            <Settings className="w-6 h-6 text-gray-300" />
+          </button>
+        </div>
+
+        {/* Profile Info Section */}
+        <div className="px-4 mt-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold font-recoleta">{profile.username}</h2>
-            <button onClick={() => setCurrentView('settings')} className="p-2">
-              <Settings className="w-6 h-6 text-gray-300" />
-            </button>
-          </div>
-          <div className="flex items-center mt-4">
-            <div className="relative flex-shrink-0">
+            <div className="relative flex-shrink-0 group">
               <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
-              <button onClick={() => avatarInputRef.current?.click()} className="w-24 h-24 rounded-full bg-gray-700 border-2 border-gray-800 flex items-center justify-center cursor-pointer overflow-hidden">
+              <button onClick={() => avatarInputRef.current?.click()} className="w-20 h-20 rounded-full bg-gray-700 border-2 border-gray-800 flex items-center justify-center cursor-pointer overflow-hidden">
                 {profile.avatar_url ? (
                   <img src={profile.avatar_url} className="w-full h-full object-cover" alt="User avatar" />
                 ) : (
-                  <User className="w-12 h-12 text-gray-500" />
+                  <User className="w-10 h-10 text-gray-500" />
                 )}
               </button>
+              <div className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                <Edit className="w-6 h-6 text-white" />
+              </div>
             </div>
             <div className="flex-1 flex justify-around ml-4">
               <HighlightStat value={posts.length} label="Posts" />
@@ -86,30 +101,36 @@ const ProfileView: React.FC = () => {
           </div>
           <div className="mt-4">
             <p className="font-semibold text-white">{profile.first_name} {profile.last_name}</p>
-            {isEditingBio ? (
-              <div className="mt-1">
+            <div className="mt-1 text-gray-300 text-sm">
+              {isEditingBio ? (
                 <textarea
+                  ref={bioInputRef}
                   value={bioText}
                   onChange={(e) => setBioText(e.target.value)}
-                  onBlur={handleSaveBio}
-                  maxLength={255}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-gray-300 focus:ring-amber-500 focus:border-amber-500 text-sm"
-                  rows={3}
-                  autoFocus
+                  onBlur={() => {
+                    handleSaveBio();
+                    setIsEditingBio(false);
+                  }}
+                  maxLength={150}
+                  className="w-full bg-transparent border-b border-gray-700 focus:border-amber-500 outline-none text-sm p-0 resize-none"
+                  rows={2}
                 />
-                <div className="flex items-center justify-end text-xs text-gray-500 mt-1 space-x-2">
-                  <span>{bioText.length}/255</span>
-                  {isSavingBio && <Loader className="w-3 h-3 animate-spin" />}
-                  {!isSavingBio && isBioChanged && <span className="text-amber-400">Saving...</span>}
-                  {!isSavingBio && !isBioChanged && <CheckCircle className="w-3 h-3 text-green-500" />}
-                </div>
-              </div>
-            ) : (
-              <div onClick={() => setIsEditingBio(true)} className="mt-1 text-gray-400 text-sm group cursor-pointer">
-                {profile.bio || <span className="italic">No bio yet. Click to add one.</span>}
-                <Edit className="w-3 h-3 text-gray-500 inline-block ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-            )}
+              ) : (
+                <p>{profile.bio || <span className="text-gray-500">No bio yet.</span>}</p>
+              )}
+            </div>
+          </div>
+          <div className="mt-4 flex items-center space-x-2">
+            <button 
+              onClick={() => setIsEditingBio(!isEditingBio)}
+              className="flex-1 bg-gray-700/80 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+            >
+              {isEditingBio ? 'Done' : 'Edit Profile'}
+            </button>
+            <div className="w-8 h-8 flex items-center justify-center">
+              {isSavingBio && <Loader className="w-4 h-4 animate-spin" />}
+              {!isSavingBio && !isBioChanged && isEditingBio && <CheckCircle className="w-4 h-4 text-green-500" />}
+            </div>
           </div>
         </div>
 
@@ -134,17 +155,25 @@ const ProfileView: React.FC = () => {
           {/* Tab Content */}
           <div className="w-full">
             {activeTab === 'posts' && (
-              <div className="grid grid-cols-3 gap-0.5">
-                {posts.map(post => (
-                  <div key={post.id} className="aspect-square bg-gray-800 group cursor-pointer" onClick={() => setSelectedPost(post)}>
-                    <img
-                      src={post.rolls.photos[0]?.thumbnail_url}
-                      alt="Post thumbnail"
-                      className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
-                    />
-                  </div>
-                ))}
-              </div>
+              posts.length > 0 ? (
+                <div className="grid grid-cols-3 gap-0.5">
+                  {posts.map(post => (
+                    <div key={post.id} className="aspect-square bg-gray-800 group cursor-pointer" onClick={() => setSelectedPost(post)}>
+                      <img
+                        src={post.rolls.photos[0]?.thumbnail_url}
+                        alt="Post thumbnail"
+                        className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 text-gray-500">
+                  <Grid className="w-12 h-12 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold">No Posts Yet</h3>
+                  <p>Your shared photos will appear here.</p>
+                </div>
+              )
             )}
             {activeTab === 'badges' && (
               <div className="p-4">
