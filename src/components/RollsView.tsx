@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { Film, RefreshCw, ImageIcon, Camera } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../context/AppContext';
-import NameRollModal from './NameRollModal';
 import RollsControls from './RollsControls';
 import DevelopedRollCard from './DevelopedRollCard';
 import DevelopingRollCard from './DevelopingRollCard';
@@ -165,11 +164,7 @@ const RollsView: React.FC = () => {
                 <div className="space-y-8">
                   {Object.entries(groupedRolls).map(([groupTitle, rollsInGroup]) => (
                     <div key={groupTitle}>
-                      <div className="flex items-center gap-4 mb-4">
-                        <div className="flex-grow h-px bg-gray-700/50"></div>
-                        <h3 className="text-base font-semibold text-gray-300 font-recoleta tracking-wider flex-shrink-0">{groupTitle}</h3>
-                        <div className="flex-grow h-px bg-gray-700/50"></div>
-                      </div>
+                      <h3 className="sticky top-20 bg-gray-800/80 backdrop-blur-sm py-2 text-lg font-bold text-white mb-4 font-recoleta z-10">{groupTitle}</h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {rollsInGroup.map(roll => (
                           <DevelopedRollCard
