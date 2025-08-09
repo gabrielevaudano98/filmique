@@ -262,12 +262,6 @@ const CameraView: React.FC = () => {
     { shots: 64, name: 'Bulk', price: 5 },
   ], []);
 
-  useEffect(() => {
-    if (!activeRoll && !showFilmModal) {
-      setShowFilmModal(true);
-    }
-  }, [activeRoll, showFilmModal, setShowFilmModal]);
-
   const proControls = [
     capabilities?.iso && { id: 'iso', label: 'ISO', value: manualSettings.iso },
     capabilities?.exposureTime && { id: 'shutterSpeed', label: 'S', value: formatShutterSpeed(manualSettings.shutterSpeed) },

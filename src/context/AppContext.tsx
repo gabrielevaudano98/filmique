@@ -387,6 +387,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveRoll(null);
         setCompletedRolls(prev => [updatedRoll, ...prev]);
         setRollToName(updatedRoll);
+        setCurrentView('rolls');
       } else {
         setActiveRoll(updatedRoll);
       }

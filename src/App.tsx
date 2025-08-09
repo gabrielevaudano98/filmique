@@ -34,11 +34,7 @@ function App() {
   };
 
   const handleNamingModalClose = () => {
-    const justNamedRoll = rollToName;
     setRollToName(null);
-    if (justNamedRoll && !justNamedRoll.title) {
-      setCurrentView('rolls');
-    }
   };
 
   if (isLoading) {
