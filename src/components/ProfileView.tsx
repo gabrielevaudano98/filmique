@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Settings, Image as ImageIcon, BookOpen } from 'lucide-react';
+import { Settings, Image as ImageIcon, BookOpen, Award } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import XPBar from './XPBar';
 import { Post } from '../context/AppContext';
+import BadgeIcon from './BadgeIcon';
 
 const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ value, label }) => (
   <div className="text-center">
@@ -12,7 +13,7 @@ const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ va
 );
 
 const ProfileView: React.FC = () => {
-  const { profile, setCurrentView, fetchUserPosts, followersCount, followingCount } = useAppContext();
+  const { profile, setCurrentView, fetchUserPosts, followersCount, followingCount, userBadges, completedRolls } = useAppContext();
   const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
@@ -38,9 +39,16 @@ const ProfileView: React.FC = () => {
             className="w-20 h-20 rounded-full object-cover bg-gray-700 border-2 border-gray-600"
             alt="User avatar"
           />
-          <button onClick={() => setCurrentView('settings')} className="w-10 h-10 flex items-center justify-center bg-gray-800 hover:bg-gray-700 rounded-full transition-colors">
-            <Settings className="w-5 h-5 text-white" />
-          </button>
+          <div className="flex items-center space-x-4">
+            <div className="text-center">
+              <p className="text-xl font-bold text-white">{profile.credits}</p>
+              <p className="text-xs text-gray-400 uppercase tracking-wider">Credits</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xl font-bold text-white">{profile.streak}</p>
+              <p className="text-xs text-gray-400 uppercase tracking-wider">Streak</p>
+            </div>
+          </div>
         </div>
 
         <div>
@@ -56,6 +64,29 @@ const ProfileView: React.FC = () => {
 
         <div className="bg-gray-800 p-4 rounded-xl mb-6 border border-gray-700/50">
           <XPBar xp={profile.xp} level={profile.level} />
+        </div>
+
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3 font-recoleta">Badges</h3>
+          <div className="bg-gray-800 p-4 rounded-xl border border-gray-700/50">
+            {userBadges.length > 0 ? (
+              <div className="grid grid-cols-4 sm:grid-cols-6 gap-4">
+                {userBadges.map(ub => (
+                  <div key={ub.badges.name} className="flex flex-col items-center text-center group cursor-pointer" title={`${ub.badges.name}: ${ub.badges.description}`}>
+                    <div className="w-14 h-14 rounded-full bg-gray-700 flex items-center justify-center mb-2 border-2 border-amber-400/50 group-hover:bg-amber-400/10 transition-colors">
+                      <BadgeIcon name={ub.badges.icon_name} className="w-7 h-7 text-amber-400" />
+                    </div>
+                    <p className="text-xs font-semibold text-white truncate w-full">{ub.badges.name}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-gray-500 py-4">
+                <Award className="w-8 h-8 mx-auto mb-2" />
+                <p>No badges earned yet.</p>
+              </div>
+            )}
+          </div>
         </div>
 
         {posts.length > 0 ? (

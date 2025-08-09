@@ -1,9 +1,10 @@
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import NotificationsBell from './NotificationsBell';
+import { Settings } from 'lucide-react';
 
 const TopBar: React.FC = () => {
-  const { profile, setCurrentView } = useAppContext();
+  const { setCurrentView } = useAppContext();
 
   return (
     <header className={`fixed top-0 left-0 right-0 w-full bg-gray-900 text-white px-4 flex items-center justify-between z-40 transition-all duration-300 border-b border-gray-700/80 h-20 py-4 pt-safe`}>
@@ -15,11 +16,11 @@ const TopBar: React.FC = () => {
           <span className="text-amber-400">Filmique</span>
         </h1>
         <button
-          onClick={() => setCurrentView('profile')}
-          aria-label="Profile"
+          onClick={() => setCurrentView('settings')}
+          aria-label="Settings"
           className="h-10 w-10 flex items-center justify-center rounded-full bg-gray-800 hover:bg-gray-700 transition-colors"
         >
-          <img src={profile?.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile?.username}`} alt="avatar" className="w-full h-full rounded-full object-cover" />
+          <Settings className="w-5 h-5 text-white" />
         </button>
       </div>
     </header>
