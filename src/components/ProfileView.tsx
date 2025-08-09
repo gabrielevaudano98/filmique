@@ -1,9 +1,10 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Award, Edit, Image as ImageIcon, Grid, Settings, User, CheckCircle, Loader } from 'lucide-react';
+import { Award, Edit, Image as ImageIcon, Grid, Settings, User, CheckCircle, Loader, LayoutList } from 'lucide-react';
 import { useAppContext, Post } from '../context/AppContext';
 import BadgeIcon from './BadgeIcon';
 import PostDetailModal from './PostDetailModal';
 import { useDebounce } from '../hooks/useDebounce';
+import PostView from './PostView';
 
 const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ value, label }) => (
   <div className="text-center">
@@ -15,7 +16,7 @@ const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ va
 const ProfileView: React.FC = () => {
   const { profile, feed, followersCount, followingCount, userBadges, updateProfileDetails, setCurrentView } = useAppContext();
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [activeTab, setActiveTab] = useState<'posts' | 'badges'>('posts');
+  const [activeTab, setActiveTab] = useState<'posts' | 'feed' | 'badges'>('posts');
   
   const [bioText, setBioText] = useState(profile?.bio || '');
   const [isEditingBio, setIsEditingBio] = useState(false);
@@ -124,6 +125,12 @@ const ProfileView: React.FC = () => {
               <Grid className="w-6 h-6" />
             </button>
             <button
+              onClick={() => setActiveTab('feed')}
+              className={`flex-1 flex justify-center items-center py-3 transition-colors ${activeTab === 'feed' ? 'text-white border-t-2 border-white' : 'text-gray-500'}`}
+            >
+              <LayoutList className="w-6 h-6" />
+            </button>
+            <button
               onClick={() => setActiveTab('badges')}
               className={`flex-1 flex justify-center items-center py-3 transition-colors ${activeTab === 'badges' ? 'text-white border-t-2 border-white' : 'text-gray-500'}`}
             >
@@ -134,16 +141,35 @@ const ProfileView: React.FC = () => {
           {/* Tab Content */}
           <div className="w-full">
             {activeTab === 'posts' && (
-              <div className="grid grid-cols-3 gap-0.5">
-                {posts.map(post => (
-                  <div key={post.id} className="aspect-square bg-gray-800 group cursor-pointer" onClick={() => setSelectedPost(post)}>
-                    <img
-                      src={post.rolls.photos[0]?.thumbnail_url}
-                      alt="Post thumbnail"
-                      className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
-                    />
+              posts.length > 0 ? (
+                <div className="grid grid-cols-3 gap-0.5">
+                  {posts.map(post => (
+                    <div key={post.id} className="aspect-square bg-gray-800 group cursor-pointer" onClick={() => setSelectedPost(post)}>
+                      <img
+                        src={post.rolls.photos[0]?.thumbnail_url}
+                        alt="Post thumbnail"
+                        className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center text-gray-500 py-10">
+                  <Grid className="w-12 h-12 mx-auto mb-2" />
+                  <p>No posts yet.</p>
+                </div>
+              )
+            )}
+            {activeTab === 'feed' && (
+              <div className="space-y-8 p-4">
+                {posts.length > 0 ? (
+                  posts.map(post => <PostView key={post.id} post={post} />)
+                ) : (
+                  <div className="text-center text-gray-500 py-10">
+                    <LayoutList className="w-12 h-12 mx-auto mb-2" />
+                    <p>No posts yet.</p>
                   </div>
-                ))}
+                )}
               </div>
             )}
             {activeTab === 'badges' && (
