@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Trophy, Target, Clock, Zap, Star, Calendar, Gift, CheckCircle } from 'lucide-react';
+import { Trophy, Target, Clock, Zap, Star, Gift, CheckCircle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import XPBar from './XPBar';
 
 const ChallengesView: React.FC = () => {
-  const { challenges, setChallenges, user } = useAppContext();
+  const { challenges, setChallenges, profile } = useAppContext();
   const [activeTab, setActiveTab] = useState('active');
 
   const handleClaimReward = (challengeId: string) => {
@@ -14,16 +15,16 @@ const ChallengesView: React.FC = () => {
     ));
   };
 
-  const getTimeRemaining = (expiresAt?: Date) => {
+  const getTimeRemaining = (expiresAt?: string) => {
     if (!expiresAt) return null;
     const now = new Date();
-    const diff = expiresAt.getTime() - now.getTime();
+    const diff = new Date(expiresAt).getTime() - now.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     return { hours, minutes };
   };
 
-  const activeChallenges = challenges.filter(c => !c.isCompleted && (!c.expiresAt || c.expiresAt > new Date()));
+  const activeChallenges = challenges.filter(c => !c.isCompleted && (!c.expires_at || new Date(c.expires_at) > new Date()));
   const completedChallenges = challenges.filter(c => c.isCompleted);
 
   return (
@@ -38,6 +39,24 @@ const ChallengesView: React.FC = () => {
           <Trophy className="w-12 h-12 text-yellow-300" />
         </div>
       </div>
+
+      {/* User Progress Section */}
+      {profile && (
+        <div className="bg-gray-800 rounded-xl p-6 space-y-4">
+          <h2 className="text-xl font-bold font-recoleta text-amber-400">Your Progress</h2>
+          <XPBar xp={profile.xp} level={profile.level} />
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-700/50">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white">{profile.credits}</div>
+              <div className="text-sm text-gray-400">Credits</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-white">{profile.streak}</div>
+              <div className="text-sm text-gray-400">Daily Streak</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Challenge Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -89,9 +108,9 @@ const ChallengesView: React.FC = () => {
         {activeTab === 'active' && (
           <>
             {activeChallenges.map((challenge) => {
-              const timeRemaining = getTimeRemaining(challenge.expiresAt);
-              const progress = Math.min((challenge.progress / challenge.target) * 100, 100);
-              const isComplete = challenge.progress >= challenge.target;
+              const timeRemaining = getTimeRemaining(challenge.expires_at);
+              const progress = Math.min(((challenge.progress || 0) / challenge.target) * 100, 100);
+              const isComplete = (challenge.progress || 0) >= challenge.target;
 
               return (
                 <div key={challenge.id} className={`bg-gray-800 rounded-xl p-6 ${
@@ -117,7 +136,7 @@ const ChallengesView: React.FC = () => {
                       <div className="mb-3">
                         <div className="flex items-center justify-between text-sm mb-1">
                           <span>Progress</span>
-                          <span>{challenge.progress}/{challenge.target}</span>
+                          <span>{challenge.progress || 0}/{challenge.target}</span>
                         </div>
                         <div className="bg-gray-700 rounded-full h-2">
                           <div 

@@ -109,18 +109,14 @@ const ProfileView: React.FC = () => {
             )}
           </div>
 
-          <div className="my-8 w-full max-w-md bg-gray-800/50 p-4 rounded-2xl border border-gray-700/50 flex justify-around items-center">
+          <div className="mt-8 mb-6 w-full max-w-md bg-gray-800/50 p-4 rounded-2xl border border-gray-700/50 flex justify-around items-center">
             <HighlightStat value={posts.length} label="Posts" />
             <HighlightStat value={followersCount} label="Followers" />
             <HighlightStat value={followingCount} label="Following" />
           </div>
-          
-          <div className="w-full max-w-md bg-gray-800/50 p-4 rounded-2xl border border-gray-700/50">
-            <XPBar xp={profile.xp} level={profile.level} />
-          </div>
         </div>
 
-        <div className="flex-grow mt-8 px-4">
+        <div className="flex-grow px-4">
           <div className="flex space-x-1 bg-gray-800 rounded-lg p-1 mb-6">
             {[{id: 'posts', label: 'Posts', icon: ImageIcon}, {id: 'badges', label: 'Badges', icon: Award}].map(tab => (
               <button
