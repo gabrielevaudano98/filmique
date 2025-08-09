@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Heart, MessageCircle, Clock, Camera, UserPlus, Check, Send, Shield, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppContext, Post } from '../context/AppContext';
+import { formatDistanceToNow } from '../utils/time';
 
 interface PostViewProps {
   post: Post;
@@ -118,7 +119,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
       )}
 
       {/* Content Area: Actions, Caption, Comments */}
-      <div className="p-4 flex flex-col space-y-2">
+      <div className="p-4 flex flex-col space-y-3">
         {/* Action Buttons */}
         <div className="flex items-center space-x-4">
           <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className={`flex items-center space-x-2 transition-colors rounded-lg ${post.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
@@ -167,7 +168,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
         )}
 
         {/* Comment Form */}
-        <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-2">
+        <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-2 border-t border-gray-700/50">
           <img src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`} alt="Your avatar" className="w-8 h-8 rounded-full bg-gray-700" />
           <input
             type="text"
@@ -184,8 +185,8 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
         </form>
         
         {/* Post Date */}
-        <p className="text-gray-500 text-xs uppercase tracking-wider pt-2">
-          {new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+        <p className="text-gray-500 text-xs uppercase tracking-wider pt-1">
+          {formatDistanceToNow(post.created_at)}
         </p>
       </div>
     </div>

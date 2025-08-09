@@ -82,7 +82,7 @@ const CommunityView: React.FC = () => {
   };
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full max-w-xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-bold font-recoleta text-white">Community</h1>
         <button onClick={() => setShowCreatePostModal(true)} className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
