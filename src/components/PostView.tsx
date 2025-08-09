@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Heart, MessageCircle, Clock, Camera, UserPlus, Check, Send, Shield, Trash2 } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Heart, MessageCircle, Clock, Camera, UserPlus, Check, Send, Shield, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppContext, Post } from '../context/AppContext';
 
 interface PostViewProps {
@@ -10,6 +10,8 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
   const { profile, handleLike, handleFollow, addComment, deleteComment } = useAppContext();
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const photoContainerRef = useRef<HTMLDivElement>(null);
 
   if (!profile) return null;
 
@@ -21,6 +23,28 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
     setCommentText('');
     setIsSubmittingComment(false);
   };
+
+  const handleScroll = () => {
+    if (photoContainerRef.current) {
+      const scrollLeft = photoContainerRef.current.scrollLeft;
+      const photoWidth = photoContainerRef.current.offsetWidth;
+      const newIndex = Math.round(scrollLeft / photoWidth);
+      setActivePhotoIndex(newIndex);
+    }
+  };
+
+  const scrollToPhoto = (index: number) => {
+    if (photoContainerRef.current) {
+      const photoWidth = photoContainerRef.current.offsetWidth;
+      photoContainerRef.current.scrollTo({
+        left: photoWidth * index,
+        behavior: 'smooth'
+      });
+    }
+  };
+
+  const handlePrev = () => scrollToPhoto(Math.max(0, activePhotoIndex - 1));
+  const handleNext = () => scrollToPhoto(Math.min(post.rolls.photos.length - 1, activePhotoIndex + 1));
 
   const cacheBuster = post.rolls.developed_at ? `?t=${new Date(post.rolls.developed_at).getTime()}` : '';
 
@@ -37,10 +61,16 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
                 <span>Lvl {post.profiles.level}</span>
               </div>
             </div>
-            <p className="text-gray-400 text-sm flex items-center mt-0.5">
-              <Clock className="w-4 h-4 mr-1 text-gray-500" />
-              {new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </p>
+            <div className="flex items-center space-x-3 text-gray-400 text-xs mt-1">
+              <span className="flex items-center">
+                <Camera className="w-3 h-3 mr-1" />
+                {post.rolls.film_type}
+              </span>
+              <span className="flex items-center">
+                <Clock className="w-3 h-3 mr-1" />
+                {new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
+            </div>
           </div>
         </div>
         {post.user_id !== profile.id && (
@@ -59,23 +89,49 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
       </div>
 
       {post.rolls.photos && post.rolls.photos.length > 0 && (
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-0.5 bg-gray-700">
-          {post.rolls.photos.slice(0, 16).map((photo: any) => (
-            <div key={photo.id} className="aspect-square bg-gray-700 overflow-hidden">
-              <img src={`${photo.thumbnail_url}${cacheBuster}`} alt="Post photo" className="w-full h-full object-cover" />
-            </div>
-          ))}
+        <div className="relative group">
+          <div
+            ref={photoContainerRef}
+            onScroll={handleScroll}
+            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar aspect-square bg-gray-900"
+          >
+            {post.rolls.photos.map((photo: any) => (
+              <div key={photo.id} className="w-full h-full flex-shrink-0 snap-center flex items-center justify-center">
+                <img src={`${photo.url}${cacheBuster}`} alt="Post photo" className="w-auto h-auto max-w-full max-h-full object-contain" />
+              </div>
+            ))}
+          </div>
+          {post.rolls.photos.length > 1 && (
+            <>
+              {activePhotoIndex > 0 && (
+                <button onClick={handlePrev} className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+              )}
+              {activePhotoIndex < post.rolls.photos.length - 1 && (
+                <button onClick={handleNext} className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 p-2 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              )}
+              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex space-x-1.5">
+                {post.rolls.photos.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      index === activePhotoIndex ? 'bg-white scale-125' : 'bg-white/50'
+                    }`}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       )}
 
       <div className="p-4">
-        <p className="text-gray-300 leading-relaxed">{post.caption}</p>
-        <div className="flex items-center justify-end text-gray-400 text-sm mt-2">
-          <Camera className="w-4 h-4 mr-1.5" />
-          <span className="font-medium">Shot on {post.rolls.film_type}</span>
-        </div>
+        <p className="text-gray-300 leading-relaxed mb-3">{post.caption}</p>
 
-        <div className="flex items-center space-x-6 py-3">
+        <div className="flex items-center space-x-6 py-2">
           <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className={`flex items-center space-x-2 transition-colors min-h-[44px] px-2 py-1 rounded-lg ${post.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
             <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-current' : ''}`} />
             <span className="font-semibold">{post.likes.length}</span>
@@ -86,26 +142,32 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
           </div>
         </div>
         
-        <div className="border-t border-gray-700/50 pt-4 space-y-3">
-          {post.comments.map(comment => (
-            <div key={comment.id} className="flex items-start space-x-3 group">
-              <img src={comment.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${comment.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-gray-700 mt-1" />
-              <div className="bg-gray-700/50 rounded-lg px-3 py-2 flex-1">
-                <p className="font-semibold text-sm text-white">{comment.profiles.username}</p>
-                <p className="text-gray-300 text-sm">{comment.content}</p>
-              </div>
-              {comment.user_id === profile.id && (
-                <button 
-                  onClick={() => deleteComment(comment.id)}
-                  className="p-2 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label="Delete comment"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-          ))}
-          <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-2">
+        <div className="border-t border-gray-700/50 pt-4">
+          <div className="max-h-48 overflow-y-auto space-y-3 pr-2 no-scrollbar">
+            {post.comments.length > 0 ? (
+              post.comments.map(comment => (
+                <div key={comment.id} className="flex items-start space-x-3 group">
+                  <img src={comment.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${comment.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-gray-700 mt-1" />
+                  <div className="bg-gray-700/50 rounded-lg px-3 py-2 flex-1">
+                    <p className="font-semibold text-sm text-white">{comment.profiles.username}</p>
+                    <p className="text-gray-300 text-sm">{comment.content}</p>
+                  </div>
+                  {comment.user_id === profile.id && (
+                    <button 
+                      onClick={() => deleteComment(comment.id)}
+                      className="p-2 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                      aria-label="Delete comment"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm text-center py-4">No comments yet.</p>
+            )}
+          </div>
+          <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-4 mt-2 border-t border-gray-700/50">
             <img src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`} alt="Your avatar" className="w-8 h-8 rounded-full bg-gray-700" />
             <input
               type="text"
