@@ -68,22 +68,21 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
         </div>
       )}
 
-      <div className="p-4 space-y-4">
+      <div className="p-4">
         <p className="text-gray-300 leading-relaxed">{post.caption}</p>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-6">
-            <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className={`flex items-center space-x-2 transition-colors min-h-[44px] px-2 py-1 rounded-lg ${post.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
-              <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-current' : ''}`} />
-              <span>{post.likes.length}</span>
-            </button>
-            <div className="flex items-center space-x-2 text-gray-400">
-              <MessageCircle className="w-5 h-5" />
-              <span>{post.comments?.length || 0}</span>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2 text-gray-400 text-sm">
-            <Camera className="w-4 h-4" />
-            <span className="font-medium">Shot on {post.rolls.film_type}</span>
+        <div className="flex items-center justify-end text-gray-400 text-sm mt-2">
+          <Camera className="w-4 h-4 mr-1.5" />
+          <span className="font-medium">Shot on {post.rolls.film_type}</span>
+        </div>
+
+        <div className="flex items-center space-x-6 py-3">
+          <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className={`flex items-center space-x-2 transition-colors min-h-[44px] px-2 py-1 rounded-lg ${post.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
+            <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-current' : ''}`} />
+            <span className="font-semibold">{post.likes.length}</span>
+          </button>
+          <div className="flex items-center space-x-2 text-gray-400">
+            <MessageCircle className="w-5 h-5" />
+            <span className="font-semibold">{post.comments?.length || 0}</span>
           </div>
         </div>
         
