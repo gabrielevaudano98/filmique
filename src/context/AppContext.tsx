@@ -180,7 +180,7 @@ export const useAppContext = () => {
   return context;
 };
 
-const POST_SELECT_QUERY = '*, profiles!user_id(username, avatar_url, level), rolls!inner(film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))';
+const POST_SELECT_QUERY = '*, profiles!posts_user_id_fkey(username, avatar_url, level), rolls!posts_roll_id_fkey(film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
