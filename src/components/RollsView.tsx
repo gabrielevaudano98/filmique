@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Film, RefreshCw, ImageIcon, Camera } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../context/AppContext';
@@ -6,6 +6,7 @@ import RollsControls from './RollsControls';
 import DevelopedRollCard from './DevelopedRollCard';
 import DevelopingRollCard from './DevelopingRollCard';
 import { isRollDeveloped, isRollDeveloping } from '../utils/rollUtils';
+import TimelineScrubber from './TimelineScrubber';
 
 const RollsView: React.FC = () => {
   const { profile, activeRoll, completedRolls, developRoll, setCurrentView, setSelectedRoll, setShowFilmModal, setRollToName } = useAppContext();
@@ -59,6 +60,58 @@ const RollsView: React.FC = () => {
     });
     return groups;
   }, [filteredAndSortedRolls]);
+
+  const groupHeaderRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+  const [visibleYear, setVisibleYear] = useState<string | null>(null);
+  const isScrollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  const years = useMemo(() => {
+    const yearSet = new Set<string>();
+    Object.keys(groupedRolls).forEach(groupTitle => {
+        yearSet.add(groupTitle.split(' ')[1]);
+    });
+    return Array.from(yearSet).sort((a, b) => parseInt(b) - parseInt(a));
+  }, [groupedRolls]);
+
+  const handleScroll = () => {
+      if (isScrollingRef.current) return;
+
+      const topOffset = 100; // Approx height of TopBar + some margin
+      let currentVisibleYear = years[0] || null;
+
+      const sortedGroupKeys = Object.keys(groupedRolls).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+      for (const groupTitle of sortedGroupKeys) {
+          const headerEl = groupHeaderRefs.current[groupTitle];
+          if (headerEl && headerEl.getBoundingClientRect().top < topOffset) {
+              currentVisibleYear = groupTitle.split(' ')[1];
+              break;
+          }
+      }
+      setVisibleYear(currentVisibleYear);
+  };
+
+  const scrollToYear = (year: string) => {
+      const firstGroupForYear = Object.keys(groupedRolls).find(g => g.endsWith(year));
+      if (firstGroupForYear) {
+          const headerEl = groupHeaderRefs.current[firstGroupForYear];
+          if (headerEl) {
+              if (isScrollingRef.current) clearTimeout(isScrollingRef.current);
+              
+              const top = headerEl.getBoundingClientRect().top + window.scrollY - 80; // 80px for sticky header
+              window.scrollTo({ top, behavior: 'smooth' });
+
+              isScrollingRef.current = setTimeout(() => {
+                  isScrollingRef.current = null;
+              }, 1000);
+          }
+      }
+  };
+
+  useEffect(() => {
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+  }, [groupedRolls, years]);
 
   const handleCurrentRollClick = () => {
     if (activeRoll) {
@@ -129,9 +182,7 @@ const RollsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabs and Content Container */}
       <div className="bg-gray-800/50 rounded-2xl p-4 sm:p-6">
-        {/* Segmented Control Tabs */}
         <div className="bg-gray-800 rounded-xl p-1 flex space-x-1">
           <TabButton
             label="Developed"
@@ -147,7 +198,6 @@ const RollsView: React.FC = () => {
           />
         </div>
 
-        {/* Content Area */}
         <div className="mt-6">
           {activeTab === 'developed' && (
             <div>
@@ -164,7 +214,7 @@ const RollsView: React.FC = () => {
                 <div className="space-y-8">
                   {Object.entries(groupedRolls).map(([groupTitle, rollsInGroup]) => (
                     <div key={groupTitle}>
-                      <h3 className="sticky top-20 bg-gray-800/80 backdrop-blur-sm py-2 text-lg font-bold text-white mb-4 font-recoleta z-10">{groupTitle}</h3>
+                      <h3 ref={el => groupHeaderRefs.current[groupTitle] = el} className="sticky top-20 bg-gray-900/80 backdrop-blur-sm py-2 text-lg font-bold text-white mb-4 font-recoleta z-10">{groupTitle}</h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {rollsInGroup.map(roll => (
                           <DevelopedRollCard
@@ -181,14 +231,8 @@ const RollsView: React.FC = () => {
               ) : (
                 <div className="text-center py-16 px-4">
                   <ImageIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">
-                    {searchTerm || selectedFilm !== 'all' ? 'No Rolls Found' : 'No Developed Rolls'}
-                  </h3>
-                  <p className="text-gray-400 max-w-md mx-auto">
-                    {searchTerm || selectedFilm !== 'all'
-                      ? "Try adjusting your search or filter to find what you're looking for."
-                      : "Finish a roll and develop it to see your photos here."}
-                  </p>
+                  <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">{searchTerm || selectedFilm !== 'all' ? 'No Rolls Found' : 'No Developed Rolls'}</h3>
+                  <p className="text-gray-400 max-w-md mx-auto">{searchTerm || selectedFilm !== 'all' ? "Try adjusting your search or filter to find what you're looking for." : "Finish a roll and develop it to see your photos here."}</p>
                 </div>
               )}
             </div>
@@ -196,16 +240,7 @@ const RollsView: React.FC = () => {
 
           {activeTab === 'developing' && (
             <div className="max-w-2xl mx-auto space-y-4">
-              {developingRolls.length > 0 ? (
-                developingRolls.map(roll => (
-                  <DevelopingRollCard
-                    key={roll.id}
-                    roll={roll}
-                    profile={profile}
-                    onDevelop={developRoll}
-                  />
-                ))
-              ) : (
+              {developingRolls.length > 0 ? developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} profile={profile} onDevelop={developRoll} />) : (
                 <div className="text-center py-16 px-4">
                   <Camera className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                   <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">Nothing in the Darkroom</h3>
@@ -216,6 +251,16 @@ const RollsView: React.FC = () => {
           )}
         </div>
       </div>
+      
+      {activeTab === 'developed' && years.length > 1 && (
+        <div className="fixed top-1/2 -translate-y-1/2 right-1 md:right-3 h-1/2 w-16 z-20 hidden md:block">
+            <TimelineScrubber 
+                years={years}
+                activeYear={visibleYear}
+                onSelectYear={scrollToYear}
+            />
+        </div>
+      )}
     </div>
   );
 };
