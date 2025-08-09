@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Film, RefreshCw, ImageIcon, Camera } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../context/AppContext';
@@ -6,7 +6,6 @@ import RollsControls from './RollsControls';
 import DevelopedRollCard from './DevelopedRollCard';
 import DevelopingRollCard from './DevelopingRollCard';
 import { isRollDeveloped, isRollDeveloping } from '../utils/rollUtils';
-import FastScroller from './FastScroller';
 
 const RollsView: React.FC = () => {
   const { profile, activeRoll, completedRolls, developRoll, setCurrentView, setSelectedRoll, setShowFilmModal, setRollToName } = useAppContext();
@@ -16,9 +15,6 @@ const RollsView: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortOrder, setSortOrder] = useState('newest');
   const [selectedFilm, setSelectedFilm] = useState('all');
-
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const groupHeaderRefs = useRef<{ [key: string]: HTMLElement | null }>({});
 
   const { developedRolls, developingRolls, filmTypes } = useMemo(() => {
     const allCompleted = completedRolls || [];
@@ -99,7 +95,7 @@ const RollsView: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-col w-full h-full space-y-6 pb-28">
+    <div className="flex flex-col w-full space-y-6">
       <div onClick={handleCurrentRollClick} className="bg-gradient-to-br from-amber-600 to-orange-600 rounded-2xl p-5 text-white shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer">
         <div className="flex items-center justify-between">
           <div>
@@ -133,7 +129,9 @@ const RollsView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-gray-800/50 rounded-2xl p-4 sm:p-6 flex-1 flex flex-col min-h-0">
+      {/* Tabs and Content Container */}
+      <div className="bg-gray-800/50 rounded-2xl p-4 sm:p-6">
+        {/* Segmented Control Tabs */}
         <div className="bg-gray-800 rounded-xl p-1 flex space-x-1">
           <TabButton
             label="Developed"
@@ -149,84 +147,72 @@ const RollsView: React.FC = () => {
           />
         </div>
 
-        <div className="mt-6 flex-1 relative min-h-0">
-          <div ref={scrollContainerRef} className="absolute inset-0 overflow-y-auto no-scrollbar scroll-smooth">
-            {activeTab === 'developed' && (
-              <div>
-                <RollsControls
-                  searchTerm={searchTerm}
-                  setSearchTerm={setSearchTerm}
-                  sortOrder={sortOrder}
-                  setSortOrder={setSortOrder}
-                  filmTypes={filmTypes}
-                  selectedFilm={selectedFilm}
-                  setSelectedFilm={setSelectedFilm}
-                />
-                {filteredAndSortedRolls.length > 0 ? (
-                  <div className="space-y-8">
-                    {Object.entries(groupedRolls).map(([groupTitle, rollsInGroup]) => (
-                      <div key={groupTitle}>
-                        <h3 
-                          ref={el => { groupHeaderRefs.current[groupTitle] = el; }}
-                          className="sticky top-0 bg-gray-800/80 backdrop-blur-sm py-2 text-lg font-bold text-white mb-4 font-recoleta z-10"
-                        >
-                          {groupTitle}
-                        </h3>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                          {rollsInGroup.map(roll => (
-                            <DevelopedRollCard
-                              key={roll.id}
-                              roll={roll}
-                              onSelect={() => { setSelectedRoll(roll); setCurrentView('rollDetail'); }}
-                              onRename={() => setRollToName(roll)}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-16 px-4">
-                    <ImageIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                    <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">
-                      {searchTerm || selectedFilm !== 'all' ? 'No Rolls Found' : 'No Developed Rolls'}
-                    </h3>
-                    <p className="text-gray-400 max-w-md mx-auto">
-                      {searchTerm || selectedFilm !== 'all'
-                        ? "Try adjusting your search or filter to find what you're looking for."
-                        : "Finish a roll and develop it to see your photos here."}
-                    </p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'developing' && (
-              <div className="max-w-2xl mx-auto space-y-4">
-                {developingRolls.length > 0 ? (
-                  developingRolls.map(roll => (
-                    <DevelopingRollCard
-                      key={roll.id}
-                      roll={roll}
-                      profile={profile}
-                      onDevelop={developRoll}
-                    />
-                  ))
-                ) : (
-                  <div className="text-center py-16 px-4">
-                    <Camera className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                    <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">Nothing in the Darkroom</h3>
-                    <p className="text-gray-400 max-w-md mx-auto">When you finish a roll of film, it will show up here to be developed.</p>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
+        {/* Content Area */}
+        <div className="mt-6">
           {activeTab === 'developed' && (
-            <FastScroller 
-              scrollContainerRef={scrollContainerRef}
-              groupHeaderRefs={groupHeaderRefs}
-            />
+            <div>
+              <RollsControls
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                sortOrder={sortOrder}
+                setSortOrder={setSortOrder}
+                filmTypes={filmTypes}
+                selectedFilm={selectedFilm}
+                setSelectedFilm={setSelectedFilm}
+              />
+              {filteredAndSortedRolls.length > 0 ? (
+                <div className="space-y-8">
+                  {Object.entries(groupedRolls).map(([groupTitle, rollsInGroup]) => (
+                    <div key={groupTitle}>
+                      <h3 className="sticky top-20 bg-gray-800/80 backdrop-blur-sm py-2 text-lg font-bold text-white mb-4 font-recoleta z-10">{groupTitle}</h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        {rollsInGroup.map(roll => (
+                          <DevelopedRollCard
+                            key={roll.id}
+                            roll={roll}
+                            onSelect={() => { setSelectedRoll(roll); setCurrentView('rollDetail'); }}
+                            onRename={() => setRollToName(roll)}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-16 px-4">
+                  <ImageIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">
+                    {searchTerm || selectedFilm !== 'all' ? 'No Rolls Found' : 'No Developed Rolls'}
+                  </h3>
+                  <p className="text-gray-400 max-w-md mx-auto">
+                    {searchTerm || selectedFilm !== 'all'
+                      ? "Try adjusting your search or filter to find what you're looking for."
+                      : "Finish a roll and develop it to see your photos here."}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'developing' && (
+            <div className="max-w-2xl mx-auto space-y-4">
+              {developingRolls.length > 0 ? (
+                developingRolls.map(roll => (
+                  <DevelopingRollCard
+                    key={roll.id}
+                    roll={roll}
+                    profile={profile}
+                    onDevelop={developRoll}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-16 px-4">
+                  <Camera className="w-16 h-16 text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">Nothing in the Darkroom</h3>
+                  <p className="text-gray-400 max-w-md mx-auto">When you finish a roll of film, it will show up here to be developed.</p>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>

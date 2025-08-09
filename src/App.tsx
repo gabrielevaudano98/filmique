@@ -76,10 +76,10 @@ function App() {
   const mainContentPadding = ['settings', 'profile'].includes(currentView) ? '' : 'px-4 py-4';
 
   return (
-    <div className="bg-gray-900 text-white flex flex-col h-screen overflow-hidden">
+    <div className="bg-gray-900 text-white">
       {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
       <TopBar />
-      <main className="flex-1 min-h-0">
+      <main className={`min-h-screen w-full pt-20 pb-28`}>
         <div className={`max-w-6xl mx-auto w-full h-full ${mainContentPadding}`}>
           {renderCurrentView()}
         </div>
