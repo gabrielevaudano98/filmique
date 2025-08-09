@@ -180,6 +180,8 @@ export const useAppContext = () => {
   return context;
 };
 
+const POST_SELECT_QUERY = '*, profiles!inner(username, avatar_url, level), rolls!inner(film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))';
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -247,7 +249,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const followedUserIds = new Set(followingData?.map(f => f.following_id) || []);
 
     const { data: allPostsData, error } = await supabase.from('posts')
-      .select('*, profiles!inner(username, avatar_url, level), rolls!inner(film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))')
+      .select(POST_SELECT_QUERY)
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -503,17 +505,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const createPost = async (rollId: string, caption: string) => {
     if (!profile) return;
-    const { data, error } = await supabase.from('posts').insert({
-      user_id: profile.id,
-      roll_id: rollId,
-      caption: caption,
-    }).select().single();
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success('Post published!');
-      recordActivity('post', data.id, profile.id);
-      fetchFeed(profile.id);
+    const toastId = toast.loading('Publishing post...');
+    try {
+      const { data: newPost, error } = await supabase.from('posts').insert({
+        user_id: profile.id,
+        roll_id: rollId,
+        caption: caption,
+      }).select(POST_SELECT_QUERY).single();
+      
+      if (error) throw error;
+
+      if (newPost) {
+        const augmentedPost = {
+          ...newPost,
+          isLiked: false,
+          isFollowed: false,
+          likes: newPost.likes || [],
+          comments: newPost.comments || [],
+        } as Post;
+
+        setFeed(prevFeed => [augmentedPost, ...prevFeed]);
+        
+        await recordActivity('post', newPost.id, profile.id);
+        
+        toast.success('Post published!', { id: toastId });
+      } else {
+        throw new Error("Failed to create post.");
+      }
+    } catch (error: any) {
+      toast.error(error.message, { id: toastId });
     }
   };
 
