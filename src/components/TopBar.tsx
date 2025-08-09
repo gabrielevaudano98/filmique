@@ -16,7 +16,7 @@ const TopBar: React.FC = () => {
   );
 
   return (
-    <header className={`w-full bg-gray-900 text-white px-4 flex items-center justify-between relative z-40 transition-all duration-300 border-b border-gray-700/80 h-16 py-3 pt-safe`}>
+    <header className={`fixed top-0 left-0 right-0 w-full bg-gray-900 text-white px-4 flex items-center justify-between z-40 transition-all duration-300 border-b border-gray-700/80 h-16 py-3 pt-safe`}>
       <div className="flex items-center justify-between flex-1">
         <div className="w-10 h-10"></div> {/* Spacer */}
         <h1 className="text-2xl font-bold font-recoleta text-center">

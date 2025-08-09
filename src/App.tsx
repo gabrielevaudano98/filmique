@@ -75,11 +75,13 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col">
+    <div className="bg-gray-900 text-white">
       {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
       <TopBar />
-      <main className={`flex-1 max-w-6xl mx-auto w-full flex pb-28 ${currentView !== 'settings' ? 'px-4 py-4' : ''}`}>
-        {renderCurrentView()}
+      <main className={`min-h-screen w-full pt-16 pb-28`}>
+        <div className={`max-w-6xl mx-auto w-full h-full ${currentView !== 'settings' ? 'px-4 py-4' : ''}`}>
+          {renderCurrentView()}
+        </div>
       </main>
       <nav className="fixed bottom-0 left-0 right-0 w-full bg-gray-800 border-t border-gray-700 px-2 py-1 safe-area-bottom z-50">
         <div className="flex items-center justify-around max-w-md mx-auto py-1">
