@@ -13,6 +13,7 @@ const NameRollModal: React.FC<NameRollModalProps> = ({ roll, onClose }) => {
   const [title, setTitle] = useState(roll.title || '');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const isNamingRequired = !roll.title;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,13 +36,19 @@ const NameRollModal: React.FC<NameRollModalProps> = ({ roll, onClose }) => {
           <h2 className="text-xl font-bold font-recoleta text-white">
             {roll.title ? 'Rename Roll' : 'Name Your Roll'}
           </h2>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full">
+          <button
+            onClick={onClose}
+            disabled={isNamingRequired}
+            className="p-2 text-gray-400 hover:text-white transition-colors rounded-full disabled:opacity-50 disabled:cursor-not-allowed"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
         <form onSubmit={handleSubmit}>
           <p className="text-gray-400 mb-4 text-sm">
-            Give this roll a unique name to easily identify it later.
+            {isNamingRequired
+              ? "Your roll is developed! Give it a name to see your photos."
+              : "Give this roll a unique name to easily identify it later."}
           </p>
           <div className="relative">
             <Edit className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -60,7 +67,12 @@ const NameRollModal: React.FC<NameRollModalProps> = ({ roll, onClose }) => {
           </div>
           {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
           <div className="mt-6 flex justify-end space-x-3">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 font-semibold transition-colors">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isNamingRequired}
+              className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               Cancel
             </button>
             <button

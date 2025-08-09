@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Film, RefreshCw, ImageIcon, Camera } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { Roll } from '../context/AppContext';
 import NameRollModal from './NameRollModal';
 import RollsControls from './RollsControls';
 import DevelopedRollCard from './DevelopedRollCard';
@@ -18,7 +19,7 @@ const RollsView: React.FC = () => {
 
   const { developedRolls, developingRolls, filmTypes } = useMemo(() => {
     const allCompleted = completedRolls || [];
-    const developed = allCompleted.filter(isRollDeveloped);
+    const developed = allCompleted.filter(roll => isRollDeveloped(roll) && roll.title);
     const developing = allCompleted.filter(isRollDeveloping);
     const films = [...new Set(developed.map(r => r.film_type))];
     
@@ -46,6 +47,19 @@ const RollsView: React.FC = () => {
         }
       });
   }, [developedRolls, searchTerm, selectedFilm, sortOrder]);
+
+  const groupedRolls = useMemo(() => {
+    const groups: { [key: string]: Roll[] } = {};
+    filteredAndSortedRolls.forEach(roll => {
+      const date = new Date(roll.developed_at || roll.completed_at!);
+      const groupKey = date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
+      if (!groups[groupKey]) {
+        groups[groupKey] = [];
+      }
+      groups[groupKey].push(roll);
+    });
+    return groups;
+  }, [filteredAndSortedRolls]);
 
   const handleCurrentRollClick = () => {
     if (activeRoll) {
@@ -148,21 +162,34 @@ const RollsView: React.FC = () => {
                 setSelectedFilm={setSelectedFilm}
               />
               {filteredAndSortedRolls.length > 0 ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  {filteredAndSortedRolls.map(roll => (
-                    <DevelopedRollCard
-                      key={roll.id}
-                      roll={roll}
-                      onSelect={() => { setSelectedRoll(roll); setCurrentView('rollDetail'); }}
-                      onRename={() => setRollToName(roll)}
-                    />
+                <div className="space-y-8">
+                  {Object.entries(groupedRolls).map(([groupTitle, rollsInGroup]) => (
+                    <div key={groupTitle}>
+                      <h3 className="text-lg font-bold text-white mb-4 font-recoleta">{groupTitle}</h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        {rollsInGroup.map(roll => (
+                          <DevelopedRollCard
+                            key={roll.id}
+                            roll={roll}
+                            onSelect={() => { setSelectedRoll(roll); setCurrentView('rollDetail'); }}
+                            onRename={() => setRollToName(roll)}
+                          />
+                        ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               ) : (
                 <div className="text-center py-16 px-4">
                   <ImageIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">No Rolls Found</h3>
-                  <p className="text-gray-400 max-w-md mx-auto">Try adjusting your search or filter to find what you're looking for.</p>
+                  <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">
+                    {searchTerm || selectedFilm !== 'all' ? 'No Rolls Found' : 'No Developed Rolls'}
+                  </h3>
+                  <p className="text-gray-400 max-w-md mx-auto">
+                    {searchTerm || selectedFilm !== 'all'
+                      ? "Try adjusting your search or filter to find what you're looking for."
+                      : "Finish a roll and develop it to see your photos here."}
+                  </p>
                 </div>
               )}
             </div>

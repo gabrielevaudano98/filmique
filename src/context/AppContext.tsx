@@ -433,6 +433,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await refreshProfile();
       if (updatedRoll) {
         setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
+        setRollToName(updatedRoll);
       }
 
       toast.success('Roll developed successfully!', { id: toastId });
