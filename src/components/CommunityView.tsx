@@ -9,23 +9,20 @@ import { UserProfile } from '../context/AppContext';
 import { isRollDeveloped } from '../utils/rollUtils';
 
 const CommunityView: React.FC = () => {
-  const { profile, feed, completedRolls, searchUsers } = useAppContext();
+  const { profile, feed, completedRolls, searchUsers, handleFollow } = useAppContext();
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set());
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  useEffect(() => {
-    const followedUserIds = feed.reduce((acc, post) => {
-      if (post.isFollowed) {
-        acc.add(post.user_id);
-      }
-      return acc;
-    }, new Set<string>());
-    setFollowingIds(followedUserIds);
+  const followedFeed = useMemo(() => {
+    return feed.filter(post => post.isFollowed || post.user_id === profile?.id);
+  }, [feed, profile]);
+
+  const followingIds = useMemo(() => {
+    return new Set(feed.filter(p => p.isFollowed).map(p => p.user_id));
   }, [feed]);
 
   useEffect(() => {
@@ -69,19 +66,19 @@ const CommunityView: React.FC = () => {
       return <div className="text-center py-16 text-gray-400">No users found for "{debouncedSearchQuery}".</div>;
     }
 
-    if (feed.length === 0) {
+    if (followedFeed.length === 0) {
       return (
         <div className="text-center py-16 px-4 col-span-full bg-gray-800/50 rounded-lg">
           <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">Welcome to the Community</h3>
+          <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">Your Feed is Quiet</h3>
           <p className="text-gray-400 mb-6 max-w-md mx-auto">
-            Your feed is currently empty. Follow other users to see their posts, or create your first post to share your work!
+            Follow other photographers to see their work here. Use the search bar to find people!
           </p>
         </div>
       );
     }
 
-    return feed.map(post => <PostView key={post.id} post={post} />);
+    return followedFeed.map(post => <PostView key={post.id} post={post} />);
   };
 
   return (

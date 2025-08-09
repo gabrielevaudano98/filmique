@@ -63,7 +63,7 @@ export interface Post {
   caption: string;
   created_at: string;
   profiles: { username: string; avatar_url: string; level: number; };
-  rolls: { film_type: string, photos: Photo[], developed_at?: string };
+  rolls: { film_type: string, developed_at?: string, photos: Photo[] };
   likes: { user_id: string }[];
   comments: Comment[];
   isLiked?: boolean;
@@ -168,6 +168,9 @@ interface AppContextType {
   downloadRoll: (roll: Roll) => Promise<void>;
   fetchNotifications: () => Promise<void>;
   markNotificationsAsRead: () => Promise<void>;
+  fetchUserPosts: (userId: string) => Promise<Post[] | null>;
+  followersCount: number;
+  followingCount: number;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -198,6 +201,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
   const [rollToName, setRollToName] = useState<Roll | null>(null);
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
 
   const recordActivity = useCallback(async (activityType: string, entityId: string, entityOwnerId?: string) => {
     if (!profile) return;
@@ -205,7 +210,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await supabase.functions.invoke('record-activity', {
         body: { activityType, actorId: profile.id, entityId, entityOwnerId },
       });
-      // Optimistically update profile for immediate feedback
       refreshProfile();
     } catch (error) {
       console.error('Failed to record activity:', error);
@@ -218,6 +222,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
       setProfile(data);
     }
+  }, []);
+
+  const fetchFollowCounts = useCallback(async (userId: string) => {
+    const { count: followers } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', userId);
+    const { count: following } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', userId);
+    setFollowersCount(followers || 0);
+    setFollowingCount(following || 0);
   }, []);
 
   const fetchAlbums = useCallback(async (userId: string) => {
@@ -256,6 +267,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setFeed(augmentedFeed);
   }, []);
 
+  const fetchUserPosts = async (userId: string): Promise<Post[] | null> => {
+    const { data, error } = await supabase.from('posts')
+      .select('*, profiles!inner(username, avatar_url, level), rolls!inner(film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error("Error fetching user posts:", error);
+      return null;
+    }
+    return data as Post[];
+  };
+
   const fetchNotifications = useCallback(async () => {
     if (!profile) return;
     const { data, error } = await supabase
@@ -287,8 +311,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (profile) {
       fetchNotifications();
       fetchUserBadges(profile.id);
+      fetchFollowCounts(profile.id);
     }
-  }, [profile, fetchNotifications, fetchUserBadges]);
+  }, [profile, fetchNotifications, fetchUserBadges, fetchFollowCounts]);
 
   const handleLogin = async (email: string) => {
     setIsLoading(true);
@@ -484,7 +509,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await supabase.from('followers').insert({ follower_id: profile.id, following_id: userId });
       recordActivity('follow', userId, userId);
     }
-    if (profile) fetchFeed(profile.id);
+    if (profile) {
+      fetchFeed(profile.id);
+      fetchFollowCounts(profile.id);
+    }
   };
 
   const createPost = async (rollId: string, caption: string) => {
@@ -594,8 +622,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const value = useMemo(() => ({
-    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll, fetchNotifications, markNotificationsAsRead
-  }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, authStep, verificationEmail, selectedRoll, selectedAlbum, rollToName, handleFollow, handleLike, refreshProfile, recordActivity, fetchNotifications, markNotificationsAsRead]);
+    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll, fetchNotifications, markNotificationsAsRead, fetchUserPosts, followersCount, followingCount
+  }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, authStep, verificationEmail, selectedRoll, selectedAlbum, rollToName, handleFollow, handleLike, refreshProfile, recordActivity, fetchNotifications, markNotificationsAsRead, followersCount, followingCount]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
