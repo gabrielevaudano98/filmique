@@ -78,7 +78,7 @@ function App() {
     <div className="bg-gray-900 text-white">
       {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
       <TopBar />
-      <main className={`min-h-screen w-full pt-16 pb-28`}>
+      <main className={`min-h-screen w-full pt-20 pb-28`}>
         <div className={`max-w-6xl mx-auto w-full h-full ${currentView !== 'settings' ? 'px-4 py-4' : ''}`}>
           {renderCurrentView()}
         </div>
