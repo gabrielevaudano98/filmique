@@ -14,6 +14,7 @@ export interface UserProfile {
   email: string;
   avatar_url: string;
   level: number;
+  xp: number;
   credits: number;
   streak: number;
   subscription: 'free' | 'plus' | 'premium';
@@ -61,7 +62,7 @@ export interface Post {
   roll_id: string;
   caption: string;
   created_at: string;
-  profiles: { username: string; avatar_url: string };
+  profiles: { username: string; avatar_url: string; level: number; };
   rolls: { film_type: string, photos: Photo[], developed_at?: string };
   likes: { user_id: string }[];
   comments: Comment[];
@@ -93,6 +94,32 @@ export interface Challenge {
   isCompleted?: boolean;
 }
 
+export interface Notification {
+  id: string;
+  type: string;
+  is_read: boolean;
+  created_at: string;
+  entity_id: string;
+  actors: {
+    username: string;
+    avatar_url: string;
+  };
+  posts?: {
+    rolls?: {
+      photos: { thumbnail_url: string }[];
+    }
+  }
+}
+
+export interface UserBadge {
+  created_at: string;
+  badges: {
+    name: string;
+    description: string;
+    icon_name: string;
+  }
+}
+
 interface AppContextType {
   session: Session | null;
   profile: UserProfile | null;
@@ -108,6 +135,8 @@ interface AppContextType {
   feed: Post[];
   albums: Album[];
   challenges: Challenge[];
+  notifications: Notification[];
+  userBadges: UserBadge[];
   startNewRoll: (filmType: string, capacity: number) => Promise<void>;
   takePhoto: (imageBlob: Blob, metadata: any) => Promise<void>;
   setFeed: React.Dispatch<React.SetStateAction<Post[]>>;
@@ -127,16 +156,18 @@ interface AppContextType {
   createAlbum: (title: string) => Promise<void>;
   updateAlbumRolls: (albumId: string, rollIds: string[]) => Promise<void>;
   updateRollTitle: (rollId: string, title: string) => Promise<boolean>;
-  handleLike: (postId: string, isLiked?: boolean) => Promise<void>;
+  handleLike: (postId: string, postOwnerId: string, isLiked?: boolean) => Promise<void>;
   handleFollow: (userId: string, isFollowed?: boolean) => Promise<void>;
   createPost: (rollId: string, caption: string) => Promise<void>;
-  addComment: (postId: string, content: string) => Promise<void>;
+  addComment: (postId: string, postOwnerId: string, content: string) => Promise<void>;
   searchUsers: (query: string) => Promise<UserProfile[] | null>;
   rollToName: Roll | null;
   setRollToName: (roll: Roll | null) => void;
   deleteRoll: (rollId: string) => Promise<void>;
   downloadPhoto: (photo: Photo) => Promise<void>;
   downloadRoll: (roll: Roll) => Promise<void>;
+  fetchNotifications: () => Promise<void>;
+  markNotificationsAsRead: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -162,9 +193,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [feed, setFeed] = useState<Post[]>([]);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
   const [rollToName, setRollToName] = useState<Roll | null>(null);
+
+  const recordActivity = useCallback(async (activityType: string, entityId: string, entityOwnerId?: string) => {
+    if (!profile) return;
+    try {
+      await supabase.functions.invoke('record-activity', {
+        body: { activityType, actorId: profile.id, entityId, entityOwnerId },
+      });
+      // Optimistically update profile for immediate feedback
+      refreshProfile();
+    } catch (error) {
+      console.error('Failed to record activity:', error);
+    }
+  }, [profile]);
 
   const refreshProfile = useCallback(async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -187,13 +233,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   const fetchFeed = useCallback(async (userId: string) => {
-    // 1. Get followed users
     const { data: followingData } = await supabase.from('followers').select('following_id').eq('follower_id', userId);
     const followedUserIds = new Set(followingData?.map(f => f.following_id) || []);
 
-    // 2. Fetch all posts
     const { data: allPostsData, error } = await supabase.from('posts')
-      .select('*, profiles(username, avatar_url), rolls!inner(film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))')
+      .select('*, profiles!inner(username, avatar_url, level), rolls!inner(film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))')
       .order('created_at', { ascending: false })
       .limit(50);
 
@@ -203,37 +247,48 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
-    // 3. Augment and separate posts
-    const followingFeed: Post[] = [];
-    const discoveryFeed: Post[] = [];
-
-    allPostsData.forEach(post => {
-      const augmentedPost = {
-        ...post,
-        isLiked: post.likes.some(like => like.user_id === userId),
-        isFollowed: followedUserIds.has(post.user_id),
-      } as Post;
-
-      if (augmentedPost.user_id === userId || followedUserIds.has(augmentedPost.user_id)) {
-        followingFeed.push(augmentedPost);
-      } else {
-        discoveryFeed.push(augmentedPost);
-      }
-    });
-
-    // 4. Sort discovery feed by popularity
-    discoveryFeed.sort((a, b) => {
-      const scoreA = a.likes.length + (a.comments?.length || 0);
-      const scoreB = b.likes.length + (b.comments?.length || 0);
-      if (scoreB !== scoreA) {
-        return scoreB - scoreA;
-      }
-      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    });
-
-    // 5. Combine and set state
-    setFeed([...followingFeed, ...discoveryFeed]);
+    const augmentedFeed = allPostsData.map(post => ({
+      ...post,
+      isLiked: post.likes.some(like => like.user_id === userId),
+      isFollowed: followedUserIds.has(post.user_id),
+    })) as Post[];
+    
+    setFeed(augmentedFeed);
   }, []);
+
+  const fetchNotifications = useCallback(async () => {
+    if (!profile) return;
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*, actors:profiles!notifications_actor_id_fkey(username, avatar_url), posts(rolls(photos(thumbnail_url)))')
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(30);
+    
+    if (error) console.error("Error fetching notifications:", error);
+    else setNotifications(data as any);
+  }, [profile]);
+
+  const markNotificationsAsRead = async () => {
+    if (!profile) return;
+    const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
+    if (unreadIds.length === 0) return;
+
+    await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds);
+    setNotifications(notifications.map(n => ({ ...n, is_read: true })));
+  };
+
+  const fetchUserBadges = useCallback(async (userId: string) => {
+    const { data } = await supabase.from('user_badges').select('*, badges(*)').eq('user_id', userId);
+    if (data) setUserBadges(data as any);
+  }, []);
+
+  useEffect(() => {
+    if (profile) {
+      fetchNotifications();
+      fetchUserBadges(profile.id);
+    }
+  }, [profile, fetchNotifications, fetchUserBadges]);
 
   const handleLogin = async (email: string) => {
     setIsLoading(true);
@@ -410,12 +465,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return true;
   };
 
-  const handleLike = async (postId: string, isLiked?: boolean) => {
+  const handleLike = async (postId: string, postOwnerId: string, isLiked?: boolean) => {
     if (!profile) return;
     if (isLiked) {
       await supabase.from('likes').delete().match({ user_id: profile.id, post_id: postId });
     } else {
       await supabase.from('likes').insert({ user_id: profile.id, post_id: postId });
+      recordActivity('like', postId, postOwnerId);
     }
     if (profile) fetchFeed(profile.id);
   };
@@ -426,26 +482,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await supabase.from('followers').delete().match({ follower_id: profile.id, following_id: userId });
     } else {
       await supabase.from('followers').insert({ follower_id: profile.id, following_id: userId });
+      recordActivity('follow', userId, userId);
     }
     if (profile) fetchFeed(profile.id);
   };
 
   const createPost = async (rollId: string, caption: string) => {
     if (!profile) return;
-    const { error } = await supabase.from('posts').insert({
+    const { data, error } = await supabase.from('posts').insert({
       user_id: profile.id,
       roll_id: rollId,
       caption: caption,
-    });
+    }).select().single();
     if (error) {
       toast.error(error.message);
     } else {
       toast.success('Post published!');
+      recordActivity('post', data.id, profile.id);
       fetchFeed(profile.id);
     }
   };
 
-  const addComment = async (postId: string, content: string) => {
+  const addComment = async (postId: string, postOwnerId: string, content: string) => {
     if (!profile) return;
     const { error } = await supabase.from('comments').insert({
       post_id: postId,
@@ -455,6 +513,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (error) {
       toast.error(error.message);
     } else {
+      recordActivity('comment', postId, postOwnerId);
       fetchFeed(profile.id);
     }
   };
@@ -535,8 +594,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const value = useMemo(() => ({
-    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll
-  }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, authStep, verificationEmail, selectedRoll, selectedAlbum, rollToName, handleFollow, handleLike, refreshProfile]);
+    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll, fetchNotifications, markNotificationsAsRead
+  }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, authStep, verificationEmail, selectedRoll, selectedAlbum, rollToName, handleFollow, handleLike, refreshProfile, recordActivity, fetchNotifications, markNotificationsAsRead]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heart, MessageCircle, Clock, Camera, UserPlus, Check, Send } from 'lucide-react';
+import { Heart, MessageCircle, Clock, Camera, UserPlus, Check, Send, Shield } from 'lucide-react';
 import { useAppContext, Post } from '../context/AppContext';
 
 interface PostViewProps {
@@ -17,7 +17,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
     e.preventDefault();
     if (!commentText.trim()) return;
     setIsSubmittingComment(true);
-    await addComment(post.id, commentText.trim());
+    await addComment(post.id, post.user_id, commentText.trim());
     setCommentText('');
     setIsSubmittingComment(false);
   };
@@ -30,7 +30,13 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
         <div className="flex items-center space-x-3">
           <img src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-12 h-12 rounded-full bg-gray-700" />
           <div>
-            <h3 className="font-semibold text-lg font-recoleta">{post.profiles.username}</h3>
+            <div className="flex items-center space-x-2">
+              <h3 className="font-semibold text-lg font-recoleta">{post.profiles.username}</h3>
+              <div className="flex items-center space-x-1 bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full text-xs font-bold">
+                <Shield className="w-3 h-3" />
+                <span>Lvl {post.profiles.level}</span>
+              </div>
+            </div>
             <p className="text-gray-400 text-sm flex items-center mt-0.5">
               <Clock className="w-4 h-4 mr-1 text-gray-500" />
               {new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -66,7 +72,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
         <p className="text-gray-300 leading-relaxed">{post.caption}</p>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6">
-            <button onClick={() => handleLike(post.id, post.isLiked)} className={`flex items-center space-x-2 transition-colors min-h-[44px] px-2 py-1 rounded-lg ${post.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
+            <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className={`flex items-center space-x-2 transition-colors min-h-[44px] px-2 py-1 rounded-lg ${post.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
               <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-current' : ''}`} />
               <span>{post.likes.length}</span>
             </button>
@@ -81,7 +87,6 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
           </div>
         </div>
         
-        {/* Comments Section */}
         <div className="border-t border-gray-700/50 pt-4 space-y-3">
           {post.comments.map(comment => (
             <div key={comment.id} className="flex items-start space-x-3">

@@ -14,6 +14,7 @@ import TopBar from './components/TopBar';
 import RollDetailView from './components/RollDetailView';
 import AlbumDetailView from './components/AlbumDetailView';
 import NameRollModal from './components/NameRollModal';
+import NotificationsView from './components/NotificationsView';
 
 function App() {
   const { session, profile, isLoading, currentView, setCurrentView, authStep, rollToName, setRollToName } = useAppContext();
@@ -27,6 +28,7 @@ function App() {
       case 'settings': return <SettingsView />;
       case 'rollDetail': return <RollDetailView />;
       case 'albumDetail': return <AlbumDetailView />;
+      case 'notifications': return <NotificationsView />;
       default: return <RollsView />;
     }
   };
@@ -34,8 +36,6 @@ function App() {
   const handleNamingModalClose = () => {
     const justNamedRoll = rollToName;
     setRollToName(null);
-    // If the roll didn't have a title, it was the first time naming it.
-    // Navigate to rolls view to see the completed rolls.
     if (justNamedRoll && !justNamedRoll.title) {
       setCurrentView('rolls');
     }
@@ -65,7 +65,6 @@ function App() {
   }
   
   if (currentView === 'camera') {
-    // The naming modal needs to be available on top of the camera view too
     return (
       <>
         {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}

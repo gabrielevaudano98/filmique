@@ -1,10 +1,12 @@
 import React from 'react';
 import {
-  UserCircle, Star, Bell, Camera as CameraIcon, ShieldCheck, HelpCircle, Info, ChevronRight, LogOut, Trash2, Edit, Flame, Zap, Image as ImageIcon
+  UserCircle, Star, Bell, Camera as CameraIcon, ShieldCheck, HelpCircle, Info, ChevronRight, LogOut, Trash2, Edit, Flame, Zap, Image as ImageIcon, Award
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { supabase } from '../integrations/supabase/client';
 import toast from 'react-hot-toast';
+import XPBar from './XPBar';
+import BadgeIcon from './BadgeIcon';
 
 const SettingsRow: React.FC<{
   icon: React.ReactNode;
@@ -48,7 +50,7 @@ const HighlightStat: React.FC<{ icon: React.ReactNode; value: string | number; l
 );
 
 const SettingsView: React.FC = () => {
-  const { profile, setCurrentView, completedRolls } = useAppContext();
+  const { profile, setCurrentView, completedRolls, userBadges } = useAppContext();
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -78,7 +80,6 @@ const SettingsView: React.FC = () => {
       <div className="p-4 sm:p-6">
         <h1 className="text-2xl font-bold font-recoleta text-white mb-6">Profile & Settings</h1>
 
-        {/* Profile Header */}
         <div className="flex items-center bg-gray-800 p-4 rounded-xl mb-6 border border-gray-700/50">
           <img
             src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`}
@@ -94,12 +95,33 @@ const SettingsView: React.FC = () => {
           </button>
         </div>
 
-        {/* Stats */}
+        <div className="bg-gray-800 p-4 rounded-xl mb-6 border border-gray-700/50">
+          <XPBar xp={profile.xp} level={profile.level} />
+        </div>
+
         <div className="grid grid-cols-3 gap-3 mb-8">
           <HighlightStat icon={<Flame className="w-6 h-6" />} value={profile.streak} label="Day Streak" />
           <HighlightStat icon={<Zap className="w-6 h-6" />} value={profile.credits} label="Credits" />
           <HighlightStat icon={<ImageIcon className="w-6 h-6" />} value={totalPhotos} label="Photos" />
         </div>
+
+        <SettingsGroup title="Badges">
+          {userBadges.length > 0 ? (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 p-4">
+              {userBadges.map(ub => (
+                <div key={ub.badges.name} className="flex flex-col items-center text-center group cursor-pointer">
+                  <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center mb-2 border-2 border-amber-400/50 group-hover:bg-amber-400/10 transition-colors">
+                    <BadgeIcon name={ub.badges.icon_name} className="w-8 h-8 text-amber-400" />
+                  </div>
+                  <p className="text-xs font-semibold text-white">{ub.badges.name}</p>
+                  <p className="text-xs text-gray-400 hidden group-hover:block">{ub.badges.description}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-gray-500 p-6">No badges earned yet. Keep exploring!</p>
+          )}
+        </SettingsGroup>
 
         <SettingsGroup title="Account">
           <SettingsRow
@@ -134,22 +156,6 @@ const SettingsView: React.FC = () => {
             icon={<ShieldCheck className="w-5 h-5 text-white" />}
             color="bg-indigo-500"
             title="Privacy & Security"
-            onClick={handleComingSoon}
-          />
-        </SettingsGroup>
-
-        <SettingsGroup title="Support">
-          <SettingsRow
-            icon={<HelpCircle className="w-5 h-5 text-white" />}
-            color="bg-gray-500"
-            title="Help & Support"
-            onClick={handleComingSoon}
-          />
-          <SettingsRow
-            icon={<Info className="w-5 h-5 text-white" />}
-            color="bg-gray-500"
-            title="About"
-            subtitle="v1.0.0"
             onClick={handleComingSoon}
           />
         </SettingsGroup>
