@@ -2,10 +2,10 @@ import React, { useState, useMemo } from 'react';
 import { Settings, Image as ImageIcon, Award, Plus } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import XPBar from './XPBar';
-import { Post } from '../context/AppContext';
 import BadgeIcon from './BadgeIcon';
 import CreatePostModal from './CreatePostModal';
 import { isRollDeveloped } from '../utils/rollUtils';
+import PostView from './PostView'; // Import the PostView component
 
 const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ value, label }) => (
   <div className="text-center">
@@ -111,21 +111,17 @@ const ProfileView: React.FC = () => {
             </div>
           </div>
 
-          {posts.length > 0 ? (
-            <div className="grid grid-cols-3 gap-1">
-              {posts.map(post => (
-                <div key={post.id} className="aspect-square bg-gray-800">
-                  <img src={post.rolls.photos[0]?.thumbnail_url} alt="Post thumbnail" className="w-full h-full object-cover" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-10 text-gray-500">
-              <ImageIcon className="w-12 h-12 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold">No posts yet</h3>
-              <p>Share your first roll to see it here.</p>
-            </div>
-          )}
+          <div className="space-y-8">
+            {posts.length > 0 ? (
+              posts.map(post => <PostView key={post.id} post={post} />)
+            ) : (
+              <div className="text-center py-10 text-gray-500">
+                <ImageIcon className="w-12 h-12 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold">No posts yet</h3>
+                <p>Share your first roll to see it here.</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>
