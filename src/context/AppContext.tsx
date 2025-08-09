@@ -168,7 +168,6 @@ interface AppContextType {
   downloadRoll: (roll: Roll) => Promise<void>;
   fetchNotifications: () => Promise<void>;
   markNotificationsAsRead: () => Promise<void>;
-  fetchUserPosts: (userId: string) => Promise<Post[] | null>;
   followersCount: number;
   followingCount: number;
 }
@@ -266,19 +265,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     
     setFeed(augmentedFeed);
   }, []);
-
-  const fetchUserPosts = async (userId: string): Promise<Post[] | null> => {
-    const { data, error } = await supabase.from('posts')
-      .select('*, profiles!inner(username, avatar_url, level), rolls!inner(film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error("Error fetching user posts:", error);
-      return null;
-    }
-    return data as Post[];
-  };
 
   const fetchNotifications = useCallback(async () => {
     if (!profile) return;
@@ -622,7 +608,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const value = useMemo(() => ({
-    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll, fetchNotifications, markNotificationsAsRead, fetchUserPosts, followersCount, followingCount
+    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll, fetchNotifications, markNotificationsAsRead, followersCount, followingCount
   }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, authStep, verificationEmail, selectedRoll, selectedAlbum, rollToName, handleFollow, handleLike, refreshProfile, recordActivity, fetchNotifications, markNotificationsAsRead, followersCount, followingCount]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

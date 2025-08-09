@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Settings, Image as ImageIcon, Award, Plus } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import XPBar from './XPBar';
@@ -15,19 +15,13 @@ const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ va
 );
 
 const ProfileView: React.FC = () => {
-  const { profile, setCurrentView, fetchUserPosts, followersCount, followingCount, userBadges, completedRolls, feed } = useAppContext();
-  const [posts, setPosts] = useState<Post[]>([]);
+  const { profile, setCurrentView, feed, followersCount, followingCount, userBadges, completedRolls } = useAppContext();
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
 
-  useEffect(() => {
-    if (profile) {
-      fetchUserPosts(profile.id).then(userPosts => {
-        if (userPosts) {
-          setPosts(userPosts);
-        }
-      });
-    }
-  }, [profile, fetchUserPosts]);
+  const posts = useMemo(() => {
+    if (!profile) return [];
+    return feed.filter(post => post.user_id === profile.id);
+  }, [feed, profile]);
 
   const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
   
