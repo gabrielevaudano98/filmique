@@ -22,6 +22,7 @@ export interface UserProfile {
   first_name: string | null;
   last_name: string | null;
   has_completed_onboarding: boolean;
+  bio: string | null;
 }
 
 export interface Photo {
@@ -171,6 +172,7 @@ interface AppContextType {
   markNotificationsAsRead: () => Promise<void>;
   followersCount: number;
   followingCount: number;
+  updateProfileDetails: (details: { bio?: string; avatarFile?: File }) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -639,8 +641,55 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const updateProfileDetails = async (details: { bio?: string; avatarFile?: File }) => {
+    if (!profile) return;
+
+    const updatePayload: { bio?: string; avatar_url?: string } = {};
+    let avatarUrl = profile.avatar_url;
+
+    if (details.avatarFile) {
+        const toastId = toast.loading('Uploading new avatar...');
+        try {
+            const fileExt = details.avatarFile.name.split('.').pop();
+            const filePath = `${profile.id}/avatar.${fileExt}`;
+            
+            const { error: uploadError } = await supabase.storage
+                .from('avatars')
+                .upload(filePath, details.avatarFile, { upsert: true });
+
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(filePath);
+            avatarUrl = `${urlData.publicUrl}?t=${new Date().getTime()}`;
+            updatePayload.avatar_url = avatarUrl;
+            toast.success('Avatar updated!', { id: toastId });
+        } catch (error: any) {
+            toast.error(`Avatar upload failed: ${error.message}`, { id: toastId });
+            return;
+        }
+    }
+
+    if (typeof details.bio !== 'undefined') {
+        updatePayload.bio = details.bio;
+    }
+
+    if (Object.keys(updatePayload).length > 0) {
+        const { error: updateError } = await supabase
+            .from('profiles')
+            .update(updatePayload)
+            .eq('id', profile.id);
+
+        if (updateError) {
+            toast.error(`Failed to update profile: ${updateError.message}`);
+        } else {
+            if (typeof details.bio !== 'undefined') toast.success('Profile updated!');
+            await refreshProfile();
+        }
+    }
+  };
+
   const value = useMemo(() => ({
-    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, deleteComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll, fetchNotifications, markNotificationsAsRead, followersCount, followingCount
+    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, deleteComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll, fetchNotifications, markNotificationsAsRead, followersCount, followingCount, updateProfileDetails
   }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, authStep, verificationEmail, selectedRoll, selectedAlbum, rollToName, handleFollow, handleLike, refreshProfile, recordActivity, fetchNotifications, markNotificationsAsRead, followersCount, followingCount, deleteComment]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
