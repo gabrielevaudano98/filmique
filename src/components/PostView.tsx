@@ -47,32 +47,18 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
   const handleNext = () => scrollToPhoto(Math.min(post.rolls.photos.length - 1, activePhotoIndex + 1));
 
   const cacheBuster = post.rolls.developed_at ? `?t=${new Date(post.rolls.developed_at).getTime()}` : '';
+  
+  const latestComment = post.comments && post.comments.length > 0 ? post.comments[post.comments.length - 1] : null;
 
   return (
-    // Main container with a subtle gradient and shadow for a "fancy" look
     <div className="bg-gradient-to-b from-gray-800 to-gray-800/80 rounded-2xl overflow-hidden shadow-2xl border border-gray-700/50">
       {/* Post Header */}
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <img src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-12 h-12 rounded-full bg-gray-700 border-2 border-gray-600" />
+          <img src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-10 h-10 rounded-full bg-gray-700 border-2 border-gray-600" />
           <div>
-            <div className="flex items-center space-x-2">
-              <h3 className="font-bold text-white text-lg">{post.profiles.username}</h3>
-              <div className="flex items-center space-x-1 bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full text-xs font-bold">
-                <Shield className="w-3 h-3" />
-                <span>Lvl {post.profiles.level}</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3 text-gray-400 text-xs mt-1">
-              <span className="flex items-center">
-                <Camera className="w-3 h-3 mr-1.5" />
-                {post.rolls.film_type}
-              </span>
-              <span className="flex items-center">
-                <Clock className="w-3 h-3 mr-1.5" />
-                {new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </span>
-            </div>
+            <h3 className="font-bold text-white">{post.profiles.username}</h3>
+            <p className="text-gray-400 text-xs">{post.rolls.film_type}</p>
           </div>
         </div>
         {post.user_id !== profile.id && (
@@ -131,63 +117,76 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
         </div>
       )}
 
-      {/* Content Area: Caption, Actions, Comments */}
-      <div className="p-4 flex flex-col">
-        {/* Caption */}
-        <p className="text-gray-200 leading-relaxed mb-4">{post.caption}</p>
-
+      {/* Content Area: Actions, Caption, Comments */}
+      <div className="p-4 flex flex-col space-y-2">
         {/* Action Buttons */}
-        <div className="flex items-center space-x-4 py-2 border-b border-gray-700/50 mb-4">
-          <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className={`flex items-center space-x-2 transition-colors min-h-[44px] px-2 py-1 rounded-lg ${post.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
+        <div className="flex items-center space-x-4">
+          <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className={`flex items-center space-x-2 transition-colors rounded-lg ${post.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
             <Heart className={`w-6 h-6 transition-transform duration-200 ${post.isLiked ? 'fill-current scale-110' : ''}`} />
-            <span className="font-semibold text-base">{post.likes.length}</span>
           </button>
-          <div className="flex items-center space-x-2 text-gray-400">
+          <button className="flex items-center space-x-2 text-gray-400 hover:text-white">
             <MessageCircle className="w-6 h-6" />
-            <span className="font-semibold text-base">{post.comments?.length || 0}</span>
-          </div>
-        </div>
-        
-        {/* Comments List (Scrollable) */}
-        <div className="flex-grow max-h-48 overflow-y-auto space-y-4 pr-2 no-scrollbar mb-4">
-          {post.comments.length > 0 ? (
-            post.comments.map(comment => (
-              <div key={comment.id} className="flex items-start space-x-3 group">
-                <img src={comment.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${comment.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-gray-700 mt-1" />
-                <div className="bg-gray-700/50 rounded-lg px-3 py-2 flex-1">
-                  <p className="font-semibold text-sm text-white">{comment.profiles.username}</p>
-                  <p className="text-gray-300 text-sm">{comment.content}</p>
-                </div>
-                {comment.user_id === profile.id && (
-                  <button 
-                    onClick={() => deleteComment(comment.id)}
-                    className="p-2 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                    aria-label="Delete comment"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-500 text-sm text-center py-4">Be the first to comment.</p>
-          )}
+          </button>
         </div>
 
-        {/* Comment Form (Stays at the bottom) */}
-        <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-4 border-t border-gray-700/50">
-          <img src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`} alt="Your avatar" className="w-9 h-9 rounded-full bg-gray-700" />
+        {/* Likes Count */}
+        {post.likes.length > 0 && (
+          <p className="font-bold text-sm text-white">{post.likes.length} {post.likes.length === 1 ? 'like' : 'likes'}</p>
+        )}
+
+        {/* Caption */}
+        <p className="text-gray-200 text-sm leading-relaxed">
+          <span className="font-bold text-white mr-2">{post.profiles.username}</span>
+          {post.caption}
+        </p>
+
+        {/* View all comments button */}
+        {post.comments.length > 1 && (
+          <button className="text-gray-500 text-sm text-left hover:text-gray-400">
+            View all {post.comments.length} comments
+          </button>
+        )}
+
+        {/* Latest Comment */}
+        {latestComment && (
+          <div className="flex items-start space-x-3 group">
+            <p className="text-sm text-gray-300">
+              <span className="font-bold text-white mr-2">{latestComment.profiles.username}</span>
+              {latestComment.content}
+            </p>
+            {latestComment.user_id === profile.id && (
+              <button 
+                onClick={() => deleteComment(latestComment.id)}
+                className="p-1 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label="Delete comment"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Comment Form */}
+        <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-2">
+          <img src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`} alt="Your avatar" className="w-8 h-8 rounded-full bg-gray-700" />
           <input
             type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="Add a comment..."
-            className="flex-1 bg-gray-700 border border-gray-600 rounded-full px-4 py-2 text-white focus:ring-amber-500 focus:border-amber-500 h-10"
+            className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm"
           />
-          <button type="submit" disabled={isSubmittingComment || !commentText.trim()} className="w-10 h-10 flex-shrink-0 flex items-center justify-center bg-amber-500 rounded-full text-gray-900 disabled:bg-gray-600 transition-transform hover:scale-110 active:scale-100">
-            <Send className="w-5 h-5" />
-          </button>
+          {commentText.trim() && (
+            <button type="submit" disabled={isSubmittingComment} className="text-amber-400 font-bold text-sm disabled:text-gray-500 transition-colors">
+              {isSubmittingComment ? 'Posting...' : 'Post'}
+            </button>
+          )}
         </form>
+        
+        {/* Post Date */}
+        <p className="text-gray-500 text-xs uppercase tracking-wider pt-2">
+          {new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}
+        </p>
       </div>
     </div>
   );
