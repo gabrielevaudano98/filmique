@@ -1,39 +1,34 @@
-import React, { useState, useMemo, useRef } from 'react';
-import { Award, Edit, Image as ImageIcon, Plus, Save, User, Settings } from 'lucide-react';
-import { useAppContext } from '../context/AppContext';
-import XPBar from './XPBar';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
+import { Award, Edit, Image as ImageIcon, Grid, Settings, User, CheckCircle, Loader } from 'lucide-react';
+import { useAppContext, Post } from '../context/AppContext';
 import BadgeIcon from './BadgeIcon';
-import CreatePostModal from './CreatePostModal';
-import { isRollDeveloped } from '../utils/rollUtils';
-import PostView from './PostView';
+import PostDetailModal from './PostDetailModal';
+import { useDebounce } from '../hooks/useDebounce';
 
 const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ value, label }) => (
   <div className="text-center">
-    <p className="text-2xl font-bold text-white">{value}</p>
-    <p className="text-xs text-gray-400 uppercase tracking-wider">{label}</p>
+    <p className="text-xl font-bold text-white">{value}</p>
+    <p className="text-sm text-gray-400">{label}</p>
   </div>
 );
 
 const ProfileView: React.FC = () => {
-  const { profile, feed, followersCount, followingCount, userBadges, completedRolls, updateProfileDetails, setCurrentView } = useAppContext();
-  const [showCreatePostModal, setShowCreatePostModal] = useState(false);
+  const { profile, feed, followersCount, followingCount, userBadges, updateProfileDetails, setCurrentView } = useAppContext();
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [activeTab, setActiveTab] = useState<'posts' | 'badges'>('posts');
-  const [isEditingBio, setIsEditingBio] = useState(false);
+  
   const [bioText, setBioText] = useState(profile?.bio || '');
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [isSavingBio, setIsSavingBio] = useState(false);
+  const debouncedBio = useDebounce(bioText, 1500);
+  const isBioChanged = useMemo(() => bioText !== (profile?.bio || ''), [bioText, profile?.bio]);
+
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const posts = useMemo(() => {
     if (!profile) return [];
     return feed.filter(post => post.user_id === profile.id);
   }, [feed, profile]);
-
-  const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
-  
-  const unpostedDevelopedRolls = useMemo(() => {
-    return completedRolls.filter(roll => 
-      isRollDeveloped(roll) && !postedRollIds.has(roll.id)
-    );
-  }, [completedRolls, postedRollIds]);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -42,10 +37,18 @@ const ProfileView: React.FC = () => {
   };
 
   const handleSaveBio = async () => {
-    if (bioText.length > 255) return;
+    if (!isBioChanged || bioText.length > 255) return;
+    setIsSavingBio(true);
     await updateProfileDetails({ bio: bioText });
+    setIsSavingBio(false);
     setIsEditingBio(false);
   };
+
+  useEffect(() => {
+    if (isEditingBio && isBioChanged && debouncedBio === bioText) {
+      handleSaveBio();
+    }
+  }, [debouncedBio]);
 
   if (!profile) {
     return <div className="text-white p-6">Loading profile...</div>;
@@ -53,129 +56,120 @@ const ProfileView: React.FC = () => {
 
   return (
     <>
-      {showCreatePostModal && (
-        <CreatePostModal
-          onClose={() => setShowCreatePostModal(false)}
-          unpostedRolls={unpostedDevelopedRolls}
-        />
-      )}
-      <div className="relative flex-1 flex flex-col bg-gray-900 text-white">
-        <div className="absolute top-4 right-4 z-10">
-            <button onClick={() => setCurrentView('settings')} className="h-10 w-10 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 transition-colors">
-                <Settings className="w-5 h-5 text-white" />
+      {selectedPost && <PostDetailModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
+      
+      <div className="flex-1 flex flex-col bg-gray-900 text-white">
+        {/* Header */}
+        <div className="px-4 pt-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold font-recoleta">{profile.username}</h2>
+            <button onClick={() => setCurrentView('settings')} className="p-2">
+              <Settings className="w-6 h-6 text-gray-300" />
             </button>
-        </div>
-        <div className="absolute top-0 left-0 right-0 h-48 bg-gradient-to-b from-gray-800 to-gray-900 -z-10"></div>
-        
-        <div className="flex flex-col items-center pt-8 px-4">
-          <div className="relative group">
-            <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
-            <button onClick={() => avatarInputRef.current?.click()} className="w-28 h-28 rounded-full bg-gray-700 border-4 border-gray-900 flex items-center justify-center cursor-pointer overflow-hidden">
-              {profile.avatar_url ? (
-                <img src={profile.avatar_url} className="w-full h-full object-cover" alt="User avatar" />
-              ) : (
-                <User className="w-16 h-16 text-gray-500" />
-              )}
-            </button>
-            <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <Edit className="w-8 h-8 text-white" />
+          </div>
+          <div className="flex items-center mt-4">
+            <div className="relative flex-shrink-0">
+              <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
+              <button onClick={() => avatarInputRef.current?.click()} className="w-24 h-24 rounded-full bg-gray-700 border-2 border-gray-800 flex items-center justify-center cursor-pointer overflow-hidden">
+                {profile.avatar_url ? (
+                  <img src={profile.avatar_url} className="w-full h-full object-cover" alt="User avatar" />
+                ) : (
+                  <User className="w-12 h-12 text-gray-500" />
+                )}
+              </button>
+            </div>
+            <div className="flex-1 flex justify-around ml-4">
+              <HighlightStat value={posts.length} label="Posts" />
+              <HighlightStat value={followersCount} label="Followers" />
+              <HighlightStat value={followingCount} label="Following" />
             </div>
           </div>
-
-          <h1 className="text-3xl font-bold mt-4 font-recoleta">{profile.username}</h1>
-          <p className="text-gray-400">{profile.first_name} {profile.last_name}</p>
-
-          <div className="mt-4 w-full max-w-md text-center">
+          <div className="mt-4">
+            <p className="font-semibold text-white">{profile.first_name} {profile.last_name}</p>
             {isEditingBio ? (
-              <div className="flex flex-col items-center">
+              <div className="mt-1">
                 <textarea
                   value={bioText}
                   onChange={(e) => setBioText(e.target.value)}
+                  onBlur={handleSaveBio}
                   maxLength={255}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-center text-gray-300 focus:ring-amber-500 focus:border-amber-500"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-gray-300 focus:ring-amber-500 focus:border-amber-500 text-sm"
                   rows={3}
+                  autoFocus
                 />
-                <div className="text-xs text-gray-500 mt-1">{bioText.length}/255</div>
-                <button onClick={handleSaveBio} className="mt-2 bg-amber-500 text-gray-900 px-4 py-1 rounded-full text-sm font-bold flex items-center space-x-1">
-                  <Save className="w-4 h-4" />
-                  <span>Save</span>
-                </button>
+                <div className="flex items-center justify-end text-xs text-gray-500 mt-1 space-x-2">
+                  <span>{bioText.length}/255</span>
+                  {isSavingBio && <Loader className="w-3 h-3 animate-spin" />}
+                  {!isSavingBio && isBioChanged && <span className="text-amber-400">Saving...</span>}
+                  {!isSavingBio && !isBioChanged && <CheckCircle className="w-3 h-3 text-green-500" />}
+                </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center space-x-2 group cursor-pointer" onClick={() => setIsEditingBio(true)}>
-                <p className="text-gray-300 italic">{profile.bio || "No bio yet. Click to add one."}</p>
-                <Edit className="w-4 h-4 text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div onClick={() => setIsEditingBio(true)} className="mt-1 text-gray-400 text-sm group cursor-pointer">
+                {profile.bio || <span className="italic">No bio yet. Click to add one.</span>}
+                <Edit className="w-3 h-3 text-gray-500 inline-block ml-2 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             )}
           </div>
-
-          <div className="mt-8 mb-6 w-full max-w-md bg-gray-800/50 p-4 rounded-2xl border border-gray-700/50 flex justify-around items-center">
-            <HighlightStat value={posts.length} label="Posts" />
-            <HighlightStat value={followersCount} label="Followers" />
-            <HighlightStat value={followingCount} label="Following" />
-          </div>
         </div>
 
-        <div className="flex-grow px-4">
-          <div className="flex space-x-1 bg-gray-800 rounded-lg p-1 mb-6">
-            {[{id: 'posts', label: 'Posts', icon: ImageIcon}, {id: 'badges', label: 'Badges', icon: Award}].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as 'posts' | 'badges')}
-                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center space-x-2 ${
-                  activeTab === tab.id ? 'bg-amber-500 text-gray-900' : 'text-gray-400 hover:text-white'
-                }`}
-              >
-                <tab.icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            ))}
+        {/* Content */}
+        <div className="flex-grow mt-6">
+          {/* Tabs */}
+          <div className="flex border-t border-gray-700">
+            <button
+              onClick={() => setActiveTab('posts')}
+              className={`flex-1 flex justify-center items-center py-3 transition-colors ${activeTab === 'posts' ? 'text-white border-t-2 border-white' : 'text-gray-500'}`}
+            >
+              <Grid className="w-6 h-6" />
+            </button>
+            <button
+              onClick={() => setActiveTab('badges')}
+              className={`flex-1 flex justify-center items-center py-3 transition-colors ${activeTab === 'badges' ? 'text-white border-t-2 border-white' : 'text-gray-500'}`}
+            >
+              <Award className="w-6 h-6" />
+            </button>
           </div>
 
-          {activeTab === 'posts' && (
-            <div className="space-y-8">
-              {posts.length > 0 ? (
-                posts.map(post => <PostView key={post.id} post={post} />)
-              ) : (
-                <div className="text-center py-10 text-gray-500">
-                  <ImageIcon className="w-12 h-12 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold">No posts yet</h3>
-                  <p>Share your first roll to see it here.</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'badges' && (
-            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700/50">
-              {userBadges.length > 0 ? (
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                  {userBadges.map(ub => (
-                    <div key={ub.badges.name} className="flex flex-col items-center text-center group cursor-pointer" title={`${ub.badges.name}: ${ub.badges.description}`}>
-                      <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center mb-2 border-2 border-amber-400/50 group-hover:bg-amber-400/10 transition-colors">
-                        <BadgeIcon name={ub.badges.icon_name} className="w-8 h-8 text-amber-400" />
+          {/* Tab Content */}
+          <div className="w-full">
+            {activeTab === 'posts' && (
+              <div className="grid grid-cols-3 gap-0.5">
+                {posts.map(post => (
+                  <div key={post.id} className="aspect-square bg-gray-800 group cursor-pointer" onClick={() => setSelectedPost(post)}>
+                    <img
+                      src={post.rolls.photos[0]?.thumbnail_url}
+                      alt="Post thumbnail"
+                      className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+            {activeTab === 'badges' && (
+              <div className="p-4">
+                {userBadges.length > 0 ? (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                    {userBadges.map(ub => (
+                      <div key={ub.badges.name} className="flex flex-col items-center text-center group cursor-pointer" title={`${ub.badges.name}: ${ub.badges.description}`}>
+                        <div className="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center mb-2 border-2 border-amber-400/30 group-hover:bg-amber-400/10 transition-colors">
+                          <BadgeIcon name={ub.badges.icon_name} className="w-10 h-10 text-amber-400" />
+                        </div>
+                        <p className="text-xs font-semibold text-white truncate w-full">{ub.badges.name}</p>
                       </div>
-                      <p className="text-xs font-semibold text-white truncate w-full">{ub.badges.name}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center text-gray-500 py-4">
-                  <Award className="w-8 h-8 mx-auto mb-2" />
-                  <p>No badges earned yet.</p>
-                </div>
-              )}
-            </div>
-          )}
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 py-10">
+                    <Award className="w-12 h-12 mx-auto mb-2" />
+                    <p>No badges earned yet.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      <button
-        onClick={() => setShowCreatePostModal(true)}
-        className="fixed bottom-24 right-6 bg-amber-500 hover:bg-amber-600 text-gray-900 w-14 h-14 rounded-full flex items-center justify-center shadow-lg z-50 transition-transform transform hover:scale-110"
-        aria-label="Create Post"
-      >
-        <Plus className="w-7 h-7" />
-      </button>
     </>
   );
 };
