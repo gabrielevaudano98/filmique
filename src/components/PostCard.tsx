@@ -22,10 +22,10 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       {/* User Info */}
       <div className="absolute top-0 left-0 right-0 p-3 flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <img src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-9 h-9 rounded-full bg-gray-700 border-2 border-gray-500" />
+          <img src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-9 h-9 rounded-full bg-gray-700 border-2 border-brand-border" />
           <div>
-            <p className="text-white font-bold text-sm">{post.profiles.username}</p>
-            <p className="text-gray-300 text-xs">{post.likes.length} followers</p> {/* Placeholder for followers */}
+            <p className="text-gray-100 font-bold text-sm">{post.profiles.username}</p>
+            <p className="text-gray-400 text-xs">{post.likes.length} followers</p> {/* Placeholder for followers */}
           </div>
         </div>
         {post.user_id !== profile.id && (
@@ -33,7 +33,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
             onClick={() => handleFollow(post.user_id, post.isFollowed)}
             className={`text-xs font-bold py-1.5 px-4 rounded-full transition-colors ${
               post.isFollowed
-                ? 'bg-brand-brown-dark text-white'
+                ? 'bg-brand-brown-dark text-gray-100'
                 : 'bg-brand-orange text-white hover:bg-brand-orange-end'
             }`}
           >
@@ -43,10 +43,10 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
       </div>
 
       {/* Action Buttons */}
-      <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center justify-between text-white">
+      <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center justify-between text-gray-100">
         <div className="flex items-center space-x-2">
           <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className="flex items-center space-x-1.5 bg-black/30 backdrop-blur-sm py-1.5 px-3 rounded-full">
-            <Heart className={`w-5 h-5 ${post.isLiked ? 'text-red-500 fill-current' : ''}`} />
+            <Heart className={`w-5 h-5 ${post.isLiked ? 'text-brand-orange fill-current' : ''}`} />
             <span className="text-sm font-medium">{post.likes.length}</span>
           </button>
           <button className="flex items-center space-x-1.5 bg-black/30 backdrop-blur-sm py-1.5 px-3 rounded-full">

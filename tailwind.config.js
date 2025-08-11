@@ -7,17 +7,17 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand-bg': '#1c130c',
+        'brand-bg': '#4a4258', // Dark Purple
         'brand-brown': {
-          light: '#4a2a13',
-          dark: '#2a2018',
+          light: '#697098', // Muted Blue
+          dark: '#3c354a', // Darker Purple
         },
         'brand-orange': {
-          DEFAULT: '#d46a2e',
-          start: '#e98a43',
-          end: '#d46a2e',
+          DEFAULT: '#f56a00', // Orange
+          start: '#f56a00', // Orange
+          end: '#a85c48', // Brown
         },
-        'brand-border': '#4a3b30',
+        'brand-border': '#697098', // Muted Blue
       },
       fontFamily: {
         sans: ['SF Pro Display', 'sans-serif'],
