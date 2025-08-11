@@ -52,7 +52,7 @@ const CommunityView: React.FC = () => {
   const renderContent = () => {
     if (debouncedSearchQuery) {
       if (isSearching) {
-        return <div className="flex justify-center items-center py-16"><Loader className="w-8 h-8 animate-spin text-red-500" /></div>;
+        return <div className="flex justify-center items-center py-16"><Loader className="w-8 h-8 animate-spin text-amber-400" /></div>;
       }
       if (searchResults.length > 0) {
         return (
@@ -68,7 +68,7 @@ const CommunityView: React.FC = () => {
 
     if (followedFeed.length === 0) {
       return (
-        <div className="text-center py-16 px-4 col-span-full bg-gray-900/50 rounded-lg border border-gray-800">
+        <div className="text-center py-16 px-4 col-span-full bg-gray-800/50 rounded-lg">
           <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
           <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">Your Feed is Quiet</h3>
           <p className="text-gray-400 mb-6 max-w-md mx-auto">
@@ -85,12 +85,10 @@ const CommunityView: React.FC = () => {
     <div className="w-full max-w-xl mx-auto space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-3xl font-bold font-recoleta text-white">Community</h1>
-        <div className="flex items-center space-x-4 self-end sm:self-center">
-          <button onClick={() => setShowCreatePostModal(true)} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2 shadow-lg shadow-red-500/20">
-            <Plus className="w-5 h-5" />
-            <span>Create Post</span>
-          </button>
-        </div>
+        <button onClick={() => setShowCreatePostModal(true)} className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
+          <Plus className="w-5 h-5" />
+          <span>Create Post</span>
+        </button>
       </div>
 
       <div className="relative">
@@ -100,7 +98,7 @@ const CommunityView: React.FC = () => {
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search for users..."
-          className="w-full bg-gray-800 border border-gray-700 rounded-full pl-11 pr-4 py-2.5 text-white focus:ring-red-600 focus:border-red-600"
+          className="w-full bg-gray-800 border border-gray-700 rounded-full pl-11 pr-4 py-2.5 text-white focus:ring-amber-500 focus:border-amber-500"
         />
       </div>
 

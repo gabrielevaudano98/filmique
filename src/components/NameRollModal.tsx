@@ -31,7 +31,7 @@ const NameRollModal: React.FC<NameRollModalProps> = ({ roll, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900 rounded-2xl max-w-sm w-full p-6 shadow-2xl border border-gray-700">
+      <div className="bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold font-recoleta text-white">
             {roll.title ? 'Rename Roll' : 'Name Your Roll'}
@@ -57,7 +57,7 @@ const NameRollModal: React.FC<NameRollModalProps> = ({ roll, onClose }) => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g., Beach Trip"
-              className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-10 pr-4 py-2 text-white focus:ring-red-600 focus:border-red-600"
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg pl-10 pr-4 py-2 text-white focus:ring-amber-500 focus:border-amber-500"
               required
               maxLength={20}
             />
@@ -78,7 +78,7 @@ const NameRollModal: React.FC<NameRollModalProps> = ({ roll, onClose }) => {
             <button
               type="submit"
               disabled={isLoading || !title.trim()}
-              className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center space-x-2"
+              className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center space-x-2"
             >
               <Check className="w-4 h-4" />
               <span>{isLoading ? 'Saving...' : 'Save Name'}</span>

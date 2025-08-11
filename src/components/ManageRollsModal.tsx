@@ -46,7 +46,7 @@ const ManageRollsModal: React.FC<ManageRollsModalProps> = ({ album, onClose }) =
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900 rounded-2xl max-w-md w-full flex flex-col max-h-[80vh] shadow-2xl border border-gray-700">
+      <div className="bg-gray-800 rounded-2xl max-w-md w-full flex flex-col max-h-[80vh] shadow-2xl">
         <div className="flex-shrink-0 p-5 border-b border-gray-700">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold font-recoleta text-white">Manage Rolls</h2>
@@ -66,16 +66,16 @@ const ManageRollsModal: React.FC<ManageRollsModalProps> = ({ album, onClose }) =
                 <button
                   key={roll.id}
                   onClick={() => handleToggleRoll(roll.id)}
-                  className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${isSelected ? 'bg-red-600/10' : 'bg-gray-800/50 hover:bg-gray-800'}`}
+                  className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${isSelected ? 'bg-amber-500/10' : 'bg-gray-700/50 hover:bg-gray-700'}`}
                 >
                   <div className="flex items-center space-x-3">
-                    <Film className={`w-5 h-5 ${isSelected ? 'text-red-500' : 'text-gray-400'}`} />
+                    <Film className={`w-5 h-5 ${isSelected ? 'text-amber-400' : 'text-gray-400'}`} />
                     <div>
                       <p className="font-semibold text-white">{roll.title || roll.film_type}</p>
                       <p className="text-xs text-gray-400">{roll.shots_used} photos • {developedDate}</p>
                     </div>
                   </div>
-                  {isSelected ? <CheckSquare className="w-6 h-6 text-red-500" /> : <Square className="w-6 h-6 text-gray-500" />}
+                  {isSelected ? <CheckSquare className="w-6 h-6 text-amber-400" /> : <Square className="w-6 h-6 text-gray-500" />}
                 </button>
               );
             })
@@ -84,7 +84,7 @@ const ManageRollsModal: React.FC<ManageRollsModalProps> = ({ album, onClose }) =
           )}
         </div>
 
-        <div className="flex-shrink-0 p-5 border-t border-gray-700 bg-gray-900/50">
+        <div className="flex-shrink-0 p-5 border-t border-gray-700 bg-gray-800/50">
           <div className="flex justify-between items-center mb-4 text-sm">
             <span className="font-medium text-gray-300">Photo Count:</span>
             <span className={`font-bold ${canSave ? 'text-white' : 'text-red-500'}`}>
@@ -94,7 +94,7 @@ const ManageRollsModal: React.FC<ManageRollsModalProps> = ({ album, onClose }) =
           <button
             onClick={handleSaveChanges}
             disabled={isLoading || !canSave}
-            className="w-full py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Saving...' : 'Save Changes'}
           </button>

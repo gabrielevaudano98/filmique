@@ -35,7 +35,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-900 rounded-2xl max-w-lg w-full flex flex-col max-h-[80vh] shadow-2xl border border-gray-700">
+      <div className="bg-gray-800 rounded-2xl max-w-lg w-full flex flex-col max-h-[80vh] shadow-2xl">
         <div className="flex-shrink-0 p-5 border-b border-gray-700 flex items-center justify-between">
           {step === 'write_caption' && (
             <button onClick={handleBack} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full -ml-2">
@@ -61,7 +61,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                     <button
                       key={roll.id}
                       onClick={() => handleSelectRoll(roll)}
-                      className="w-full flex items-center p-3 rounded-lg text-left transition-colors bg-gray-800/50 hover:bg-gray-800"
+                      className="w-full flex items-center p-3 rounded-lg text-left transition-colors bg-gray-700/50 hover:bg-gray-700"
                     >
                       <img src={`${thumbnailUrl}${cacheBuster}`} alt="Roll thumbnail" className="w-16 h-16 rounded-md object-cover bg-gray-600 mr-4" />
                       <div>
@@ -92,7 +92,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                 onChange={(e) => setCaption(e.target.value)}
                 placeholder="Write a caption..."
                 rows={4}
-                className="w-full bg-gray-800 border border-gray-700 rounded-lg p-3 text-white focus:ring-red-600 focus:border-red-600"
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:ring-amber-500 focus:border-amber-500"
               />
             </div>
           )}
@@ -103,7 +103,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
             <button
               onClick={handlePublish}
               disabled={isLoading || !caption.trim()}
-              className="w-full py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              className="w-full py-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
             >
               <Send className="w-4 h-4" />
               <span>{isLoading ? 'Publishing...' : 'Publish Post'}</span>

@@ -294,16 +294,9 @@ const CameraView: React.FC = () => {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <div className="text-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          {activeRoll ? (
-            <>
-              <p className="font-bold text-white font-recoleta text-lg truncate max-w-[200px]">{activeRoll.film_type}</p>
-              <p className="text-xs text-gray-400 font-mono">{activeRoll.shots_used}/{activeRoll.capacity} shots</p>
-            </>
-          ) : (
-            <p className="font-bold text-white font-recoleta text-lg">No Active Roll</p>
-          )}
-        </div>
+        <h1 className="text-xl font-bold font-recoleta text-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <span className="text-amber-400">Filmique</span>
+        </h1>
         <button
           onClick={() => setShowFilmModal(true)}
           className="text-gray-300 hover:text-white transition-colors flex items-center gap-1.5 text-base font-medium p-2"
@@ -325,16 +318,21 @@ const CameraView: React.FC = () => {
               className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
             />
           )}
+          {activeRoll && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black bg-opacity-30 rounded-full px-3 py-1 text-xs font-mono z-10">
+              {activeRoll.film_type} &middot; {activeRoll.shots_used}/{activeRoll.capacity}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="bg-black/50 backdrop-blur-sm pb-safe select-none flex-shrink-0 flex flex-col justify-center h-[30vh] min-h-[240px] max-h-[300px]">
+      <div className="bg-gray-900 pb-safe select-none flex-shrink-0 flex flex-col justify-center h-[30vh] min-h-[240px] max-h-[300px]">
         <div className="flex flex-col items-center justify-center">
           {cameraMode === 'pro' && !isNative && (
             <div className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2">
               <div className="flex items-center justify-center space-x-6">
                 {proControls.map(c => (
-                  <button key={c.id} onClick={() => setActiveProControl(activeProControl === c.id ? null : c.id)} className={`flex flex-col items-center gap-1 transition-colors ${activeProControl === c.id ? 'text-red-500' : 'text-gray-300 hover:text-white'}`}>
+                  <button key={c.id} onClick={() => setActiveProControl(activeProControl === c.id ? null : c.id)} className={`flex flex-col items-center gap-1 transition-colors ${activeProControl === c.id ? 'text-amber-400' : 'text-gray-300 hover:text-white'}`}>
                     <span className="text-xs font-bold">{c.label}</span>
                     <span className="text-xs">{c.value}</span>
                   </button>
@@ -355,8 +353,8 @@ const CameraView: React.FC = () => {
 
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center justify-center space-x-6 font-sans text-base">
-                <button onClick={() => setCameraMode('simple')} className={cameraMode === 'simple' ? 'text-red-500 font-bold' : 'text-white'}>PHOTO</button>
-                {!isNative && <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-red-500 font-bold' : 'text-white'}>PRO</button>}
+                <button onClick={() => setCameraMode('simple')} className={cameraMode === 'simple' ? 'text-amber-400 font-bold' : 'text-white'}>PHOTO</button>
+                {!isNative && <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-amber-400 font-bold' : 'text-white'}>PRO</button>}
               </div>
               <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
                 <button onClick={handleTakePhoto} disabled={activeRoll?.is_completed} aria-label="Take Photo" className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200">

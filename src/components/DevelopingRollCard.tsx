@@ -55,11 +55,11 @@ const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, 
   const progress = Math.min(100, ((currentTime - completedTime) / (readyTime - completedTime)) * 100);
 
   return (
-    <div className="bg-gray-900 rounded-xl p-4 space-y-4 border border-gray-700/50 shadow-lg">
+    <div className="bg-gray-800 rounded-xl p-4 space-y-4 border border-gray-700/50">
       {/* Top section: Info */}
       <div className="flex items-center space-x-4">
-        <div className="bg-gray-800 p-3 rounded-lg">
-          <Film className="w-6 h-6 text-red-500" />
+        <div className="bg-gray-700 p-3 rounded-lg">
+          <Film className="w-6 h-6 text-amber-400" />
         </div>
         <div>
           <h4 className="font-semibold text-white text-lg">{roll.film_type}</h4>
@@ -78,7 +78,7 @@ const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, 
         </div>
         <div className="w-full bg-gray-700 rounded-full h-2">
           <div
-            className="bg-red-500 h-2 rounded-full transition-all duration-500"
+            className="bg-amber-400 h-2 rounded-full transition-all duration-500"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
@@ -88,7 +88,7 @@ const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, 
       <div className="pt-4">
         <button
           onClick={() => onDevelop(roll)}
-          className="w-full py-3 flex items-center justify-center bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed font-bold text-white text-base shadow-lg shadow-red-500/20 disabled:shadow-none"
+          className="w-full py-3 flex items-center justify-center bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed font-bold text-gray-900 text-base shadow-lg shadow-amber-500/20 disabled:shadow-none"
           disabled={!canAfford}
           aria-label="Develop Now"
         >

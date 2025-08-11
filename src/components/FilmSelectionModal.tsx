@@ -84,7 +84,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
                 placeholder="Search film stocks..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded-full pl-11 pr-4 py-2.5 text-white focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors"
+                className="w-full bg-gray-800 border border-gray-700 rounded-full pl-11 pr-4 py-2.5 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
               />
             </div>
           </div>
@@ -99,7 +99,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
           
           {Object.entries(filteredCategories).map(([category, films]) => (
             <div key={category}>
-              <h3 className="text-lg font-semibold mb-3 font-recoleta text-red-500">{category}</h3>
+              <h3 className="text-lg font-semibold mb-3 font-recoleta text-amber-400">{category}</h3>
               <div className="space-y-3">
                 {films.map((film) => (
                   <button
@@ -108,7 +108,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
                     disabled={!film.unlocked}
                     className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-200 min-h-[60px] flex items-center
                       ${selectedFilm.name === film.name
-                        ? 'border-red-500 bg-red-500/10 ring-2 ring-red-500/20'
+                        ? 'border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/20'
                         : film.unlocked
                         ? 'border-gray-700 bg-gray-800 hover:border-gray-600'
                         : 'border-gray-800 bg-gray-800 opacity-50 cursor-not-allowed'
@@ -116,7 +116,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
                   >
                     <div className="flex-grow">
                       <h4 className="font-semibold flex items-center space-x-2 text-base">
-                        <Film className="w-4 h-4 flex-shrink-0 text-red-500/80" />
+                        <Film className="w-4 h-4 flex-shrink-0 text-amber-400/80" />
                         <span>{film.name}</span>
                         {!film.unlocked && <Lock className="w-4 h-4 text-gray-500" />}
                       </h4>
@@ -140,7 +140,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
           )}
 
           <div>
-            <h3 className="text-lg font-semibold mb-3 font-recoleta text-red-500">Roll Capacity</h3>
+            <h3 className="text-lg font-semibold mb-3 font-recoleta text-amber-400">Roll Capacity</h3>
             <div className="grid grid-cols-2 gap-3">
               {capacityOptions.map((option) => (
                 <button
@@ -148,7 +148,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
                   onClick={() => setSelectedCapacity(option)}
                   className={`p-4 rounded-xl border-2 text-center transition-all duration-200 min-h-[70px]
                     ${selectedCapacity.shots === option.shots
-                      ? 'border-red-500 bg-red-500/10 ring-2 ring-red-500/20'
+                      ? 'border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/20'
                       : 'border-gray-700 bg-gray-800 hover:border-gray-600'
                     }`}
                 >
@@ -189,7 +189,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
             <div className="border-t border-gray-700 my-3"></div>
             <div className="flex items-center justify-between font-bold text-base">
               <span className="font-recoleta">Total Cost</span>
-              <div className="flex items-center space-x-1.5 text-red-500">
+              <div className="flex items-center space-x-1.5 text-amber-400">
                 <Zap className="w-5 h-5" />
                 <span>{totalCost} credits</span>
               </div>
@@ -208,7 +208,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
               disabled={!canAfford || !selectedFilm.unlocked}
               className={`flex-1 py-3 rounded-xl transition-all duration-200 min-h-[52px] text-base font-bold shadow-lg
                 ${canAfford && selectedFilm.unlocked
-                  ? 'bg-red-600 hover:bg-red-700 text-white shadow-red-500/20'
+                  ? 'bg-amber-500 hover:bg-amber-600 text-gray-900 shadow-amber-500/20'
                   : 'bg-gray-600 cursor-not-allowed text-gray-400'
                 }`}
             >

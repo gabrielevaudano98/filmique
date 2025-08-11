@@ -76,13 +76,13 @@ const OnboardingView: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col items-center justify-center bg-black p-4">
-      <div className="w-full max-w-md bg-gray-900 rounded-2xl p-8 shadow-2xl border border-gray-800">
+    <div className="w-full min-h-screen flex flex-col items-center justify-center bg-gray-900 p-4">
+      <div className="w-full max-w-md bg-gray-800 rounded-2xl p-8 shadow-2xl">
         {step === 1 && (
           <div>
-            <h1 className="text-3xl font-bold font-recoleta text-red-500 mb-4">Welcome to Filmique!</h1>
+            <h1 className="text-3xl font-bold font-recoleta text-amber-400 mb-4">Welcome to Filmique!</h1>
             <p className="text-gray-300 mb-8">Let's get your profile set up so you can start your photography journey.</p>
-            <button onClick={handleNextStep} className="w-full bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center space-x-2">
+            <button onClick={handleNextStep} className="w-full bg-amber-500 text-gray-900 font-bold py-3 rounded-lg hover:bg-amber-600 transition-colors flex items-center justify-center space-x-2">
               <span>Get Started</span>
               <ArrowRight className="w-5 h-5" />
             </button>
@@ -99,13 +99,13 @@ const OnboardingView: React.FC = () => {
                   <input id="avatar-upload" type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                 </label>
                 <div className="flex-grow space-y-4">
-                  <input type="text" placeholder="Username" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-red-600 focus:border-red-600" />
-                  <input type="text" placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-red-600 focus:border-red-600" />
-                  <input type="text" placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-red-600 focus:border-red-600" />
+                  <input type="text" placeholder="Username" value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-amber-500 focus:border-amber-500" />
+                  <input type="text" placeholder="First Name" value={formData.firstName} onChange={(e) => setFormData({ ...formData, firstName: e.target.value })} className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-amber-500 focus:border-amber-500" />
+                  <input type="text" placeholder="Last Name" value={formData.lastName} onChange={(e) => setFormData({ ...formData, lastName: e.target.value })} className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-amber-500 focus:border-amber-500" />
                 </div>
               </div>
             </div>
-            <button onClick={handleNextStep} disabled={!formData.username || !formData.firstName || !formData.lastName} className="w-full mt-8 bg-red-600 text-white font-bold py-3 rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2">
+            <button onClick={handleNextStep} disabled={!formData.username || !formData.firstName || !formData.lastName} className="w-full mt-8 bg-amber-500 text-gray-900 font-bold py-3 rounded-lg hover:bg-amber-600 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2">
               <span>Next</span>
               <ArrowRight className="w-5 h-5" />
             </button>
@@ -121,7 +121,7 @@ const OnboardingView: React.FC = () => {
               <p>Your personal data is stored securely and will not be shared with third parties without your consent.</p>
             </div>
             <label className="flex items-center mt-6 cursor-pointer">
-              <input type="checkbox" checked={formData.privacyConsent} onChange={(e) => setFormData({ ...formData, privacyConsent: e.target.checked })} className="h-5 w-5 rounded bg-gray-700 border-gray-600 text-red-600 focus:ring-red-600" />
+              <input type="checkbox" checked={formData.privacyConsent} onChange={(e) => setFormData({ ...formData, privacyConsent: e.target.checked })} className="h-5 w-5 rounded bg-gray-700 border-gray-600 text-amber-500 focus:ring-amber-500" />
               <span className="ml-3 text-white">I have read and agree to the terms and privacy policy.</span>
             </label>
             <button onClick={handleSubmit} disabled={!formData.privacyConsent || isSubmitting} className="w-full mt-8 bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2">

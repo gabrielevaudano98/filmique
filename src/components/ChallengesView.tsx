@@ -30,20 +30,20 @@ const ChallengesView: React.FC = () => {
   return (
     <div className="p-4 space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-6 text-white shadow-xl border border-gray-700">
+      <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold mb-2 font-recoleta">Challenges</h1>
-            <p className="text-gray-300">Complete challenges to earn XP, credits, and badges</p>
+            <p className="text-purple-100">Complete challenges to earn XP, credits, and badges</p>
           </div>
-          <Trophy className="w-12 h-12 text-red-500" />
+          <Trophy className="w-12 h-12 text-yellow-300" />
         </div>
       </div>
 
       {/* User Progress Section */}
       {profile && (
-        <div className="bg-gray-900 rounded-xl p-6 space-y-4 border border-gray-800 shadow-lg">
-          <h2 className="text-xl font-bold font-recoleta text-red-500">Your Progress</h2>
+        <div className="bg-gray-800 rounded-xl p-6 space-y-4">
+          <h2 className="text-xl font-bold font-recoleta text-amber-400">Your Progress</h2>
           <XPBar xp={profile.xp} level={profile.level} />
           <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-700/50">
             <div className="text-center">
@@ -60,24 +60,24 @@ const ChallengesView: React.FC = () => {
 
       {/* Challenge Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-gray-900 rounded-lg p-4 text-center border border-gray-800 shadow-lg">
+        <div className="bg-gray-800 rounded-lg p-4 text-center">
           <Target className="w-6 h-6 mx-auto mb-2 text-green-400" />
           <div className="text-2xl font-bold">{completedChallenges.length}</div>
           <div className="text-sm text-gray-400">Completed</div>
         </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center border border-gray-800 shadow-lg">
+        <div className="bg-gray-800 rounded-lg p-4 text-center">
           <Clock className="w-6 h-6 mx-auto mb-2 text-orange-400" />
           <div className="text-2xl font-bold">{activeChallenges.length}</div>
           <div className="text-sm text-gray-400">Active</div>
         </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center border border-gray-800 shadow-lg">
+        <div className="bg-gray-800 rounded-lg p-4 text-center">
           <Zap className="w-6 h-6 mx-auto mb-2 text-yellow-400" />
           <div className="text-2xl font-bold">
             {challenges.reduce((sum, c) => sum + (c.isCompleted ? c.reward.credits : 0), 0)}
           </div>
           <div className="text-sm text-gray-400">Credits Earned</div>
         </div>
-        <div className="bg-gray-900 rounded-lg p-4 text-center border border-gray-800 shadow-lg">
+        <div className="bg-gray-800 rounded-lg p-4 text-center">
           <Star className="w-6 h-6 mx-auto mb-2 text-purple-400" />
           <div className="text-2xl font-bold">
             {challenges.reduce((sum, c) => sum + (c.isCompleted ? c.reward.xp : 0), 0)}
@@ -94,7 +94,7 @@ const ChallengesView: React.FC = () => {
             onClick={() => setActiveTab(tab)}
             className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
               activeTab === tab
-                ? 'bg-red-600 text-white shadow-md'
+                ? 'bg-purple-500 text-white'
                 : 'text-gray-400 hover:text-white'
             }`}
           >
@@ -113,8 +113,8 @@ const ChallengesView: React.FC = () => {
               const isComplete = (challenge.progress || 0) >= challenge.target;
 
               return (
-                <div key={challenge.id} className={`bg-gray-900 rounded-xl p-6 border border-gray-800 shadow-lg ${
-                  isComplete ? 'border-green-500' : 'border-gray-800'
+                <div key={challenge.id} className={`bg-gray-800 rounded-xl p-6 ${
+                  isComplete ? 'border border-green-400' : ''
                 }`}>
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -125,7 +125,7 @@ const ChallengesView: React.FC = () => {
                             ? 'bg-blue-500 bg-opacity-20 text-blue-400'
                             : challenge.type === 'weekly'
                             ? 'bg-purple-500 bg-opacity-20 text-purple-400'
-                            : 'bg-red-500 bg-opacity-20 text-red-400'
+                            : 'bg-amber-500 bg-opacity-20 text-amber-400'
                         }`}>
                           {challenge.type}
                         </div>
@@ -141,7 +141,7 @@ const ChallengesView: React.FC = () => {
                         <div className="bg-gray-700 rounded-full h-2">
                           <div 
                             className={`h-2 rounded-full transition-all duration-300 ${
-                              isComplete ? 'bg-green-400' : 'bg-red-500'
+                              isComplete ? 'bg-green-400' : 'bg-purple-400'
                             }`}
                             style={{ width: `${progress}%` }}
                           ></div>
@@ -202,7 +202,7 @@ const ChallengesView: React.FC = () => {
         {activeTab === 'completed' && (
           <>
             {completedChallenges.map((challenge) => (
-              <div key={challenge.id} className="bg-gray-900 rounded-xl p-6 opacity-75 border border-gray-800">
+              <div key={challenge.id} className="bg-gray-800 rounded-xl p-6 opacity-75">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="w-6 h-6 text-green-400" />
