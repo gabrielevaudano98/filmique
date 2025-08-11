@@ -7,7 +7,7 @@ const TopBar: React.FC = () => {
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   return (
-    <header className="sticky top-0 z-40 bg-brand-dark/80 backdrop-blur-lg pt-safe">
+    <header className="sticky top-0 z-40 bg-brand-dark/90 backdrop-blur-lg pt-safe">
       <div className="flex items-center justify-between h-16 px-4">
         <div className="w-10"></div> {/* Spacer */}
         <h1 className="text-lg font-bold text-white">
