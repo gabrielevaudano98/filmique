@@ -74,7 +74,7 @@ function App() {
   const mainContentPadding = ['settings', 'profile'].includes(currentView) ? '' : 'px-4 py-4';
 
   return (
-    <div className="bg-gray-900 text-white">
+    <div className="bg-gradient-to-b from-gray-900 to-black text-white">
       {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
       <TopBar />
       <main className={`min-h-screen w-full pt-20 pb-28`}>

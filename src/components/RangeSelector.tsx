@@ -100,8 +100,8 @@ const RangeSelector: React.FC<RangeSelectorProps> = ({ options, value, onChange,
     <div className="relative w-full h-20 flex items-center">
       {/* Center Marker */}
       <div className="absolute left-1/2 -translate-x-1/2 top-2 z-10 flex flex-col items-center pointer-events-none">
-        <span className="text-amber-400 font-bold text-sm font-mono">{value.toString().replace('f/','')}</span>
-        <div className="w-0.5 h-6 bg-amber-400 rounded-full mt-1"></div>
+        <span className="text-red-500 font-bold text-sm font-mono">{value.toString().replace('f/','')}</span>
+        <div className="w-0.5 h-6 bg-red-500 rounded-full mt-1"></div>
       </div>
 
       <div
@@ -120,7 +120,7 @@ const RangeSelector: React.FC<RangeSelectorProps> = ({ options, value, onChange,
               }}
               className="relative flex flex-col items-center justify-end h-full w-0.5 flex-shrink-0 group focus:outline-none snap-center" // Increased width to w-0.5 and added snap-center
             >
-              <div className={`w-px ${getLineHeightClass(opt, type)} ${getLineMarginClass(opt)} ${opt === value ? 'bg-amber-400' : 'bg-gray-500'}`}></div>
+              <div className={`w-px ${getLineHeightClass(opt, type)} ${getLineMarginClass(opt)} ${opt === value ? 'bg-red-500' : 'bg-gray-500'}`}></div>
             </button>
           ))}
         </div>

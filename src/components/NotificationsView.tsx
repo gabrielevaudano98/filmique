@@ -38,7 +38,7 @@ const NotificationsView: React.FC = () => {
     <div className="w-full space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold font-recoleta text-white">Notifications</h1>
-        <button onClick={markNotificationsAsRead} className="text-sm text-amber-400 hover:text-amber-500 font-semibold">
+        <button onClick={markNotificationsAsRead} className="text-sm text-red-500 hover:text-red-600 font-semibold">
           Mark all as read
         </button>
       </div>
@@ -46,8 +46,8 @@ const NotificationsView: React.FC = () => {
       {notifications.length > 0 ? (
         <div className="space-y-3">
           {notifications.map(n => (
-            <div key={n.id} className={`flex items-start space-x-4 p-4 rounded-xl transition-colors ${n.is_read ? 'bg-gray-800/50' : 'bg-amber-500/10'}`}>
-              <div className={`mt-1 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${n.is_read ? 'bg-gray-700 text-gray-400' : 'bg-amber-500/20 text-amber-400'}`}>
+            <div key={n.id} className={`flex items-start space-x-4 p-4 rounded-xl transition-colors ${n.is_read ? 'bg-gray-900/50' : 'bg-red-500/10'}`}>
+              <div className={`mt-1 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${n.is_read ? 'bg-gray-700 text-gray-400' : 'bg-red-500/20 text-red-500'}`}>
                 <NotificationIcon type={n.type} />
               </div>
               <div className="flex-grow">
@@ -61,7 +61,7 @@ const NotificationsView: React.FC = () => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 px-4 bg-gray-800/50 rounded-lg">
+        <div className="text-center py-16 px-4 bg-gray-900/50 rounded-lg">
           <Bell className="w-12 h-12 text-gray-600 mx-auto mb-4" />
           <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">All caught up!</h3>
           <p className="text-gray-400 max-w-md mx-auto">You have no new notifications.</p>

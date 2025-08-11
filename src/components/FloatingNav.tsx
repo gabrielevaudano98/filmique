@@ -66,7 +66,7 @@ const FloatingNav: React.FC<FloatingNavProps> = ({ onNavigate }) => {
         {/* Main Social Icon */}
         <button
           onClick={() => handleToggle('social')}
-          className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-300 ${openMenu === 'social' ? 'bg-amber-500' : 'bg-gray-700 hover:bg-gray-600'}`}
+          className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-300 ${openMenu === 'social' ? 'bg-red-600' : 'bg-gray-700 hover:bg-gray-600'}`}
         >
           <Users className="w-8 h-8" />
         </button>

@@ -52,7 +52,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
   const latestComment = post.comments && post.comments.length > 0 ? post.comments[post.comments.length - 1] : null;
 
   return (
-    <div className="bg-gradient-to-b from-gray-800 to-gray-800/80 rounded-2xl overflow-hidden shadow-2xl border border-gray-700/50">
+    <div className="bg-gray-900 rounded-2xl overflow-hidden shadow-2xl border border-gray-800">
       {/* Post Header */}
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
@@ -68,7 +68,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
             className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center space-x-2 ${
               post.isFollowed
                 ? 'bg-gray-700 text-white'
-                : 'bg-amber-500 text-gray-900 hover:bg-amber-600'
+                : 'bg-red-600 text-white hover:bg-red-700'
             }`}
           >
             {post.isFollowed ? <Check className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
@@ -83,7 +83,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
           <div
             ref={photoContainerRef}
             onScroll={handleScroll}
-            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar aspect-square bg-gray-900"
+            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar aspect-square bg-black"
           >
             {post.rolls.photos.map((photo: any) => (
               <div key={photo.id} className="w-full h-full flex-shrink-0 snap-center flex items-center justify-center">
@@ -178,7 +178,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
             className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm"
           />
           {commentText.trim() && (
-            <button type="submit" disabled={isSubmittingComment} className="text-amber-400 font-bold text-sm disabled:text-gray-500 transition-colors">
+            <button type="submit" disabled={isSubmittingComment} className="text-red-500 font-bold text-sm disabled:text-gray-500 transition-colors">
               {isSubmittingComment ? 'Posting...' : 'Post'}
             </button>
           )}

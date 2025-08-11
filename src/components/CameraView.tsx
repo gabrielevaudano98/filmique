@@ -328,13 +328,13 @@ const CameraView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-gray-900 pb-safe select-none flex-shrink-0 flex flex-col justify-center h-[30vh] min-h-[240px] max-h-[300px]">
+      <div className="bg-black/50 backdrop-blur-sm pb-safe select-none flex-shrink-0 flex flex-col justify-center h-[30vh] min-h-[240px] max-h-[300px]">
         <div className="flex flex-col items-center justify-center">
           {cameraMode === 'pro' && !isNative && (
             <div className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2">
               <div className="flex items-center justify-center space-x-6">
                 {proControls.map(c => (
-                  <button key={c.id} onClick={() => setActiveProControl(activeProControl === c.id ? null : c.id)} className={`flex flex-col items-center gap-1 transition-colors ${activeProControl === c.id ? 'text-amber-400' : 'text-gray-300 hover:text-white'}`}>
+                  <button key={c.id} onClick={() => setActiveProControl(activeProControl === c.id ? null : c.id)} className={`flex flex-col items-center gap-1 transition-colors ${activeProControl === c.id ? 'text-red-500' : 'text-gray-300 hover:text-white'}`}>
                     <span className="text-xs font-bold">{c.label}</span>
                     <span className="text-xs">{c.value}</span>
                   </button>
@@ -355,8 +355,8 @@ const CameraView: React.FC = () => {
 
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center justify-center space-x-6 font-sans text-base">
-                <button onClick={() => setCameraMode('simple')} className={cameraMode === 'simple' ? 'text-amber-400 font-bold' : 'text-white'}>PHOTO</button>
-                {!isNative && <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-amber-400 font-bold' : 'text-white'}>PRO</button>}
+                <button onClick={() => setCameraMode('simple')} className={cameraMode === 'simple' ? 'text-red-500 font-bold' : 'text-white'}>PHOTO</button>
+                {!isNative && <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-red-500 font-bold' : 'text-white'}>PRO</button>}
               </div>
               <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
                 <button onClick={handleTakePhoto} disabled={activeRoll?.is_completed} aria-label="Take Photo" className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200">

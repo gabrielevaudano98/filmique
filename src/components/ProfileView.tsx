@@ -94,14 +94,14 @@ const ProfileView: React.FC = () => {
                   onChange={(e) => setBioText(e.target.value)}
                   onBlur={handleSaveBio}
                   maxLength={255}
-                  className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-gray-300 focus:ring-amber-500 focus:border-amber-500 text-sm"
+                  className="w-full bg-gray-800 border border-gray-700 rounded-lg p-2 text-gray-300 focus:ring-red-500 focus:border-red-500 text-sm"
                   rows={3}
                   autoFocus
                 />
                 <div className="flex items-center justify-end text-xs text-gray-500 mt-1 space-x-2">
                   <span>{bioText.length}/255</span>
                   {isSavingBio && <Loader className="w-3 h-3 animate-spin" />}
-                  {!isSavingBio && isBioChanged && <span className="text-amber-400">Saving...</span>}
+                  {!isSavingBio && isBioChanged && <span className="text-red-500">Saving...</span>}
                   {!isSavingBio && !isBioChanged && <CheckCircle className="w-3 h-3 text-green-500" />}
                 </div>
               </div>
@@ -178,8 +178,8 @@ const ProfileView: React.FC = () => {
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
                     {userBadges.map(ub => (
                       <div key={ub.badges.name} className="flex flex-col items-center text-center group cursor-pointer" title={`${ub.badges.name}: ${ub.badges.description}`}>
-                        <div className="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center mb-2 border-2 border-amber-400/30 group-hover:bg-amber-400/10 transition-colors">
-                          <BadgeIcon name={ub.badges.icon_name} className="w-10 h-10 text-amber-400" />
+                        <div className="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center mb-2 border-2 border-red-500/30 group-hover:bg-red-500/10 transition-colors">
+                          <BadgeIcon name={ub.badges.icon_name} className="w-10 h-10 text-red-500" />
                         </div>
                         <p className="text-xs font-semibold text-white truncate w-full">{ub.badges.name}</p>
                       </div>
