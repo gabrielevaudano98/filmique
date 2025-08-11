@@ -5,7 +5,6 @@ import { RefreshCw, Film, Lock, ArrowLeft, SlidersHorizontal, Aperture, Focus, X
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
 import RangeSelector from './RangeSelector';
-import FilmStrip from './FilmStrip';
 import VerticalSlider from './VerticalSlider';
 
 const formatShutterSpeed = (seconds: number): string => {
@@ -170,8 +169,6 @@ const CameraView: React.FC = () => {
           {[...Array(9)].map((_, i) => <div key={i} className="border border-white/10"></div>)}
         </div>
       </div>
-
-      <FilmStrip roll={activeRoll} />
 
       <div className="absolute top-0 left-0 right-0 p-4 pt-safe flex justify-between items-center z-20">
         <button onClick={() => setCurrentView('rolls')} className="p-2 bg-black/30 rounded-full backdrop-blur-sm">
