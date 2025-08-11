@@ -9,7 +9,7 @@ import { UserProfile } from '../context/AppContext';
 import { isRollDeveloped } from '../utils/rollUtils';
 
 const CommunityView: React.FC = () => {
-  const { profile, feed, completedRolls, searchUsers, handleFollow, setCurrentView } = useAppContext();
+  const { profile, feed, completedRolls, searchUsers, handleFollow } = useAppContext();
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
@@ -89,9 +89,6 @@ const CommunityView: React.FC = () => {
           <button onClick={() => setShowCreatePostModal(true)} className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
             <Plus className="w-5 h-5" />
             <span>Create Post</span>
-          </button>
-          <button onClick={() => setCurrentView('profile')} className="w-10 h-10 rounded-full bg-gray-700 overflow-hidden border-2 border-gray-600 hover:border-amber-400 transition-colors">
-            <img src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`} alt="Your profile" className="w-full h-full object-cover" />
           </button>
         </div>
       </div>

@@ -1,5 +1,6 @@
-import React from 'react';
-import { Camera, Users } from 'lucide-react';
+import React, { useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import { Camera, Users, Plus } from 'lucide-react';
 import CameraView from './components/CameraView';
 import RollsView from './components/RollsView';
 import CommunityView from './components/CommunityView';
@@ -15,9 +16,13 @@ import RollDetailView from './components/RollDetailView';
 import AlbumDetailView from './components/AlbumDetailView';
 import NameRollModal from './components/NameRollModal';
 import NotificationsView from './components/NotificationsView';
+import ActionMenu from './components/ActionMenu';
+import SocialNavBar from './components/SocialNavBar';
 
 function App() {
   const { session, profile, isLoading, currentView, setCurrentView, authStep, rollToName, setRollToName } = useAppContext();
+  const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+  const [isSocialNavOpen, setIsSocialNavOpen] = useState(false);
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -29,7 +34,7 @@ function App() {
       case 'rollDetail': return <RollDetailView />;
       case 'albumDetail': return <AlbumDetailView />;
       case 'notifications': return <NotificationsView />;
-      default: return <CommunityView />;
+      default: return <RollsView />;
     }
   };
 
@@ -37,12 +42,23 @@ function App() {
     setRollToName(null);
   };
 
-  const handleCameraClick = () => {
-    if (currentView === 'rolls' || currentView === 'rollDetail' || currentView === 'albumDetail') {
-      setCurrentView('camera');
-    } else {
-      setCurrentView('rolls');
-    }
+  const handleActionNavigate = (view: string) => {
+    setCurrentView(view);
+    setIsActionMenuOpen(false);
+  };
+
+  const handleSocialNavigate = (view: string) => {
+    setCurrentView(view);
+  };
+
+  const toggleActionMenu = () => {
+    setIsActionMenuOpen(!isActionMenuOpen);
+    if (isSocialNavOpen) setIsSocialNavOpen(false);
+  };
+
+  const toggleSocialNav = () => {
+    setIsSocialNavOpen(!isSocialNavOpen);
+    if (isActionMenuOpen) setIsActionMenuOpen(false);
   };
 
   if (isLoading) {
@@ -88,32 +104,43 @@ function App() {
           {renderCurrentView()}
         </div>
       </main>
-      <div className="fixed bottom-0 left-0 right-0 w-full flex justify-center items-center z-50" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0) + 1rem)', pointerEvents: 'none' }}>
-        <div className="flex items-center space-x-4 bg-gray-800/80 backdrop-blur-lg p-3 rounded-full shadow-2xl border border-gray-700/50" style={{ pointerEvents: 'auto' }}>
-          <button
-            onClick={handleCameraClick}
-            className={`p-3 rounded-full transition-colors duration-300 ${
-              ['rolls', 'rollDetail', 'albumDetail', 'camera'].includes(currentView)
-                ? 'bg-amber-500 text-gray-900'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-            aria-label="Camera / Rolls"
-          >
-            <Camera className="w-7 h-7" />
-          </button>
-          <button
-            onClick={() => setCurrentView('community')}
-            className={`p-3 rounded-full transition-colors duration-300 ${
-              ['community', 'profile', 'settings', 'notifications'].includes(currentView)
-                ? 'bg-amber-500 text-gray-900'
-                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-            }`}
-            aria-label="Community"
-          >
-            <Users className="w-7 h-7" />
-          </button>
+
+      <AnimatePresence>
+        {isActionMenuOpen && (
+          <ActionMenu onClose={() => setIsActionMenuOpen(false)} onNavigate={handleActionNavigate} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isSocialNavOpen && (
+          <SocialNavBar
+            currentView={currentView}
+            onNavigate={handleSocialNavigate}
+            onClose={() => setIsSocialNavOpen(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {!isSocialNavOpen && (
+        <div className="fixed bottom-0 left-0 right-0 w-full flex justify-center items-center z-50" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0) + 1rem)', pointerEvents: 'none' }}>
+          <div className="flex items-center space-x-4 bg-gray-800/80 backdrop-blur-lg p-3 rounded-full shadow-2xl border border-gray-700/50" style={{ pointerEvents: 'auto' }}>
+            <button
+              onClick={toggleActionMenu}
+              className="p-3 rounded-full bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors duration-300"
+              aria-label="Open Actions"
+            >
+              <Plus className={`w-7 h-7 transition-transform duration-300 ${isActionMenuOpen ? 'rotate-45' : ''}`} />
+            </button>
+            <button
+              onClick={toggleSocialNav}
+              className="p-3 rounded-full bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors duration-300"
+              aria-label="Open Social Menu"
+            >
+              <Users className="w-7 h-7" />
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
