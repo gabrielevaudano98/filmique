@@ -7,7 +7,7 @@ import ValueSelector from './ValueSelector';
 import FilmInfo from './FilmInfo';
 import ExposureControl from './ExposureControl';
 import FocusControl from './FocusControl';
-import ShutterButton from './ShutterButton';
+import ShutterControl from './ShutterControl';
 
 const CameraView: React.FC = () => {
   const {
@@ -36,6 +36,14 @@ const CameraView: React.FC = () => {
   const shutterOptions = ['1/30', '1/60', '1/125', '1/250', '1/500', '1/1000'];
   const lensOptions = ['0.5x', '1x', '2x'];
 
+  const frameOptions = useMemo(() => {
+    const capacity = activeRoll?.capacity || 0;
+    if (capacity === 0) return [0];
+    return [...Array(capacity).keys()].map(i => i + 1);
+  }, [activeRoll]);
+
+  const currentFrame = activeRoll ? activeRoll.shots_used : 0;
+
   useEffect(() => {
     setIsNative(Capacitor.isNativePlatform());
   }, []);
@@ -54,7 +62,7 @@ const CameraView: React.FC = () => {
         }
       } else {
         try {
-          const newStream = await navigator.mediaDevices.getUserMedia({ video: true });
+          const newStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
           setStream(newStream);
           setHasPermission(true);
           if (videoRef.current) videoRef.current.srcObject = newStream;
@@ -74,7 +82,7 @@ const CameraView: React.FC = () => {
         stream?.getTracks().forEach(track => track.stop());
       }
     };
-  }, [isNative, stream]);
+  }, [isNative]);
 
   // --- Photo Capture ---
   const handleTakePhoto = async () => {
@@ -121,36 +129,35 @@ const CameraView: React.FC = () => {
   if (hasPermission === false) return <div className="h-screen w-screen flex items-center justify-center bg-black text-red-400 p-4 text-center">Camera access denied. Please enable camera permissions.</div>;
 
   return (
-    <div className="w-screen h-screen bg-black flex items-center justify-center p-2 sm:p-4 font-sans text-white overflow-hidden">
+    <div className="w-screen h-screen bg-black flex items-stretch justify-center p-4 font-sans text-white overflow-hidden">
       <canvas ref={canvasRef} className="hidden"></canvas>
       
-      <div className="w-full h-full flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-        {/* Left Controls */}
-        <div className="w-full sm:w-40 md:w-48 flex-shrink-0 flex sm:flex-col flex-row gap-2 sm:gap-4">
-          <ValueSelector label="Shutter" options={shutterOptions} value={shutterSpeed} onChange={setShutterSpeed} unit="sec" />
-          <ValueSelector label="Lens" options={lensOptions} value={lens} onChange={setLens} unit="mm" />
-          <FilmInfo filmName={activeRoll?.film_type || 'None'} iso={100} onClick={() => setShowFilmModal(true)} />
-        </div>
+      {/* Left Column */}
+      <div className="w-48 flex-shrink-0 flex flex-col gap-4">
+        <ValueSelector label="Shutter" options={shutterOptions} value={shutterSpeed} onChange={setShutterSpeed} unit="sec" />
+        <ValueSelector label="Lens" options={lensOptions} value={lens} onChange={setLens} unit="mm" />
+        <FilmInfo filmName={activeRoll?.film_type || 'None'} iso={100} onClick={() => setShowFilmModal(true)} />
+      </div>
 
-        {/* Viewfinder */}
-        <div className="flex-1 h-full w-full flex flex-col items-center justify-between gap-2 sm:gap-4">
-          <ExposureControl value={exposure} onChange={setExposure} />
-          <div className={`w-full h-full rounded-2xl overflow-hidden relative ${isNative ? 'bg-transparent' : 'bg-neutral-900'}`}>
-            {!isNative && (
-              <video ref={videoRef} autoPlay playsInline className={`w-full h-full object-cover ${isFrontCamera ? 'transform -scale-x-100' : ''}`} />
-            )}
-          </div>
-          <div className="h-10 sm:h-16"></div> {/* Spacer */}
-        </div>
+      <div className="w-4 flex-shrink-0"></div>
 
-        {/* Right Controls */}
-        <div className="w-full sm:w-40 md:w-48 flex-shrink-0 flex sm:flex-col flex-row gap-2 sm:gap-4">
-          <ValueSelector label="Frame" options={[...Array((activeRoll?.capacity || 1) + 1).keys()]} value={(activeRoll?.shots_used || 0)} onChange={() => {}} disabled />
-          <div className="relative flex-1 w-full h-full min-h-[100px] sm:min-h-0">
-            <FocusControl value={focus} onChange={setFocus} />
-          </div>
-          <ShutterButton onTakePhoto={handleTakePhoto} timerOn={timerOn} onTimerToggle={() => setTimerOn(!timerOn)} disabled={!activeRoll} />
+      {/* Center Column */}
+      <div className="flex-1 flex flex-col gap-4 min-w-0">
+        <ExposureControl value={exposure} onChange={setExposure} />
+        <div className={`flex-1 rounded-2xl overflow-hidden relative ${isNative ? 'bg-transparent' : 'bg-neutral-900'}`}>
+          {!isNative && (
+            <video ref={videoRef} autoPlay playsInline className={`w-full h-full object-cover ${isFrontCamera ? 'transform -scale-x-100' : ''}`} />
+          )}
         </div>
+      </div>
+
+      <div className="w-4 flex-shrink-0"></div>
+
+      {/* Right Column */}
+      <div className="w-48 flex-shrink-0 flex flex-col gap-4">
+        <ValueSelector label="Frame" options={frameOptions} value={currentFrame} onChange={() => {}} disabled />
+        <FocusControl value={focus} onChange={setFocus} />
+        <ShutterControl onTakePhoto={handleTakePhoto} timerOn={timerOn} onTimerToggle={() => setTimerOn(!timerOn)} disabled={!activeRoll} />
       </div>
 
       {showFilmModal && <FilmSelectionModal capacityOptions={capacityOptions} onStartRoll={startNewRoll} onClose={() => setShowFilmModal(false)} />}

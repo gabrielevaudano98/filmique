@@ -24,23 +24,23 @@ const ValueSelector: React.FC<ValueSelectorProps> = ({ label, options, value, on
 
   return (
     <div className="bg-neutral-900 rounded-xl p-3 w-full text-center select-none">
-      <p className="text-neutral-500 text-[10px] font-bold tracking-widest uppercase mb-2">{label}</p>
-      <div className="flex items-end justify-around h-10">
+      <p className="text-neutral-500 text-xs font-bold tracking-widest uppercase mb-2">{label}</p>
+      <div className="flex items-center justify-between h-10">
         <button
           onClick={() => handleSelect(prevValue)}
           disabled={disabled || currentIndex <= 0}
-          className="text-neutral-500 text-lg w-1/3 disabled:opacity-20"
+          className="text-neutral-500 text-lg w-1/3 disabled:opacity-20 transition-opacity"
         >
           {prevValue}
         </button>
-        <div className="text-white font-bold text-xl w-1/3">
-          {currentValue}
-          {unit && <p className="text-yellow-400 text-[10px] font-light -mt-1">{unit}</p>}
+        <div className="w-1/3">
+          <p className="text-yellow-400 font-bold text-xl">{currentValue}</p>
+          {unit && <p className="text-yellow-400 text-xs font-light -mt-1">{unit}</p>}
         </div>
         <button
           onClick={() => handleSelect(nextValue)}
           disabled={disabled || currentIndex >= options.length - 1}
-          className="text-neutral-500 text-lg w-1/3 disabled:opacity-20"
+          className="text-neutral-500 text-lg w-1/3 disabled:opacity-20 transition-opacity"
         >
           {nextValue}
         </button>
