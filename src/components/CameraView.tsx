@@ -5,7 +5,6 @@ import { RefreshCw, Film, Lock, Camera, ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
 import RangeSelector from './RangeSelector';
-import ShutterButton from './ShutterButton';
 
 type ProControl = 'iso' | 'shutterSpeed' | 'focus';
 
@@ -319,6 +318,11 @@ const CameraView: React.FC = () => {
               className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
             />
           )}
+          {activeRoll && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black bg-opacity-30 rounded-full px-3 py-1 text-xs font-mono z-10">
+              {activeRoll.film_type} &middot; {activeRoll.shots_used}/{activeRoll.capacity}
+            </div>
+          )}
         </div>
       </div>
 
@@ -352,7 +356,11 @@ const CameraView: React.FC = () => {
                 <button onClick={() => setCameraMode('simple')} className={cameraMode === 'simple' ? 'text-amber-400 font-bold' : 'text-white'}>PHOTO</button>
                 {!isNative && <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-amber-400 font-bold' : 'text-white'}>PRO</button>}
               </div>
-              <ShutterButton activeRoll={activeRoll} onTakePhoto={handleTakePhoto} />
+              <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
+                <button onClick={handleTakePhoto} disabled={activeRoll?.is_completed} aria-label="Take Photo" className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200">
+                  {activeRoll?.is_completed && <Lock className="w-8 h-8 text-gray-500" />}
+                </button>
+              </div>
             </div>
 
             <button onClick={switchCamera} disabled={!isNative && cameras.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
