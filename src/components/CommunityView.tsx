@@ -1,43 +1,38 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Search, Plus, Users, Loader } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Heart, Send, Plus } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { useDebounce } from '../hooks/useDebounce';
 import CreatePostModal from './CreatePostModal';
-import PostView from './PostView';
-import UserSearchResultCard from './UserSearchResultCard';
-import { UserProfile } from '../context/AppContext';
+import PostCard from './PostCard';
 import { isRollDeveloped } from '../utils/rollUtils';
 
+const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => void; }> = ({ label, isActive, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`px-5 py-2.5 rounded-full text-sm font-bold transition-colors flex-shrink-0 ${
+      isActive
+        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white'
+        : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+    }`}
+  >
+    {label}
+  </button>
+);
+
 const CommunityView: React.FC = () => {
-  const { profile, feed, completedRolls, searchUsers, handleFollow } = useAppContext();
+  const { profile, feed, completedRolls } = useAppContext();
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('discover');
 
-  const debouncedSearchQuery = useDebounce(searchQuery, 300);
-
-  const followedFeed = useMemo(() => {
-    return feed.filter(post => post.isFollowed || post.user_id === profile?.id);
-  }, [feed, profile]);
-
-  const followingIds = useMemo(() => {
-    return new Set(feed.filter(p => p.isFollowed).map(p => p.user_id));
-  }, [feed]);
-
-  useEffect(() => {
-    const performSearch = async () => {
-      if (debouncedSearchQuery) {
-        setIsSearching(true);
-        const results = await searchUsers(debouncedSearchQuery);
-        setSearchResults(results || []);
-        setIsSearching(false);
-      } else {
-        setSearchResults([]);
+  const followedUsers = useMemo(() => {
+    if (!feed) return [];
+    const users = new Map();
+    feed.forEach(post => {
+      if (post.user_id !== profile?.id && !users.has(post.user_id)) {
+        users.set(post.user_id, post.profiles);
       }
-    };
-    performSearch();
-  }, [debouncedSearchQuery, searchUsers]);
+    });
+    return Array.from(users.values());
+  }, [feed, profile]);
 
   const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
   
@@ -49,61 +44,79 @@ const CommunityView: React.FC = () => {
 
   if (!profile) return null;
 
-  const renderContent = () => {
-    if (debouncedSearchQuery) {
-      if (isSearching) {
-        return <div className="flex justify-center items-center py-16"><Loader className="w-8 h-8 animate-spin text-amber-400" /></div>;
-      }
-      if (searchResults.length > 0) {
-        return (
-          <div className="space-y-3">
-            {searchResults.filter(u => u.id !== profile.id).map(user => (
-              <UserSearchResultCard key={user.id} user={user} isFollowing={followingIds.has(user.id)} />
-            ))}
-          </div>
-        );
-      }
-      return <div className="text-center py-16 text-gray-400">No users found for "{debouncedSearchQuery}".</div>;
+  const filteredFeed = useMemo(() => {
+    switch (activeFilter) {
+      case 'following':
+        return feed.filter(post => post.isFollowed);
+      case 'new':
+        return [...feed].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      case 'trending':
+        return [...feed].sort((a, b) => (b.likes.length + b.comments.length) - (a.likes.length + a.comments.length));
+      case 'discover':
+      default:
+        return feed;
     }
-
-    if (followedFeed.length === 0) {
-      return (
-        <div className="text-center py-16 px-4 col-span-full bg-gray-800/50 rounded-lg">
-          <Users className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">Your Feed is Quiet</h3>
-          <p className="text-gray-400 mb-6 max-w-md mx-auto">
-            Follow other photographers to see their work here. Use the search bar to find people!
-          </p>
-        </div>
-      );
-    }
-
-    return followedFeed.map(post => <PostView key={post.id} post={post} />);
-  };
+  }, [feed, activeFilter]);
 
   return (
-    <div className="w-full max-w-xl mx-auto space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div className="w-full bg-black text-white min-h-full pb-10 -m-4 p-4">
+      {/* Header */}
+      <div className="flex items-center justify-between pt-4 pb-6">
         <h1 className="text-3xl font-bold font-recoleta text-white">Community</h1>
-        <button onClick={() => setShowCreatePostModal(true)} className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-2 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
-          <Plus className="w-5 h-5" />
-          <span>Create Post</span>
-        </button>
+        <div className="flex items-center space-x-3">
+          <button onClick={() => { /* Handle Likes/Favorites */ }} className="p-2 bg-gray-800 rounded-full">
+            <Heart className="w-5 h-5 text-gray-300" />
+          </button>
+          <button onClick={() => { /* Handle DMs */ }} className="p-2 bg-gray-800 rounded-full">
+            <Send className="w-5 h-5 text-gray-300" />
+          </button>
+        </div>
       </div>
 
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search for users..."
-          className="w-full bg-gray-800 border border-gray-700 rounded-full pl-11 pr-4 py-2.5 text-white focus:ring-amber-500 focus:border-amber-500"
-        />
+      {/* Stories Row */}
+      <div className="mb-6">
+        <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-2">
+          <div className="flex flex-col items-center space-y-2 flex-shrink-0">
+            <div className="relative">
+              <img src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`} alt="Your story" className="w-16 h-16 rounded-full object-cover border-2 border-gray-600" />
+              <button onClick={() => setShowCreatePostModal(true)} className="absolute -bottom-1 -right-1 bg-amber-500 rounded-full p-1 border-2 border-black">
+                <Plus className="w-3 h-3 text-black" />
+              </button>
+            </div>
+            <p className="text-xs text-gray-400">Your Story</p>
+          </div>
+          {followedUsers.slice(0, 10).map(user => (
+            <div key={user.username} className="flex flex-col items-center space-y-2 flex-shrink-0">
+              <div className="p-0.5 rounded-full bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-600">
+                <img src={user.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${user.username}`} alt={user.username} className="w-16 h-16 rounded-full object-cover border-2 border-black" />
+              </div>
+              <p className="text-xs text-white truncate w-16 text-center">{user.username}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="space-y-8">
-        {renderContent()}
+      {/* Filter Pills */}
+      <div className="mb-6">
+        <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
+          <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
+          <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
+          <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
+          <FilterPill label="New" isActive={activeFilter === 'new'} onClick={() => setActiveFilter('new')} />
+        </div>
+      </div>
+
+      {/* Discover Feed */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold font-recoleta">Discover Feed</h2>
+          <button className="text-sm font-semibold text-amber-400">See All</button>
+        </div>
+        <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
+          {filteredFeed.map(post => (
+            <PostCard key={post.id} post={post} />
+          ))}
+        </div>
       </div>
 
       {showCreatePostModal && (
