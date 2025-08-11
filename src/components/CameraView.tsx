@@ -294,9 +294,16 @@ const CameraView: React.FC = () => {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-xl font-bold font-recoleta text-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <span className="text-amber-400">Filmique</span>
-        </h1>
+        <div className="text-center absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          {activeRoll ? (
+            <>
+              <p className="font-bold text-white font-recoleta text-lg truncate max-w-[200px]">{activeRoll.film_type}</p>
+              <p className="text-xs text-gray-400 font-mono">{activeRoll.shots_used}/{activeRoll.capacity} shots</p>
+            </>
+          ) : (
+            <p className="font-bold text-white font-recoleta text-lg">No Active Roll</p>
+          )}
+        </div>
         <button
           onClick={() => setShowFilmModal(true)}
           className="text-gray-300 hover:text-white transition-colors flex items-center gap-1.5 text-base font-medium p-2"
@@ -317,11 +324,6 @@ const CameraView: React.FC = () => {
               playsInline
               className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
             />
-          )}
-          {activeRoll && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black bg-opacity-30 rounded-full px-3 py-1 text-xs font-mono z-10">
-              {activeRoll.film_type} &middot; {activeRoll.shots_used}/{activeRoll.capacity}
-            </div>
           )}
         </div>
       </div>
