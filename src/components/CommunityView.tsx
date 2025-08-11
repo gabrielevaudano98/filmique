@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, User } from 'lucide-react';
 import { useAppContext, Post } from '../context/AppContext';
 import CreatePostModal from './CreatePostModal';
 import RollPostCard from './RollPostCard';
@@ -20,7 +20,7 @@ const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => vo
 );
 
 const CommunityView: React.FC = () => {
-  const { profile, feed, completedRolls } = useAppContext();
+  const { profile, feed, completedRolls, setCurrentView } = useAppContext();
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [storyPost, setStoryPost] = useState<Post | null>(null);
   const [activeFilter, setActiveFilter] = useState('discover');
@@ -53,7 +53,23 @@ const CommunityView: React.FC = () => {
     <div className="w-full text-gray-100 min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between pt-4 pb-6">
-        {/* This space is intentionally left for the sticky TopBar */}
+        <h1 className="text-3xl font-bold text-white">Community</h1>
+        <div className="flex space-x-3">
+          <button
+            onClick={() => setCurrentView('profile')}
+            className="bg-gray-800/60 backdrop-blur-lg border border-gray-700/50 rounded-full p-3 shadow-lg text-white hover:bg-gray-700 transition-colors"
+            aria-label="View Profile"
+          >
+            <User className="w-6 h-6" />
+          </button>
+          <button
+            onClick={() => setShowCreatePostModal(true)}
+            className="bg-brand-orange text-white font-bold p-3 rounded-full shadow-lg shadow-brand-orange/20 hover:bg-brand-orange-end transition-colors"
+            aria-label="Create New Post"
+          >
+            <Plus className="w-6 h-6" />
+          </button>
+        </div>
       </div>
 
       {/* Filter Pills */}
@@ -70,13 +86,7 @@ const CommunityView: React.FC = () => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Discover Feed</h2>
-          <button 
-            onClick={() => setShowCreatePostModal(true)}
-            className="bg-brand-orange text-white font-bold px-4 py-2 rounded-lg flex items-center space-x-2 text-sm hover:bg-brand-orange-end transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Post</span>
-          </button>
+          {/* Removed the old "New Post" button here */}
         </div>
         <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
           {filteredFeed.length > 0 ? (
