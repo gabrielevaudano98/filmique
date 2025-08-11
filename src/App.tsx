@@ -12,6 +12,7 @@ import { useAppContext } from './context/AppContext';
 import TopBar from './components/TopBar';
 import RollDetailView from './components/RollDetailView';
 import AlbumDetailView from './components/AlbumDetailView';
+import AlbumsView from './components/AlbumsView';
 import NameRollModal from './components/NameRollModal';
 import NotificationsView from './components/NotificationsView';
 import FloatingNav from './components/FloatingNav';
@@ -22,6 +23,7 @@ function App() {
   const renderCurrentView = () => {
     switch (currentView) {
       case 'rolls': return <RollsView />;
+      case 'albums': return <AlbumsView />;
       case 'community': return <CommunityView />;
       case 'challenges': return <ChallengesView />;
       case 'profile': return <ProfileView />;
