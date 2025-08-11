@@ -1,46 +1,88 @@
-@import url('https://fonts.cdnfonts.com/css/sf-pro-display');
+@import url('https://fonts.cdnfonts.com/css/recoleta');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  html, body {
-    @apply bg-gray-100 text-gray-800;
-  }
   body {
-    font-family: 'SF Pro Display', 'sans-serif';
+    font-family: 'Inter', sans-serif;
   }
   .font-recoleta {
-    font-family: 'SF Pro Display', 'sans-serif';
-    font-weight: 600;
+    font-variant-ligatures: none;
   }
+  /*
+    Custom Focus Handling:
+    - Removes the default outline for mouse users (`:focus:not(:focus-visible)`).
+    - Adds a custom, branded outline for keyboard users (`:focus-visible`) for accessibility.
+  */
   *:focus:not(:focus-visible) {
     outline: none;
     box-shadow: none;
   }
   *:focus-visible {
-    outline: 2px solid #ef4444; /* red-500 */
+    outline: 2px solid #f59e0b;
     outline-offset: 2px;
     border-radius: 0.375rem; /* 6px */
   }
 }
 
 @layer utilities {
-  .pt-safe { padding-top: env(safe-area-inset-top); }
-  .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-  .pl-safe { padding-left: env(safe-area-inset-left); }
-  .pr-safe { padding-right: env(safe-area-inset-right); }
-  .px-safe { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
-  .py-safe { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
-  .safe-area-bottom { padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); }
-  .touch-manipulation { touch-action: manipulation; }
-  .select-none { -webkit-user-select: none; -moz-user-select: none; user-select: none; }
-  .scroll-smooth { -webkit-overflow-scrolling: touch; scroll-behavior: smooth; }
-  .no-scrollbar::-webkit-scrollbar { display: none; }
-  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  /* Safe area utilities for mobile devices */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pl-safe {
+    padding-left: env(safe-area-inset-left);
+  }
+  .pr-safe {
+    padding-right: env(safe-area-inset-right);
+  }
+  .px-safe {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  .py-safe {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+  
+  /* Touch optimization */
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  /* Prevent text selection on interactive elements */
+  .select-none {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+  }
+  
+  /* Smooth scrolling for mobile */
+  .scroll-smooth {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  /* Hide scrollbar utility */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
 }
 
+/* Styles for Capacitor Camera View */
 body.camera-running {
   visibility: hidden;
   --background: transparent !important;
@@ -50,11 +92,55 @@ body.camera-running {
   overflow: hidden;
   width: 100%;
 }
-.camera-modal { visibility: visible; }
 
-html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
-body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overscroll-behavior: none; }
-button, [role="button"], input[type="submit"], input[type="button"] { min-height: 44px; min-width: 44px; touch-action: manipulation; }
-input, select, textarea { font-size: 16px; border-radius: 0; }
-* { -webkit-overflow-scrolling: touch; }
-html, body { overflow-x: hidden; width: 100%; }
+/*
+  When the camera is running, we hide the entire body,
+  but then make the specific camera component visible again.
+  This allows the native camera view (which is behind the webview)
+  to show through, while still rendering our UI on top.
+*/
+.camera-modal {
+  visibility: visible;
+}
+
+
+/* Base mobile optimizations */
+html {
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+/* Improve touch targets */
+button, 
+[role="button"],
+input[type="submit"],
+input[type="button"] {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+}
+
+/* Optimize form inputs for mobile */
+input, 
+select, 
+textarea {
+  font-size: 16px; /* Prevents zoom on iOS */
+  border-radius: 0; /* Removes default iOS styling */
+}
+
+/* Improve scrolling performance */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent horizontal scroll */
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
