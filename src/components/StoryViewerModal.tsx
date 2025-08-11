@@ -153,55 +153,57 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
         </div>
 
         {/* Comment Section */}
-        {showComments && (
-          <div className="flex-1 bg-gray-800 rounded-t-2xl flex flex-col p-4 z-30 transition-all duration-300 ease-in-out">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-white">Comments ({post.comments.length})</h3>
-              <button onClick={handleCloseComments} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto no-scrollbar space-y-3 pb-4">
-              {post.comments.length > 0 ? (
-                post.comments.map(comment => (
-                  <div key={comment.id} className="flex items-start space-x-3 group">
-                    <img src={comment.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${comment.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-gray-700 flex-shrink-0" />
-                    <p className="text-sm text-gray-300 flex-grow">
-                      <span className="font-bold text-white mr-2">{comment.profiles.username}</span>
-                      {comment.content}
-                    </p>
-                    {comment.user_id === profile?.id && (
-                      <button 
-                        onClick={() => deleteComment(comment.id)}
-                        className="p-1 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                        aria-label="Delete comment"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-gray-500 py-4">No comments yet. Be the first!</p>
-              )}
-            </div>
-            <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-4 border-t border-gray-700/50 flex-shrink-0">
-              <img src={profile?.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile?.username}`} alt="Your avatar" className="w-8 h-8 rounded-full bg-gray-700" />
-              <input
-                type="text"
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Add a comment..."
-                className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm"
-              />
-              {commentText.trim() && (
-                <button type="submit" disabled={isSubmittingComment} className="text-amber-400 font-bold text-sm disabled:text-gray-500 transition-colors">
-                  {isSubmittingComment ? 'Posting...' : 'Post'}
+        <div className={`flex-shrink-0 bg-gray-800 rounded-t-2xl flex flex-col p-4 z-30 transition-all duration-300 ease-in-out overflow-hidden ${showComments ? 'flex-1' : 'h-0 opacity-0 pointer-events-none'}`}>
+          {showComments && ( // Still conditionally render inner content for performance
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-white">Comments ({post.comments.length})</h3>
+                <button onClick={handleCloseComments} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full">
+                  <X className="w-5 h-5" />
                 </button>
-              )}
-            </form>
-          </div>
-        )}
+              </div>
+              <div className="flex-1 overflow-y-auto no-scrollbar space-y-3 pb-4">
+                {post.comments.length > 0 ? (
+                  post.comments.map(comment => (
+                    <div key={comment.id} className="flex items-start space-x-3 group">
+                      <img src={comment.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${comment.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-gray-700 flex-shrink-0" />
+                      <p className="text-sm text-gray-300 flex-grow">
+                        <span className="font-bold text-white mr-2">{comment.profiles.username}</span>
+                        {comment.content}
+                      </p>
+                      {comment.user_id === profile?.id && (
+                        <button 
+                          onClick={() => deleteComment(comment.id)}
+                          className="p-1 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                          aria-label="Delete comment"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-center text-gray-500 py-4">No comments yet. Be the first!</p>
+                )}
+              </div>
+              <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-4 border-t border-gray-700/50 flex-shrink-0">
+                <img src={profile?.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile?.username}`} alt="Your avatar" className="w-8 h-8 rounded-full bg-gray-700" />
+                <input
+                  type="text"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Add a comment..."
+                  className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm"
+                />
+                {commentText.trim() && (
+                  <button type="submit" disabled={isSubmittingComment} className="text-amber-400 font-bold text-sm disabled:text-gray-500 transition-colors">
+                    {isSubmittingComment ? 'Posting...' : 'Post'}
+                  </button>
+                )}
+              </form>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
