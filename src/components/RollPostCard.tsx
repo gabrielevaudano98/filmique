@@ -5,9 +5,10 @@ import { useAppContext } from '../context/AppContext';
 
 interface RollPostCardProps {
   post: Post;
+  onClick: () => void;
 }
 
-const RollPostCard: React.FC<RollPostCardProps> = ({ post }) => {
+const RollPostCard: React.FC<RollPostCardProps> = ({ post, onClick }) => {
   const { profile, handleLike } = useAppContext();
   if (!profile) return null;
 
@@ -15,7 +16,7 @@ const RollPostCard: React.FC<RollPostCardProps> = ({ post }) => {
   const coverPhotoUrl = post.cover_photo_url || post.rolls.photos?.[0]?.url;
 
   return (
-    <div className="relative aspect-[9/16] w-64 flex-shrink-0 rounded-2xl overflow-hidden shadow-lg group bg-gray-900">
+    <button onClick={onClick} className="relative aspect-[9/16] w-64 flex-shrink-0 rounded-2xl overflow-hidden shadow-lg group bg-gray-900 text-left">
       {coverPhotoUrl && (
         <img src={`${coverPhotoUrl}${cacheBuster}`} alt={post.rolls.title || 'Roll cover'} className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
       )}
@@ -41,21 +42,21 @@ const RollPostCard: React.FC<RollPostCardProps> = ({ post }) => {
         
         <div className="flex items-center justify-between mt-4">
           <div className="flex items-center space-x-4">
-            <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className="flex items-center space-x-1.5 text-white">
+            <button onClick={(e) => { e.stopPropagation(); handleLike(post.id, post.user_id, post.isLiked); }} className="flex items-center space-x-1.5 text-white">
               <Heart className={`w-5 h-5 transition-colors ${post.isLiked ? 'text-red-500 fill-current' : 'hover:text-red-400'}`} />
               <span className="text-sm font-medium">{post.likes.length}</span>
             </button>
-            <button className="flex items-center space-x-1.5 text-white">
+            <button onClick={(e) => e.stopPropagation()} className="flex items-center space-x-1.5 text-white">
               <MessageCircle className="w-5 h-5" />
               <span className="text-sm font-medium">{post.comments.length}</span>
             </button>
           </div>
-          <button className="p-2 rounded-full bg-white/10 hover:bg-white/20">
+          <button onClick={(e) => e.stopPropagation()} className="p-2 rounded-full bg-white/10 hover:bg-white/20">
             <Bookmark className="w-5 h-5" />
           </button>
         </div>
       </div>
-    </div>
+    </button>
   );
 };
 

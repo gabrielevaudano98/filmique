@@ -1,9 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Plus } from 'lucide-react';
-import { useAppContext } from '../context/AppContext';
+import { useAppContext, Post } from '../context/AppContext';
 import CreatePostModal from './CreatePostModal';
 import RollPostCard from './RollPostCard';
 import { isRollDeveloped } from '../utils/rollUtils';
+import StoryViewerModal from './StoryViewerModal';
 
 const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => void; }> = ({ label, isActive, onClick }) => (
   <button
@@ -21,6 +22,7 @@ const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => vo
 const CommunityView: React.FC = () => {
   const { profile, feed, completedRolls } = useAppContext();
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
+  const [storyPost, setStoryPost] = useState<Post | null>(null);
   const [activeFilter, setActiveFilter] = useState('discover');
 
   const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
@@ -79,7 +81,7 @@ const CommunityView: React.FC = () => {
         <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
           {filteredFeed.length > 0 ? (
             filteredFeed.map(post => (
-              <RollPostCard key={post.id} post={post} />
+              <RollPostCard key={post.id} post={post} onClick={() => setStoryPost(post)} />
             ))
           ) : (
             <div className="w-full text-center py-16 text-gray-500">
@@ -95,6 +97,10 @@ const CommunityView: React.FC = () => {
           onClose={() => setShowCreatePostModal(false)}
           unpostedRolls={unpostedDevelopedRolls}
         />
+      )}
+
+      {storyPost && (
+        <StoryViewerModal post={storyPost} onClose={() => setStoryPost(null)} />
       )}
     </div>
   );
