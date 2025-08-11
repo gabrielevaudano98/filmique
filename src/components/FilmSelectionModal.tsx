@@ -1,225 +1,177 @@
 import React, { useState, useMemo } from 'react';
-import { X, Film, Lock, Zap, Search } from 'lucide-react';
+import { X, Search, Check, ArrowDownAZ, DollarSign, Film, Lock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { filmStockCategories, FilmStock } from '../utils/filters';
 
-interface CapacityOption {
-  shots: number;
-  name: string;
-  price: number;
-}
-
 interface FilmSelectionModalProps {
-  capacityOptions: CapacityOption[];
   onStartRoll: (filmType: string, capacity: number) => void;
   onClose: () => void;
 }
 
-const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({
-  capacityOptions,
-  onStartRoll,
-  onClose
-}) => {
-  const { profile, activeRoll, setCurrentView } = useAppContext();
-  const [searchTerm, setSearchTerm] = useState('');
+const SegmentedControl: React.FC<{
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (value: string) => void;
+}> = ({ options, value, onChange }) => (
+  <div className="flex space-x-1 bg-gray-800 rounded-lg p-1">
+    {options.map(opt => (
+      <button
+        key={opt.value}
+        onClick={() => onChange(opt.value)}
+        className={`flex-1 py-1.5 px-2 rounded-md text-xs font-bold transition-colors ${
+          value === opt.value ? 'bg-gray-600 text-white' : 'text-gray-400 hover:text-white'
+        }`}
+      >
+        {opt.label}
+      </button>
+    ))}
+  </div>
+);
+
+const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, onClose }) => {
+  const { profile, activeRoll } = useAppContext();
   
+  const [searchTerm, setSearchTerm] = useState('');
+  const [groupBy, setGroupBy] = useState<'type' | 'brand'>('type');
+  const [sortOrder, setSortOrder] = useState<'name' | 'price'>('name');
+
   const firstUnlockedFilm = useMemo(() => 
     Object.values(filmStockCategories).flat().find(f => f.unlocked) || Object.values(filmStockCategories).flat()[0]
   , []);
 
   const [selectedFilm, setSelectedFilm] = useState<FilmStock>(firstUnlockedFilm);
-  const [selectedCapacity, setSelectedCapacity] = useState<CapacityOption>(capacityOptions[0]);
 
-  const filteredCategories = useMemo(() => {
+  const processedFilms = useMemo(() => {
+    const allFilms = Object.values(filmStockCategories).flat();
     const lowerCaseSearch = searchTerm.toLowerCase();
-    if (!lowerCaseSearch) return filmStockCategories;
 
-    const filtered: { [category: string]: FilmStock[] } = {};
-    for (const category in filmStockCategories) {
-      const matchingFilms = filmStockCategories[category].filter(film =>
-        film.name.toLowerCase().includes(lowerCaseSearch)
-      );
-      if (matchingFilms.length > 0) {
-        filtered[category] = matchingFilms;
-      }
-    }
-    return filtered;
-  }, [searchTerm]);
+    const filtered = allFilms.filter(film => film.name.toLowerCase().includes(lowerCaseSearch));
 
-  const totalCost = selectedFilm.price + selectedCapacity.price;
+    filtered.sort((a, b) => {
+      if (sortOrder === 'price') return a.price - b.price;
+      return a.name.localeCompare(b.name);
+    });
+
+    const getBrand = (name: string) => name.split(' ')[0];
+    const findCategory = (film: FilmStock) => Object.keys(filmStockCategories).find(cat => filmStockCategories[cat].includes(film)) || 'Uncategorized';
+
+    return filtered.reduce((acc, film) => {
+      const key = groupBy === 'brand' ? getBrand(film.name) : findCategory(film);
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(film);
+      return acc;
+    }, {} as Record<string, FilmStock[]>);
+  }, [searchTerm, sortOrder, groupBy]);
+
+  const totalCost = selectedFilm.price;
   const canAfford = profile ? profile.credits >= totalCost : false;
 
   const handleStartRoll = () => {
     if (canAfford && selectedFilm.unlocked) {
-      onStartRoll(selectedFilm.name, selectedCapacity.shots);
+      onStartRoll(selectedFilm.name, selectedFilm.capacity);
       onClose();
     }
   };
 
-  const handleCloseModal = () => {
-    onClose();
-    if (!activeRoll) {
-      setCurrentView('home');
-    }
-  };
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-      <div className="bg-gray-900 border-t border-gray-700 sm:border-none sm:rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col shadow-2xl shadow-black/50">
-        <div className="flex-shrink-0">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50">
+      <div className="bg-gray-900 sm:rounded-2xl w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-md flex flex-col shadow-2xl">
+        {/* Header */}
+        <div className="flex-shrink-0 backdrop-blur-lg bg-gray-900/80 border-b border-gray-700/50 z-10">
           <div className="w-full flex justify-center pt-3 sm:hidden">
             <div className="w-10 h-1.5 bg-gray-700 rounded-full"></div>
           </div>
-          <div className="flex items-center justify-between p-4 sm:p-5">
-            <h2 className="text-xl sm:text-2xl font-bold font-recoleta">{activeRoll ? 'Change Film' : 'Load New Film'}</h2>
-            <button onClick={handleCloseModal} className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center">
+          <div className="flex items-center justify-between p-4">
+            <h2 className="text-xl font-bold font-recoleta">Select Film</h2>
+            <button onClick={onClose} className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors">
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="px-4 sm:px-5 pb-3">
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" />
+          <div className="px-4 pb-4 grid grid-cols-3 gap-3">
+            <div className="relative col-span-3">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input
                 type="text"
                 placeholder="Search film stocks..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-gray-800 border border-gray-700 rounded-full pl-11 pr-4 py-2.5 text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors"
+                className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-11 pr-4 py-2.5 text-white focus:ring-amber-500 focus:border-amber-500"
               />
+            </div>
+            <div className="col-span-2">
+              <SegmentedControl options={[{value: 'type', label: 'Category'}, {value: 'brand', label: 'Brand'}]} value={groupBy} onChange={setGroupBy} />
+            </div>
+            <div>
+              <SegmentedControl options={[{value: 'name', label: 'A-Z'}, {value: 'price', label: '$'}]} value={sortOrder} onChange={setSortOrder} />
             </div>
           </div>
         </div>
 
-        <div className="overflow-y-auto no-scrollbar p-4 sm:p-5 space-y-6">
-          {activeRoll && !activeRoll.isCompleted && (
-            <div className="bg-yellow-500 bg-opacity-10 border border-yellow-500/30 text-yellow-200 p-3 rounded-lg text-sm">
-              Changing film will discard the <strong>{activeRoll.shotsUsed} shots</strong> on your current roll of <strong>{activeRoll.filmType}</strong>.
+        {/* Film List */}
+        <div className="overflow-y-auto no-scrollbar p-4 space-y-6">
+          {activeRoll && !activeRoll.is_completed && (
+            <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-200 p-3 rounded-lg text-sm">
+              Changing film will discard the <strong>{activeRoll.shots_used} shots</strong> on your current roll.
             </div>
           )}
           
-          {Object.entries(filteredCategories).map(([category, films]) => (
-            <div key={category}>
-              <h3 className="text-lg font-semibold mb-3 font-recoleta text-amber-400">{category}</h3>
-              <div className="space-y-3">
-                {films.map((film) => (
+          {Object.keys(processedFilms).sort().map(groupName => (
+            <div key={groupName}>
+              <h3 className="text-lg font-semibold mb-3 font-recoleta text-amber-400">{groupName}</h3>
+              <div className="space-y-2">
+                {processedFilms[groupName].map(film => (
                   <button
                     key={film.name}
                     onClick={() => setSelectedFilm(film)}
                     disabled={!film.unlocked}
-                    className={`w-full p-4 rounded-xl border-2 text-left transition-all duration-200 min-h-[60px] flex items-center
-                      ${selectedFilm.name === film.name
-                        ? 'border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/20'
-                        : film.unlocked
-                        ? 'border-gray-700 bg-gray-800 hover:border-gray-600'
-                        : 'border-gray-800 bg-gray-800 opacity-50 cursor-not-allowed'
-                      }`}
+                    className={`w-full p-3 rounded-xl border-2 text-left transition-all duration-200 flex items-center justify-between
+                      ${selectedFilm.name === film.name ? 'border-amber-400 bg-amber-400/10' : film.unlocked ? 'border-gray-700 bg-gray-800 hover:border-gray-600' : 'border-gray-800 bg-gray-800 opacity-50 cursor-not-allowed'}`}
                   >
                     <div className="flex-grow">
-                      <h4 className="font-semibold flex items-center space-x-2 text-base">
-                        <Film className="w-4 h-4 flex-shrink-0 text-amber-400/80" />
-                        <span>{film.name}</span>
-                        {!film.unlocked && <Lock className="w-4 h-4 text-gray-500" />}
-                      </h4>
-                      <p className="text-sm text-gray-400">Default: {film.capacity} shots</p>
+                      <h4 className="font-semibold text-base text-white">{film.name}</h4>
+                      <p className="text-sm text-gray-400">{film.capacity} exposures</p>
                     </div>
-                    <div className="text-right flex-shrink-0 pl-4">
-                      <div className="flex items-center space-x-1 text-yellow-400 font-semibold">
-                        <Zap className="w-4 h-4" />
-                        <span>{film.price}</span>
+                    <div className="flex items-center space-x-4">
+                      <div className="text-right flex-shrink-0">
+                        <div className="font-bold text-white">{film.price}</div>
+                        <div className="text-xs text-gray-500">credits</div>
                       </div>
+                      {selectedFilm.name === film.name ? (
+                        <div className="w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center">
+                          <Check className="w-4 h-4 text-gray-900" />
+                        </div>
+                      ) : film.unlocked ? (
+                        <div className="w-6 h-6 rounded-full border-2 border-gray-600"></div>
+                      ) : (
+                        <Lock className="w-5 h-5 text-gray-500" />
+                      )}
                     </div>
                   </button>
                 ))}
               </div>
             </div>
           ))}
-          {Object.keys(filteredCategories).length === 0 && (
+          {Object.keys(processedFilms).length === 0 && (
             <div className="text-center py-10 text-gray-500">
               <p>No film stocks found for "{searchTerm}".</p>
             </div>
           )}
-
-          <div>
-            <h3 className="text-lg font-semibold mb-3 font-recoleta text-amber-400">Roll Capacity</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {capacityOptions.map((option) => (
-                <button
-                  key={option.shots}
-                  onClick={() => setSelectedCapacity(option)}
-                  className={`p-4 rounded-xl border-2 text-center transition-all duration-200 min-h-[70px]
-                    ${selectedCapacity.shots === option.shots
-                      ? 'border-amber-400 bg-amber-400/10 ring-2 ring-amber-400/20'
-                      : 'border-gray-700 bg-gray-800 hover:border-gray-600'
-                    }`}
-                >
-                  <div className="font-bold text-base">{option.name}</div>
-                  <div className="text-sm text-gray-400">{option.shots} shots</div>
-                  {option.price > 0 ? (
-                    <div className="flex items-center justify-center space-x-1 text-yellow-400 text-xs font-semibold mt-1">
-                      <Zap className="w-3 h-3" />
-                      <span>+ {option.price}</span>
-                    </div>
-                  ) : (
-                    <div className="text-green-400 text-xs font-semibold mt-1">Free</div>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
 
-        <div className="p-4 sm:p-5 border-t border-gray-700 flex-shrink-0 bg-gray-900/50 backdrop-blur-sm">
-          <div className="bg-gray-800 rounded-lg p-4 mb-4">
-            <div className="space-y-2 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-400">Film Cost:</span>
-                <div className="flex items-center space-x-1 font-medium">
-                  <Zap className="w-4 h-4 text-yellow-400/80" />
-                  <span>{selectedFilm.price} credits</span>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-400">Capacity Cost:</span>
-                <div className="flex items-center space-x-1 font-medium">
-                  <Zap className="w-4 h-4 text-yellow-400/80" />
-                  <span>{selectedCapacity.price} credits</span>
-                </div>
-              </div>
-            </div>
-            <div className="border-t border-gray-700 my-3"></div>
-            <div className="flex items-center justify-between font-bold text-base">
-              <span className="font-recoleta">Total Cost</span>
-              <div className="flex items-center space-x-1.5 text-amber-400">
-                <Zap className="w-5 h-5" />
-                <span>{totalCost} credits</span>
-              </div>
-            </div>
-            <div className="text-xs text-gray-500 mt-2 text-right">
-              Your balance: {profile?.credits ?? 0} credits
-            </div>
-          </div>
-
-          <div className="flex space-x-3 pb-safe">
-            <button onClick={handleCloseModal} className="flex-1 py-3 bg-gray-700 hover:bg-gray-600 rounded-xl transition-colors min-h-[52px] text-base font-semibold">
-              Cancel
-            </button>
-            <button
-              onClick={handleStartRoll}
-              disabled={!canAfford || !selectedFilm.unlocked}
-              className={`flex-1 py-3 rounded-xl transition-all duration-200 min-h-[52px] text-base font-bold shadow-lg
-                ${canAfford && selectedFilm.unlocked
-                  ? 'bg-amber-500 hover:bg-amber-600 text-gray-900 shadow-amber-500/20'
-                  : 'bg-gray-600 cursor-not-allowed text-gray-400'
-                }`}
-            >
-              {!selectedFilm.unlocked 
-                ? 'Film Locked'
-                : !canAfford 
-                ? 'Not Enough Credits'
-                : 'Load Film'
-              }
-            </button>
-          </div>
+        {/* Footer */}
+        <div className="p-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900/80 backdrop-blur-lg">
+          <button
+            onClick={handleStartRoll}
+            disabled={!canAfford || !selectedFilm.unlocked}
+            className="w-full py-3.5 rounded-xl transition-colors font-bold text-base shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed disabled:shadow-none enabled:bg-amber-500 enabled:hover:bg-amber-600 enabled:text-gray-900 enabled:shadow-amber-500/20"
+          >
+            {!selectedFilm.unlocked 
+              ? 'Film Locked'
+              : !canAfford 
+              ? 'Not Enough Credits'
+              : `Load Film for ${totalCost} Credits`
+            }
+          </button>
         </div>
       </div>
     </div>
