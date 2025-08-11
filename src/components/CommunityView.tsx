@@ -4,7 +4,8 @@ import { useAppContext, Post } from '../context/AppContext';
 import CreatePostModal from './CreatePostModal';
 import RollPostCard from './RollPostCard';
 import { isRollDeveloped } from '../utils/rollUtils';
-import StoryViewerModal from './StoryViewerModal';
+import StoryRollsCarousel from './StoryRollsCarousel';
+import FullStoryViewer from './FullStoryViewer';
 
 const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => void; }> = ({ label, isActive, onClick }) => (
   <button
@@ -20,10 +21,13 @@ const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => vo
 );
 
 const CommunityView: React.FC = () => {
-  const { profile, feed, completedRolls, setCurrentView } = useAppContext();
+  const { profile, feed, completedRolls, recentStories, setCurrentView } = useAppContext();
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
-  const [storyPost, setStoryPost] = useState<Post | null>(null);
   const [activeFilter, setActiveFilter] = useState('discover');
+
+  const [showFullStoryViewer, setShowFullStoryViewer] = useState(false);
+  const [initialStoryUserId, setInitialStoryUserId] = useState<string | null>(null);
+  const [initialStoryPostIndex, setInitialStoryPostIndex] = useState(0);
 
   const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
   
@@ -49,6 +53,12 @@ const CommunityView: React.FC = () => {
     }
   }, [feed, activeFilter]);
 
+  const handleSelectStory = (userId: string, initialPostIndex: number) => {
+    setInitialStoryUserId(userId);
+    setInitialStoryPostIndex(initialPostIndex);
+    setShowFullStoryViewer(true);
+  };
+
   return (
     <div className="w-full text-gray-100 min-h-full">
       {/* Header */}
@@ -72,6 +82,14 @@ const CommunityView: React.FC = () => {
         </div>
       </div>
 
+      {/* Recent Stories Carousel */}
+      {recentStories.size > 0 && (
+        <div className="mb-6">
+          <h2 className="text-xl font-bold mb-4">Recent Stories</h2>
+          <StoryRollsCarousel recentStories={recentStories} onSelectStory={handleSelectStory} />
+        </div>
+      )}
+
       {/* Filter Pills */}
       <div className="mb-6">
         <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
@@ -86,12 +104,11 @@ const CommunityView: React.FC = () => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Discover Feed</h2>
-          {/* Removed the old "New Post" button here */}
         </div>
         <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
           {filteredFeed.length > 0 ? (
             filteredFeed.map(post => (
-              <RollPostCard key={post.id} post={post} onClick={() => setStoryPost(post)} />
+              <RollPostCard key={post.id} post={post} onClick={() => handleSelectStory(post.user_id, filteredFeed.indexOf(post))} />
             ))
           ) : (
             <div className="w-full text-center py-16 text-gray-500">
@@ -109,8 +126,13 @@ const CommunityView: React.FC = () => {
         />
       )}
 
-      {storyPost && (
-        <StoryViewerModal post={storyPost} onClose={() => setStoryPost(null)} />
+      {showFullStoryViewer && initialStoryUserId && (
+        <FullStoryViewer
+          allUserStories={recentStories}
+          initialUserId={initialStoryUserId}
+          initialPostIndex={initialStoryPostIndex}
+          onClose={() => setShowFullStoryViewer(false)}
+        />
       )}
     </div>
   );

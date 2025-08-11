@@ -139,6 +139,7 @@ interface AppContextType {
   challenges: Challenge[];
   notifications: Notification[];
   userBadges: UserBadge[];
+  recentStories: Map<string, { user: UserProfile, posts: Post[] }>;
   startNewRoll: (filmType: string, capacity: number) => Promise<void>;
   takePhoto: (imageBlob: Blob, metadata: any) => Promise<void>;
   setFeed: React.Dispatch<React.SetStateAction<Post[]>>;
@@ -203,6 +204,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
+  const [recentStories, setRecentStories] = useState<Map<string, { user: UserProfile, posts: Post[] }>>(new Map());
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
   const [rollToName, setRollToName] = useState<Roll | null>(null);
@@ -299,13 +301,53 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (data) setUserBadges(data as any);
   }, []);
 
+  const fetchRecentStories = useCallback(async (userId: string) => {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    
+    const { data: followingData } = await supabase.from('followers').select('following_id').eq('follower_id', userId);
+    const followedUserIds = followingData?.map(f => f.following_id) || [];
+
+    if (followedUserIds.length === 0) {
+      setRecentStories(new Map());
+      return;
+    }
+
+    const { data: recentPosts, error } = await supabase.from('posts')
+      .select(POST_SELECT_QUERY)
+      .in('user_id', followedUserIds)
+      .gte('created_at', twentyFourHoursAgo)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error("Error fetching recent stories:", error);
+      setRecentStories(new Map());
+      return;
+    }
+
+    const storiesMap = new Map<string, { user: UserProfile, posts: Post[] }>();
+    recentPosts.forEach(post => {
+      const userProfile = post.profiles as UserProfile;
+      if (!storiesMap.has(userProfile.id)) {
+        storiesMap.set(userProfile.id, { user: userProfile, posts: [] });
+      }
+      storiesMap.get(userProfile.id)?.posts.push({
+        ...post,
+        isLiked: post.likes.some(like => like.user_id === userId),
+        isFollowed: true, // All these users are followed
+      } as Post);
+    });
+
+    setRecentStories(storiesMap);
+  }, [profile]);
+
   useEffect(() => {
     if (profile) {
       fetchNotifications();
       fetchUserBadges(profile.id);
       fetchFollowCounts(profile.id);
+      fetchRecentStories(profile.id);
     }
-  }, [profile, fetchNotifications, fetchUserBadges, fetchFollowCounts]);
+  }, [profile, fetchNotifications, fetchUserBadges, fetchFollowCounts, fetchRecentStories]);
 
   const handleLogin = async (email: string) => {
     setIsLoading(true);
@@ -693,8 +735,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [profile, refreshProfile]);
 
   const value = useMemo(() => ({
-    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, deleteComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll, fetchNotifications, markNotificationsAsRead, followersCount, followingCount, updateProfileDetails
-  }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, authStep, verificationEmail, selectedRoll, selectedAlbum, rollToName, handleFollow, handleLike, refreshProfile, recordActivity, fetchNotifications, markNotificationsAsRead, followersCount, followingCount, deleteComment, updateProfileDetails]);
+    session, profile, isLoading, currentView, setCurrentView, cameraMode, setCameraMode, showFilmModal, setShowFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, recentStories, startNewRoll, takePhoto, setFeed, setChallenges, refreshProfile, authStep, setAuthStep, verificationEmail, handleLogin, handleVerifyOtp, selectedRoll, setSelectedRoll, developRoll, selectedAlbum, setSelectedAlbum, selectAlbum, createAlbum, updateAlbumRolls, updateRollTitle, handleLike, handleFollow, createPost, addComment, deleteComment, searchUsers, rollToName, setRollToName, deleteRoll, downloadPhoto, downloadRoll, fetchNotifications, markNotificationsAsRead, followersCount, followingCount, updateProfileDetails
+  }), [session, profile, isLoading, currentView, cameraMode, showFilmModal, activeRoll, completedRolls, feed, albums, challenges, notifications, userBadges, recentStories, authStep, verificationEmail, selectedRoll, selectedAlbum, rollToName, handleFollow, handleLike, refreshProfile, recordActivity, fetchNotifications, markNotificationsAsRead, followersCount, followingCount, deleteComment, updateProfileDetails]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
