@@ -10,11 +10,11 @@ import FullStoryViewer from './FullStoryViewer';
 const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => void; }> = ({ label, isActive, onClick }) => (
   <button
     onClick={onClick}
-    className={`px-5 py-2.5 rounded-full text-sm font-bold transition-colors flex-shrink-0 ${
-      isActive
-        ? 'bg-gradient-to-r from-brand-orange-start to-brand-orange-end text-white'
-        : 'bg-brand-surface text-gray-300 hover:bg-brand-surface/50 border border-brand-border'
-    }`}
+    className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex-shrink-0 whitespace-nowrap
+      ${isActive
+        ? 'bg-gradient-to-r from-brand-orange-start to-brand-orange-end text-white shadow-lg shadow-brand-orange/20'
+        : 'bg-gray-800/60 text-gray-300 hover:bg-gray-700/50 border border-gray-700/50'
+      }`}
   >
     {label}
   </button>
