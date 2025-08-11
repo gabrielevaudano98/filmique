@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { Camera, Film, Trophy, X } from 'lucide-react';
 
 interface ActionMenuProps {
@@ -7,12 +7,12 @@ interface ActionMenuProps {
   onNavigate: (view: string) => void;
 }
 
-const backdropVariants = {
+const backdropVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1 },
 };
 
-const menuVariants = {
+const menuVariants: Variants = {
   hidden: { y: 50, opacity: 0 },
   visible: {
     y: 0,
@@ -27,18 +27,29 @@ const menuVariants = {
   },
 };
 
-const itemVariants = {
+const leftItemVariants: Variants = {
+  hidden: { x: -20, opacity: 0 },
+  visible: { x: 0, opacity: 1 },
+};
+
+const middleItemVariants: Variants = {
   hidden: { y: 20, opacity: 0 },
   visible: { y: 0, opacity: 1 },
+};
+
+const rightItemVariants: Variants = {
+  hidden: { x: 20, opacity: 0 },
+  visible: { x: 0, opacity: 1 },
 };
 
 const ActionButton: React.FC<{
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
-}> = ({ icon, label, onClick }) => (
+  variants: Variants;
+}> = ({ icon, label, onClick, variants }) => (
   <motion.button
-    variants={itemVariants}
+    variants={variants}
     onClick={onClick}
     className="flex flex-col items-center justify-center gap-3 text-white group"
     whileHover={{ scale: 1.05 }}
@@ -71,16 +82,19 @@ const ActionMenu: React.FC<ActionMenuProps> = ({ onClose, onNavigate }) => {
             icon={<Film className="w-10 h-10" />}
             label="Rolls"
             onClick={() => onNavigate('rolls')}
+            variants={leftItemVariants}
           />
           <ActionButton
             icon={<Camera className="w-10 h-10" />}
             label="Camera"
             onClick={() => onNavigate('camera')}
+            variants={middleItemVariants}
           />
           <ActionButton
             icon={<Trophy className="w-10 h-10" />}
             label="Challenges"
             onClick={() => onNavigate('challenges')}
+            variants={rightItemVariants}
           />
         </div>
       </motion.div>
