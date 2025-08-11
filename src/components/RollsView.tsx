@@ -7,6 +7,7 @@ import DevelopedRollCard from './DevelopedRollCard';
 import DevelopingRollCard from './DevelopingRollCard';
 import { isRollDeveloped, isRollDeveloping } from '../utils/rollUtils';
 import TimelineScrubber from './TimelineScrubber';
+import { motion } from 'framer-motion';
 
 const RollsView: React.FC = () => {
   const { profile, activeRoll, completedRolls, developRoll, setCurrentView, setSelectedRoll, setShowFilmModal, setRollToName } = useAppContext();
@@ -43,7 +44,7 @@ const RollsView: React.FC = () => {
             return (b.title || b.film_type).localeCompare(a.title || a.film_type);
           case 'newest':
           default:
-            return new Date(b.developed_at || b.completed_at!).getTime() - new Date(a.developed_at || a.completed_at!).getTime();
+            return new Date(b.developed_at || b.completed_at!).getTime() - new Date(a.developed_at || b.completed_at!).getTime();
         }
       });
   }, [developedRolls, searchTerm, selectedFilm, sortOrder]);
@@ -118,7 +119,6 @@ const RollsView: React.FC = () => {
       setCurrentView('camera');
     } else {
       setShowFilmModal(true);
-      setCurrentView('camera');
     }
   };
 
@@ -130,16 +130,15 @@ const RollsView: React.FC = () => {
   }> = ({ label, count, isActive, onClick }) => (
     <button
       onClick={onClick}
-      className={`flex-1 py-2.5 px-4 rounded-md text-sm font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
-        isActive
-          ? 'bg-amber-500 text-gray-900 shadow-lg shadow-amber-500/20'
-          : 'text-gray-300 hover:bg-gray-700/50'
+      className={`relative flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-colors duration-300 flex items-center justify-center space-x-2 ${
+        isActive ? 'text-white' : 'text-gray-500 hover:text-gray-900'
       }`}
     >
-      <span>{label}</span>
+      {isActive && <motion.div layoutId="activeTab" className="absolute inset-0 bg-red-600 rounded-lg z-0" />}
+      <span className="relative z-10">{label}</span>
       <span
-        className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
-          isActive ? 'bg-black/10 text-gray-800' : 'bg-gray-700 text-gray-300'
+        className={`relative z-10 px-2 py-0.5 rounded-full text-xs transition-colors ${
+          isActive ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'
         }`}
       >
         {count}
@@ -149,41 +148,50 @@ const RollsView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full space-y-6">
-      <div onClick={handleCurrentRollClick} className="bg-gradient-to-br from-amber-600 to-orange-600 rounded-2xl p-5 text-white shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold mb-2 font-recoleta">Current Roll</h2>
-            {activeRoll ? (
-              <>
-                <p className="text-amber-100 font-medium">{activeRoll.film_type}</p>
-                <div className="w-full bg-amber-700 rounded-full h-2.5 mt-3">
-                  <div className="bg-white h-2.5 rounded-full" style={{ width: `${(activeRoll.shots_used / activeRoll.capacity) * 100}%` }}></div>
-                </div>
-                <p className="text-sm text-amber-100 mt-2">{activeRoll.shots_used}/{activeRoll.capacity} shots used</p>
-              </>
-            ) : (
-              <>
-                <p className="text-amber-100 mb-4">No active roll. Time to load up!</p>
-                <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} className="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-xl flex items-center space-x-2 font-semibold">
-                  <Film className="w-5 h-5" />
-                  <span>Load New Film</span>
-                </button>
-              </>
+      <div onClick={handleCurrentRollClick} className="relative bg-white rounded-2xl p-6 text-gray-900 shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer overflow-hidden border border-gray-200/80">
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold text-gray-900">Current Roll</h2>
+            {activeRoll && (
+              <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); }} className="bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-semibold py-1.5 px-3 rounded-full flex items-center gap-1.5">
+                <RefreshCw className="w-3 h-3" />
+                <span>Change</span>
+              </button>
             )}
           </div>
-          {activeRoll && (
-            <div className="text-right flex-shrink-0 ml-4">
-              <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} className="bg-white/20 hover:bg-white/30 text-white text-xs font-semibold py-1.5 px-3 rounded-full flex items-center gap-1.5">
-                <RefreshCw className="w-3 h-3" />
-                <span>Change Film</span>
-              </button>
-            </div>
-          )}
+          <div className="mt-4">
+            {activeRoll ? (
+              <div>
+                <p className="font-semibold text-lg">{activeRoll.film_type}</p>
+                <div className="mt-3 space-y-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-red-500 h-2 rounded-full" style={{ width: `${(activeRoll.shots_used / activeRoll.capacity) * 100}%` }}></div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>{activeRoll.shots_used} shots taken</span>
+                    <span>{activeRoll.capacity} total</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <p className="text-gray-500 mb-4">No active roll. Time to load up!</p>
+                <motion.button 
+                  whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                  onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); }} 
+                  className="bg-red-600 hover:bg-red-500 text-white px-5 py-2.5 rounded-lg flex items-center space-x-2 font-bold text-sm mx-auto shadow-lg shadow-red-500/30"
+                >
+                  <Film className="w-5 h-5" />
+                  <span>Load New Film</span>
+                </motion.button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="bg-gray-800/50 rounded-2xl p-4 sm:p-6">
-        <div className="bg-gray-800 rounded-xl p-1 flex space-x-1">
+      <div className="bg-white rounded-2xl p-4 sm:p-6 border border-gray-200/80 shadow-lg">
+        <div className="bg-gray-100 rounded-xl p-1 flex space-x-1">
           <TabButton
             label="Developed"
             count={developedRolls.length}
@@ -214,7 +222,7 @@ const RollsView: React.FC = () => {
                 <div className="space-y-8">
                   {Object.entries(groupedRolls).map(([groupTitle, rollsInGroup]) => (
                     <div key={groupTitle}>
-                      <h3 ref={el => groupHeaderRefs.current[groupTitle] = el} className="sticky top-20 bg-gray-900/80 backdrop-blur-sm py-2 text-lg font-bold text-white mb-4 font-recoleta z-10">{groupTitle}</h3>
+                      <h3 ref={el => groupHeaderRefs.current[groupTitle] = el} className="sticky top-20 bg-gray-100/80 backdrop-blur-sm py-2 text-lg font-semibold text-gray-900 mb-4 z-10">{groupTitle}</h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {rollsInGroup.map(roll => (
                           <DevelopedRollCard
@@ -230,9 +238,9 @@ const RollsView: React.FC = () => {
                 </div>
               ) : (
                 <div className="text-center py-16 px-4">
-                  <ImageIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">{searchTerm || selectedFilm !== 'all' ? 'No Rolls Found' : 'No Developed Rolls'}</h3>
-                  <p className="text-gray-400 max-w-md mx-auto">{searchTerm || selectedFilm !== 'all' ? "Try adjusting your search or filter to find what you're looking for." : "Finish a roll and develop it to see your photos here."}</p>
+                  <ImageIcon className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-2xl font-semibold mb-2 text-gray-800">{searchTerm || selectedFilm !== 'all' ? 'No Rolls Found' : 'No Developed Rolls'}</h3>
+                  <p className="text-gray-500 max-w-md mx-auto">{searchTerm || selectedFilm !== 'all' ? "Try adjusting your search or filter to find what you're looking for." : "Finish a roll and develop it to see your photos here."}</p>
                 </div>
               )}
             </div>
@@ -242,9 +250,9 @@ const RollsView: React.FC = () => {
             <div className="max-w-2xl mx-auto space-y-4">
               {developingRolls.length > 0 ? developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} profile={profile} onDevelop={developRoll} />) : (
                 <div className="text-center py-16 px-4">
-                  <Camera className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">Nothing in the Darkroom</h3>
-                  <p className="text-gray-400 max-w-md mx-auto">When you finish a roll of film, it will show up here to be developed.</p>
+                  <Camera className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-2xl font-semibold mb-2 text-gray-800">Nothing in the Darkroom</h3>
+                  <p className="text-gray-500 max-w-md mx-auto">When you finish a roll of film, it will show up here to be developed.</p>
                 </div>
               )}
             </div>
