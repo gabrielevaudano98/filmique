@@ -1,4 +1,5 @@
 import React from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import CameraView from './components/CameraView';
 import RollsView from './components/RollsView';
 import CommunityView from './components/CommunityView';
@@ -74,12 +75,22 @@ function App() {
   const mainContentPadding = ['settings', 'profile'].includes(currentView) ? '' : 'px-4 py-4';
 
   return (
-    <div className="bg-gradient-to-b from-gray-900 to-black text-white">
+    <div className="text-white">
       {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
       <TopBar />
       <main className={`min-h-screen w-full pt-20 pb-28`}>
         <div className={`max-w-6xl mx-auto w-full h-full ${mainContentPadding}`}>
-          {renderCurrentView()}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentView}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+            >
+              {renderCurrentView()}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </main>
       <FloatingNav onNavigate={setCurrentView} />

@@ -12,8 +12,8 @@ const submenuVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, scale: 0.5 },
-  visible: { opacity: 1, scale: 1 },
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
 };
 
 const NavButton: React.FC<{
@@ -22,10 +22,10 @@ const NavButton: React.FC<{
 }> = ({ icon, onClick }) => (
   <motion.button
     onClick={onClick}
-    className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md bg-gray-600 hover:bg-gray-500 transition-colors duration-300"
+    className="w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md bg-white/10 hover:bg-white/20 transition-colors duration-300"
     variants={itemVariants}
-    whileHover={{ scale: 1.1 }}
-    whileTap={{ scale: 0.9 }}
+    whileHover={{ scale: 1.1, y: -2 }}
+    whileTap={{ scale: 0.95, y: 0 }}
   >
     {icon}
   </motion.button>
@@ -45,31 +45,40 @@ const FloatingNav: React.FC<FloatingNavProps> = ({ onNavigate }) => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 h-28 flex items-center justify-center" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0)', pointerEvents: 'none' }}>
-      <div className="flex items-center bg-gray-800/80 backdrop-blur-lg rounded-full shadow-2xl border border-gray-700/50 p-2 gap-2" style={{ pointerEvents: 'auto' }}>
+      <motion.div 
+        initial={{ y: 100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 100, damping: 15, delay: 0.5 }}
+        className="flex items-center bg-gray-900/50 backdrop-blur-xl rounded-full shadow-2xl border border-white/10 p-2 gap-2" 
+        style={{ pointerEvents: 'auto' }}
+      >
         
         {/* Main Gallery Icon (Direct link to rolls) */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
           onClick={() => handleNavigate('rolls')}
-          className="w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg bg-gray-700 hover:bg-gray-600 transition-all duration-300"
+          className="w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg bg-white/10 hover:bg-white/20 transition-all duration-300"
         >
           <Grid className="w-8 h-8" />
-        </button>
+        </motion.button>
 
         {/* Main Camera Icon (Standalone) */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
           onClick={() => handleNavigate('camera')}
-          className="w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg bg-gray-700 hover:bg-gray-600 transition-all duration-300"
+          className="w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg bg-white/10 hover:bg-white/20 transition-all duration-300"
         >
           <Camera className="w-8 h-8" />
-        </button>
+        </motion.button>
 
         {/* Main Social Icon */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}
           onClick={() => handleToggle('social')}
-          className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-300 ${openMenu === 'social' ? 'bg-red-600' : 'bg-gray-700 hover:bg-gray-600'}`}
+          className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-300 ${openMenu === 'social' ? 'bg-red-600' : 'bg-white/10 hover:bg-white/20'}`}
         >
           <Users className="w-8 h-8" />
-        </button>
+        </motion.button>
 
         {/* Social Submenu */}
         <AnimatePresence>
@@ -87,7 +96,7 @@ const FloatingNav: React.FC<FloatingNavProps> = ({ onNavigate }) => {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
     </div>
   );
 };
