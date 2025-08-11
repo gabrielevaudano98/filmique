@@ -10,7 +10,6 @@ import LoginView from './components/LoginView';
 import OtpView from './components/OtpView';
 import OnboardingView from './components/OnboardingView';
 import { useAppContext } from './context/AppContext';
-import TopBar from './components/TopBar';
 import RollDetailView from './components/RollDetailView';
 import AlbumDetailView from './components/AlbumDetailView';
 import NameRollModal from './components/NameRollModal';
@@ -74,8 +73,7 @@ function App() {
   return (
     <div className="bg-gray-900 text-white">
       {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
-      <TopBar />
-      <main className={`min-h-screen w-full pt-20 pb-28`}>
+      <main className={`min-h-screen w-full pb-28`}>
         <div className={`max-w-6xl mx-auto w-full h-full ${mainContentPadding}`}>
           {renderCurrentView()}
         </div>

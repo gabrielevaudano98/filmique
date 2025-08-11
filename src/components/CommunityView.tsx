@@ -64,7 +64,7 @@ const CommunityView: React.FC = () => {
       <div className="relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between pt-4 pb-6">
-          <h1 className="text-3xl font-bold font-recoleta text-white">Community</h1>
+          <h1 className="text-3xl font-bold text-white">Community</h1>
           <div className="flex items-center space-x-3">
             <button onClick={() => { /* Handle Likes/Favorites */ }} className="p-2 bg-brand-brown-dark rounded-full">
               <Heart className="w-5 h-5 text-gray-300" />
@@ -111,7 +111,7 @@ const CommunityView: React.FC = () => {
         {/* Discover Feed */}
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold font-recoleta">Discover Feed</h2>
+            <h2 className="text-xl font-bold">Discover Feed</h2>
             <button className="text-sm font-semibold text-gray-400 hover:text-white">See All</button>
           </div>
           <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">

@@ -80,7 +80,7 @@ const OnboardingView: React.FC = () => {
       <div className="w-full max-w-md bg-gray-800 rounded-2xl p-8 shadow-2xl">
         {step === 1 && (
           <div>
-            <h1 className="text-3xl font-bold font-recoleta text-amber-400 mb-4">Welcome to Filmique!</h1>
+            <h1 className="text-3xl font-bold text-amber-400 mb-4">Welcome to Filmique!</h1>
             <p className="text-gray-300 mb-8">Let's get your profile set up so you can start your photography journey.</p>
             <button onClick={handleNextStep} className="w-full bg-amber-500 text-gray-900 font-bold py-3 rounded-lg hover:bg-amber-600 transition-colors flex items-center justify-center space-x-2">
               <span>Get Started</span>
@@ -91,7 +91,7 @@ const OnboardingView: React.FC = () => {
 
         {step === 2 && (
           <div>
-            <h2 className="text-2xl font-bold font-recoleta mb-6">Tell us about yourself</h2>
+            <h2 className="text-2xl font-bold mb-6">Tell us about yourself</h2>
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
                 <label htmlFor="avatar-upload" className="cursor-pointer">
@@ -114,7 +114,7 @@ const OnboardingView: React.FC = () => {
 
         {step === 3 && (
           <div>
-            <h2 className="text-2xl font-bold font-recoleta mb-4">Privacy & Consent</h2>
+            <h2 className="text-2xl font-bold mb-4">Privacy & Consent</h2>
             <p className="text-gray-300 mb-6">We value your privacy. Please review and accept our terms to continue.</p>
             <div className="space-y-4 text-gray-400 text-sm">
               <p>By using Filmique, you agree that your photos may be visible to the community if you choose to share them.</p>

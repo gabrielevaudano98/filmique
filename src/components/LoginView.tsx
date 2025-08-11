@@ -24,7 +24,7 @@ const LoginView: React.FC = () => {
           <div className="inline-block p-4 bg-gray-800/50 border border-gray-700/50 rounded-full mb-5 shadow-lg">
             <Film className="w-10 h-10 text-amber-400" />
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold font-recoleta text-white">
+          <h1 className="text-5xl md:text-6xl font-bold text-white">
             Filmique
           </h1>
           <p className="text-gray-400 mt-4 text-lg max-w-xs mx-auto">

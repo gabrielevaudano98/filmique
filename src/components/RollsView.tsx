@@ -152,7 +152,7 @@ const RollsView: React.FC = () => {
       <div onClick={handleCurrentRollClick} className="bg-gradient-to-br from-amber-600 to-orange-600 rounded-2xl p-5 text-white shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold mb-2 font-recoleta">Current Roll</h2>
+            <h2 className="text-xl font-bold mb-2">Current Roll</h2>
             {activeRoll ? (
               <>
                 <p className="text-amber-100 font-medium">{activeRoll.film_type}</p>
@@ -214,7 +214,7 @@ const RollsView: React.FC = () => {
                 <div className="space-y-8">
                   {Object.entries(groupedRolls).map(([groupTitle, rollsInGroup]) => (
                     <div key={groupTitle}>
-                      <h3 ref={el => groupHeaderRefs.current[groupTitle] = el} className="sticky top-20 bg-gray-900/80 backdrop-blur-sm py-2 text-lg font-bold text-white mb-4 font-recoleta z-10">{groupTitle}</h3>
+                      <h3 ref={el => groupHeaderRefs.current[groupTitle] = el} className="sticky top-0 bg-gray-900/80 backdrop-blur-sm py-2 text-lg font-bold text-white mb-4 z-10">{groupTitle}</h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {rollsInGroup.map(roll => (
                           <DevelopedRollCard
@@ -231,7 +231,7 @@ const RollsView: React.FC = () => {
               ) : (
                 <div className="text-center py-16 px-4">
                   <ImageIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">{searchTerm || selectedFilm !== 'all' ? 'No Rolls Found' : 'No Developed Rolls'}</h3>
+                  <h3 className="text-2xl font-semibold mb-2 text-white">{searchTerm || selectedFilm !== 'all' ? 'No Rolls Found' : 'No Developed Rolls'}</h3>
                   <p className="text-gray-400 max-w-md mx-auto">{searchTerm || selectedFilm !== 'all' ? "Try adjusting your search or filter to find what you're looking for." : "Finish a roll and develop it to see your photos here."}</p>
                 </div>
               )}
@@ -243,7 +243,7 @@ const RollsView: React.FC = () => {
               {developingRolls.length > 0 ? developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} profile={profile} onDevelop={developRoll} />) : (
                 <div className="text-center py-16 px-4">
                   <Camera className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">Nothing in the Darkroom</h3>
+                  <h3 className="text-2xl font-semibold mb-2 text-white">Nothing in the Darkroom</h3>
                   <p className="text-gray-400 max-w-md mx-auto">When you finish a roll of film, it will show up here to be developed.</p>
                 </div>
               )}

@@ -42,7 +42,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
               <ArrowLeft className="w-5 h-5" />
             </button>
           )}
-          <h2 className="text-xl font-bold font-recoleta text-white">
+          <h2 className="text-xl font-bold text-white">
             {step === 'select_roll' ? 'Select a Roll to Post' : 'Write a Caption'}
           </h2>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full">

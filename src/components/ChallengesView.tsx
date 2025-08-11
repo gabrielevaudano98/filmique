@@ -33,7 +33,7 @@ const ChallengesView: React.FC = () => {
       <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold mb-2 font-recoleta">Challenges</h1>
+            <h1 className="text-2xl font-bold mb-2">Challenges</h1>
             <p className="text-purple-100">Complete challenges to earn XP, credits, and badges</p>
           </div>
           <Trophy className="w-12 h-12 text-yellow-300" />
@@ -43,7 +43,7 @@ const ChallengesView: React.FC = () => {
       {/* User Progress Section */}
       {profile && (
         <div className="bg-gray-800 rounded-xl p-6 space-y-4">
-          <h2 className="text-xl font-bold font-recoleta text-amber-400">Your Progress</h2>
+          <h2 className="text-xl font-bold text-amber-400">Your Progress</h2>
           <XPBar xp={profile.xp} level={profile.level} />
           <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-700/50">
             <div className="text-center">
@@ -119,7 +119,7 @@ const ChallengesView: React.FC = () => {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="text-lg font-semibold font-recoleta">{challenge.title}</h3>
+                        <h3 className="text-lg font-semibold">{challenge.title}</h3>
                         <div className={`px-2 py-1 rounded text-xs font-medium ${
                           challenge.type === 'daily' 
                             ? 'bg-blue-500 bg-opacity-20 text-blue-400'
@@ -192,7 +192,7 @@ const ChallengesView: React.FC = () => {
             {activeChallenges.length === 0 && (
               <div className="text-center py-12">
                 <Target className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2 font-recoleta">No active challenges</h3>
+                <h3 className="text-xl font-semibold mb-2">No active challenges</h3>
                 <p className="text-gray-400">New challenges will appear soon!</p>
               </div>
             )}
@@ -207,7 +207,7 @@ const ChallengesView: React.FC = () => {
                   <div className="flex items-center space-x-3">
                     <CheckCircle className="w-6 h-6 text-green-400" />
                     <div>
-                      <h3 className="font-semibold font-recoleta">{challenge.title}</h3>
+                      <h3 className="font-semibold">{challenge.title}</h3>
                       <p className="text-gray-400 text-sm">{challenge.description}</p>
                     </div>
                   </div>
@@ -230,7 +230,7 @@ const ChallengesView: React.FC = () => {
             {completedChallenges.length === 0 && (
               <div className="text-center py-12">
                 <CheckCircle className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold mb-2 font-recoleta">No completed challenges</h3>
+                <h3 className="text-xl font-semibold mb-2">No completed challenges</h3>
                 <p className="text-gray-400">Complete challenges to see them here!</p>
               </div>
             )}

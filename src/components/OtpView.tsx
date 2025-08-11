@@ -38,7 +38,7 @@ const OtpView: React.FC = () => {
           <div className="inline-block p-3 bg-gray-700/50 rounded-full mb-5">
             <MailCheck className="w-8 h-8 text-amber-400" />
           </div>
-          <h1 className="text-3xl font-bold font-recoleta text-white">Check your email</h1>
+          <h1 className="text-3xl font-bold text-white">Check your email</h1>
           <p className="text-gray-400 mt-2 mb-8">
             We sent a 6-digit code to <br />
             <span className="font-semibold text-white">{verificationEmail}</span>

@@ -63,7 +63,7 @@ const ProfileView: React.FC = () => {
         {/* Header */}
         <div className="px-4 pt-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold font-recoleta">{profile.username}</h2>
+            <h2 className="text-2xl font-bold">{profile.username}</h2>
             <button onClick={() => setCurrentView('settings')} className="p-2">
               <Settings className="w-6 h-6 text-gray-300" />
             </button>

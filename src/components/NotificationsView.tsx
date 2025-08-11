@@ -37,7 +37,7 @@ const NotificationsView: React.FC = () => {
   return (
     <div className="w-full space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold font-recoleta text-white">Notifications</h1>
+        <h1 className="text-3xl font-bold text-white">Notifications</h1>
         <button onClick={markNotificationsAsRead} className="text-sm text-amber-400 hover:text-amber-500 font-semibold">
           Mark all as read
         </button>
@@ -63,7 +63,7 @@ const NotificationsView: React.FC = () => {
       ) : (
         <div className="text-center py-16 px-4 bg-gray-800/50 rounded-lg">
           <Bell className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">All caught up!</h3>
+          <h3 className="text-2xl font-semibold mb-2 text-white">All caught up!</h3>
           <p className="text-gray-400 max-w-md mx-auto">You have no new notifications.</p>
         </div>
       )}

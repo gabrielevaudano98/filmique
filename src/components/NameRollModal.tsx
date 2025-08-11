@@ -33,7 +33,7 @@ const NameRollModal: React.FC<NameRollModalProps> = ({ roll, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold font-recoleta text-white">
+          <h2 className="text-xl font-bold text-white">
             {roll.title ? 'Rename Roll' : 'Name Your Roll'}
           </h2>
           <button

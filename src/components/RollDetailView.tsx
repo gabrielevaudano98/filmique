@@ -55,7 +55,7 @@ const RollDetailView: React.FC = () => {
       </div>
       
       <div className="mb-8">
-        <h2 className="text-3xl font-bold font-recoleta text-white">{selectedRoll.title || selectedRoll.film_type}</h2>
+        <h2 className="text-3xl font-bold text-white">{selectedRoll.title || selectedRoll.film_type}</h2>
         <p className="text-gray-400 mt-1">
           {selectedRoll.shots_used} photos • Developed on {developedDate.toLocaleDateString()}
         </p>
@@ -77,7 +77,7 @@ const RollDetailView: React.FC = () => {
       ) : (
         <div className="text-center py-16 px-4 col-span-full bg-gray-800/50 rounded-lg">
           <ImageIcon className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">No Photos Found</h3>
+          <h3 className="text-2xl font-semibold mb-2 text-white">No Photos Found</h3>
           <p className="text-gray-400 mb-6 max-w-md mx-auto">
             It looks like there was an issue loading the photos for this roll.
           </p>

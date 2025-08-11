@@ -20,8 +20,7 @@ export default {
         'brand-border': '#4a3b30',
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
-        recoleta: ['Recoleta', 'serif'],
+        sans: ['SF Pro Display', 'sans-serif'],
       },
     },
   },

@@ -26,7 +26,7 @@ const DevelopedRollCard: React.FC<DevelopedRollCardProps> = ({ roll, onSelect, o
         </div>
         <div className="p-3 flex-1 flex flex-col justify-between bg-gray-800">
           <div>
-            <h4 className="font-bold text-white truncate font-recoleta text-base leading-tight">{roll.title || roll.film_type}</h4>
+            <h4 className="font-bold text-white truncate text-base leading-tight">{roll.title || roll.film_type}</h4>
             <p className="text-xs text-gray-400">{roll.film_type}</p>
           </div>
           <div className="flex items-center justify-between text-xs text-gray-500 mt-2">

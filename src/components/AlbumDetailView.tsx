@@ -50,7 +50,7 @@ const AlbumDetailView: React.FC = () => {
       </div>
       
       <div className="mb-8">
-        <h2 className="text-3xl font-bold font-recoleta text-white">{selectedAlbum.title}</h2>
+        <h2 className="text-3xl font-bold text-white">{selectedAlbum.title}</h2>
         <div className="text-gray-400 mt-2 flex items-center space-x-4">
           <span className="flex items-center space-x-1.5"><Film className="w-4 h-4" /><span>{rollCount} Rolls</span></span>
           <span className="flex items-center space-x-1.5"><ImageIcon className="w-4 h-4" /><span>{photos.length} Photos</span></span>
@@ -72,7 +72,7 @@ const AlbumDetailView: React.FC = () => {
       ) : (
         <div className="text-center py-16 px-4 col-span-full bg-gray-800/50 rounded-lg">
           <ImageIcon className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-2xl font-semibold mb-2 font-recoleta text-white">Empty Album</h3>
+          <h3 className="text-2xl font-semibold mb-2 text-white">Empty Album</h3>
           <p className="text-gray-400 mb-6 max-w-md mx-auto">
             This album doesn't have any photos yet. Add some rolls to see them here.
           </p>

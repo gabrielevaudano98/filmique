@@ -82,7 +82,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
             <div className="w-10 h-1.5 bg-gray-700 rounded-full"></div>
           </div>
           <div className="flex items-center justify-between p-4">
-            <h2 className="text-xl font-bold font-recoleta">Select Film</h2>
+            <h2 className="text-xl font-bold">Select Film</h2>
             <button onClick={onClose} className="p-2 bg-gray-800 hover:bg-gray-700 rounded-full transition-colors">
               <X className="w-5 h-5" />
             </button>
@@ -117,7 +117,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
           
           {Object.keys(processedFilms).sort().map(groupName => (
             <div key={groupName}>
-              <h3 className="text-lg font-semibold mb-3 font-recoleta text-amber-400">{groupName}</h3>
+              <h3 className="text-lg font-semibold mb-3 text-amber-400">{groupName}</h3>
               <div className="space-y-2">
                 {processedFilms[groupName].map(film => (
                   <button
