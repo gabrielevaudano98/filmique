@@ -94,8 +94,8 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
             coverPhotoUrl && (
               <>
                 <img src={`${coverPhotoUrl}${cacheBuster}`} alt="Cover" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
-                  <h2 className="text-3xl font-bold">{post.rolls.title}</h2>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-6 text-white">
+                  <h2 className="text-4xl font-bold leading-tight">{post.rolls.title}</h2>
                   <p className="mt-2 text-gray-200 line-clamp-3">{post.caption}</p>
                 </div>
               </>
@@ -114,17 +114,15 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
 
         {/* Footer Actions */}
         {profile && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 z-20 flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className="flex items-center space-x-1.5 text-white">
-                <Heart className={`w-6 h-6 transition-colors ${post.isLiked ? 'text-red-500 fill-current' : 'hover:text-red-400'}`} />
-                <span className="text-sm font-medium">{post.likes.length}</span>
-              </button>
-              <button className="flex items-center space-x-1.5 text-white">
-                <MessageCircle className="w-6 h-6" />
-                <span className="text-sm font-medium">{post.comments.length}</span>
-              </button>
-            </div>
+          <div className="absolute bottom-6 right-4 z-20 flex flex-col items-center space-y-6">
+            <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className="flex flex-col items-center text-white space-y-1">
+              <Heart className={`w-7 h-7 transition-colors ${post.isLiked ? 'text-red-500 fill-current' : 'hover:text-red-400'}`} />
+              <span className="text-xs font-bold">{post.likes.length}</span>
+            </button>
+            <button className="flex flex-col items-center text-white space-y-1">
+              <MessageCircle className="w-7 h-7" />
+              <span className="text-xs font-bold">{post.comments.length}</span>
+            </button>
           </div>
         )}
       </div>
