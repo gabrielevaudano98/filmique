@@ -5,6 +5,7 @@ import { RefreshCw, Film, Lock, Camera, ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
 import RangeSelector from './RangeSelector';
+import ShutterButton from './ShutterButton';
 
 type ProControl = 'iso' | 'shutterSpeed' | 'focus';
 
@@ -356,11 +357,7 @@ const CameraView: React.FC = () => {
                 <button onClick={() => setCameraMode('simple')} className={cameraMode === 'simple' ? 'text-amber-400 font-bold' : 'text-white'}>PHOTO</button>
                 {!isNative && <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-amber-400 font-bold' : 'text-white'}>PRO</button>}
               </div>
-              <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
-                <button onClick={handleTakePhoto} disabled={activeRoll?.is_completed} aria-label="Take Photo" className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200">
-                  {activeRoll?.is_completed && <Lock className="w-8 h-8 text-gray-500" />}
-                </button>
-              </div>
+              <ShutterButton activeRoll={activeRoll} onTakePhoto={handleTakePhoto} />
             </div>
 
             <button onClick={switchCamera} disabled={!isNative && cameras.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
