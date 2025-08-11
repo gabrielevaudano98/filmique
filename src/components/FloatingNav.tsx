@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Film, Trophy, Users, User, Grid, LayoutGrid } from 'lucide-react';
+import { Camera, Trophy, Users, User, Grid } from 'lucide-react';
 
 interface FloatingNavProps {
   onNavigate: (view: string) => void;
@@ -32,9 +32,9 @@ const NavButton: React.FC<{
 );
 
 const FloatingNav: React.FC<FloatingNavProps> = ({ onNavigate }) => {
-  const [openMenu, setOpenMenu] = useState<'gallery' | 'social' | null>(null);
+  const [openMenu, setOpenMenu] = useState<'social' | null>(null);
 
-  const handleToggle = (menu: 'gallery' | 'social') => {
+  const handleToggle = (menu: 'social') => {
     setOpenMenu(prev => (prev === menu ? null : menu));
   };
 
@@ -47,26 +47,10 @@ const FloatingNav: React.FC<FloatingNavProps> = ({ onNavigate }) => {
     <div className="fixed bottom-0 left-0 right-0 z-50 h-28 flex items-center justify-center" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0)', pointerEvents: 'none' }}>
       <div className="flex items-center bg-gray-800/80 backdrop-blur-lg rounded-full shadow-2xl border border-gray-700/50 p-2 gap-2" style={{ pointerEvents: 'auto' }}>
         
-        {/* Gallery Submenu */}
-        <AnimatePresence>
-          {openMenu === 'gallery' && (
-            <motion.div
-              className="flex items-center gap-2 overflow-hidden"
-              variants={submenuVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-            >
-              <NavButton icon={<LayoutGrid className="w-6 h-6" />} onClick={() => handleNavigate('albums')} />
-              <NavButton icon={<Film className="w-6 h-6" />} onClick={() => handleNavigate('rolls')} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Main Gallery Icon */}
+        {/* Main Gallery Icon (Direct link to rolls) */}
         <button
-          onClick={() => handleToggle('gallery')}
-          className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-300 ${openMenu === 'gallery' ? 'bg-amber-500' : 'bg-gray-700 hover:bg-gray-600'}`}
+          onClick={() => handleNavigate('rolls')}
+          className="w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg bg-gray-700 hover:bg-gray-600 transition-all duration-300"
         >
           <Grid className="w-8 h-8" />
         </button>
