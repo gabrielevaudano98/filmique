@@ -55,11 +55,11 @@ const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, 
   const progress = Math.min(100, ((currentTime - completedTime) / (readyTime - completedTime)) * 100);
 
   return (
-    <div className="bg-gray-800 rounded-xl p-4 space-y-4 border border-gray-700/50">
+    <div className="bg-brand-brown-dark rounded-xl p-4 space-y-4 border border-brand-border">
       {/* Top section: Info */}
       <div className="flex items-center space-x-4">
-        <div className="bg-gray-700 p-3 rounded-lg">
-          <Film className="w-6 h-6 text-amber-400" />
+        <div className="bg-brand-brown-light p-3 rounded-lg">
+          <Film className="w-6 h-6 text-brand-orange-start" />
         </div>
         <div>
           <h4 className="font-semibold text-white text-lg">{roll.film_type}</h4>
@@ -76,9 +76,9 @@ const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, 
             {getRemainingTime()}
           </span>
         </div>
-        <div className="w-full bg-gray-700 rounded-full h-2">
+        <div className="w-full bg-brand-brown-light rounded-full h-2">
           <div
-            className="bg-amber-400 h-2 rounded-full transition-all duration-500"
+            className="bg-brand-orange h-2 rounded-full transition-all duration-500"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
@@ -88,7 +88,7 @@ const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, 
       <div className="pt-4">
         <button
           onClick={() => onDevelop(roll)}
-          className="w-full py-3 flex items-center justify-center bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed font-bold text-gray-900 text-base shadow-lg shadow-amber-500/20 disabled:shadow-none"
+          className="w-full py-3 flex items-center justify-center bg-brand-orange hover:bg-brand-orange-end rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed font-bold text-white text-base shadow-lg shadow-brand-orange/20 disabled:shadow-none"
           disabled={!canAfford}
           aria-label="Develop Now"
         >

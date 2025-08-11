@@ -59,66 +59,63 @@ const CommunityView: React.FC = () => {
   }, [feed, activeFilter]);
 
   return (
-    <div className="w-full bg-brand-bg text-gray-100 min-h-full pb-10 -m-4 p-4 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-1/2 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-from)_0%,_transparent_70%)] from-brand-brown-light/20 to-transparent pointer-events-none"></div>
-      <div className="relative z-10">
-        {/* Header */}
-        <div className="flex items-center justify-between pt-4 pb-6">
-          <h1 className="text-3xl font-bold text-gray-100">Community</h1>
-          <div className="flex items-center space-x-3">
-            <button onClick={() => { /* Handle Likes/Favorites */ }} className="p-2 bg-brand-brown-dark rounded-full">
-              <Heart className="w-5 h-5 text-gray-300" />
-            </button>
-            <button onClick={() => { /* Handle DMs */ }} className="p-2 bg-brand-brown-dark rounded-full">
-              <Send className="w-5 h-5 text-gray-300" />
-            </button>
-          </div>
+    <div className="w-full text-gray-100 min-h-full p-4">
+      {/* Header */}
+      <div className="flex items-center justify-between pt-4 pb-6">
+        <h1 className="text-3xl font-bold text-gray-100">Community</h1>
+        <div className="flex items-center space-x-3">
+          <button onClick={() => { /* Handle Likes/Favorites */ }} className="p-2 bg-brand-brown-dark rounded-full">
+            <Heart className="w-5 h-5 text-gray-300" />
+          </button>
+          <button onClick={() => { /* Handle DMs */ }} className="p-2 bg-brand-brown-dark rounded-full">
+            <Send className="w-5 h-5 text-gray-300" />
+          </button>
         </div>
+      </div>
 
-        {/* Stories Row */}
-        <div className="mb-6">
-          <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-2">
-            <div className="flex flex-col items-center space-y-2 flex-shrink-0">
-              <div className="relative">
-                <img src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`} alt="Your story" className="w-16 h-16 rounded-full object-cover border-2 border-brand-border" />
-                <button onClick={() => setShowCreatePostModal(true)} className="absolute -bottom-1 -right-1 bg-brand-orange rounded-full p-1 border-2 border-brand-bg">
-                  <Plus className="w-3 h-3 text-white" />
-                </button>
-              </div>
-              <p className="text-xs text-gray-400">Your Story</p>
+      {/* Stories Row */}
+      <div className="mb-6">
+        <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-2">
+          <div className="flex flex-col items-center space-y-2 flex-shrink-0">
+            <div className="relative">
+              <img src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`} alt="Your story" className="w-16 h-16 rounded-full object-cover border-2 border-brand-border" />
+              <button onClick={() => setShowCreatePostModal(true)} className="absolute -bottom-1 -right-1 bg-brand-orange rounded-full p-1 border-2 border-brand-bg">
+                <Plus className="w-3 h-3 text-white" />
+              </button>
             </div>
-            {followedUsers.slice(0, 10).map(user => (
-              <div key={user.username} className="flex flex-col items-center space-y-2 flex-shrink-0">
-                <div className="p-0.5 rounded-full bg-gradient-to-tr from-brand-orange via-brand-orange-end to-brand-brown-light">
-                  <img src={user.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${user.username}`} alt={user.username} className="w-16 h-16 rounded-full object-cover border-2 border-brand-bg" />
-                </div>
-                <p className="text-xs text-gray-100 truncate w-16 text-center">{user.username}</p>
+            <p className="text-xs text-gray-400">Your Story</p>
+          </div>
+          {followedUsers.slice(0, 10).map(user => (
+            <div key={user.username} className="flex flex-col items-center space-y-2 flex-shrink-0">
+              <div className="p-0.5 rounded-full bg-gradient-to-tr from-brand-orange via-brand-orange-end to-brand-brown-light">
+                <img src={user.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${user.username}`} alt={user.username} className="w-16 h-16 rounded-full object-cover border-2 border-brand-bg" />
               </div>
-            ))}
-          </div>
+              <p className="text-xs text-gray-100 truncate w-16 text-center">{user.username}</p>
+            </div>
+          ))}
         </div>
+      </div>
 
-        {/* Filter Pills */}
-        <div className="mb-6">
-          <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
-            <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
-            <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
-            <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
-            <FilterPill label="New" isActive={activeFilter === 'new'} onClick={() => setActiveFilter('new')} />
-          </div>
+      {/* Filter Pills */}
+      <div className="mb-6">
+        <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
+          <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
+          <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
+          <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
+          <FilterPill label="New" isActive={activeFilter === 'new'} onClick={() => setActiveFilter('new')} />
         </div>
+      </div>
 
-        {/* Discover Feed */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">Discover Feed</h2>
-            <button className="text-sm font-semibold text-gray-400 hover:text-gray-100">See All</button>
-          </div>
-          <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
-            {filteredFeed.map(post => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
+      {/* Discover Feed */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold">Discover Feed</h2>
+          <button className="text-sm font-semibold text-gray-400 hover:text-gray-100">See All</button>
+        </div>
+        <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
+          {filteredFeed.map(post => (
+            <PostCard key={post.id} post={post} />
+          ))}
         </div>
       </div>
 

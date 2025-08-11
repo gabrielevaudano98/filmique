@@ -132,14 +132,14 @@ const RollsView: React.FC = () => {
       onClick={onClick}
       className={`flex-1 py-2.5 px-4 rounded-md text-sm font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
         isActive
-          ? 'bg-amber-500 text-gray-900 shadow-lg shadow-amber-500/20'
-          : 'text-gray-300 hover:bg-gray-700/50'
+          ? 'bg-brand-orange text-white shadow-lg shadow-brand-orange/20'
+          : 'text-gray-300 hover:bg-brand-brown-dark/50'
       }`}
     >
       <span>{label}</span>
       <span
         className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
-          isActive ? 'bg-black/10 text-gray-800' : 'bg-gray-700 text-gray-300'
+          isActive ? 'bg-black/10 text-white' : 'bg-brand-brown-dark text-gray-300'
         }`}
       >
         {count}
@@ -149,22 +149,22 @@ const RollsView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full space-y-6">
-      <div onClick={handleCurrentRollClick} className="bg-gradient-to-br from-amber-600 to-orange-600 rounded-2xl p-5 text-white shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer">
+      <div onClick={handleCurrentRollClick} className="bg-gradient-to-br from-brand-orange-start to-brand-orange-end rounded-2xl p-5 text-white shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold mb-2">Current Roll</h2>
             {activeRoll ? (
               <>
-                <p className="text-amber-100 font-medium">{activeRoll.film_type}</p>
-                <div className="w-full bg-amber-700 rounded-full h-2.5 mt-3">
+                <p className="text-orange-100 font-medium">{activeRoll.film_type}</p>
+                <div className="w-full bg-orange-900/50 rounded-full h-2.5 mt-3">
                   <div className="bg-white h-2.5 rounded-full" style={{ width: `${(activeRoll.shots_used / activeRoll.capacity) * 100}%` }}></div>
                 </div>
-                <p className="text-sm text-amber-100 mt-2">{activeRoll.shots_used}/{activeRoll.capacity} shots used</p>
+                <p className="text-sm text-orange-100 mt-2">{activeRoll.shots_used}/{activeRoll.capacity} shots used</p>
               </>
             ) : (
               <>
-                <p className="text-amber-100 mb-4">No active roll. Time to load up!</p>
-                <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} className="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-xl flex items-center space-x-2 font-semibold">
+                <p className="text-orange-100 mb-4">No active roll. Time to load up!</p>
+                <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} className="bg-black/20 hover:bg-black/30 text-white px-4 py-2 rounded-xl flex items-center space-x-2 font-semibold">
                   <Film className="w-5 h-5" />
                   <span>Load New Film</span>
                 </button>
@@ -182,8 +182,8 @@ const RollsView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-gray-800/50 rounded-2xl p-4 sm:p-6">
-        <div className="bg-gray-800 rounded-xl p-1 flex space-x-1">
+      <div className="bg-brand-brown-dark/50 rounded-2xl p-4 sm:p-6 border border-brand-border">
+        <div className="bg-brand-brown-dark rounded-xl p-1 flex space-x-1">
           <TabButton
             label="Developed"
             count={developedRolls.length}
@@ -214,7 +214,7 @@ const RollsView: React.FC = () => {
                 <div className="space-y-8">
                   {Object.entries(groupedRolls).map(([groupTitle, rollsInGroup]) => (
                     <div key={groupTitle}>
-                      <h3 ref={el => groupHeaderRefs.current[groupTitle] = el} className="sticky top-0 bg-gray-900/80 backdrop-blur-sm py-2 text-lg font-bold text-white mb-4 z-10">{groupTitle}</h3>
+                      <h3 ref={el => groupHeaderRefs.current[groupTitle] = el} className="sticky top-0 bg-brand-bg/80 backdrop-blur-sm py-2 text-lg font-bold text-white mb-4 z-10">{groupTitle}</h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {rollsInGroup.map(roll => (
                           <DevelopedRollCard
