@@ -39,7 +39,7 @@ const ShutterButton: React.FC<ShutterButtonProps> = ({ activeRoll, onTakePhoto }
               cx={dot.x}
               cy={dot.y}
               r={dotRadius}
-              fill={dot.isUsed ? '#4b5563' : '#f59e0b'} // gray-600 and amber-500
+              fill={dot.isUsed ? '#1f2937' : 'white'} // gray-800 for used, white for unused
               className="transition-colors duration-300"
             />
           ))}
@@ -49,10 +49,10 @@ const ShutterButton: React.FC<ShutterButtonProps> = ({ activeRoll, onTakePhoto }
         onClick={onTakePhoto}
         disabled={isCompleted}
         aria-label="Take Photo"
-        className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200 text-gray-900"
+        className="w-20 h-20 rounded-full bg-amber-400 flex items-center justify-center transition-transform active:scale-95 disabled:bg-amber-400/50 disabled:cursor-not-allowed text-gray-900"
       >
         {isCompleted ? (
-          <Lock className="w-8 h-8 text-gray-500" />
+          <Lock className="w-8 h-8 text-gray-800" />
         ) : activeRoll ? (
           <span className="text-4xl font-bold">
             {shotsLeft}

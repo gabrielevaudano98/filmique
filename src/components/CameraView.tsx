@@ -319,11 +319,6 @@ const CameraView: React.FC = () => {
               className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
             />
           )}
-          {activeRoll && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black bg-opacity-30 rounded-full px-3 py-1 text-xs font-mono z-10">
-              {activeRoll.film_type} &middot; {activeRoll.shots_used}/{activeRoll.capacity}
-            </div>
-          )}
         </div>
       </div>
 
