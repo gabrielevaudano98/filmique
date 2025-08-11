@@ -21,13 +21,18 @@
     width: 100vw;
     height: 100vh;
     background-image: 
-      radial-gradient(ellipse 40% 50% at 20% 20%, #566293 0%, transparent 50%),
-      radial-gradient(ellipse 40% 50% at 80% 25%, #41354c 0%, transparent 50%),
-      radial-gradient(ellipse 50% 50% at 50% 95%, #b5aaac 0%, transparent 60%);
-    filter: blur(80px);
+      /* A soft orange glow from the top-center */
+      radial-gradient(ellipse 50% 40% at 50% 0%, #e98a43 0%, transparent 60%),
+      /* A smoky beige from the bottom-left */
+      radial-gradient(ellipse 40% 50% at 10% 100%, #b5aaac 0%, transparent 70%),
+      /* A muted blue from the top-right */
+      radial-gradient(ellipse 40% 50% at 90% 10%, #566293 0%, transparent 60%),
+      /* A deep purple to fill in gaps */
+      radial-gradient(ellipse 60% 60% at 80% 90%, #41354c 0%, transparent 80%);
+    filter: blur(90px); /* Increased blur for softer edges */
     z-index: -1;
     transform: scale(1.2);
-    opacity: 0.4;
+    opacity: 0.5; /* Increased opacity for more vibrancy */
   }
   /*
     Custom Focus Handling:
