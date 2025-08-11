@@ -31,7 +31,11 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
         {post.user_id !== profile.id && (
           <button 
             onClick={() => handleFollow(post.user_id, post.isFollowed)}
-            className="bg-white/20 backdrop-blur-sm text-white text-xs font-bold py-1.5 px-4 rounded-full hover:bg-white/30 transition-colors"
+            className={`text-xs font-bold py-1.5 px-4 rounded-full transition-colors ${
+              post.isFollowed
+                ? 'bg-brand-brown-dark text-white'
+                : 'bg-brand-orange text-white hover:bg-brand-orange-end'
+            }`}
           >
             {post.isFollowed ? 'Following' : 'Follow'}
           </button>
@@ -40,7 +44,7 @@ const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
       {/* Action Buttons */}
       <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center justify-between text-white">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2">
           <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className="flex items-center space-x-1.5 bg-black/30 backdrop-blur-sm py-1.5 px-3 rounded-full">
             <Heart className={`w-5 h-5 ${post.isLiked ? 'text-red-500 fill-current' : ''}`} />
             <span className="text-sm font-medium">{post.likes.length}</span>

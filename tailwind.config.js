@@ -6,6 +6,19 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        'brand-bg': '#1c130c',
+        'brand-brown': {
+          light: '#4a2a13',
+          dark: '#2a2018',
+        },
+        'brand-orange': {
+          DEFAULT: '#d46a2e',
+          start: '#e98a43',
+          end: '#d46a2e',
+        },
+        'brand-border': '#4a3b30',
+      },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
         recoleta: ['Recoleta', 'serif'],
