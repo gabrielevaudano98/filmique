@@ -4,7 +4,7 @@ import { Mail, ArrowRight, Film } from 'lucide-react';
 
 const LoginView: React.FC = () => {
   const { handleLogin, isLoading } = useAppContext();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('gabriele.vaudano@outlook.com');
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
