@@ -307,14 +307,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const { data: followingData } = await supabase.from('followers').select('following_id').eq('follower_id', userId);
     const followedUserIds = followingData?.map(f => f.following_id) || [];
 
-    if (followedUserIds.length === 0) {
+    // Include the current user's ID in the list of IDs to fetch
+    const userIdsToFetch = [...followedUserIds, userId]; 
+
+    if (userIdsToFetch.length === 0) {
       setRecentStories(new Map());
       return;
     }
 
     const { data: recentPosts, error } = await supabase.from('posts')
       .select(POST_SELECT_QUERY)
-      .in('user_id', followedUserIds)
+      .in('user_id', userIdsToFetch) // Use the combined list
       .gte('created_at', twentyFourHoursAgo)
       .order('created_at', { ascending: false });
 
@@ -333,7 +336,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       storiesMap.get(userProfile.id)?.posts.push({
         ...post,
         isLiked: post.likes.some(like => like.user_id === userId),
-        isFollowed: true, // All these users are followed
+        isFollowed: followedUserIds.includes(post.user_id), // Check if actually followed
       } as Post);
     });
 
