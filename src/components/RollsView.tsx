@@ -133,13 +133,13 @@ const RollsView: React.FC = () => {
       className={`flex-1 py-2.5 px-4 rounded-md text-sm font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
         isActive
           ? 'bg-brand-orange text-white shadow-lg shadow-brand-orange/20'
-          : 'text-gray-300 hover:bg-brand-brown-dark/50'
+          : 'text-gray-300 hover:bg-brand-surface/50'
       }`}
     >
       <span>{label}</span>
       <span
         className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
-          isActive ? 'bg-black/10 text-white' : 'bg-brand-brown-dark text-gray-300'
+          isActive ? 'bg-black/10 text-white' : 'bg-brand-surface text-gray-300'
         }`}
       >
         {count}
@@ -182,8 +182,8 @@ const RollsView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-brand-brown-dark/50 rounded-2xl p-4 sm:p-6 border border-brand-border">
-        <div className="bg-brand-brown-dark rounded-xl p-1 flex space-x-1">
+      <div className="bg-brand-surface rounded-2xl p-4 sm:p-6 border border-brand-border">
+        <div className="bg-brand-dark rounded-xl p-1 flex space-x-1">
           <TabButton
             label="Developed"
             count={developedRolls.length}
@@ -214,7 +214,7 @@ const RollsView: React.FC = () => {
                 <div className="space-y-8">
                   {Object.entries(groupedRolls).map(([groupTitle, rollsInGroup]) => (
                     <div key={groupTitle}>
-                      <h3 ref={el => groupHeaderRefs.current[groupTitle] = el} className="sticky top-0 bg-brand-bg/80 backdrop-blur-sm py-2 text-lg font-bold text-white mb-4 z-10">{groupTitle}</h3>
+                      <h3 ref={el => groupHeaderRefs.current[groupTitle] = el} className="sticky top-16 bg-brand-dark/80 backdrop-blur-sm py-2 text-lg font-bold text-white mb-4 z-10 -mx-4 px-4">{groupTitle}</h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {rollsInGroup.map(roll => (
                           <DevelopedRollCard

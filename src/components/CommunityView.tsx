@@ -11,7 +11,7 @@ const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => vo
     className={`px-5 py-2.5 rounded-full text-sm font-bold transition-colors flex-shrink-0 ${
       isActive
         ? 'bg-gradient-to-r from-brand-orange-start to-brand-orange-end text-white'
-        : 'bg-brand-brown-dark text-gray-300 hover:bg-brand-brown-light/50 border border-brand-border'
+        : 'bg-brand-surface text-gray-300 hover:bg-brand-surface/50 border border-brand-border'
     }`}
   >
     {label}
@@ -59,18 +59,10 @@ const CommunityView: React.FC = () => {
   }, [feed, activeFilter]);
 
   return (
-    <div className="w-full text-gray-100 min-h-full p-4">
+    <div className="w-full text-gray-100 min-h-full">
       {/* Header */}
       <div className="flex items-center justify-between pt-4 pb-6">
-        <h1 className="text-3xl font-bold text-gray-100">Community</h1>
-        <div className="flex items-center space-x-3">
-          <button onClick={() => { /* Handle Likes/Favorites */ }} className="p-2 bg-brand-brown-dark rounded-full">
-            <Heart className="w-5 h-5 text-gray-300" />
-          </button>
-          <button onClick={() => { /* Handle DMs */ }} className="p-2 bg-brand-brown-dark rounded-full">
-            <Send className="w-5 h-5 text-gray-300" />
-          </button>
-        </div>
+        {/* This space is intentionally left for the sticky TopBar */}
       </div>
 
       {/* Stories Row */}
@@ -87,7 +79,7 @@ const CommunityView: React.FC = () => {
           </div>
           {followedUsers.slice(0, 10).map(user => (
             <div key={user.username} className="flex flex-col items-center space-y-2 flex-shrink-0">
-              <div className="p-0.5 rounded-full bg-gradient-to-tr from-brand-orange via-brand-orange-end to-brand-brown-light">
+              <div className="p-0.5 rounded-full bg-gradient-to-tr from-brand-orange via-brand-orange-end to-purple-500">
                 <img src={user.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${user.username}`} alt={user.username} className="w-16 h-16 rounded-full object-cover border-2 border-brand-bg" />
               </div>
               <p className="text-xs text-gray-100 truncate w-16 text-center">{user.username}</p>

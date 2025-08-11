@@ -7,17 +7,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand-bg': '#1c130c',
-        'brand-brown': {
-          light: '#4a2a13',
-          dark: '#2a2018',
-        },
+        'brand-dark': '#0c0c0f',
+        'brand-purple-dark': '#41354c',
+        'brand-blue-muted': '#566293',
+        'brand-beige-smoky': '#b5aaac',
+        'brand-bg': '#0c0c0f', // Main background
+        'brand-surface': 'rgba(28, 28, 32, 0.7)', // Semi-transparent surface for cards
         'brand-orange': {
           DEFAULT: '#d46a2e',
           start: '#e98a43',
           end: '#d46a2e',
         },
-        'brand-border': '#4a3b30',
+        'brand-border': 'rgba(65, 53, 76, 0.5)', // Semi-transparent border
       },
       fontFamily: {
         sans: ['SF Pro Display', 'sans-serif'],

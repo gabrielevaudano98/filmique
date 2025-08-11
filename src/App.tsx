@@ -14,6 +14,7 @@ import RollDetailView from './components/RollDetailView';
 import AlbumDetailView from './components/AlbumDetailView';
 import NameRollModal from './components/NameRollModal';
 import NotificationsView from './components/NotificationsView';
+import TopBar from './components/TopBar';
 
 function App() {
   const { session, profile, isLoading, currentView, setCurrentView, authStep, rollToName, setRollToName } = useAppContext();
@@ -68,18 +69,16 @@ function App() {
     );
   }
 
-  const mainContentPadding = ['settings', 'profile', 'community'].includes(currentView) ? '' : 'px-4 py-4';
-
   return (
-    <div className="bg-brand-bg text-white relative">
-      <div className="absolute top-0 left-0 w-full h-1/2 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-from)_0%,_transparent_70%)] from-brand-brown-light/20 to-transparent pointer-events-none"></div>
+    <div className="bg-transparent text-white">
+      <TopBar />
       {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
-      <main className={`min-h-screen w-full pb-28 relative z-10`}>
-        <div className={`max-w-6xl mx-auto w-full h-full ${mainContentPadding}`}>
+      <main className="min-h-screen w-full pb-28">
+        <div className="max-w-6xl mx-auto w-full h-full px-4 py-4">
           {renderCurrentView()}
         </div>
       </main>
-      <nav className="fixed bottom-0 left-0 right-0 w-full bg-brand-brown-dark border-t border-brand-border px-2 py-1 safe-area-bottom z-50">
+      <nav className="fixed bottom-0 left-0 right-0 w-full bg-brand-dark/80 backdrop-blur-lg border-t border-brand-border px-2 py-1 safe-area-bottom z-50">
         <div className="flex items-center justify-around max-w-md mx-auto py-1">
           <button onClick={() => setCurrentView('challenges')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'challenges' ? 'text-brand-orange-start' : 'text-gray-400 hover:text-brand-orange-start'}`} aria-label="Challenges">
             <Trophy className="w-6 h-6" />
@@ -87,7 +86,7 @@ function App() {
           <button onClick={() => setCurrentView('rolls')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'rolls' ? 'text-brand-orange-start' : 'text-gray-400 hover:text-brand-orange-start'}`} aria-label="Rolls">
             <Film className="w-6 h-6" />
           </button>
-          <button onClick={() => setCurrentView('camera')} className="flex items-center justify-center w-14 h-14 rounded-full shadow-2xl transition-all duration-300 ease-in-out translate-y-[-12px] ring-2 ring-brand-orange-start ring-offset-2 ring-offset-brand-brown-dark bg-brand-orange text-white hover:bg-brand-orange-end border-4 border-brand-orange-start/50" aria-label="Camera">
+          <button onClick={() => setCurrentView('camera')} className="flex items-center justify-center w-14 h-14 rounded-full shadow-2xl transition-all duration-300 ease-in-out translate-y-[-12px] ring-2 ring-brand-orange-start ring-offset-2 ring-offset-brand-dark bg-brand-orange text-white hover:bg-brand-orange-end border-4 border-brand-orange-start/50" aria-label="Camera">
             <Camera className="w-7 h-7" />
           </button>
           <button onClick={() => setCurrentView('community')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'community' ? 'text-brand-orange-start' : 'text-gray-400 hover:text-brand-orange-start'}`} aria-label="Community">
