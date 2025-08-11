@@ -26,7 +26,7 @@ const CommunityView: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('discover');
 
   const [showFullStoryViewer, setShowFullStoryViewer] = useState(false);
-  const [initialStoryUserId, setInitialStoryUserId] = useState<string | null>(null);
+  const [postsForFullStoryViewer, setPostsForFullStoryViewer] = useState<Post[] | null>(null); // New state
   const [initialStoryPostIndex, setInitialStoryPostIndex] = useState(0);
 
   const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
@@ -54,14 +54,31 @@ const CommunityView: React.FC = () => {
   }, [feed, activeFilter]);
 
   const handleSelectStory = (userId: string, postId: string) => {
+    let postsToShow: Post[] = [];
+    let initialIdx = 0;
+
+    // Try to find in recent stories first (for carousel clicks)
     const userStories = recentStories.get(userId);
     if (userStories) {
-      const postIndex = userStories.posts.findIndex(p => p.id === postId);
-      if (postIndex !== -1) {
-        setInitialStoryUserId(userId);
-        setInitialStoryPostIndex(postIndex);
-        setShowFullStoryViewer(true);
-      }
+      postsToShow = userStories.posts;
+      initialIdx = postsToShow.findIndex(p => p.id === postId);
+    } 
+    
+    // If not found in recent stories, or if it's a general feed click, get all posts by that user
+    if (initialIdx === -1 || postsToShow.length === 0) {
+      postsToShow = feed.filter(p => p.user_id === userId)
+                        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()); // Ensure chronological order
+
+      initialIdx = postsToShow.findIndex(p => p.id === postId);
+    }
+
+    if (initialIdx !== -1 && postsToShow.length > 0) {
+      setPostsForFullStoryViewer(postsToShow);
+      setInitialStoryPostIndex(initialIdx);
+      setShowFullStoryViewer(true);
+    } else {
+      console.warn("Could not find post in any sequence for story viewer:", postId);
+      // Optionally show a toast error here
     }
   };
 
@@ -132,12 +149,14 @@ const CommunityView: React.FC = () => {
         />
       )}
 
-      {showFullStoryViewer && initialStoryUserId && (
+      {showFullStoryViewer && postsForFullStoryViewer && (
         <FullStoryViewer
-          allUserStories={recentStories}
-          initialUserId={initialStoryUserId}
+          posts={postsForFullStoryViewer}
           initialPostIndex={initialStoryPostIndex}
-          onClose={() => setShowFullStoryViewer(false)}
+          onClose={() => {
+            setShowFullStoryViewer(false);
+            setPostsForFullStoryViewer(null); // Clear state on close
+          }}
         />
       )}
     </div>

@@ -3,7 +3,7 @@ import { UserProfile, Post } from '../context/AppContext';
 
 interface StoryRollsCarouselProps {
   recentStories: Map<string, { user: UserProfile, posts: Post[] }>;
-  onSelectStory: (userId: string, initialPostIndex: number) => void;
+  onSelectStory: (userId: string, postId: string) => void; // Changed to postId
 }
 
 const StoryRollsCarousel: React.FC<StoryRollsCarouselProps> = ({ recentStories, onSelectStory }) => {
@@ -18,7 +18,7 @@ const StoryRollsCarousel: React.FC<StoryRollsCarouselProps> = ({ recentStories, 
       {storyUsers.map(({ user, posts }) => (
         <button
           key={user.id}
-          onClick={() => onSelectStory(user.id, 0)}
+          onClick={() => onSelectStory(user.id, posts[0].id)} // Pass posts[0].id
           className="flex flex-col items-center flex-shrink-0 group"
         >
           <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-amber-400 to-red-500 flex items-center justify-center overflow-hidden transition-transform duration-200 group-hover:scale-105">
