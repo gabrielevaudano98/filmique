@@ -312,11 +312,6 @@ const CameraView: React.FC = () => {
               className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
             />
           )}
-          {activeRoll && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black bg-opacity-30 rounded-full px-3 py-1 text-xs font-mono z-10">
-              {activeRoll.film_type} &middot; {activeRoll.shots_used}/{activeRoll.capacity}
-            </div>
-          )}
         </div>
       </div>
 
@@ -343,16 +338,15 @@ const CameraView: React.FC = () => {
           <div className="w-full flex items-center justify-between px-4 py-2">
             {/* Left: Roll Info */}
             <div className="flex-1 flex justify-start">
-              {activeRoll ? (
-                <button onClick={() => setShowFilmModal(true)} className="text-center transition-opacity hover:opacity-80 p-2">
-                  <span className="block text-amber-400 text-xs font-bold uppercase tracking-wider truncate max-w-[100px]">{activeRoll.film_type}</span>
-                  <span className="block text-white text-xs font-mono mt-1">{activeRoll.shots_used}/{activeRoll.capacity}</span>
-                </button>
-              ) : (
-                <button onClick={() => setShowFilmModal(true)} className="text-center transition-opacity hover:opacity-80 p-2">
-                  <span className="block text-amber-400 text-xs font-bold uppercase tracking-wider">No Film</span>
-                </button>
-              )}
+              <button onClick={() => setShowFilmModal(true)} className="flex items-center gap-3 text-left transition-opacity hover:opacity-80 p-2">
+                <Film className="w-7 h-7 text-amber-400 flex-shrink-0" />
+                <div>
+                  <span className="block text-gray-400 text-xs font-bold uppercase tracking-wider">Loaded Film</span>
+                  <span className="block text-white font-recoleta text-lg leading-tight -mt-1">
+                    {activeRoll ? activeRoll.film_type : 'None'}
+                  </span>
+                </div>
+              </button>
             </div>
 
             {/* Center: Shutter */}
