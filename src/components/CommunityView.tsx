@@ -53,10 +53,16 @@ const CommunityView: React.FC = () => {
     }
   }, [feed, activeFilter]);
 
-  const handleSelectStory = (userId: string, initialPostIndex: number) => {
-    setInitialStoryUserId(userId);
-    setInitialStoryPostIndex(initialPostIndex);
-    setShowFullStoryViewer(true);
+  const handleSelectStory = (userId: string, postId: string) => {
+    const userStories = recentStories.get(userId);
+    if (userStories) {
+      const postIndex = userStories.posts.findIndex(p => p.id === postId);
+      if (postIndex !== -1) {
+        setInitialStoryUserId(userId);
+        setInitialStoryPostIndex(postIndex);
+        setShowFullStoryViewer(true);
+      }
+    }
   };
 
   return (
@@ -108,7 +114,7 @@ const CommunityView: React.FC = () => {
         <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
           {filteredFeed.length > 0 ? (
             filteredFeed.map(post => (
-              <RollPostCard key={post.id} post={post} onClick={() => handleSelectStory(post.user_id, filteredFeed.indexOf(post))} />
+              <RollPostCard key={post.id} post={post} onClick={() => handleSelectStory(post.user_id, post.id)} />
             ))
           ) : (
             <div className="w-full text-center py-16 text-gray-500">
