@@ -63,8 +63,9 @@ export interface Post {
   roll_id: string;
   caption: string;
   created_at: string;
+  cover_photo_url: string | null;
   profiles: { username: string; avatar_url: string; level: number; };
-  rolls: { film_type: string, developed_at?: string, photos: Photo[] };
+  rolls: { title: string | null; film_type: string, developed_at?: string, photos: Photo[] };
   likes: { user_id: string }[];
   comments: Comment[];
   isLiked?: boolean;
@@ -159,7 +160,7 @@ interface AppContextType {
   updateRollTitle: (rollId: string, title: string) => Promise<boolean>;
   handleLike: (postId: string, postOwnerId: string, isLiked?: boolean) => Promise<void>;
   handleFollow: (userId: string, isFollowed?: boolean) => Promise<void>;
-  createPost: (rollId: string, caption: string) => Promise<void>;
+  createPost: (rollId: string, caption: string, coverPhotoUrl: string | null) => Promise<void>;
   addComment: (postId: string, postOwnerId: string, content: string) => Promise<void>;
   deleteComment: (commentId: string) => Promise<void>;
   searchUsers: (query: string) => Promise<UserProfile[] | null>;
@@ -183,7 +184,7 @@ export const useAppContext = () => {
   return context;
 };
 
-const POST_SELECT_QUERY = '*, profiles!posts_user_id_fkey(username, avatar_url, level), rolls!posts_roll_id_fkey(film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))';
+const POST_SELECT_QUERY = '*, cover_photo_url, profiles!posts_user_id_fkey(username, avatar_url, level), rolls!posts_roll_id_fkey(title, film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -508,7 +509,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const createPost = async (rollId: string, caption: string) => {
+  const createPost = async (rollId: string, caption: string, coverPhotoUrl: string | null) => {
     if (!profile) return;
     const toastId = toast.loading('Publishing post...');
     try {
@@ -516,6 +517,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         user_id: profile.id,
         roll_id: rollId,
         caption: caption,
+        cover_photo_url: coverPhotoUrl,
       }).select(POST_SELECT_QUERY).single();
       
       if (error) throw error;

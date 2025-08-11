@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { X, Film, ArrowLeft, Send } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { X, Film, ArrowLeft, Send, Check } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../context/AppContext';
 
@@ -14,6 +14,13 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
   const [caption, setCaption] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedCoverUrl, setSelectedCoverUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selectedRoll && selectedRoll.photos && selectedRoll.photos.length > 0) {
+      setSelectedCoverUrl(selectedRoll.photos[0].url);
+    }
+  }, [selectedRoll]);
 
   const handleSelectRoll = (roll: Roll) => {
     setSelectedRoll(roll);
@@ -28,7 +35,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
   const handlePublish = async () => {
     if (!selectedRoll || !caption.trim()) return;
     setIsLoading(true);
-    await createPost(selectedRoll.id, caption);
+    await createPost(selectedRoll.id, caption, selectedCoverUrl);
     setIsLoading(false);
     onClose();
   };
@@ -79,13 +86,28 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
 
           {step === 'write_caption' && selectedRoll && (
             <div className="space-y-4">
-              <div className="grid grid-cols-4 gap-1 max-h-48 overflow-y-auto rounded-lg">
-                {selectedRoll.photos?.map(photo => {
-                  const cacheBuster = selectedRoll.developed_at ? `?t=${new Date(selectedRoll.developed_at).getTime()}` : '';
-                  return (
-                    <img key={photo.id} src={`${photo.thumbnail_url}${cacheBuster}`} alt="Photo preview" className="aspect-square w-full object-cover bg-gray-700" />
-                  );
-                })}
+              <div>
+                <label className="text-sm font-semibold text-gray-300 mb-2 block">Select Cover Photo</label>
+                <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto rounded-lg p-1 bg-gray-900/50">
+                  {selectedRoll.photos?.map(photo => {
+                    const cacheBuster = selectedRoll.developed_at ? `?t=${new Date(selectedRoll.developed_at).getTime()}` : '';
+                    const isSelected = selectedCoverUrl === photo.url;
+                    return (
+                      <button 
+                        key={photo.id}
+                        onClick={() => setSelectedCoverUrl(photo.url)}
+                        className={`relative aspect-square w-full rounded-md overflow-hidden border-2 transition-all ${isSelected ? 'border-amber-400' : 'border-transparent'}`}
+                      >
+                        <img src={`${photo.thumbnail_url}${cacheBuster}`} alt="Photo preview" className="w-full h-full object-cover bg-gray-700" />
+                        {isSelected && (
+                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                            <Check className="w-6 h-6 text-white" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               <textarea
                 value={caption}

@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import { Heart, Send, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import CreatePostModal from './CreatePostModal';
-import PostCard from './PostCard';
+import RollPostCard from './RollPostCard';
 import { isRollDeveloped } from '../utils/rollUtils';
 
 const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => void; }> = ({ label, isActive, onClick }) => (
@@ -22,17 +22,6 @@ const CommunityView: React.FC = () => {
   const { profile, feed, completedRolls } = useAppContext();
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState('discover');
-
-  const followedUsers = useMemo(() => {
-    if (!feed) return [];
-    const users = new Map();
-    feed.forEach(post => {
-      if (post.user_id !== profile?.id && !users.has(post.user_id)) {
-        users.set(post.user_id, post.profiles);
-      }
-    });
-    return Array.from(users.values());
-  }, [feed, profile]);
 
   const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
   
@@ -65,29 +54,6 @@ const CommunityView: React.FC = () => {
         {/* This space is intentionally left for the sticky TopBar */}
       </div>
 
-      {/* Stories Row */}
-      <div className="mb-6">
-        <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-2">
-          <div className="flex flex-col items-center space-y-2 flex-shrink-0">
-            <div className="relative">
-              <img src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`} alt="Your story" className="w-16 h-16 rounded-full object-cover border-2 border-brand-border" />
-              <button onClick={() => setShowCreatePostModal(true)} className="absolute -bottom-1 -right-1 bg-brand-orange rounded-full p-1 border-2 border-brand-bg">
-                <Plus className="w-3 h-3 text-white" />
-              </button>
-            </div>
-            <p className="text-xs text-gray-400">Your Story</p>
-          </div>
-          {followedUsers.slice(0, 10).map(user => (
-            <div key={user.username} className="flex flex-col items-center space-y-2 flex-shrink-0">
-              <div className="p-0.5 rounded-full bg-gradient-to-tr from-brand-orange via-brand-orange-end to-purple-500">
-                <img src={user.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${user.username}`} alt={user.username} className="w-16 h-16 rounded-full object-cover border-2 border-brand-bg" />
-              </div>
-              <p className="text-xs text-gray-100 truncate w-16 text-center">{user.username}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Filter Pills */}
       <div className="mb-6">
         <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
@@ -102,12 +68,25 @@ const CommunityView: React.FC = () => {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Discover Feed</h2>
-          <button className="text-sm font-semibold text-gray-400 hover:text-gray-100">See All</button>
+          <button 
+            onClick={() => setShowCreatePostModal(true)}
+            className="bg-brand-orange text-white font-bold px-4 py-2 rounded-lg flex items-center space-x-2 text-sm hover:bg-brand-orange-end transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Post</span>
+          </button>
         </div>
         <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
-          {filteredFeed.map(post => (
-            <PostCard key={post.id} post={post} />
-          ))}
+          {filteredFeed.length > 0 ? (
+            filteredFeed.map(post => (
+              <RollPostCard key={post.id} post={post} />
+            ))
+          ) : (
+            <div className="w-full text-center py-16 text-gray-500">
+              <p>No posts to show yet.</p>
+              <p>Follow some users or check back later!</p>
+            </div>
+          )}
         </div>
       </div>
 
