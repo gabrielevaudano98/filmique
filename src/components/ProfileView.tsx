@@ -59,7 +59,7 @@ const ProfileView: React.FC = () => {
     <>
       {selectedPost && <PostDetailModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
       
-      <div className="flex-1 flex flex-col bg-gray-900 text-white">
+      <div className="flex-1 flex flex-col bg-transparent text-white">
         {/* Header */}
         <div className="px-4 pt-4">
           <div className="flex items-center justify-between">

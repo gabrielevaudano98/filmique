@@ -60,7 +60,7 @@ const SettingsView: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-gray-900 text-white">
+    <div className="flex-1 flex flex-col bg-transparent text-white">
        <div className="flex items-center p-4 border-b border-gray-800">
         <button onClick={() => setCurrentView('profile')} className="p-2 text-gray-400 hover:text-white rounded-full">
           <ArrowLeft className="w-5 h-5" />

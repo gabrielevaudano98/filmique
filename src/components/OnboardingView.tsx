@@ -76,7 +76,7 @@ const OnboardingView: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex flex-col items-center justify-center bg-gray-900 p-4">
+    <div className="w-full min-h-screen flex flex-col items-center justify-center bg-transparent p-4">
       <div className="w-full max-w-md bg-gray-800 rounded-2xl p-8 shadow-2xl">
         {step === 1 && (
           <div>
