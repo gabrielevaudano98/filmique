@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, Film, User, Trophy, Users } from 'lucide-react';
+import { Camera, Users } from 'lucide-react';
 import CameraView from './components/CameraView';
 import RollsView from './components/RollsView';
 import CommunityView from './components/CommunityView';
@@ -35,6 +35,14 @@ function App() {
 
   const handleNamingModalClose = () => {
     setRollToName(null);
+  };
+
+  const handleCameraClick = () => {
+    if (currentView === 'rolls' || currentView === 'rollDetail' || currentView === 'albumDetail') {
+      setCurrentView('camera');
+    } else {
+      setCurrentView('rolls');
+    }
   };
 
   if (isLoading) {
@@ -80,25 +88,32 @@ function App() {
           {renderCurrentView()}
         </div>
       </main>
-      <nav className="fixed bottom-0 left-0 right-0 w-full bg-gray-800 border-t border-gray-700 px-2 py-1 safe-area-bottom z-50">
-        <div className="flex items-center justify-around max-w-md mx-auto py-1">
-          <button onClick={() => setCurrentView('challenges')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'challenges' ? 'text-amber-400' : 'text-gray-400 hover:text-amber-400'}`} aria-label="Challenges">
-            <Trophy className="w-6 h-6" />
-          </button>
-          <button onClick={() => setCurrentView('rolls')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'rolls' ? 'text-amber-400' : 'text-gray-400 hover:text-amber-400'}`} aria-label="Rolls">
-            <Film className="w-6 h-6" />
-          </button>
-          <button onClick={() => setCurrentView('camera')} className="flex items-center justify-center w-14 h-14 rounded-full shadow-2xl transition-all duration-300 ease-in-out translate-y-[-12px] ring-2 ring-amber-300 ring-offset-2 ring-offset-gray-800 bg-amber-500 text-white hover:bg-amber-400 border-4 border-amber-200" aria-label="Camera">
+      <div className="fixed bottom-0 left-0 right-0 w-full flex justify-center items-center z-50" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0) + 1rem)', pointerEvents: 'none' }}>
+        <div className="flex items-center space-x-4 bg-gray-800/80 backdrop-blur-lg p-3 rounded-full shadow-2xl border border-gray-700/50" style={{ pointerEvents: 'auto' }}>
+          <button
+            onClick={handleCameraClick}
+            className={`p-3 rounded-full transition-colors duration-300 ${
+              ['rolls', 'rollDetail', 'albumDetail', 'camera'].includes(currentView)
+                ? 'bg-amber-500 text-gray-900'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+            aria-label="Camera / Rolls"
+          >
             <Camera className="w-7 h-7" />
           </button>
-          <button onClick={() => setCurrentView('community')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'community' ? 'text-amber-400' : 'text-gray-400 hover:text-amber-400'}`} aria-label="Community">
-            <Users className="w-6 h-6" />
-          </button>
-          <button onClick={() => setCurrentView('profile')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'profile' ? 'text-amber-400' : 'text-gray-400 hover:text-amber-400'}`} aria-label="Profile">
-            <User className="w-6 h-6" />
+          <button
+            onClick={() => setCurrentView('community')}
+            className={`p-3 rounded-full transition-colors duration-300 ${
+              ['community', 'profile', 'settings', 'notifications'].includes(currentView)
+                ? 'bg-amber-500 text-gray-900'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
+            aria-label="Community"
+          >
+            <Users className="w-7 h-7" />
           </button>
         </div>
-      </nav>
+      </div>
     </div>
   );
 }

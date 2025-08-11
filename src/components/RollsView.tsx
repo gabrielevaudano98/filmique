@@ -118,7 +118,6 @@ const RollsView: React.FC = () => {
       setCurrentView('camera');
     } else {
       setShowFilmModal(true);
-      setCurrentView('camera');
     }
   };
 
@@ -149,36 +148,42 @@ const RollsView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full space-y-6">
-      <div onClick={handleCurrentRollClick} className="bg-gradient-to-br from-amber-600 to-orange-600 rounded-2xl p-5 text-white shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold mb-2 font-recoleta">Current Roll</h2>
+      <div onClick={handleCurrentRollClick} className="relative bg-gray-800 rounded-2xl p-6 text-white shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer overflow-hidden border border-gray-700/50">
+        <div className="absolute -right-10 -top-10 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl"></div>
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-bold font-recoleta text-amber-400">Current Roll</h2>
+            {activeRoll && (
+              <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); }} className="bg-gray-700/50 hover:bg-gray-700 text-white text-xs font-semibold py-1.5 px-3 rounded-full flex items-center gap-1.5">
+                <RefreshCw className="w-3 h-3" />
+                <span>Change</span>
+              </button>
+            )}
+          </div>
+          <div className="mt-4">
             {activeRoll ? (
-              <>
-                <p className="text-amber-100 font-medium">{activeRoll.film_type}</p>
-                <div className="w-full bg-amber-700 rounded-full h-2.5 mt-3">
-                  <div className="bg-white h-2.5 rounded-full" style={{ width: `${(activeRoll.shots_used / activeRoll.capacity) * 100}%` }}></div>
+              <div>
+                <p className="font-semibold text-lg">{activeRoll.film_type}</p>
+                <div className="mt-3 space-y-2">
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div className="bg-amber-400 h-2 rounded-full" style={{ width: `${(activeRoll.shots_used / activeRoll.capacity) * 100}%` }}></div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-400">
+                    <span>{activeRoll.shots_used} shots taken</span>
+                    <span>{activeRoll.capacity} total</span>
+                  </div>
                 </div>
-                <p className="text-sm text-amber-100 mt-2">{activeRoll.shots_used}/{activeRoll.capacity} shots used</p>
-              </>
+              </div>
             ) : (
-              <>
-                <p className="text-amber-100 mb-4">No active roll. Time to load up!</p>
-                <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} className="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-xl flex items-center space-x-2 font-semibold">
+              <div className="text-center py-4">
+                <p className="text-gray-400 mb-4">No active roll. Time to load up!</p>
+                <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); }} className="bg-amber-500 hover:bg-amber-600 text-gray-900 px-5 py-2.5 rounded-lg flex items-center space-x-2 font-bold text-sm mx-auto">
                   <Film className="w-5 h-5" />
                   <span>Load New Film</span>
                 </button>
-              </>
+              </div>
             )}
           </div>
-          {activeRoll && (
-            <div className="text-right flex-shrink-0 ml-4">
-              <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} className="bg-white/20 hover:bg-white/30 text-white text-xs font-semibold py-1.5 px-3 rounded-full flex items-center gap-1.5">
-                <RefreshCw className="w-3 h-3" />
-                <span>Change Film</span>
-              </button>
-            </div>
-          )}
         </div>
       </div>
 
