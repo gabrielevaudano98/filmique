@@ -78,9 +78,9 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
         className="relative bg-neutral-800 transition-transform duration-200 ease-out cursor-grab active:cursor-grabbing"
         style={{ transform: `translateX(${offsetX}px)` }}
       >
-        <div className="p-4 border-b border-neutral-700/50">
-          <h4 className="font-bold text-white truncate">{roll.title || 'Untitled Roll'}</h4>
-          <p className="text-sm text-gray-400">{roll.film_type}</p>
+        <div className="p-4 border-b border-neutral-300 bg-neutral-100">
+          <h4 className="font-bold text-neutral-900 truncate">{roll.title || 'Untitled Roll'}</h4>
+          <p className="text-sm text-neutral-600">{roll.film_type}</p>
         </div>
         
         {/* Film Strip */}
