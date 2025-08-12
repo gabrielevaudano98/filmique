@@ -254,14 +254,6 @@ const CameraView: React.FC = () => {
     }
   };
 
-  const capacityOptions = useMemo(() => [
-    { shots: 4, name: 'Mini', price: 0 },
-    { shots: 12, name: 'Short', price: 1 },
-    { shots: 24, name: 'Standard', price: 2 },
-    { shots: 36, name: 'Large', price: 3 },
-    { shots: 64, name: 'Bulk', price: 5 },
-  ], []);
-
   const proControls = [
     capabilities?.iso && { id: 'iso', label: 'ISO', value: manualSettings.iso },
     capabilities?.exposureTime && { id: 'shutterSpeed', label: 'S', value: formatShutterSpeed(manualSettings.shutterSpeed) },
@@ -359,6 +351,7 @@ const CameraView: React.FC = () => {
                 <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
                   <button onClick={handleTakePhoto} disabled={activeRoll?.is_completed} aria-label="Take Photo" className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200">
                     {activeRoll?.is_completed && <Lock className="w-8 h-8 text-gray-500" />}
+                    {!activeRoll?.is_completed && <Camera className="w-6 h-6 text-gray-900" />}
                   </button>
                 </div>
               </div>
@@ -377,7 +370,7 @@ const CameraView: React.FC = () => {
         </div>
       </div>
 
-      {showFilmModal && <FilmSelectionModal capacityOptions={capacityOptions} onStartRoll={startNewRoll} onClose={() => setShowFilmModal(false)} />}
+      {showFilmModal && <FilmSelectionModal onStartRoll={startNewRoll} onClose={() => setShowFilmModal(false)} />}
     </div>
   );
 };
