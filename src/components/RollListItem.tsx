@@ -12,12 +12,15 @@ interface RollListItemProps {
   assignActionIcon?: 'add' | 'remove';
 }
 
-const SprocketHoles = () => (
-  <div className="h-4 w-full bg-black" style={{
-    backgroundImage: 'repeating-linear-gradient(to right, transparent, transparent 16px, rgba(255,255,255,0.1) 16px, rgba(255,255,255,0.1) 28px)',
-    backgroundSize: '28px 100%',
-  }} />
-);
+const SprocketHoles = ({ isDeveloping }: { isDeveloping?: boolean }) => {
+  const holeColor = isDeveloping ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.1)';
+  return (
+    <div className="h-4 w-full bg-black" style={{
+      backgroundImage: `repeating-linear-gradient(to right, transparent, transparent 16px, ${holeColor} 16px, ${holeColor} 28px)`,
+      backgroundSize: '28px 100%',
+    }} />
+  );
+};
 
 const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlbum, isDeveloping = false, assignActionIcon = 'add' }) => {
   const [offsetX, setOffsetX] = useState(0);
@@ -62,7 +65,7 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
   const photoStrip = (
     <div className={`overflow-x-auto no-scrollbar ${isDeveloping ? 'bg-black' : 'bg-neutral-900'}`}>
       <div className="inline-flex flex-col space-y-3 py-3">
-        <div className="px-2 w-full"><SprocketHoles /></div>
+        <div className="px-2 w-full"><SprocketHoles isDeveloping={isDeveloping} /></div>
         <div className="flex space-x-2 px-2">
           {roll.photos && roll.photos.length > 0 ? (
             roll.photos.map(photo => (
@@ -86,7 +89,7 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
             <div className="h-24 flex items-center justify-center text-gray-400 text-sm px-4 shrink-0">No photos in this roll.</div>
           )}
         </div>
-        <div className="px-2 w-full"><SprocketHoles /></div>
+        <div className="px-2 w-full"><SprocketHoles isDeveloping={isDeveloping} /></div>
       </div>
     </div>
   );
