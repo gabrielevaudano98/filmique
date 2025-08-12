@@ -148,3 +148,19 @@
 /* Hide scrollbar */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Camera Button Glow Animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px 0px rgba(246, 174, 85, 0.2), 0 0 0px 0px rgba(246, 174, 85, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 35px 8px rgba(246, 174, 85, 0.3), 0 0 0px 0px rgba(246, 174, 85, 0.3);
+    transform: scale(1.02);
+  }
+}
+
+.camera-button-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
