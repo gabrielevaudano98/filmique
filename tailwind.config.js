@@ -7,33 +7,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Brand gradients / accents
-        'brand-primary-1': '#EFA15A',
-        'brand-primary-2': '#D46A2E',
-        'brand-alt-1': '#8B6AD6',
-        'brand-alt-2': '#5B47C9',
-
-        // Semantic
-        'success': '#34D399',
-        'error': '#FB7185',
-        'warning': '#FBBF24',
-        'info': '#60A5FA',
-
-        // Neutrals
-        'brand-bg': '#07070a',
-        'brand-surface': 'rgba(255,255,255,0.03)',
-        'muted': '#9ea3ad',
-        'text-100': '#ffffff'
+        'brand-dark': '#0c0c0f',
+        'brand-purple-dark': '#41354c',
+        'brand-blue-muted': '#566293',
+        'brand-beige-smoky': '#b5aaac',
+        'brand-bg': '#0c0c0f', // Main background
+        'brand-surface': 'rgba(28, 28, 32, 0.7)', // Semi-transparent surface for cards
+        'brand-orange': {
+          DEFAULT: '#d46a2e',
+          start: '#e98a43',
+          end: '#d46a2e',
+        },
+        'brand-border': 'rgba(65, 53, 76, 0.5)', // Semi-transparent border
       },
-      boxShadow: {
-        'brand-elev-1': '0 6px 18px rgba(7,8,11,0.36)',
-        'brand-elev-2': '0 12px 36px rgba(7,8,11,0.46)',
+      fontFamily: {
+        sans: ['SF Pro Display', 'sans-serif'],
       },
-      borderRadius: {
-        'md': '12px',
-        'lg': '18px',
-        'pill': '9999px',
-      }
     },
   },
   plugins: [],
