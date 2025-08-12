@@ -15,7 +15,6 @@ import AlbumDetailView from './components/AlbumDetailView';
 import NameRollModal from './components/NameRollModal';
 import NotificationsView from './components/NotificationsView';
 import TopBar from './components/TopBar';
-import BottomNav from './components/BottomNav';
 
 function App() {
   const { session, profile, isLoading, currentView, setCurrentView, authStep, rollToName, setRollToName } = useAppContext();
@@ -79,9 +78,25 @@ function App() {
           {renderCurrentView()}
         </div>
       </main>
-
-      {/* Replaced classic nav with minimal BottomNav for a more elegant iOS feel */}
-      <BottomNav />
+      <nav className="fixed bottom-0 left-0 right-0 w-full bg-brand-dark/90 backdrop-blur-lg border-t border-brand-border px-2 py-1 safe-area-bottom z-50">
+        <div className="flex items-center justify-around max-w-md mx-auto py-1">
+          <button onClick={() => setCurrentView('challenges')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'challenges' ? 'text-brand-orange-start' : 'text-gray-400 hover:text-brand-orange-start'}`} aria-label="Challenges">
+            <Trophy className="w-6 h-6" />
+          </button>
+          <button onClick={() => setCurrentView('rolls')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'rolls' ? 'text-brand-orange-start' : 'text-gray-400 hover:text-brand-orange-start'}`} aria-label="Rolls">
+            <Film className="w-6 h-6" />
+          </button>
+          <button onClick={() => setCurrentView('camera')} className="flex items-center justify-center w-14 h-14 rounded-full shadow-2xl transition-all duration-300 ease-in-out translate-y-[-12px] ring-2 ring-brand-orange-start ring-offset-2 ring-offset-brand-dark bg-brand-orange text-white hover:bg-brand-orange-end border-4 border-brand-orange-start/50" aria-label="Camera">
+            <Camera className="w-7 h-7" />
+          </button>
+          <button onClick={() => setCurrentView('community')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'community' ? 'text-brand-orange-start' : 'text-gray-400 hover:text-brand-orange-start'}`} aria-label="Community">
+            <Users className="w-6 h-6" />
+          </button>
+          <button onClick={() => setCurrentView('profile')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'profile' ? 'text-brand-orange-start' : 'text-gray-400 hover:text-brand-orange-start'}`} aria-label="Profile">
+            <User className="w-6 h-6" />
+          </button>
+        </div>
+      </nav>
     </div>
   );
 }
