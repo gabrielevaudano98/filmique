@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { CameraView as NativeCameraView } from 'capacitor-camera-view';
-import { RefreshCw, Film, Lock, Camera as CameraIcon, ArrowLeft, Send } from 'lucide-react';
+import { RefreshCw, Film, Lock, Camera, ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
 import RangeSelector from './RangeSelector';
-import RollSelector from './RollSelector';
-import AccentButton from './AccentButton';
 
 type ProControl = 'iso' | 'shutterSpeed' | 'focus';
 
+// Helper to format shutter speed for display
 const formatShutterSpeed = (seconds: number): string => {
   if (seconds >= 1) return `${seconds}"`;
   return `1/${Math.round(1 / seconds)}`;
@@ -25,8 +24,6 @@ const CameraView: React.FC = () => {
     setShowFilmModal,
     takePhoto,
     setCurrentView,
-    completedRolls,
-    albums
   } = useAppContext();
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -46,14 +43,12 @@ const CameraView: React.FC = () => {
 
   const [manualSettings, setManualSettings] = useState({
     iso: 400,
-    shutterSpeed: 1 / 125,
-    focus: 1,
+    shutterSpeed: 1 / 125, // Stored as seconds
+    focus: 1, // Stored as meters
   });
 
   const [aspectRatioClass, setAspectRatioClass] = useState('aspect-[3/2]');
   const [targetAspectRatio, setTargetAspectRatio] = useState(3 / 2);
-
-  const [showRollSelector, setShowRollSelector] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -76,7 +71,7 @@ const CameraView: React.FC = () => {
     setIsNative(native);
   }, []);
 
-  // Native camera effect
+  // Effect for NATIVE camera
   useEffect(() => {
     if (!isNative) return;
 
@@ -91,7 +86,7 @@ const CameraView: React.FC = () => {
           const request = await NativeCameraView.requestPermissions();
           if (request.camera === 'granted') {
             setHasPermission(true);
-            startNativeCamera();
+            startNativeCamera(); // Recurse to start camera
           } else {
             setHasPermission(false);
           }
@@ -110,7 +105,7 @@ const CameraView: React.FC = () => {
     };
   }, [isNative]);
 
-  // Web camera setup
+  // Effect for WEB camera
   useEffect(() => {
     if (isNative) return;
 
@@ -273,41 +268,21 @@ const CameraView: React.FC = () => {
     capabilities?.focusDistance && { id: 'focus', label: 'F', value: `${manualSettings.focus}m` },
   ].filter(Boolean) as { id: ProControl; label: string; value: string | number }[];
 
+  const generateNumericOptions = (min: number, max: number, steps: number) => {
+    const options = [];
+    const step = (max - min) / (steps - 1);
+    for (let i = 0; i < steps; i++) {
+      options.push(min + i * step);
+    }
+    return options;
+  };
+
   if (hasPermission === null) {
     return <div className="h-screen flex items-center justify-center bg-black text-white">Initializing Camera...</div>;
   }
   if (hasPermission === false) {
     return <div className="h-screen flex items-center justify-center bg-black text-red-400 p-4 text-center">Camera access denied. Please enable camera permissions in your browser or device settings.</div>;
   }
-
-  // Redesigned camera central button UI
-  const CameraButton = ({ onClick, disabled }: { onClick: () => void; disabled?: boolean; }) => (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      aria-label="Take Photo"
-      className="relative w-20 h-20 rounded-full flex items-center justify-center transition-transform active:scale-95 disabled:opacity-60"
-    >
-      {/* Gradient ring */}
-      <span className="absolute inset-0 rounded-full" style={{
-        background: 'conic-gradient(from 180deg at 50% 50%, rgba(246,174,85,0.95), rgba(233,138,67,0.95), rgba(212,106,46,0.95))',
-        filter: 'blur(8px)',
-        opacity: 0.95,
-        transform: 'scale(1.16)'
-      }} />
-      {/* inner white button */}
-      <span className="absolute w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-lg">
-        <span className="w-12 h-12 rounded-full bg-white/98 border border-white/40" />
-      </span>
-      {/* small badge showing film type */}
-      {activeRoll && (
-        <span className="absolute -bottom-7 bg-gray-900/80 px-2 py-1 rounded-full text-xs text-white flex items-center gap-2">
-          <Film className="w-4 h-4 text-amber-400" />
-          <span className="font-semibold text-xs">{activeRoll.film_type}</span>
-        </span>
-      )}
-    </button>
-  );
 
   return (
     <div className={`h-screen flex flex-col overflow-hidden text-white camera-modal ${isNative ? 'bg-transparent' : 'bg-black'}`}>
@@ -353,9 +328,9 @@ const CameraView: React.FC = () => {
                 ))}
               </div>
               <div className="h-20 w-full">
-                {activeProControl === 'iso' && capabilities?.iso && <RangeSelector options={Array.from({length:20}).map((_,i)=>capabilities.iso!.min + (capabilities.iso!.max - capabilities.iso!.min) * (i/(19)))} value={manualSettings.iso} onChange={v => setManualSettings({...manualSettings, iso: v as number})} type="iso" />}
-                {activeProControl === 'shutterSpeed' && capabilities?.exposureTime && <RangeSelector options={Array.from({length:20}).map((_,i)=>parseFloat((capabilities.exposureTime!.min + (capabilities.exposureTime!.max - capabilities.exposureTime!.min) * (i/19)).toPrecision(2)))} value={manualSettings.shutterSpeed} onChange={v => setManualSettings({...manualSettings, shutterSpeed: v as number})} type="shutterSpeed" />}
-                {activeProControl === 'focus' && capabilities?.focusDistance && <RangeSelector options={Array.from({length:20}).map((_,i)=>capabilities.focusDistance!.min + (capabilities.focusDistance!.max - capabilities.focusDistance!.min) * (i/19))} value={manualSettings.focus} onChange={v => setManualSettings({...manualSettings, focus: v as number})} type="focus" />}
+                {activeProControl === 'iso' && capabilities?.iso && <RangeSelector options={generateNumericOptions(capabilities.iso.min, capabilities.iso.max, 20)} value={manualSettings.iso} onChange={v => setManualSettings({...manualSettings, iso: v as number})} type="iso" />}
+                {activeProControl === 'shutterSpeed' && capabilities?.exposureTime && <RangeSelector options={generateNumericOptions(capabilities.exposureTime.min, capabilities.exposureTime.max, 20).map(v => parseFloat(v.toPrecision(2)))} value={manualSettings.shutterSpeed} onChange={v => setManualSettings({...manualSettings, shutterSpeed: v as number})} type="shutterSpeed" />}
+                {activeProControl === 'focus' && capabilities?.focusDistance && <RangeSelector options={generateNumericOptions(capabilities.focusDistance.min, capabilities.focusDistance.max, 20)} value={manualSettings.focus} onChange={v => setManualSettings({...manualSettings, focus: v as number})} type="focus" />}
               </div>
             </div>
           )}
@@ -374,21 +349,22 @@ const CameraView: React.FC = () => {
               </button>
             </div>
 
-            {/* Center: Camera Button */}
+            {/* Center: Shutter */}
             <div className="flex-shrink-0">
               <div className="flex flex-col items-center gap-2">
                 <div className="flex items-center justify-center space-x-6 font-sans text-base">
                   <button onClick={() => setCameraMode('simple')} className={cameraMode === 'simple' ? 'text-amber-400 font-bold' : 'text-white'}>PHOTO</button>
                   {!isNative && <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-amber-400 font-bold' : 'text-white'}>PRO</button>}
                 </div>
-
-                <div className="relative flex items-center justify-center mt-3">
-                  <CameraButton onClick={handleTakePhoto} disabled={false} />
+                <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
+                  <button onClick={handleTakePhoto} disabled={activeRoll?.is_completed} aria-label="Take Photo" className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200">
+                    {activeRoll?.is_completed && <Lock className="w-8 h-8 text-gray-500" />}
+                  </button>
                 </div>
               </div>
             </div>
 
-            {/* Right: Quick actions (zoom & quick post) */}
+            {/* Right: Zoom & Switch */}
             <div className="flex-1 flex justify-end items-center space-x-2">
               <button onClick={cycleZoom} disabled={isNative || zoomLevels.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 text-white flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
                 {!isNative && `${zoom.toFixed(1)}x`}
@@ -396,36 +372,12 @@ const CameraView: React.FC = () => {
               <button onClick={switchCamera} disabled={!isNative && cameras.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
                 <RefreshCw className="w-6 h-6 text-white" />
               </button>
-              <button onClick={() => setShowRollSelector(true)} className="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-gray-900 hover:bg-amber-600 transition-colors" title="Quick Post">
-                <Send className="w-5 h-5" />
-              </button>
             </div>
           </div>
         </div>
       </div>
 
       {showFilmModal && <FilmSelectionModal capacityOptions={capacityOptions} onStartRoll={startNewRoll} onClose={() => setShowFilmModal(false)} />}
-
-      {showRollSelector && (
-        <RollSelector
-          rolls={completedRolls.filter(r => r.is_completed && (r.developed_at || r.completed_at))}
-          albums={albums}
-          onSelect={(roll) => {
-            setShowRollSelector(false);
-            // open CreatePostModal quickly by setting current view to community and opening modal
-            // For now call a simple flow: navigate to community and open CreatePostModal via App-level controls
-            // We'll trigger posting screen by setting currentView to community and letting user continue there.
-            setCurrentView('community');
-            // Slight delay to allow community to mount — not ideal, but functional for now
-            setTimeout(() => {
-              // if the app had a global modal manager we would open it; as a fallback, set location hash
-              const evt = new CustomEvent('filmique.openCreatePostWithRoll', { detail: { rollId: roll.id } });
-              window.dispatchEvent(evt);
-            }, 300);
-          }}
-          onClose={() => setShowRollSelector(false)}
-        />
-      )}
     </div>
   );
 };
