@@ -46,15 +46,12 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
 
   const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
 
-  // Calculate number of sprocket holes based on photo count.
-  // Assuming each photo is roughly 96px wide (h-24) and we want a hole every 24px.
-  // So 4 holes per photo. Add a few extra for padding.
   const numHoles = (roll.photos?.length || 5) * 4;
 
   const SprocketHoles = () => (
-    <div className="flex space-x-2 h-2 px-2 shrink-0">
+    <div className="flex space-x-2 h-3 px-2 shrink-0">
       {Array.from({ length: numHoles }).map((_, i) => (
-        <div key={i} className="w-4 h-full bg-black/50 rounded-sm" />
+        <div key={i} className="w-3 h-full bg-black/50" />
       ))}
     </div>
   );
@@ -91,7 +88,7 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
         
         {/* Film Strip */}
         <div className="bg-warm-700/40 overflow-x-auto no-scrollbar">
-          <div className="inline-flex flex-col space-y-1 py-2">
+          <div className="inline-flex flex-col space-y-2 py-2">
             <SprocketHoles />
             <div className="flex space-x-2 px-2">
               {roll.photos && roll.photos.length > 0 ? (
