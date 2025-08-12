@@ -167,8 +167,4 @@ export interface AppContextType {
   followersCount: number;
   followingCount: number;
   updateProfileDetails: (details: { bio?: string; avatarFile?: File }) => Promise<void>;
-
-  // Theme
-  theme: 'dark' | 'light';
-  setTheme: (t: 'dark' | 'light') => void;
 }

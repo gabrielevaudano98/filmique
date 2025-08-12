@@ -33,29 +33,6 @@
   --motion-long: 520ms;
 }
 
-/* Light theme overrides — applied when documentElement has data-theme="light" */
-:root[data-theme="light"] {
-  --brand-amber-start: #B76A2B; /* toned for light background */
-  --brand-amber-mid: #D18A3A;
-  --brand-amber-end: #C16428;
-
-  --warm-900: #FBFBFD; /* background */
-  --warm-800: #F5F5F6;
-  --warm-700: #EFEFF1;
-  --warm-600: #E6E7E8;
-  --warm-500: #D8C7B8;
-  --warm-400: #C9B4A3;
-  --warm-300: #A99887;
-
-  --glass-thin: rgba(12,12,12,0.04);
-  --glass-medium: rgba(12,12,12,0.06);
-
-  --shadow-soft: 0 6px 18px rgba(10,10,12,0.06);
-  --shadow-depth: 0 24px 60px rgba(10,10,12,0.08);
-
-  --avatar-ring: linear-gradient(135deg, #D46A2E 0%, #7C6AFE 60%);
-}
-
 /* existing base overrides */
 @layer base {
   body {
@@ -186,70 +163,4 @@
 
 .camera-button-glow {
   animation: pulse-glow 4s ease-in-out infinite;
-}
-
-/* --- LIGHT THEME SPECIFIC OVERRIDES --- */
-/* These will override many commonly-used classes to provide an immediate light-mode surface.
-   We keep selectors specific (root[data-theme="light"] ...) so dark mode remains unchanged. */
-
-:root[data-theme="light"] body {
-  background-color: var(--warm-900);
-  color: #111827; /* primary dark text */
-}
-
-/* Background surfaces */
-:root[data-theme="light"] .bg-neutral-900 { background-color: var(--warm-900) !important; }
-:root[data-theme="light"] .bg-neutral-800 { background-color: var(--warm-800) !important; }
-:root[data-theme="light"] .bg-neutral-700 { background-color: var(--warm-700) !important; }
-:root[data-theme="light"] .bg-neutral-600 { background-color: var(--warm-600) !important; }
-
-/* Text colors */
-:root[data-theme="light"] .text-white { color: #111827 !important; }
-:root[data-theme="light"] .text-gray-400 { color: #6b7280 !important; }
-:root[data-theme="light"] .text-gray-300 { color: #6b7280 !important; }
-:root[data-theme="light"] .text-gray-500 { color: #6b7280 !important; }
-
-/* Borders */
-:root[data-theme="light"] .border-neutral-700 { border-color: rgba(15,23,42,0.06) !important; }
-:root[data-theme="light"] .border-neutral-800 { border-color: rgba(15,23,42,0.04) !important; }
-
-/* Buttons & pills — invert to darker ink on light background */
-:root[data-theme="light"] .pill-cta {
-  background: linear-gradient(90deg, var(--brand-amber-start), var(--brand-amber-mid));
-  color: #111827;
-  box-shadow: 0 6px 20px rgba(214,106,46,0.06);
-}
-
-/* Glass card adjustments for light */
-:root[data-theme="light"] .glass-card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(244,244,245,0.94));
-  border: 1px solid rgba(12,12,12,0.06);
-  color: #111827;
-  box-shadow: var(--shadow-soft);
-}
-
-/* Avatar ring on light background - maintain gradient but light border */
-:root[data-theme="light"] .avatar-ring {
-  box-shadow: 0 6px 16px rgba(7,7,8,0.04);
-}
-:root[data-theme="light"] .avatar-ring img {
-  border: 2px solid rgba(255,255,255,0.6);
-}
-
-/* Camera button: slightly darker ring on light */
-:root[data-theme="light"] .camera-button-glow {
-  animation: none;
-  box-shadow: 0 8px 28px rgba(210,120,60,0.08);
-}
-
-/* Utility for inverting prominent dark backgrounds used as text in dark mode */
-:root[data-theme="light"] .bg-warm-900 { background-color: var(--warm-800) !important; }
-:root[data-theme="light"] .bg-warm-800 { background-color: var(--warm-700) !important; }
-
-/* Ensure topbar/backdrop looks appropriate */
-:root[data-theme="light"] header.sticky,
-:root[data-theme="light"] .sticky {
-  background: rgba(255,255,255,0.9) !important;
-  color: #111827 !important;
-  border-bottom: 1px solid rgba(15,23,42,0.04) !important;
 }
