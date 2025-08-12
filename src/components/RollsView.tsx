@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Film, RefreshCw, ImageIcon, Camera } from 'lucide-react';
+import { Film, RefreshCw, Image as ImageIcon, Camera } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../context/AppContext';
 import RollsControls from './RollsControls';
@@ -7,6 +7,7 @@ import DevelopedRollCard from './DevelopedRollCard';
 import DevelopingRollCard from './DevelopingRollCard';
 import { isRollDeveloped, isRollDeveloping } from '../utils/rollUtils';
 import TimelineScrubber from './TimelineScrubber';
+import GlassCard from './GlassCard';
 
 const RollsView: React.FC = () => {
   const { profile, activeRoll, completedRolls, developRoll, setCurrentView, setSelectedRoll, setShowFilmModal, setRollToName } = useAppContext();
@@ -132,15 +133,13 @@ const RollsView: React.FC = () => {
       onClick={onClick}
       className={`flex-1 py-2.5 px-4 rounded-md text-sm font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
         isActive
-          ? 'bg-brand-orange text-white shadow-lg shadow-brand-orange/20'
+          ? 'bg-brand-amber-start/90 text-white shadow-lg shadow-amber-500/20'
           : 'text-gray-300 hover:bg-brand-surface/50'
       }`}
     >
       <span>{label}</span>
       <span
-        className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
-          isActive ? 'bg-black/10 text-white' : 'bg-brand-surface text-gray-300'
-        }`}
+        className={`px-2 py-0.5 rounded-full text-xs transition-colors ${ isActive ? 'bg-black/10 text-white' : 'bg-brand-surface text-gray-300' }`}
       >
         {count}
       </span>
@@ -149,25 +148,22 @@ const RollsView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full space-y-6">
-      <div onClick={handleCurrentRollClick} className="bg-gradient-to-br from-brand-orange-start to-brand-orange-end rounded-2xl p-5 text-white shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer">
+      <GlassCard className="p-5">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-bold mb-2">Current Roll</h2>
+            <h2 className="text-xl font-bold mb-1">Current Roll</h2>
             {activeRoll ? (
               <>
-                <p className="text-orange-100 font-medium">{activeRoll.film_type}</p>
-                <div className="w-full bg-orange-900/50 rounded-full h-2.5 mt-3">
+                <p className="text-amber-100 font-medium">{activeRoll.film_type}</p>
+                <div className="w-full bg-orange-900/30 rounded-full h-2.5 mt-3">
                   <div className="bg-white h-2.5 rounded-full" style={{ width: `${(activeRoll.shots_used / activeRoll.capacity) * 100}%` }}></div>
                 </div>
-                <p className="text-sm text-orange-100 mt-2">{activeRoll.shots_used}/{activeRoll.capacity} shots used</p>
+                <p className="text-sm text-amber-100 mt-2">{activeRoll.shots_used}/{activeRoll.capacity} shots used</p>
               </>
             ) : (
               <>
-                <p className="text-orange-100 mb-4">No active roll. Time to load up!</p>
-                <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} className="bg-black/20 hover:bg-black/30 text-white px-4 py-2 rounded-xl flex items-center space-x-2 font-semibold">
-                  <Film className="w-5 h-5" />
-                  <span>Load New Film</span>
-                </button>
+                <p className="text-amber-100 mb-4">No active roll. Time to load up!</p>
+                <AccentButton onClick={() => { setShowFilmModal(true); setCurrentView('camera'); }}>Load New Film</AccentButton>
               </>
             )}
           </div>
@@ -180,7 +176,7 @@ const RollsView: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+      </GlassCard>
 
       <div className="bg-brand-surface rounded-2xl p-4 sm:p-6 border border-brand-border">
         <div className="bg-brand-dark rounded-xl p-1 flex space-x-1">

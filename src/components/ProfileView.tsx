@@ -5,6 +5,9 @@ import BadgeIcon from './BadgeIcon';
 import PostDetailModal from './PostDetailModal';
 import { useDebounce } from '../hooks/useDebounce';
 import PostView from './PostView';
+import GlassCard from './GlassCard';
+import AvatarRing from './AvatarRing';
+import AccentButton from './AccentButton';
 
 const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ value, label }) => (
   <div className="text-center">
@@ -60,7 +63,6 @@ const ProfileView: React.FC = () => {
       {selectedPost && <PostDetailModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
       
       <div className="flex-1 flex flex-col bg-transparent text-white">
-        {/* Header */}
         <div className="px-4 pt-4">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-bold">{profile.username}</h2>
@@ -68,25 +70,35 @@ const ProfileView: React.FC = () => {
               <Settings className="w-6 h-6 text-gray-300" />
             </button>
           </div>
-          <div className="flex items-center mt-4">
-            <div className="relative flex-shrink-0">
+
+          <GlassCard className="mt-4 p-4 flex items-center gap-6">
+            <div>
               <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
-              <button onClick={() => avatarInputRef.current?.click()} className="w-24 h-24 rounded-full bg-gray-700 border-2 border-gray-800 flex items-center justify-center cursor-pointer overflow-hidden">
-                {profile.avatar_url ? (
-                  <img src={profile.avatar_url} className="w-full h-full object-cover" alt="User avatar" />
-                ) : (
-                  <User className="w-12 h-12 text-gray-500" />
-                )}
+              <button onClick={() => avatarInputRef.current?.click()}>
+                <AvatarRing src={profile.avatar_url || null} size={88} />
               </button>
             </div>
-            <div className="flex-1 flex justify-around ml-4">
-              <HighlightStat value={posts.length} label="Posts" />
-              <HighlightStat value={followersCount} label="Followers" />
-              <HighlightStat value={followingCount} label="Following" />
+
+            <div className="flex-1">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-semibold text-lg">{profile.first_name} {profile.last_name}</p>
+                  <p className="text-sm text-gray-400">@{profile.username}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <AccentButton variant="outline" onClick={() => setCurrentView('settings')}>Edit Profile</AccentButton>
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center justify-around">
+                <HighlightStat value={posts.length} label="Posts" />
+                <HighlightStat value={followersCount} label="Followers" />
+                <HighlightStat value={followingCount} label="Following" />
+              </div>
             </div>
-          </div>
+          </GlassCard>
+
           <div className="mt-4">
-            <p className="font-semibold text-white">{profile.first_name} {profile.last_name}</p>
             {isEditingBio ? (
               <div className="mt-1">
                 <textarea
@@ -114,9 +126,7 @@ const ProfileView: React.FC = () => {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-grow mt-6">
-          {/* Tabs */}
+        <div className="flex-grow mt-6 px-4">
           <div className="flex border-t border-gray-700">
             <button
               onClick={() => setActiveTab('posts')}
@@ -138,8 +148,7 @@ const ProfileView: React.FC = () => {
             </button>
           </div>
 
-          {/* Tab Content */}
-          <div className="w-full">
+          <div className="w-full mt-4">
             {activeTab === 'posts' && (
               posts.length > 0 ? (
                 <div className="grid grid-cols-3 gap-0.5">

@@ -15,6 +15,7 @@ import AlbumDetailView from './components/AlbumDetailView';
 import NameRollModal from './components/NameRollModal';
 import NotificationsView from './components/NotificationsView';
 import TopBar from './components/TopBar';
+import GlassCard from './components/GlassCard';
 
 function App() {
   const { session, profile, isLoading, currentView, setCurrentView, authStep, rollToName, setRollToName } = useAppContext();
@@ -70,7 +71,7 @@ function App() {
   }
 
   return (
-    <div className="bg-transparent text-white">
+    <div className="bg-transparent text-white min-h-screen">
       <TopBar />
       {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
       <main className="min-h-screen w-full pb-28">
@@ -78,25 +79,39 @@ function App() {
           {renderCurrentView()}
         </div>
       </main>
-      <nav className="fixed bottom-0 left-0 right-0 w-full bg-brand-dark/90 backdrop-blur-lg border-t border-brand-border px-2 py-1 safe-area-bottom z-50">
-        <div className="flex items-center justify-around max-w-md mx-auto py-1">
-          <button onClick={() => setCurrentView('challenges')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'challenges' ? 'text-brand-orange-start' : 'text-gray-400 hover:text-brand-orange-start'}`} aria-label="Challenges">
-            <Trophy className="w-6 h-6" />
-          </button>
-          <button onClick={() => setCurrentView('rolls')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'rolls' ? 'text-brand-orange-start' : 'text-gray-400 hover:text-brand-orange-start'}`} aria-label="Rolls">
-            <Film className="w-6 h-6" />
-          </button>
-          <button onClick={() => setCurrentView('camera')} className="flex items-center justify-center w-14 h-14 rounded-full shadow-2xl transition-all duration-300 ease-in-out translate-y-[-12px] ring-2 ring-brand-orange-start ring-offset-2 ring-offset-brand-dark bg-brand-orange text-white hover:bg-brand-orange-end border-4 border-brand-orange-start/50" aria-label="Camera">
-            <Camera className="w-7 h-7" />
-          </button>
-          <button onClick={() => setCurrentView('community')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'community' ? 'text-brand-orange-start' : 'text-gray-400 hover:text-brand-orange-start'}`} aria-label="Community">
-            <Users className="w-6 h-6" />
-          </button>
-          <button onClick={() => setCurrentView('profile')} className={`flex flex-col items-center justify-center p-2 transition-colors min-h-[44px] min-w-[60px] ${currentView === 'profile' ? 'text-brand-orange-start' : 'text-gray-400 hover:text-brand-orange-start'}`} aria-label="Profile">
-            <User className="w-6 h-6" />
-          </button>
+
+      {/* Floating bottom nav */}
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[min(800px,94%)]">
+        <div className="flex items-center justify-between px-4 py-3 bg-[linear-gradient(180deg,rgba(12,7,5,0.6),rgba(12,7,5,0.36))] border border-white/6 rounded-3xl shadow-xl backdrop-blur-md">
+          <div className="flex items-center gap-6">
+            <button onClick={() => setCurrentView('challenges')} className={`flex flex-col items-center justify-center text-sm ${currentView === 'challenges' ? 'text-amber-400' : 'text-gray-400 hover:text-amber-300'}`} aria-label="Challenges">
+              <Trophy className="w-6 h-6" />
+            </button>
+            <button onClick={() => setCurrentView('rolls')} className={`flex flex-col items-center justify-center text-sm ${currentView === 'rolls' ? 'text-amber-400' : 'text-gray-400 hover:text-amber-300'}`} aria-label="Rolls">
+              <Film className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* Center camera button — elevated with ring */}
+          <div className="relative -translate-y-5">
+            <button onClick={() => setCurrentView('camera')} className="relative w-20 h-20 rounded-full flex items-center justify-center transition-transform active:scale-95">
+              <span className="absolute inset-0 rounded-full" style={{ background: 'conic-gradient(from 180deg at 50% 50%, rgba(246,174,85,0.95), rgba(233,138,67,0.95), rgba(212,106,46,0.95))', filter: 'blur(10px)', transform: 'scale(1.12)' }} />
+              <span className="absolute w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-lg">
+                <CameraIcon className="w-6 h-6 text-gray-900" />
+              </span>
+            </button>
+          </div>
+
+          <div className="flex items-center gap-6">
+            <button onClick={() => setCurrentView('community')} className={`flex flex-col items-center justify-center text-sm ${currentView === 'community' ? 'text-amber-400' : 'text-gray-400 hover:text-amber-300'}`} aria-label="Community">
+              <Users className="w-6 h-6" />
+            </button>
+            <button onClick={() => setCurrentView('profile')} className={`flex flex-col items-center justify-center text-sm ${currentView === 'profile' ? 'text-amber-400' : 'text-gray-400 hover:text-amber-300'}`} aria-label="Profile">
+              <User className="w-6 h-6" />
+            </button>
+          </div>
         </div>
-      </nav>
+      </div>
     </div>
   );
 }

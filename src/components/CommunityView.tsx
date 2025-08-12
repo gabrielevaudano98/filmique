@@ -6,13 +6,15 @@ import RollPostCard from './RollPostCard';
 import { isRollDeveloped } from '../utils/rollUtils';
 import StoryRollsCarousel from './StoryRollsCarousel';
 import FullStoryViewer from './FullStoryViewer';
+import GlassCard from './GlassCard';
+import AccentButton from './AccentButton';
 
 const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => void; }> = ({ label, isActive, onClick }) => (
   <button
     onClick={onClick}
     className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex-shrink-0 whitespace-nowrap
       ${isActive
-        ? 'bg-gradient-to-r from-brand-orange-start to-brand-orange-end text-white shadow-lg shadow-brand-orange/20'
+        ? 'bg-gradient-to-r from-brand-amber-start to-brand-amber-mid text-white shadow-lg shadow-amber-500/20'
         : 'bg-gray-800/60 text-gray-300 hover:bg-gray-700/50 border border-gray-700/50'
       }`}
   >
@@ -26,7 +28,7 @@ const CommunityView: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('discover');
 
   const [showFullStoryViewer, setShowFullStoryViewer] = useState(false);
-  const [postsForFullStoryViewer, setPostsForFullStoryViewer] = useState<Post[] | null>(null); // New state
+  const [postsForFullStoryViewer, setPostsForFullStoryViewer] = useState<Post[] | null>(null);
   const [initialStoryPostIndex, setInitialStoryPostIndex] = useState(0);
 
   const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
@@ -57,18 +59,15 @@ const CommunityView: React.FC = () => {
     let postsToShow: Post[] = [];
     let initialIdx = 0;
 
-    // Try to find in recent stories first (for carousel clicks)
     const userStories = recentStories.get(userId);
     if (userStories) {
       postsToShow = userStories.posts;
       initialIdx = postsToShow.findIndex(p => p.id === postId);
     } 
     
-    // If not found in recent stories, or if it's a general feed click, get all posts by that user
     if (initialIdx === -1 || postsToShow.length === 0) {
       postsToShow = feed.filter(p => p.user_id === userId)
-                        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()); // Ensure chronological order
-
+                        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
       initialIdx = postsToShow.findIndex(p => p.id === postId);
     }
 
@@ -78,13 +77,11 @@ const CommunityView: React.FC = () => {
       setShowFullStoryViewer(true);
     } else {
       console.warn("Could not find post in any sequence for story viewer:", postId);
-      // Optionally show a toast error here
     }
   };
 
   return (
     <div className="w-full text-gray-100 min-h-full">
-      {/* Header */}
       <div className="flex items-center justify-between pt-4 pb-6">
         <h1 className="text-3xl font-bold text-white">Community</h1>
         <div className="flex space-x-3">
@@ -95,52 +92,49 @@ const CommunityView: React.FC = () => {
           >
             <User className="w-6 h-6" />
           </button>
-          <button
-            onClick={() => setShowCreatePostModal(true)}
-            className="bg-brand-orange text-white font-bold p-3 rounded-full shadow-lg shadow-brand-orange/20 hover:bg-brand-orange-end transition-colors"
-            aria-label="Create New Post"
-          >
-            <Plus className="w-6 h-6" />
-          </button>
+          <AccentButton onClick={() => setShowCreatePostModal(true)} className="flex items-center space-x-2">
+            <Plus className="w-4 h-4" />
+            <span>New Post</span>
+          </AccentButton>
         </div>
       </div>
 
-      {/* Recent Stories Carousel */}
       {recentStories.size > 0 && (
-        <div className="mb-6">
-          <h2 className="text-xl font-bold mb-4">Recent Stories</h2>
+        <GlassCard className="p-4 mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-semibold">Recent Stories</h2>
+          </div>
           <StoryRollsCarousel recentStories={recentStories} onSelectStory={handleSelectStory} />
-        </div>
+        </GlassCard>
       )}
 
-      {/* Filter Pills */}
-      <div className="mb-6">
-        <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
-          <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
-          <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
-          <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
-          <FilterPill label="New" isActive={activeFilter === 'new'} onClick={() => setActiveFilter('new')} />
-        </div>
-      </div>
-
-      {/* Discover Feed */}
-      <div>
+      <GlassCard className="p-4 mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Discover Feed</h2>
+          <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
+            <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
+            <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
+            <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
+            <FilterPill label="New" isActive={activeFilter === 'new'} onClick={() => setActiveFilter('new')} />
+          </div>
+          <div className="text-sm text-gray-400">{filteredFeed.length} posts</div>
         </div>
-        <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
-          {filteredFeed.length > 0 ? (
-            filteredFeed.map(post => (
-              <RollPostCard key={post.id} post={post} onClick={() => handleSelectStory(post.user_id, post.id)} />
-            ))
-          ) : (
-            <div className="w-full text-center py-16 text-gray-500">
-              <p>No posts to show yet.</p>
-              <p>Follow some users or check back later!</p>
-            </div>
-          )}
+
+        <div>
+          <h2 className="text-xl font-bold mb-4">Discover Feed</h2>
+          <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
+            {filteredFeed.length > 0 ? (
+              filteredFeed.map(post => (
+                <RollPostCard key={post.id} post={post} onClick={() => handleSelectStory(post.user_id, post.id)} />
+              ))
+            ) : (
+              <div className="w-full text-center py-16 text-gray-500">
+                <p>No posts to show yet.</p>
+                <p>Follow some users or check back later!</p>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      </GlassCard>
 
       {showCreatePostModal && (
         <CreatePostModal
@@ -155,7 +149,7 @@ const CommunityView: React.FC = () => {
           initialPostIndex={initialStoryPostIndex}
           onClose={() => {
             setShowFullStoryViewer(false);
-            setPostsForFullStoryViewer(null); // Clear state on close
+            setPostsForFullStoryViewer(null);
           }}
         />
       )}
