@@ -19,19 +19,22 @@ const NegativePhoto: React.FC<NegativePhotoProps> = ({ src, className }) => {
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
 
+      // Apply a blur to obscure details, creating anticipation
+      ctx.filter = 'blur(3px)';
       ctx.drawImage(img, 0, 0);
+      ctx.filter = 'none'; // Reset filter before pixel manipulation
 
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const data = imageData.data;
 
-      // Constants for a more authentic negative effect
+      // Constants for a more authentic, dark, and obscure negative effect
       const ORANGE_MASK_R = 1.0;
-      const ORANGE_MASK_G = 0.65;
-      const ORANGE_MASK_B = 0.3;
-      const OVERALL_DARKNESS = 0.7; // How dark the final negative is
-      const CONTRAST_MIN = 40;      // Crush blacks (inverted highlights)
-      const CONTRAST_MAX = 210;     // Crush whites (inverted shadows)
-      const GRAIN_AMOUNT = 30;
+      const ORANGE_MASK_G = 0.6;
+      const ORANGE_MASK_B = 0.25;
+      const OVERALL_DARKNESS = 0.6; // Make it darker
+      const CONTRAST_MIN = 50;      // Crush blacks more
+      const CONTRAST_MAX = 190;     // Crush whites more
+      const GRAIN_AMOUNT = 35;      // Slightly more grain
 
       for (let i = 0; i < data.length; i += 4) {
         // 1. Invert colors
