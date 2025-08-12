@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Film, RefreshCw, ImageIcon, Camera } from 'lucide-react';
+import { Film, RefreshCw, ImageIcon, Camera, Trophy, ChevronRight } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../context/AppContext';
 import RollsControls from './RollsControls';
@@ -179,6 +179,22 @@ const RollsView: React.FC = () => {
               </button>
             </div>
           )}
+        </div>
+      </div>
+
+      <div 
+        onClick={() => setCurrentView('challenges')}
+        className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl p-5 text-white shadow-lg transition-all duration-300 hover:scale-[1.01] cursor-pointer"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <Trophy className="w-8 h-8 text-yellow-300" />
+            <div>
+              <h2 className="text-xl font-bold">Challenges</h2>
+              <p className="text-purple-100 text-sm">Earn XP, credits, and badges.</p>
+            </div>
+          </div>
+          <ChevronRight className="w-6 h-6 text-purple-200" />
         </div>
       </div>
 
