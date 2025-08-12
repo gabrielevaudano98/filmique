@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Filmique mark">
+  <defs>
+    <linearGradient id="fg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#EFA15A"/>
+      <stop offset="1" stop-color="#D46A2E"/>
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="24" fill="url(#fg)"/>
+  <g transform="translate(18,18)" fill="#fff" fill-rule="nonzero">
+    <path d="M42 0c11.598 0 21 9.402 21 21s-9.402 21-21 21-21-9.402-21-21S30.402 0 42 0zm0 6.6c-7.966 0-14.4 6.434-14.4 14.4S34.034 41.4 42 41.4 56.4 35 56.4 27.0 49.966 6.6 42 6.6z" opacity="0.95"/>
+    <g transform="translate(18,6)">
+      <path d="M6 0 L12 0 L9 8 Z" opacity="0.95" transform="rotate(0 9 4)"/>
+      <path d="M6 0 L12 0 L9 8 Z" opacity="0.87" transform="rotate(120 9 4)"/>
+      <path d="M6 0 L12 0 L9 8 Z" opacity="0.8" transform="rotate(240 9 4)"/>
+    </g>
+  </g>
+</svg>

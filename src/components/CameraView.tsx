@@ -5,6 +5,8 @@ import { RefreshCw, Film, Lock, Camera, ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
 import RangeSelector from './RangeSelector';
+import PrimaryButton from './ui/PrimaryButton';
+import MotionWrapper from './ui/MotionWrapper';
 
 type ProControl = 'iso' | 'shutterSpeed' | 'focus';
 
@@ -318,7 +320,7 @@ const CameraView: React.FC = () => {
       <div className="bg-gray-900 pb-safe select-none flex-shrink-0 flex flex-col justify-center h-[30vh] min-h-[240px] max-h-[300px]">
         <div className="flex flex-col items-center justify-center">
           {cameraMode === 'pro' && !isNative && (
-            <div className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2">
+            <MotionWrapper className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2">
               <div className="flex items-center justify-center space-x-6">
                 {proControls.map(c => (
                   <button key={c.id} onClick={() => setActiveProControl(activeProControl === c.id ? null : c.id)} className={`flex flex-col items-center gap-1 transition-colors ${activeProControl === c.id ? 'text-amber-400' : 'text-gray-300 hover:text-white'}`}>
@@ -332,7 +334,7 @@ const CameraView: React.FC = () => {
                 {activeProControl === 'shutterSpeed' && capabilities?.exposureTime && <RangeSelector options={generateNumericOptions(capabilities.exposureTime.min, capabilities.exposureTime.max, 20).map(v => parseFloat(v.toPrecision(2)))} value={manualSettings.shutterSpeed} onChange={v => setManualSettings({...manualSettings, shutterSpeed: v as number})} type="shutterSpeed" />}
                 {activeProControl === 'focus' && capabilities?.focusDistance && <RangeSelector options={generateNumericOptions(capabilities.focusDistance.min, capabilities.focusDistance.max, 20)} value={manualSettings.focus} onChange={v => setManualSettings({...manualSettings, focus: v as number})} type="focus" />}
               </div>
-            </div>
+            </MotionWrapper>
           )}
 
           <div className="w-full flex items-center justify-between px-4 py-2">
@@ -369,9 +371,9 @@ const CameraView: React.FC = () => {
               <button onClick={cycleZoom} disabled={isNative || zoomLevels.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 text-white flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
                 {!isNative && `${zoom.toFixed(1)}x`}
               </button>
-              <button onClick={switchCamera} disabled={!isNative && cameras.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
-                <RefreshCw className="w-6 h-6 text-white" />
-              </button>
+              <PrimaryButton onClick={switchCamera} variant="ghost">
+                <RefreshCw className="w-5 h-5" />
+              </PrimaryButton>
             </div>
           </div>
         </div>

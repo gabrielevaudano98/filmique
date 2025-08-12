@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 60" width="300" height="60" role="img" aria-label="Filmique wordmark">
+  <style>
+    .w{font-family: 'SF Pro Display', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; font-weight:700; font-size:36px; fill:#ffffff}
+    .a{fill:#EFA15A}
+  </style>
+  <text x="0" y="40" class="w"><tspan class="a">Fil</tspan>mique</text>
+</svg>
