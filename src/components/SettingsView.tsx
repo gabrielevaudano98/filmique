@@ -5,6 +5,7 @@ import {
 import { useAppContext } from '../context/AppContext';
 import { supabase } from '../integrations/supabase/client';
 import toast from 'react-hot-toast';
+import ThemeSwitcher from './ThemeSwitcher';
 
 const SettingsRow: React.FC<{
   icon: React.ReactNode;
@@ -105,6 +106,20 @@ const SettingsView: React.FC = () => {
             title="Privacy & Security"
             onClick={handleComingSoon}
           />
+
+          {/* Theme switcher row - integrated UI instead of TopBar toggle */}
+          <div className="w-full flex items-center p-4 min-h-[64px]">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center mr-4 shrink-0 bg-gradient-to-br from-brand-amber-start to-brand-amber-mid text-white">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="opacity-95"><path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M1 12h2M21 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-white font-medium text-base">Theme</p>
+              <p className="text-gray-400 text-sm">Choose light or dark mode</p>
+            </div>
+            <div className="ml-4">
+              <ThemeSwitcher />
+            </div>
+          </div>
         </SettingsGroup>
 
         <SettingsGroup title="Support">
