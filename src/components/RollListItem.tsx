@@ -12,6 +12,13 @@ interface RollListItemProps {
   assignActionIcon?: 'add' | 'remove';
 }
 
+const SprocketHoles = () => (
+  <div className="h-4 w-full bg-black" style={{
+    backgroundImage: 'repeating-linear-gradient(to right, transparent, transparent 16px, rgba(255,255,255,0.1) 16px, rgba(255,255,255,0.1) 28px)',
+    backgroundSize: '28px 100%',
+  }} />
+);
+
 const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlbum, isDeveloping = false, assignActionIcon = 'add' }) => {
   const [offsetX, setOffsetX] = useState(0);
   const itemRef = useRef<HTMLDivElement>(null);
@@ -50,15 +57,57 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
   };
 
   const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
+  const AssignIcon = assignActionIcon === 'add' ? FolderPlus : FolderMinus;
 
-  const SprocketHoles = () => (
-    <div className="h-4 w-full" style={{
-      backgroundImage: 'repeating-linear-gradient(to right, transparent, transparent 16px, rgba(0,0,0,0.6) 16px, rgba(0,0,0,0.6) 28px)',
-      backgroundSize: '28px 100%',
-    }} />
+  const photoStrip = (
+    <div className={`overflow-x-auto no-scrollbar ${isDeveloping ? 'bg-black' : 'bg-neutral-900'}`}>
+      <div className="inline-flex flex-col space-y-3 py-3">
+        <div className="px-2 w-full"><SprocketHoles /></div>
+        <div className="flex space-x-2 px-2">
+          {roll.photos && roll.photos.length > 0 ? (
+            roll.photos.map(photo => (
+              isDeveloping ? (
+                <NegativePhoto
+                  key={photo.id}
+                  src={`${photo.thumbnail_url}`}
+                  className="h-24 w-auto rounded-sm object-cover bg-neutral-700 shrink-0"
+                />
+              ) : (
+                <img
+                  key={photo.id}
+                  src={`${photo.thumbnail_url}${cacheBuster}`}
+                  alt="roll photo"
+                  className="h-24 w-auto rounded-sm object-cover bg-neutral-700 shrink-0"
+                  draggable="false"
+                />
+              )
+            ))
+          ) : (
+            <div className="h-24 flex items-center justify-center text-gray-400 text-sm px-4 shrink-0">No photos in this roll.</div>
+          )}
+        </div>
+        <div className="px-2 w-full"><SprocketHoles /></div>
+      </div>
+    </div>
   );
 
-  const AssignIcon = assignActionIcon === 'add' ? FolderPlus : FolderMinus;
+  if (isDeveloping) {
+    return (
+      <div className="bg-warm-800/50 rounded-xl overflow-hidden border border-warm-700/30">
+        <div className="p-4 flex items-center justify-between">
+          <div>
+            <h4 className="font-bold text-white truncate">{roll.film_type}</h4>
+            <p className="text-sm text-gray-400">{roll.shots_used} photos</p>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-cyan-400">
+            <Clock className="w-4 h-4" />
+            <span>Developing...</span>
+          </div>
+        </div>
+        {photoStrip}
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full overflow-hidden rounded-xl">
@@ -84,56 +133,14 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
       <div
         {...handlers}
         ref={itemRef}
-        className={`relative bg-neutral-800 transition-transform duration-200 ease-out ${!isDeveloping ? 'cursor-grab active:cursor-grabbing' : ''}`}
+        className={`relative bg-neutral-800 transition-transform duration-200 ease-out cursor-grab active:cursor-grabbing`}
         style={{ transform: `translateX(${offsetX}px)` }}
       >
-        {isDeveloping ? (
-          <div className="p-4 border-b border-neutral-700/50 bg-neutral-800 flex items-center justify-between">
-            <div>
-              <h4 className="font-bold text-white truncate">{roll.film_type}</h4>
-              <p className="text-sm text-gray-400">{roll.shots_used} photos</p>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-cyan-400">
-              <Clock className="w-4 h-4" />
-              <span>Developing...</span>
-            </div>
-          </div>
-        ) : (
-          <div className="p-4 border-b border-black/20 bg-gradient-to-r from-brand-amber-start to-brand-amber-end">
-            <h4 className="font-bold text-white truncate">{roll.title || 'Untitled Roll'}</h4>
-            <p className="text-sm text-white/80">{roll.film_type}</p>
-          </div>
-        )}
-        
-        <div className="bg-neutral-900 overflow-x-auto no-scrollbar">
-          <div className="inline-flex flex-col space-y-3 py-3">
-            <div className="px-2 w-full"><SprocketHoles /></div>
-            <div className="flex space-x-2 px-2">
-              {roll.photos && roll.photos.length > 0 ? (
-                roll.photos.map(photo => (
-                  isDeveloping ? (
-                    <NegativePhoto
-                      key={photo.id}
-                      src={`${photo.thumbnail_url}`}
-                      className="h-24 w-auto rounded-sm object-cover bg-neutral-700 shrink-0"
-                    />
-                  ) : (
-                    <img
-                      key={photo.id}
-                      src={`${photo.thumbnail_url}${cacheBuster}`}
-                      alt="roll photo"
-                      className="h-24 w-auto rounded-sm object-cover bg-neutral-700 shrink-0"
-                      draggable="false"
-                    />
-                  )
-                ))
-              ) : (
-                <div className="h-24 flex items-center justify-center text-gray-400 text-sm px-4 shrink-0">No photos in this roll.</div>
-              )}
-            </div>
-            <div className="px-2 w-full"><SprocketHoles /></div>
-          </div>
+        <div className="p-4 border-b border-black/20 bg-gradient-to-r from-brand-amber-start to-brand-amber-end">
+          <h4 className="font-bold text-white truncate">{roll.title || 'Untitled Roll'}</h4>
+          <p className="text-sm text-white/80">{roll.film_type}</p>
         </div>
+        {photoStrip}
       </div>
     </div>
   );
