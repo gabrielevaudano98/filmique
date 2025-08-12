@@ -7,7 +7,7 @@ import { filmPresets } from '../utils/filters';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { extractStoragePathFromPublicUrl, filenameFromUrl } from '../utils/storage';
-import { isNonEmptyString, isEmail, clampNumber } from '../utils/validators';
+import { isNonEmptyString, isEmail } from '../utils/validators';
 
 /**
  * AppContext
@@ -259,6 +259,133 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
 
+  /* ------------------------ Fetch helpers (declare before useEffect) --------------------- */
+
+  const fetchFeed = useCallback(async (userId: string) => {
+    if (!userId) return;
+    const { data: followingData } = await supabase.from('followers').select('following_id').eq('follower_id', userId);
+    const followedUserIds = new Set(followingData?.map((f: any) => f.following_id) || []);
+
+    const { data: allPostsData, error } = await supabase.from('posts').select(POST_SELECT_QUERY).order('created_at', { ascending: false }).limit(50);
+    if (error || !allPostsData) {
+      console.error('fetchFeed error', error);
+      setFeed([]);
+      return;
+    }
+
+    const augmented = allPostsData.map((post: any) => ({
+      ...post,
+      isLiked: post.likes?.some((l: any) => l.user_id === userId) || false,
+      isFollowed: followedUserIds.has(post.user_id),
+    })) as Post[];
+
+    setFeed(augmented);
+  }, []);
+
+  const fetchAlbums = useCallback(async (userId: string) => {
+    if (!userId) return;
+    const { data } = await supabase.from('albums').select('*, album_rolls(rolls(shots_used))').eq('user_id', userId);
+    if (!data) return;
+    const enhanced = data.map((album: any) => ({
+      ...album,
+      rollCount: album.album_rolls?.length || 0,
+      photoCount: album.album_rolls?.reduce((s: number, ar: any) => s + (ar.rolls?.shots_used || 0), 0) || 0,
+    }));
+    setAlbums(enhanced);
+  }, []);
+
+  const fetchRollsAndSet = useCallback(async (userId: string) => {
+    if (!userId) return;
+    const { data: rollsData } = await supabase.from('rolls').select('*, photos(*)').eq('user_id', userId).order('created_at', { ascending: false });
+    if (!rollsData) return;
+    setActiveRoll(rollsData.find((r: Roll) => !r.is_completed) || null);
+    setCompletedRolls(rollsData.filter((r: Roll) => r.is_completed));
+  }, []);
+
+  const fetchNotifications = useCallback(async () => {
+    if (!profile) return;
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*, actors:profiles!notifications_actor_id_fkey(username, avatar_url), posts(rolls(photos(thumbnail_url)))')
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(30);
+
+    if (error) {
+      console.error('fetchNotifications', error);
+      return;
+    }
+    setNotifications(data || []);
+  }, [profile]);
+
+  const fetchUserBadges = useCallback(async (userId: string) => {
+    if (!userId) return;
+    const { data } = await supabase.from('user_badges').select('*, badges(*)').eq('user_id', userId);
+    if (data) setUserBadges(data);
+  }, []);
+
+  const fetchFollowCounts = useCallback(async (userId: string) => {
+    if (!userId) return;
+    try {
+      const { count: followers } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', userId);
+      const { count: following } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', userId);
+      setFollowersCount(followers || 0);
+      setFollowingCount(following || 0);
+    } catch (error) {
+      console.error('fetchFollowCounts', error);
+    }
+  }, []);
+
+  const fetchRecentStories = useCallback(async (userId: string) => {
+    if (!userId) return setRecentStories(new Map());
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    const { data: followingData } = await supabase.from('followers').select('following_id').eq('follower_id', userId);
+    const followedUserIds = followingData?.map((f: any) => f.following_id) || [];
+    if (followedUserIds.length === 0) return setRecentStories(new Map());
+
+    const { data: recentPosts, error } = await supabase.from('posts')
+      .select(POST_SELECT_QUERY)
+      .in('user_id', followedUserIds)
+      .gte('created_at', twentyFourHoursAgo)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('fetchRecentStories', error);
+      return setRecentStories(new Map());
+    }
+
+    const storiesMap = new Map<string, { user: UserProfile, posts: Post[] }>();
+    recentPosts.forEach((post: any) => {
+      const userProfile = post.profiles as UserProfile;
+      if (!storiesMap.has(userProfile.id)) {
+        storiesMap.set(userProfile.id, { user: userProfile, posts: [] });
+      }
+      const entry = storiesMap.get(userProfile.id)!;
+      entry.posts.push({
+        ...post,
+        isLiked: post.likes?.some((l: any) => l.user_id === userId),
+        isFollowed: true,
+      } as Post);
+    });
+
+    setRecentStories(storiesMap);
+  }, []);
+
+  /* --------------------------- Initialization ----------------------- */
+
+  // whenever profile becomes available, fetch related resources
+  useEffect(() => {
+    if (!profile) return;
+    fetchNotifications();
+    fetchUserBadges(profile.id).catch(console.error);
+    fetchFollowCounts(profile.id).catch(console.error);
+    fetchRecentStories(profile.id).catch(console.error);
+    fetchRollsAndSet(profile.id).catch(console.error);
+    fetchFeed(profile.id).catch(console.error);
+    fetchAlbums(profile.id).catch(console.error);
+  }, [profile, fetchNotifications, fetchUserBadges, fetchFollowCounts, fetchRecentStories, fetchRollsAndSet, fetchFeed, fetchAlbums]);
+
   /* ----------------------- Profile & Auth helpers -------------------- */
 
   const refreshProfile = useCallback(async () => {
@@ -340,162 +467,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     setIsLoading(false);
   }, [verificationEmail, refreshProfile]);
-
-  /* ------------------------ Fetch & derived data --------------------- */
-
-  // Fetch feed for a user and annotate with isLiked/isFollowed
-  const fetchFeed = useCallback(async (userId: string) => {
-    if (!userId) return;
-    const { data: followingData } = await supabase.from('followers').select('following_id').eq('follower_id', userId);
-    const followedUserIds = new Set(followingData?.map((f: any) => f.following_id) || []);
-
-    const { data: allPostsData, error } = await supabase.from('posts').select(POST_SELECT_QUERY).order('created_at', { ascending: false }).limit(50);
-    if (error || !allPostsData) {
-      console.error('fetchFeed error', error);
-      setFeed([]);
-      return;
-    }
-
-    const augmented = allPostsData.map((post: any) => ({
-      ...post,
-      isLiked: post.likes?.some((l: any) => l.user_id === userId) || false,
-      isFollowed: followedUserIds.has(post.user_id),
-    })) as Post[];
-
-    setFeed(augmented);
-  }, []);
-
-  const fetchAlbums = useCallback(async (userId: string) => {
-    if (!userId) return;
-    const { data } = await supabase.from('albums').select('*, album_rolls(rolls(shots_used))').eq('user_id', userId);
-    if (!data) return;
-    const enhanced = data.map((album: any) => ({
-      ...album,
-      rollCount: album.album_rolls?.length || 0,
-      photoCount: album.album_rolls?.reduce((s: number, ar: any) => s + (ar.rolls?.shots_used || 0), 0) || 0,
-    }));
-    setAlbums(enhanced);
-  }, []);
-
-  const fetchRollsAndSet = useCallback(async (userId: string) => {
-    if (!userId) return;
-    const { data: rollsData } = await supabase.from('rolls').select('*, photos(*)').eq('user_id', userId).order('created_at', { ascending: false });
-    if (!rollsData) return;
-    setActiveRoll(rollsData.find((r: Roll) => !r.is_completed) || null);
-    setCompletedRolls(rollsData.filter((r: Roll) => r.is_completed));
-  }, []);
-
-  /* -------------------------- Notifications ------------------------- */
-
-  const fetchNotifications = useCallback(async () => {
-    if (!profile) return;
-    const { data, error } = await supabase
-      .from('notifications')
-      .select('*, actors:profiles!notifications_actor_id_fkey(username, avatar_url), posts(rolls(photos(thumbnail_url)))')
-      .eq('user_id', profile.id)
-      .order('created_at', { ascending: false })
-      .limit(30);
-
-    if (error) {
-      console.error('fetchNotifications', error);
-      return;
-    }
-    setNotifications(data || []);
-  }, [profile]);
-
-  const markNotificationsAsRead = useCallback(async () => {
-    if (!profile) return;
-    try {
-      const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
-      if (unreadIds.length === 0) return;
-      await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds);
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-    } catch (error) {
-      console.error('markNotificationsAsRead', error);
-    }
-  }, [notifications, profile]);
-
-  /* ---------------------------- Activity ---------------------------- */
-
-  const recordActivity = useCallback(async (activityType: string, entityId: string, entityOwnerId?: string) => {
-    if (!profile) return;
-    try {
-      await supabase.functions.invoke('record-activity', {
-        body: { activityType, actorId: profile.id, entityId, entityOwnerId },
-      });
-      // refresh profile to pick up activity-derived rewards etc.
-      await refreshProfile();
-    } catch (error) {
-      // Non-fatal; just log for debugging
-      console.error('recordActivity error', error);
-    }
-  }, [profile, refreshProfile]);
-
-  /* -------------------------- Social counts ------------------------- */
-
-  const fetchFollowCounts = useCallback(async (userId: string) => {
-    if (!userId) return;
-    try {
-      const { count: followers } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', userId);
-      const { count: following } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', userId);
-      setFollowersCount(followers || 0);
-      setFollowingCount(following || 0);
-    } catch (error) {
-      console.error('fetchFollowCounts', error);
-    }
-  }, []);
-
-  /* ---------------------------- Stories ---------------------------- */
-
-  const fetchRecentStories = useCallback(async (userId: string) => {
-    if (!userId) return setRecentStories(new Map());
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-    const { data: followingData } = await supabase.from('followers').select('following_id').eq('follower_id', userId);
-    const followedUserIds = followingData?.map((f: any) => f.following_id) || [];
-    if (followedUserIds.length === 0) return setRecentStories(new Map());
-
-    const { data: recentPosts, error } = await supabase.from('posts')
-      .select(POST_SELECT_QUERY)
-      .in('user_id', followedUserIds)
-      .gte('created_at', twentyFourHoursAgo)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('fetchRecentStories', error);
-      return setRecentStories(new Map());
-    }
-
-    const storiesMap = new Map<string, { user: UserProfile, posts: Post[] }>();
-    recentPosts.forEach((post: any) => {
-      const userProfile = post.profiles as UserProfile;
-      if (!storiesMap.has(userProfile.id)) {
-        storiesMap.set(userProfile.id, { user: userProfile, posts: [] });
-      }
-      const entry = storiesMap.get(userProfile.id)!;
-      entry.posts.push({
-        ...post,
-        isLiked: post.likes?.some((l: any) => l.user_id === userId),
-        isFollowed: true,
-      } as Post);
-    });
-
-    setRecentStories(storiesMap);
-  }, []);
-
-  /* --------------------------- Initialization ----------------------- */
-
-  // whenever profile becomes available, fetch related resources
-  useEffect(() => {
-    if (!profile) return;
-    fetchNotifications();
-    fetchUserBadges(profile.id).catch(console.error);
-    fetchFollowCounts(profile.id).catch(console.error);
-    fetchRecentStories(profile.id).catch(console.error);
-    fetchRollsAndSet(profile.id).catch(console.error);
-    fetchFeed(profile.id).catch(console.error);
-    fetchAlbums(profile.id).catch(console.error);
-  }, [profile, fetchNotifications, fetchUserBadges, fetchFollowCounts, fetchRecentStories, fetchRollsAndSet, fetchFeed, fetchAlbums]);
 
   /* -------------------------- CRUD operations ----------------------- */
 
@@ -724,7 +695,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recordActivity('like', postId, postOwnerId);
     }
     if (profile) fetchFeed(profile.id);
-  }, [profile, fetchFeed, recordActivity]);
+  }, [profile, fetchFeed, /* recordActivity will be declared below and doesn't need to be in deps here */]);
 
   const handleFollow = useCallback(async (userId: string, isFollowed?: boolean) => {
     if (!ensureProfile(profile)) return;
@@ -739,7 +710,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       fetchFeed(profile.id);
       fetchFollowCounts(profile.id);
     }
-  }, [profile, fetchFeed, fetchFollowCounts, recordActivity]);
+  }, [profile, fetchFeed, fetchFollowCounts]);
 
   /* ---------------------------- Posting ----------------------------- */
 
@@ -772,7 +743,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error('createPost', error);
       toast.error(error?.message || 'Failed to publish post', { id: toastId });
     }
-  }, [profile, recordActivity]);
+  }, [profile]);
 
   const addComment = useCallback(async (postId: string, postOwnerId: string, content: string) => {
     if (!ensureProfile(profile)) return;
@@ -784,7 +755,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recordActivity('comment', postId, postOwnerId);
       if (profile) fetchFeed(profile.id);
     }
-  }, [profile, fetchFeed, recordActivity]);
+  }, [profile, fetchFeed]);
 
   const deleteComment = useCallback(async (commentId: string) => {
     if (!ensureProfile(profile)) return;
@@ -848,12 +819,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   /* ------------------------- Badges / Profile ----------------------- */
 
-  const fetchUserBadges = useCallback(async (userId: string) => {
-    if (!userId) return;
-    const { data } = await supabase.from('user_badges').select('*, badges(*)').eq('user_id', userId);
-    if (data) setUserBadges(data);
-  }, []);
-
+  // declared earlier (see fetchUserBadges) — kept for logical grouping
   const updateProfileDetails = useCallback(async (details: { bio?: string; avatarFile?: File }) => {
     if (!ensureProfile(profile)) return;
     const updatePayload: { bio?: string; avatar_url?: string } = {};
@@ -892,6 +858,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (typeof details.bio !== 'undefined') showSuccessToast('Profile updated!');
         await refreshProfile();
       }
+    }
+  }, [profile, refreshProfile]);
+
+  /* ---------------------------- Activity ---------------------------- */
+
+  const recordActivity = useCallback(async (activityType: string, entityId: string, entityOwnerId?: string) => {
+    if (!profile) return;
+    try {
+      await supabase.functions.invoke('record-activity', {
+        body: { activityType, actorId: profile.id, entityId, entityOwnerId },
+      });
+      // refresh profile to pick up activity-derived rewards etc.
+      await refreshProfile();
+    } catch (error) {
+      // Non-fatal; just log for debugging
+      console.error('recordActivity error', error);
     }
   }, [profile, refreshProfile]);
 
