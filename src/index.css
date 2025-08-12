@@ -4,164 +4,147 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Brand CSS variables — match tokens in src/design/brand.ts */
+:root {
+  --brand-amber-start: #F6AE55;
+  --brand-amber-mid: #E98A43;
+  --brand-amber-end: #D46A2E;
+
+  --warm-900: #2b0f06;
+  --warm-800: #3a190a;
+  --warm-700: #5a2b12;
+  --warm-600: #7a3e19;
+  --warm-500: #a65a2b;
+  --warm-400: #d78657;
+  --warm-300: #f0c6ab;
+
+  --glass-thin: rgba(255,255,255,0.06);
+  --glass-medium: rgba(255,255,255,0.10);
+
+  --shadow-soft: 0 6px 18px rgba(11,11,12,0.28);
+  --shadow-depth: 0 24px 60px rgba(6,6,8,0.46);
+
+  --avatar-ring: linear-gradient(135deg, #D46A2E 0%, #7C6AFE 60%);
+
+  /* motion tokens */
+  --motion-micro: 90ms;
+  --motion-short: 180ms;
+  --motion-medium: 320ms;
+  --motion-long: 520ms;
+}
+
+/* existing base overrides */
 @layer base {
   body {
-    font-family: 'SF Pro Display', sans-serif;
-    background-color: #0c0c0f;
+    font-family: 'SF Pro Display', Inter, system-ui;
+    background-color: var(--warm-900);
+    color: white;
   }
   #root {
     position: relative;
     z-index: 1;
   }
-  #root::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-image: 
-      /* Deeper orange at the top */
-      radial-gradient(ellipse 80% 50% at 50% -20%, #d46a2e 0%, transparent 50%),
-      /* Larger dark purple for the middle band */
-      radial-gradient(ellipse 120% 70% at 50% 50%, #41354c 0%, transparent 60%),
-      /* Light grey at the bottom */
-      radial-gradient(ellipse 60% 40% at 50% 110%, #b5aaac 0%, transparent 60%);
-    filter: blur(100px); /* Even more blur */
-    z-index: -1;
-    transform: scale(1.3); /* Scale up a bit more to avoid hard edges */
-    opacity: 0.6; /* Make it lighter */
-  }
-  /*
-    Custom Focus Handling:
-    - Removes the default outline for mouse users (`:focus:not(:focus-visible)`).
-    - Adds a custom, branded outline for keyboard users (`:focus-visible`) for accessibility.
-  */
-  *:focus:not(:focus-visible) {
-    outline: none;
-    box-shadow: none;
-  }
-  *:focus-visible {
-    outline: 2px solid #f59e0b;
-    outline-offset: 2px;
-    border-radius: 0.375rem; /* 6px */
-  }
 }
 
-@layer utilities {
-  /* Safe area utilities for mobile devices */
-  .pt-safe {
-    padding-top: env(safe-area-inset-top);
-  }
-  .pb-safe {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .pl-safe {
-    padding-left: env(safe-area-inset-left);
-  }
-  .pr-safe {
-    padding-right: env(safe-area-inset-right);
-  }
-  .px-safe {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-  .py-safe {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
-  .safe-area-bottom {
-    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
-  }
-  
-  /* Touch optimization */
-  .touch-manipulation {
-    touch-action: manipulation;
-  }
-  
-  /* Prevent text selection on interactive elements */
-  .select-none {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    user-select: none;
-  }
-  
-  /* Smooth scrolling for mobile */
-  .scroll-smooth {
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
-  }
-
-  /* Hide scrollbar utility */
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
-  }
+/* Glass Card — stacked rounded cards with warm translucent surface */
+.glass-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.18));
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.04);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  transition: transform var(--motion-short) var(--spring-soft), box-shadow var(--motion-short);
 }
 
-/* Styles for Capacitor Camera View */
-body.camera-running {
-  visibility: hidden;
-  --background: transparent !important;
-  --ion-background-color: transparent !important;
-  background-color: transparent !important;
-  position: fixed;
+/* Stacked card variant (used on onboarding / hero) */
+.glass-card.stacked {
+  transform: translateY(8px);
+  background: linear-gradient(180deg, rgba(58,25,10,0.88), rgba(27,29,32,0.78));
+}
+
+/* Hero card image overlay for warming and vignette */
+.card-hero {
+  position: relative;
   overflow: hidden;
-  width: 100%;
+  border-radius: 16px;
+}
+.card-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(27,29,32,0.36));
+  pointer-events: none;
 }
 
-/*
-  When the camera is running, we hide the entire body,
-  but then make the specific camera component visible again.
-  This allows the native camera view (which is behind the webview)
-  to show through, while still rendering our UI on top.
-*/
-.camera-modal {
-  visibility: visible;
+/* Avatar ring (gradient ring) */
+.avatar-ring {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 9999px;
+  padding: 3px;
+  background: var(--avatar-ring);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+.avatar-ring img {
+  display: block;
+  border-radius: 9999px;
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border: 2px solid rgba(0,0,0,0.35);
 }
 
+/* Pill CTA — used across header filters and bottom actions */
+.pill-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 8px 16px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(90deg, var(--brand-amber-start), var(--brand-amber-mid));
+  box-shadow: 0 6px 28px rgba(214,106,46,0.12), inset 0 -6px 14px rgba(255,255,255,0.02);
+  transition: transform var(--motion-micro) var(--curve-quick), box-shadow var(--motion-micro);
+}
+.pill-cta:active { transform: translateY(1px) scale(0.997); }
 
-/* Base mobile optimizations */
-html {
-  -webkit-text-size-adjust: 100%;
-  -webkit-tap-highlight-color: transparent;
+/* Secondary pill (outline) */
+.pill-cta.outline {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--warm-300);
+  box-shadow: none;
 }
 
-body {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overscroll-behavior: none;
+/* Floating bottom nav (glass) */
+.floating-nav {
+  background: linear-gradient(180deg, rgba(12,7,5,0.6), rgba(12,7,5,0.36));
+  border-radius: 28px;
+  padding: 10px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-depth);
+  border: 1px solid rgba(255,255,255,0.04);
 }
 
-/* Improve touch targets */
-button, 
-[role="button"],
-input[type="submit"],
-input[type="button"] {
-  min-height: 44px;
-  min-width: 44px;
-  touch-action: manipulation;
-}
-
-/* Optimize form inputs for mobile */
-input, 
-select, 
-textarea {
-  font-size: 16px; /* Prevents zoom on iOS */
-  border-radius: 0; /* Removes default iOS styling */
-}
-
-/* Improve scrolling performance */
-* {
+/* Story avatar carousel minor tweaks */
+.story-carousel {
+  padding: 8px 12px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* Prevent horizontal scroll */
-html, body {
-  overflow-x: hidden;
-  width: 100%;
-}
+/* small utilities used by components */
+.card-shadow-deep { box-shadow: var(--shadow-depth); }
+.glass-border { border: 1px solid rgba(255,255,255,0.04); }
+
+/* Hide scrollbar */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

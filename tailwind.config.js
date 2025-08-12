@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Neutral scale tuned for iOS aesthetic
+        // Neutral scale
         'neutral-900': '#060608',
         'neutral-800': '#0f1113',
         'neutral-700': '#1b1d20',
@@ -15,6 +15,15 @@ export default {
         'neutral-400': '#9aa0a6',
         'neutral-300': '#c6c9cd',
         'neutral-100': '#f7f7f8',
+
+        // Warm palette (reference-inspired)
+        'warm-900': '#2b0f06',
+        'warm-800': '#3a190a',
+        'warm-700': '#5a2b12',
+        'warm-600': '#7a3e19',
+        'warm-500': '#a65a2b',
+        'warm-400': '#d78657',
+        'warm-300': '#f0c6ab',
 
         // Brand amber gradient stops
         'brand-amber-start': '#F6AE55',
@@ -26,7 +35,7 @@ export default {
         'accent-teal': '#2FD1B0',
         'accent-coral': '#FF6B6B',
 
-        // Glass tokens (use with alpha)
+        // Glass tokens
         'glass-thin': 'rgba(255,255,255,0.06)',
         'glass-medium': 'rgba(255,255,255,0.10)',
         'glass-dark': 'rgba(6,6,8,0.64)',
@@ -48,7 +57,8 @@ export default {
       },
       borderRadius: {
         'card': '16px',
-        'lg': '12px'
+        'lg': '12px',
+        'pill': '9999px'
       },
       transitionTimingFunction: {
         'spring-soft': 'cubic-bezier(0.20, 1.0, 0.35, 1.0)',

@@ -1,13 +1,8 @@
 /**
- * Filmique — Brand / Color System
+ * Filmique — Brand / Color System (extended)
  *
- * Purpose:
- * - Single source of truth for colors used throughout the app.
- * - Each token includes HEX and RGB for convenience.
- *
- * Usage:
- * - Import the tokens into components or your styling system.
- * - Tailwind classes were updated to reflect the same semantic names.
+ * Added warm-brown family, card surfaces, avatar ring gradients and semantic tokens
+ * inspired by the provided design reference (warm glass, stacked rounded cards).
  */
 
 export const color = {
@@ -22,72 +17,75 @@ export const color = {
     100: { hex: '#f7f7f8', rgb: '247,247,248' },
   },
 
-  // Core brand (warm dynamic gradient inspired by modern iOS)
+  // Warm brown palette inspired by the reference image
+  warm: {
+    900: { hex: '#2b0f06', rgb: '43,15,6' },   // very deep espresso
+    800: { hex: '#3a190a', rgb: '58,25,10' },  // deep chocolate
+    700: { hex: '#5a2b12', rgb: '90,43,18' },  // warm brown
+    600: { hex: '#7a3e19', rgb: '122,62,25' }, // amber-brown
+    500: { hex: '#a65a2b', rgb: '166,90,43' }, // primary warm accent
+    400: { hex: '#d78657', rgb: '215,134,87' },// light warm
+    300: { hex: '#f0c6ab', rgb: '240,198,171' } // pale warm (used in highlights)
+  },
+
+  // Core brand (amber gradient)
   brand: {
-    amberStart: { hex: '#F6AE55', rgb: '246,174,85' }, // warm highlight
+    amberStart: { hex: '#F6AE55', rgb: '246,174,85' },
     amberMid:   { hex: '#E98A43', rgb: '233,138,67' },
     amberEnd:   { hex: '#D46A2E', rgb: '212,106,46' },
-    glassSoft:  { hex: '#FFFFFF', rgb: '255,255,255' }, // used with low alpha for glass
+    glassSoft:  { hex: '#FFFFFF', rgb: '255,255,255' },
   },
 
-  // Accent palette (subtle supportive hues)
-  accent: {
-    violet:   { hex: '#7C6AFE', rgb: '124,106,254' },
-    teal:     { hex: '#2FD1B0', rgb: '47,209,176' },
-    pearl:    { hex: '#F3F6F8', rgb: '243,246,248' },
-    coral:    { hex: '#FF6B6B', rgb: '255,107,107' },
+  // Avatar / accent gradients (for rings and pill CTAs)
+  accents: {
+    avatarRing: {
+      css: 'linear-gradient(135deg, rgba(214,106,46,1) 0%, rgba(124,106,254,0.95) 60%)',
+      stops: ['#D46A2E', '#7C6AFE'],
+    },
+    pill: {
+      css: 'linear-gradient(90deg, rgba(214,106,46,1) 0%, rgba(233,138,67,0.9) 45%, rgba(124,106,254,0.92) 100%)'
+    }
   },
 
-  // Semantic tokens used in components
+  // Semantic tokens used in components (extended)
   semantic: {
     bg: {
       light: { hex: '#FBFBFC', rgb: '251,251,252' },
       dark:  { hex: '#060608', rgb: '6,6,8' },
     },
     surface: {
-      elevated: { hex: 'rgba(255,255,255,0.04)', rgb: '255,255,255' }, // use with dark glass
-      card: { hex: 'rgba(255,255,255,0.06)', rgb: '255,255,255' },
+      elevated: { hex: 'rgba(255,255,255,0.04)', rgb: '255,255,255' },
+      card: { hex: 'rgba(12,7,5,0.48)', rgb: '12,7,5' }, // warm translucent card used for stacked cards
+      glass: { hex: 'rgba(255,255,255,0.06)', rgb: '255,255,255' }
+    },
+    overlay: {
+      warmGradient: { css: 'linear-gradient(180deg, rgba(58,25,10,0.92), rgba(27,29,32,0.85))' },
+      softTint: { hex: 'rgba(166,90,43,0.12)', rgb: '166,90,43' }
     },
     border: {
-      light: { hex: 'rgba(16,18,20,0.06)', rgb: '16,18,20' },
-      dark:  { hex: 'rgba(255,255,255,0.06)', rgb: '255,255,255' },
+      light: { hex: 'rgba(255,255,255,0.06)', rgb: '255,255,255' },
+      dark:  { hex: 'rgba(0,0,0,0.18)', rgb: '0,0,0' },
     },
     text: {
-      primaryLight: { hex: '#0b0b0c', rgb: '11,11,12' },
-      primaryDark:  { hex: '#FFFFFF', rgb: '255,255,255' },
-      muted:        { hex: '#98A0A7', rgb: '152,160,167' },
-      link:         { hex: '#7C6AFE', rgb: '124,106,254' },
-    },
-  },
-
-  // Gradients (compressed tokens for easy use)
-  gradients: {
-    sunglass: {
-      css: 'linear-gradient(135deg, rgba(246,174,85,0.95) 0%, rgba(233,138,67,0.9) 45%, rgba(212,106,46,0.9) 100%)',
-      stops: ['#F6AE55', '#E98A43', '#D46A2E'],
-    },
-    softViolet: {
-      css: 'linear-gradient(120deg, rgba(124,106,254,0.9) 0%, rgba(47,209,176,0.85) 100%)',
-      stops: ['#7C6AFE', '#2FD1B0'],
-    },
-    glassTop: {
-      css: 'linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+      primary: { hex: '#FFFFFF', rgb: '255,255,255' },
+      highContrast: { hex: '#FFFDFB', rgb: '255,253,251' },
+      subdued: { hex: '#C7B0A3', rgb: '199,176,163' },
+      accent: { hex: '#A65A2B', rgb: '166,90,43' }
     }
   },
 
-  // Shadows expressed as design tokens (use in CSS variables)
+  // Shadows & depth
   shadows: {
-    none: 'none',
-    micro: '0 1px 2px rgba(6,6,8,0.24)',
-    soft: '0 6px 18px rgba(11,11,12,0.28)',
-    depth: '0 24px 60px rgba(6,6,8,0.46)'
+    micro: '0 1px 2px rgba(6,6,8,0.22)',
+    soft: '0 8px 30px rgba(11,11,12,0.35)',
+    depth: '0 32px 90px rgba(6,6,8,0.6)',
+    innerGlow: '0 8px 24px rgba(214,106,46,0.06)' // subtle warm rim light
   },
 
-  // Alpha helpers (for dynamic overlays)
   alpha: {
     glassThin: 'rgba(255,255,255,0.06)',
     glassMedium: 'rgba(255,255,255,0.10)',
-    glassDark: 'rgba(6,6,8,0.64)'
+    warmTint: 'rgba(166,90,43,0.06)'
   }
 };
 
