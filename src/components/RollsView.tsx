@@ -4,10 +4,11 @@ import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { isRollDeveloped, isRollDeveloping } from '../utils/rollUtils';
 import CreateAlbumModal from './CreateAlbumModal';
-import RollListItem from './RollListItem';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import AssignAlbumModal from './AssignAlbumModal';
 import SegmentedControl from './SegmentedControl';
+import CollapsibleAlbumSection from './CollapsibleAlbumSection';
+import RollListItem from './RollListItem';
 
 const RollsView: React.FC = () => {
   const {
@@ -42,7 +43,9 @@ const RollsView: React.FC = () => {
   }, [developedRolls, albums]);
 
   const uncategorizedRolls = useMemo(() => {
-    return developedRolls.filter(r => !r.album_id);
+    return developedRolls
+      .filter(r => !r.album_id)
+      .sort((a, b) => new Date(b.developed_at!).getTime() - new Date(a.developed_at!).getTime());
   }, [developedRolls]);
 
   const DarkroomEmptyState = () => (
@@ -86,35 +89,33 @@ const RollsView: React.FC = () => {
         )}
 
         {activeSection === 'rolls' && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold text-white">My Albums</h3>
               <button onClick={() => setShowCreateAlbumModal(true)} className="flex items-center gap-2 text-sm font-semibold text-brand-amber-start hover:text-brand-amber-mid">
                 <Plus className="w-4 h-4" />
                 New Album
               </button>
             </div>
-            <div className="space-y-6">
+            <div className="space-y-4">
               {albums.map(album => (
-                <div key={album.id}>
-                  <h4 className="font-semibold text-gray-300 mb-3 px-1">{album.title}</h4>
-                  <div className="space-y-3">
-                    {rollsByAlbum[album.id]?.map(roll => (
-                      <RollListItem key={roll.id} roll={roll} onDelete={setRollToDelete} onAssignAlbum={setRollToAssign} />
-                    ))}
-                    {rollsByAlbum[album.id]?.length === 0 && <p className="text-sm text-gray-500 px-2">This album is empty.</p>}
-                  </div>
-                </div>
+                <CollapsibleAlbumSection
+                  key={album.id}
+                  title={album.title}
+                  rolls={rollsByAlbum[album.id] || []}
+                  album={album}
+                  onDeleteRoll={setRollToDelete}
+                  onAssignRoll={setRollToAssign}
+                />
               ))}
               {uncategorizedRolls.length > 0 && (
-                <div>
-                  <h4 className="font-semibold text-gray-300 mb-3 px-1">Uncategorized</h4>
-                  <div className="space-y-3">
-                    {uncategorizedRolls.map(roll => (
-                      <RollListItem key={roll.id} roll={roll} onDelete={setRollToDelete} onAssignAlbum={setRollToAssign} />
-                    ))}
-                  </div>
-                </div>
+                <CollapsibleAlbumSection
+                  title="Uncategorized"
+                  rolls={uncategorizedRolls}
+                  initiallyOpen={false}
+                  onDeleteRoll={setRollToDelete}
+                  onAssignRoll={setRollToAssign}
+                />
               )}
             </div>
           </div>

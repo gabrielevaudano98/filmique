@@ -10,14 +10,14 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
   const activeIndex = options.findIndex(opt => opt.value === value);
 
   return (
-    <div className="relative flex w-full p-1 bg-neutral-800 rounded-full">
+    <div className="relative flex w-full p-1.5 bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-full">
       {/* Sliding background */}
       <div
-        className="absolute top-1 bottom-1 h-auto bg-neutral-600 rounded-full transition-all duration-300 ease-spring-soft"
+        className="absolute top-1.5 bottom-1.5 h-auto bg-gradient-to-r from-brand-amber-start to-brand-amber-end shadow-lg shadow-brand-amber-start/20 rounded-full transition-all duration-300 ease-spring-soft"
         style={{
-          width: `calc(${100 / options.length}% - 4px)`,
+          width: `calc(${100 / options.length}% - 6px)`,
           transform: `translateX(${activeIndex * 100}%)`,
-          margin: '0 2px',
+          margin: '0 3px',
         }}
       />
       {options.map(opt => (
