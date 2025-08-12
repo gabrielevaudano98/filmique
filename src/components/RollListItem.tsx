@@ -46,12 +46,12 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
 
   const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
 
-  const numHoles = (roll.photos?.length || 5) * 4;
+  const numHoles = (roll.photos?.length || 5) * 2;
 
   const SprocketHoles = () => (
-    <div className="flex space-x-2 h-3 px-2 shrink-0">
+    <div className="flex space-x-3 h-4 px-2 shrink-0">
       {Array.from({ length: numHoles }).map((_, i) => (
-        <div key={i} className="w-3 h-full bg-black/50" />
+        <div key={i} className="w-4 h-full bg-black/60" />
       ))}
     </div>
   );
@@ -87,8 +87,8 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
         </div>
         
         {/* Film Strip */}
-        <div className="bg-warm-700/40 overflow-x-auto no-scrollbar">
-          <div className="inline-flex flex-col space-y-2 py-2">
+        <div className="bg-brand-amber-start/20 overflow-x-auto no-scrollbar">
+          <div className="inline-flex flex-col space-y-3 py-3">
             <SprocketHoles />
             <div className="flex space-x-2 px-2">
               {roll.photos && roll.photos.length > 0 ? (
