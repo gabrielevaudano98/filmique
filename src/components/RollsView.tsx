@@ -15,12 +15,13 @@ const RollsView: React.FC = () => {
     completedRolls,
     albums,
     deleteRoll,
+    rollToAssign,
+    setRollToAssign,
   } = useAppContext();
 
   const [activeSection, setActiveSection] = useState<'rolls' | 'darkroom'>('rolls');
   const [showCreateAlbumModal, setShowCreateAlbumModal] = useState(false);
   const [rollToDelete, setRollToDelete] = useState<Roll | null>(null);
-  const [rollToAssign, setRollToAssign] = useState<Roll | null>(null);
 
   const { developedRolls, developingRolls } = useMemo(() => {
     const allCompleted = completedRolls || [];
@@ -139,3 +140,6 @@ const RollsView: React.FC = () => {
       )}
     </div>
   );
+};
+
+export default RollsView;
