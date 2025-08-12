@@ -26,7 +26,7 @@ const RollsView: React.FC = () => {
 
   const { developedRolls, developingRolls } = useMemo(() => {
     const allCompleted = completedRolls || [];
-    const developed = allCompleted.filter(roll => isRollDeveloped(roll) && roll.title);
+    const developed = allCompleted.filter(roll => isRollDeveloped(roll));
     const developing = allCompleted.filter(isRollDeveloping);
     return { developedRolls: developed, developingRolls: developing };
   }, [completedRolls]);
