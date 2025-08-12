@@ -8,16 +8,18 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import { extractStoragePathFromPublicUrl, filenameFromUrl } from '../utils/storage';
 import { isNonEmptyString, isEmail } from '../utils/validators';
-import {
-  fetchFeed,
-  fetchAlbums,
-  fetchRollsAndSet,
-  fetchNotifications as fetchNotificationsHelper,
-  fetchUserBadges,
-  fetchFollowCounts,
-  fetchRecentStories,
-} from './fetchers';
-import { markNotificationsAsRead as markNotificationsAsReadHelper } from './notifications';
+
+/**
+ * AppContext
+ *
+ * Responsibilities:
+ * - Provide a centralized app state for auth, user profile, rolls, feed, albums, notifications.
+ * - Provide a concise, well-documented public API used across UI components.
+ *
+ * Notes:
+ * - All public functions validate inputs minimally and report user-facing errors via toast.
+ * - Side effects with Supabase are handled consistently and update local state where appropriate.
+ */
 
 /* ----------------------------- Types ---------------------------------- */
 
@@ -205,6 +207,8 @@ export const useAppContext = () => {
 
 /* ------------------------- Internal helpers -------------------------- */
 
+const POST_SELECT_QUERY = '*, cover_photo_url, profiles!posts_user_id_fkey(username, avatar_url, level, id), rolls!posts_roll_id_fkey(title, film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))';
+
 const showErrorToast = (message: string) => {
   toast.error(message || 'Something went wrong. Please try again.');
 };
@@ -255,25 +259,150 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [followersCount, setFollowersCount] = useState<number>(0);
   const [followingCount, setFollowingCount] = useState<number>(0);
 
+  /* ------------------------ Fetch helpers (declare before useEffect) --------------------- */
+
+  const fetchFeed = useCallback(async (userId: string) => {
+    if (!userId) return;
+    const { data: followingData } = await supabase.from('followers').select('following_id').eq('follower_id', userId);
+    const followedUserIds = new Set(followingData?.map((f: any) => f.following_id) || []);
+
+    const { data: allPostsData, error } = await supabase.from('posts').select(POST_SELECT_QUERY).order('created_at', { ascending: false }).limit(50);
+    if (error || !allPostsData) {
+      console.error('fetchFeed error', error);
+      setFeed([]);
+      return;
+    }
+
+    const augmented = allPostsData.map((post: any) => ({
+      ...post,
+      isLiked: post.likes?.some((l: any) => l.user_id === userId) || false,
+      isFollowed: followedUserIds.has(post.user_id),
+    })) as Post[];
+
+    setFeed(augmented);
+  }, []);
+
+  const fetchAlbums = useCallback(async (userId: string) => {
+    if (!userId) return;
+    const { data } = await supabase.from('albums').select('*, album_rolls(rolls(shots_used))').eq('user_id', userId);
+    if (!data) return;
+    const enhanced = data.map((album: any) => ({
+      ...album,
+      rollCount: album.album_rolls?.length || 0,
+      photoCount: album.album_rolls?.reduce((s: number, ar: any) => s + (ar.rolls?.shots_used || 0), 0) || 0,
+    }));
+    setAlbums(enhanced);
+  }, []);
+
+  const fetchRollsAndSet = useCallback(async (userId: string) => {
+    if (!userId) return;
+    const { data: rollsData } = await supabase.from('rolls').select('*, photos(*)').eq('user_id', userId).order('created_at', { ascending: false });
+    if (!rollsData) return;
+    setActiveRoll(rollsData.find((r: Roll) => !r.is_completed) || null);
+    setCompletedRolls(rollsData.filter((r: Roll) => r.is_completed));
+  }, []);
+
+  const fetchNotifications = useCallback(async () => {
+    if (!profile) return;
+    const { data, error } = await supabase
+      .from('notifications')
+      .select('*, actors:profiles!notifications_actor_id_fkey(username, avatar_url), posts(rolls(photos(thumbnail_url)))')
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false })
+      .limit(30);
+
+    if (error) {
+      console.error('fetchNotifications', error);
+      return;
+    }
+    setNotifications(data || []);
+  }, [profile]);
+
+  // mark unread notifications as read (updates DB and local state)
+  const markNotificationsAsRead = useCallback(async () => {
+    if (!profile) return;
+    try {
+      const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
+      if (unreadIds.length === 0) return;
+      await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds);
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    } catch (error) {
+      console.error('markNotificationsAsRead', error);
+    }
+  }, [notifications, profile]);
+
+  const fetchUserBadges = useCallback(async (userId: string) => {
+    if (!userId) return;
+    const { data } = await supabase.from('user_badges').select('*, badges(*)').eq('user_id', userId);
+    if (data) setUserBadges(data);
+  }, []);
+
+  const fetchFollowCounts = useCallback(async (userId: string) => {
+    if (!userId) return;
+    try {
+      const { count: followers } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', userId);
+      const { count: following } = await supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', userId);
+      setFollowersCount(followers || 0);
+      setFollowingCount(following || 0);
+    } catch (error) {
+      console.error('fetchFollowCounts', error);
+    }
+  }, []);
+
+  const fetchRecentStories = useCallback(async (userId: string) => {
+    if (!userId) return setRecentStories(new Map());
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+    const { data: followingData } = await supabase.from('followers').select('following_id').eq('follower_id', userId);
+    const followedUserIds = followingData?.map((f: any) => f.following_id) || [];
+    if (followedUserIds.length === 0) return setRecentStories(new Map());
+
+    const { data: recentPosts, error } = await supabase.from('posts')
+      .select(POST_SELECT_QUERY)
+      .in('user_id', followedUserIds)
+      .gte('created_at', twentyFourHoursAgo)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('fetchRecentStories', error);
+      return setRecentStories(new Map());
+    }
+
+    const storiesMap = new Map<string, { user: UserProfile, posts: Post[] }>();
+    recentPosts.forEach((post: any) => {
+      const userProfile = post.profiles as UserProfile;
+      if (!storiesMap.has(userProfile.id)) {
+        storiesMap.set(userProfile.id, { user: userProfile, posts: [] });
+      }
+      const entry = storiesMap.get(userProfile.id)!;
+      entry.posts.push({
+        ...post,
+        isLiked: post.likes?.some((l: any) => l.user_id === userId),
+        isFollowed: true,
+      } as Post);
+    });
+
+    setRecentStories(storiesMap);
+  }, []);
+
   /* --------------------------- Initialization ----------------------- */
 
-  // whenever profile becomes available, fetch related resources (use modular helpers)
+  // whenever profile becomes available, fetch related resources
   useEffect(() => {
     if (!profile) return;
-
-    // using modular helpers
-    fetchNotificationsHelper(profile.id, setNotifications).catch(console.error);
-    fetchUserBadges(profile.id, setUserBadges).catch(console.error);
-    fetchFollowCounts(profile.id, setFollowersCount, setFollowingCount).catch(console.error);
-    fetchRecentStories(profile.id, setRecentStories).catch(console.error);
-    fetchRollsAndSet(profile.id, setActiveRoll, setCompletedRolls).catch(console.error);
-    fetchFeed(profile.id, setFeed).catch(console.error);
-    fetchAlbums(profile.id, setAlbums).catch(console.error);
-  }, [profile]);
+    fetchNotifications();
+    fetchUserBadges(profile.id).catch(console.error);
+    fetchFollowCounts(profile.id).catch(console.error);
+    fetchRecentStories(profile.id).catch(console.error);
+    fetchRollsAndSet(profile.id).catch(console.error);
+    fetchFeed(profile.id).catch(console.error);
+    fetchAlbums(profile.id).catch(console.error);
+  }, [profile, fetchNotifications, fetchUserBadges, fetchFollowCounts, fetchRecentStories, fetchRollsAndSet, fetchFeed, fetchAlbums]);
 
   /* ----------------------- Profile & Auth helpers -------------------- */
 
   const refreshProfile = useCallback(async () => {
+    // Get current session and refresh profile state
     const { data } = await supabase.auth.getSession();
     const s = data.session ?? null;
     setSession(s);
@@ -290,6 +419,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   useEffect(() => {
+    // initialize session on mount and subscribe to auth changes
     const init = async () => {
       try {
         const { data } = await supabase.auth.getSession();
@@ -353,6 +483,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   /* -------------------------- CRUD operations ----------------------- */
 
+  // start a new roll — removes active roll if present
   const startNewRoll = useCallback(async (filmType: string, capacity: number) => {
     if (!ensureProfile(profile)) return;
     if (!isNonEmptyString(filmType) || !Number.isInteger(capacity) || capacity <= 0) {
@@ -360,8 +491,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return;
     }
 
+    // remove any current active roll storage and DB row
     if (activeRoll) {
+      // delete storage folder for that roll (best-effort)
       try {
+        const prefix = `${profile.id}/${activeRoll.id}`;
+        // Supabase storage remove requires exact file list; because enumerating is not provided here,
+        // we only attempt to delete DB row — storage cleanup could be handled server-side by a cron or edge function.
         await supabase.from('rolls').delete().eq('id', activeRoll.id);
       } catch (err) {
         console.warn('startNewRoll: failed to delete previous roll', err);
@@ -377,6 +513,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setShowFilmModal(false);
   }, [profile, activeRoll]);
 
+  // take a photo: upload and increment shots used, move completed rolls to completedRolls
   const takePhoto = useCallback(async (imageBlob: Blob, metadata: any) => {
     if (!ensureProfile(profile)) return;
     if (!activeRoll || activeRoll.is_completed) {
@@ -385,6 +522,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const filePath = `${profile.id}/${activeRoll.id}/${Date.now()}.jpeg`;
+    // upload
     try {
       await supabase.storage.from('photos').upload(filePath, imageBlob, { contentType: 'image/jpeg' });
       const { data: urlData } = supabase.storage.from('photos').getPublicUrl(filePath);
@@ -410,6 +548,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [profile, activeRoll]);
 
+  // develop roll — applies film preset filters to every photo then marks roll developed
   const developRoll = useCallback(async (roll: Roll) => {
     if (!ensureProfile(profile)) return;
     if (!roll || !roll.photos || roll.photos.length === 0) {
@@ -425,11 +564,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     const toastId = toast.loading('Developing your film...');
     try {
+      // charge user
       await supabase.from('profiles').update({ credits: profile.credits - cost }).eq('id', profile.id);
 
+      // apply preset if available
       const preset = filmPresets[roll.film_type] || filmPresets['Kodak Portra 400'] || Object.values(filmPresets)[0];
 
       if (preset) {
+        // Convert each photo using imageProcessor.applyFilter and upload back to same storage path (upsert)
         await Promise.all(roll.photos.map(async (photo) => {
           const filteredBlob = await applyFilter(photo.url, preset);
           const path = extractStoragePathFromPublicUrl(photo.url);
@@ -476,8 +618,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       showErrorToast('Failed to create album.');
       return;
     }
-    await fetchAlbums(profile.id, setAlbums);
-  }, [profile]);
+    await fetchAlbums(profile.id);
+  }, [profile, fetchAlbums]);
 
   const selectAlbum = useCallback(async (albumId: string) => {
     if (!isNonEmptyString(albumId)) return;
@@ -493,14 +635,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       showErrorToast('Invalid album.');
       return;
     }
+    // remove existing links
     await supabase.from('album_rolls').delete().eq('album_id', albumId);
     if (rollIds.length > 0) {
       const newLinks = rollIds.map(roll_id => ({ album_id: albumId, roll_id }));
       await supabase.from('album_rolls').insert(newLinks);
     }
     await selectAlbum(albumId);
-    if (profile) await fetchAlbums(profile.id, setAlbums);
-  }, [profile, selectAlbum]);
+    if (profile) await fetchAlbums(profile.id);
+  }, [profile, selectAlbum, fetchAlbums]);
 
   /* -------------------------- Roll utilities ------------------------ */
 
@@ -523,6 +666,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!ensureProfile(profile)) return;
     const toastId = toast.loading('Deleting roll...');
     try {
+      // Remove any posts/likes/comments referencing this roll
       const { data: posts } = await supabase.from('posts').select('id').eq('roll_id', rollId);
       const postIds = posts?.map((p: any) => p.id) || [];
       if (postIds.length > 0) {
@@ -532,6 +676,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await supabase.from('posts').delete().eq('roll_id', rollId);
       await supabase.from('album_rolls').delete().eq('roll_id', rollId);
 
+      // delete photos (best-effort)
       const { data: photos } = await supabase.from('photos').select('url').eq('roll_id', rollId);
       if (photos && photos.length > 0) {
         const photoPaths = photos.map((p: any) => extractStoragePathFromPublicUrl(p.url)).filter(Boolean) as string[];
@@ -553,18 +698,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   /* --------------------------- Social Ops --------------------------- */
 
-  const recordActivity = useCallback(async (activityType: string, entityId: string, entityOwnerId?: string) => {
-    if (!profile) return;
-    try {
-      await supabase.functions.invoke('record-activity', {
-        body: { activityType, actorId: profile.id, entityId, entityOwnerId },
-      });
-      await refreshProfile();
-    } catch (error) {
-      console.error('recordActivity error', error);
-    }
-  }, [profile, refreshProfile]);
-
   const handleLike = useCallback(async (postId: string, postOwnerId: string, isLiked?: boolean) => {
     if (!ensureProfile(profile)) return;
     if (!isNonEmptyString(postId)) return;
@@ -574,8 +707,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await supabase.from('likes').insert({ user_id: profile.id, post_id: postId });
       recordActivity('like', postId, postOwnerId);
     }
-    if (profile) fetchFeed(profile.id, setFeed);
-  }, [profile, recordActivity]);
+    if (profile) fetchFeed(profile.id);
+  }, [profile, fetchFeed, /* recordActivity will be declared below and doesn't need to be in deps here */]);
 
   const handleFollow = useCallback(async (userId: string, isFollowed?: boolean) => {
     if (!ensureProfile(profile)) return;
@@ -587,10 +720,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recordActivity('follow', userId, userId);
     }
     if (profile) {
-      fetchFeed(profile.id, setFeed);
-      fetchFollowCounts(profile.id, setFollowersCount, setFollowingCount);
+      fetchFeed(profile.id);
+      fetchFollowCounts(profile.id);
     }
-  }, [profile, recordActivity]);
+  }, [profile, fetchFeed, fetchFollowCounts]);
 
   /* ---------------------------- Posting ----------------------------- */
 
@@ -604,7 +737,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         roll_id: rollId,
         caption: caption,
         cover_photo_url: coverPhotoUrl,
-      }).select('*, cover_photo_url, profiles!posts_user_id_fkey(username, avatar_url, level, id), rolls!posts_roll_id_fkey(title, film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))').single();
+      }).select(POST_SELECT_QUERY).single();
 
       if (error) throw error;
 
@@ -623,7 +756,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       console.error('createPost', error);
       toast.error(error?.message || 'Failed to publish post', { id: toastId });
     }
-  }, [profile, recordActivity]);
+  }, [profile]);
 
   const addComment = useCallback(async (postId: string, postOwnerId: string, content: string) => {
     if (!ensureProfile(profile)) return;
@@ -633,9 +766,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       toast.error(error.message);
     } else {
       recordActivity('comment', postId, postOwnerId);
-      if (profile) fetchFeed(profile.id, setFeed);
+      if (profile) fetchFeed(profile.id);
     }
-  }, [profile, recordActivity]);
+  }, [profile, fetchFeed]);
 
   const deleteComment = useCallback(async (commentId: string) => {
     if (!ensureProfile(profile)) return;
@@ -645,13 +778,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       toast.error(error.message);
     } else {
       toast.success('Comment deleted');
-      if (profile) fetchFeed(profile.id, setFeed);
+      if (profile) fetchFeed(profile.id);
     }
-  }, [profile]);
+  }, [profile, fetchFeed]);
 
   /* ---------------------------- Search ------------------------------ */
 
-  const searchUsers = useCallback(async (query: string) => {
+  const searchUsers = useCallback(async (query: string): Promise<UserProfile[] | null> => {
     if (!isNonEmptyString(query)) return [];
     const { data, error } = await supabase.from('profiles').select('*').ilike('username', `%${query}%`).limit(10);
     if (error) {
@@ -699,6 +832,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   /* ------------------------- Badges / Profile ----------------------- */
 
+  const fetchUserBadgesLocal = useCallback(async (userId: string) => {
+    if (!userId) return;
+    const { data } = await supabase.from('user_badges').select('*, badges(*)').eq('user_id', userId);
+    if (data) setUserBadges(data);
+  }, []);
+
   const updateProfileDetails = useCallback(async (details: { bio?: string; avatarFile?: File }) => {
     if (!ensureProfile(profile)) return;
     const updatePayload: { bio?: string; avatar_url?: string } = {};
@@ -740,16 +879,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [profile, refreshProfile]);
 
-  /* --------------------------- Notifications ------------------------ */
+  /* ---------------------------- Activity ---------------------------- */
 
-  // wrapper to call the modular helper while keeping stable reference for context consumers
-  const markNotificationsAsRead = useCallback(async () => {
-    await markNotificationsAsReadHelper(profile, notifications, setNotifications);
-  }, [profile, notifications]);
-
-  const fetchNotifications = useCallback(async () => {
-    await fetchNotificationsHelper(profile?.id ?? null, setNotifications);
-  }, [profile]);
+  const recordActivity = useCallback(async (activityType: string, entityId: string, entityOwnerId?: string) => {
+    if (!profile) return;
+    try {
+      await supabase.functions.invoke('record-activity', {
+        body: { activityType, actorId: profile.id, entityId, entityOwnerId },
+      });
+      // refresh profile to pick up activity-derived rewards etc.
+      await refreshProfile();
+    } catch (error) {
+      // Non-fatal; just log for debugging
+      console.error('recordActivity error', error);
+    }
+  }, [profile, refreshProfile]);
 
   /* --------------------------- Public API --------------------------- */
 
@@ -832,7 +976,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     rollToName,
     deleteRoll,
     fetchNotifications,
-    markNotificationsAsRead,
     followersCount,
     followingCount,
     updateProfileDetails,
