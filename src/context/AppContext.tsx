@@ -318,6 +318,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setNotifications(data || []);
   }, [profile]);
 
+  // mark unread notifications as read (updates DB and local state)
+  const markNotificationsAsRead = useCallback(async () => {
+    if (!profile) return;
+    try {
+      const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
+      if (unreadIds.length === 0) return;
+      await supabase.from('notifications').update({ is_read: true }).in('id', unreadIds);
+      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    } catch (error) {
+      console.error('markNotificationsAsRead', error);
+    }
+  }, [notifications, profile]);
+
   const fetchUserBadges = useCallback(async (userId: string) => {
     if (!userId) return;
     const { data } = await supabase.from('user_badges').select('*, badges(*)').eq('user_id', userId);
@@ -819,7 +832,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   /* ------------------------- Badges / Profile ----------------------- */
 
-  // declared earlier (see fetchUserBadges) — kept for logical grouping
+  const fetchUserBadgesLocal = useCallback(async (userId: string) => {
+    if (!userId) return;
+    const { data } = await supabase.from('user_badges').select('*, badges(*)').eq('user_id', userId);
+    if (data) setUserBadges(data);
+  }, []);
+
   const updateProfileDetails = useCallback(async (details: { bio?: string; avatarFile?: File }) => {
     if (!ensureProfile(profile)) return;
     const updatePayload: { bio?: string; avatar_url?: string } = {};
