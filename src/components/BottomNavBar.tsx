@@ -17,18 +17,18 @@ const NavItem: React.FC<{
     >
       <Icon
         className={`w-7 h-7 transition-all duration-300 ease-spring-soft ${
-          isActive ? 'text-brand-amber-start -translate-y-1' : 'text-neutral-400 group-hover:text-white'
+          isActive ? 'text-brand-amber-start -translate-y-1.5' : 'text-neutral-400 group-hover:text-white'
         }`}
       />
       <span
-        className={`absolute bottom-2 text-[10px] font-bold transition-all duration-300 ease-spring-soft ${
+        className={`absolute bottom-2.5 text-[10px] font-bold transition-all duration-300 ease-spring-soft ${
           isActive ? 'opacity-100 text-brand-amber-start' : 'opacity-0 group-hover:opacity-100 text-white'
         }`}
       >
         {label}
       </span>
       {isActive && (
-        <div className="absolute bottom-0 w-1.5 h-1.5 bg-brand-amber-start rounded-full transition-all duration-300 ease-spring-soft"></div>
+        <div className="absolute bottom-1 w-1.5 h-1.5 bg-brand-amber-start rounded-full transition-all duration-300 ease-spring-soft"></div>
       )}
     </button>
   );
@@ -49,7 +49,7 @@ const BottomNavBar: React.FC = () => {
     <nav className="fixed bottom-0 left-0 right-0 h-28 flex justify-center z-50 pointer-events-none pb-safe">
       <div className="relative flex items-center pointer-events-auto">
         {/* Main glass pill background */}
-        <div className="absolute top-1/2 -translate-y-1/2 h-[72px] w-full bg-warm-900/70 backdrop-blur-2xl rounded-[36px] border border-white/10 shadow-depth"></div>
+        <div className="absolute top-1/2 -translate-y-1/2 h-[72px] w-full bg-gradient-to-b from-neutral-800/80 to-neutral-900/90 backdrop-blur-2xl rounded-[36px] border border-white/10 shadow-depth shadow-[inset_0_1px_0_0_rgba(255,255,255,0.07)]"></div>
 
         <div className="relative flex items-center justify-center px-3">
           {/* Left Items */}
