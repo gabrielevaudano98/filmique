@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
 import { AppContextType } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileData } from '../hooks/useProfileData';
@@ -20,6 +20,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
   const [showFilmModal, setShowFilmModal] = useState(false);
 
+  // Theme: initialize from localStorage or system preference
+  const getInitialTheme = (): 'dark' | 'light' => {
+    try {
+      const saved = localStorage.getItem('theme');
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch (e) {
+      // ignore
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
+    return 'dark';
+  };
+
+  const [theme, setThemeState] = useState<'dark' | 'light'>(getInitialTheme);
+
+  // Expose a setter that persists
+  const setTheme = (t: 'dark' | 'light') => {
+    try {
+      localStorage.setItem('theme', t);
+    } catch (e) {
+      // ignore
+    }
+    setThemeState(t);
+  };
+
+  // Apply data-theme attribute to the document root for CSS to react to
+  useEffect(() => {
+    const root = document.documentElement;
+    root.setAttribute('data-theme', theme);
+  }, [theme]);
+
   // Modular Hooks
   const auth = useAuth();
   const profileData = useProfileData(auth.profile);
@@ -39,7 +69,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCameraMode,
     showFilmModal,
     setShowFilmModal,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, currentView, cameraMode, showFilmModal]);
+    theme,
+    setTheme,
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, currentView, cameraMode, showFilmModal, theme]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };
