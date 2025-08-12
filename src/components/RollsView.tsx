@@ -8,6 +8,7 @@ import DevelopingRollCard from './DevelopingRollCard';
 import { isRollDeveloped, isRollDeveloping } from '../utils/rollUtils';
 import TimelineScrubber from './TimelineScrubber';
 import GlassCard from './GlassCard';
+import AccentButton from './AccentButton';
 
 const RollsView: React.FC = () => {
   const { profile, activeRoll, completedRolls, developRoll, setCurrentView, setSelectedRoll, setShowFilmModal, setRollToName } = useAppContext();
