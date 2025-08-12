@@ -25,10 +25,10 @@ export const fetchFollowingCount = (userId: string) => supabase.from('followers'
 export const searchUsers = (query: string) => supabase.from('profiles').select('*').ilike('username', `%${query}%`).limit(10);
 
 // Rolls & Photos
-export const fetchAllRolls = (userId: string) => supabase.from('rolls').select('*, photos(*)').eq('user_id', userId).order('created_at', { ascending: false });
+export const fetchAllRolls = (userId: string) => supabase.from('rolls').select('*, photos(*), albums(title)').eq('user_id', userId).order('created_at', { ascending: false });
 export const deleteRollById = (rollId: string) => supabase.from('rolls').delete().eq('id', rollId);
 export const createNewRoll = (userId: string, filmType: string, capacity: number) => supabase.from('rolls').insert({ user_id: userId, film_type: filmType, capacity }).select().single();
-export const updateRoll = (rollId: string, data: any) => supabase.from('rolls').update(data).eq('id', rollId).select('*, photos(*)').single();
+export const updateRoll = (rollId: string, data: any) => supabase.from('rolls').update(data).eq('id', rollId).select('*, photos(*), albums(title)').single();
 export const uploadPhotoToStorage = (path: string, blob: Blob) => supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg' });
 export const createPhotoRecord = (userId: string, rollId: string, url: string, metadata: any) => supabase.from('photos').insert({ user_id: userId, roll_id: rollId, url, thumbnail_url: url, metadata });
 export const deletePhotosFromStorage = (paths: string[]) => supabase.storage.from('photos').remove(paths);
@@ -69,12 +69,10 @@ export const deleteLikesForPosts = (postIds: string[]) => supabase.from('likes')
 export const deleteCommentsForPosts = (postIds: string[]) => supabase.from('comments').delete().in('post_id', postIds);
 
 // Albums
-export const fetchAlbums = (userId: string) => supabase.from('albums').select('*, album_rolls(rolls(shots_used))').eq('user_id', userId);
-export const fetchAlbumDetails = (albumId: string) => supabase.from('albums').select('*, album_rolls(*, rolls(*, developed_at, photos(*)))').eq('id', albumId).single();
+export const fetchAlbums = (userId: string) => supabase.from('albums').select('*, rolls(*, photos(*))').eq('user_id', userId);
+export const fetchAlbumDetails = (albumId: string) => supabase.from('albums').select('*, rolls(*, photos(*))').eq('id', albumId).single();
 export const createAlbum = (userId: string, title: string) => supabase.from('albums').insert({ user_id: userId, title }).select().single();
-export const deleteAlbumRolls = (albumId: string) => supabase.from('album_rolls').delete().eq('album_id', albumId);
-export const insertAlbumRolls = (links: { album_id: string, roll_id: string }[]) => supabase.from('album_rolls').insert(links);
-export const deleteAlbumRollsByRollId = (rollId: string) => supabase.from('album_rolls').delete().eq('roll_id', rollId);
+export const updateRollsAlbum = (rollIds: string[], albumId: string | null) => supabase.from('rolls').update({ album_id: albumId }).in('id', rollIds).select();
 
 // Notifications
 export const fetchNotifications = (userId: string) => supabase.from('notifications').select(NOTIFICATION_SELECT_QUERY).eq('user_id', userId).order('created_at', { ascending: false }).limit(30);

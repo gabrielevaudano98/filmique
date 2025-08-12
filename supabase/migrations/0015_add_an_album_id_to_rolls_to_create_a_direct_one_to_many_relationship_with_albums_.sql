@@ -1,0 +1,2 @@
+ALTER TABLE public.rolls
+ADD COLUMN IF NOT EXISTS album_id UUID REFERENCES public.albums(id) ON DELETE SET NULL;

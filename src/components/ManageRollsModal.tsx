@@ -1,34 +1,32 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X, Film, CheckSquare, Square } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { Roll } from '../context/AppContext';
+import { Roll } from '../types';
+import { isRollDeveloped } from '../utils/rollUtils';
 
 interface ManageRollsModalProps {
-  album: any; // Full album object with rolls
+  album: Album;
   onClose: () => void;
 }
 
 const ManageRollsModal: React.FC<ManageRollsModalProps> = ({ album, onClose }) => {
-  const { completedRolls, updateAlbumRolls } = useAppContext();
+  const { completedRolls, addRollsToAlbum } = useAppContext();
   const [selectedRollIds, setSelectedRollIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const ALBUM_PHOTO_LIMIT = 512;
 
-  useEffect(() => {
-    const initialRollIds = album.album_rolls?.map((ar: any) => ar.roll_id) || [];
-    setSelectedRollIds(initialRollIds);
-  }, [album]);
-
-  const developedRolls = useMemo(() => {
-    return completedRolls.filter(roll => roll.developed_at || (roll.completed_at && new Date().getTime() >= new Date(roll.completed_at).getTime() + 7 * 24 * 60 * 60 * 1000));
+  const availableRolls = useMemo(() => {
+    return completedRolls.filter(roll => isRollDeveloped(roll) && !roll.album_id);
   }, [completedRolls]);
 
   const { totalPhotos, canSave } = useMemo(() => {
-    const photos = developedRolls
+    const currentAlbumPhotos = album.rolls?.reduce((sum: number, roll: Roll) => sum + (roll.shots_used || 0), 0) || 0;
+    const photosToAdd = availableRolls
       .filter(roll => selectedRollIds.includes(roll.id))
       .reduce((sum, roll) => sum + (roll.shots_used || 0), 0);
-    return { totalPhotos: photos, canSave: photos <= ALBUM_PHOTO_LIMIT };
-  }, [selectedRollIds, developedRolls]);
+    const total = currentAlbumPhotos + photosToAdd;
+    return { totalPhotos: total, canSave: total <= ALBUM_PHOTO_LIMIT };
+  }, [selectedRollIds, availableRolls, album.rolls]);
 
   const handleToggleRoll = (rollId: string) => {
     setSelectedRollIds(prev =>
@@ -37,9 +35,9 @@ const ManageRollsModal: React.FC<ManageRollsModalProps> = ({ album, onClose }) =
   };
 
   const handleSaveChanges = async () => {
-    if (!canSave) return;
+    if (!canSave || selectedRollIds.length === 0) return;
     setIsLoading(true);
-    await updateAlbumRolls(album.id, selectedRollIds);
+    await addRollsToAlbum(album.id, selectedRollIds);
     setIsLoading(false);
     onClose();
   };
@@ -49,17 +47,17 @@ const ManageRollsModal: React.FC<ManageRollsModalProps> = ({ album, onClose }) =
       <div className="bg-gray-800 rounded-2xl max-w-md w-full flex flex-col max-h-[80vh] shadow-2xl">
         <div className="flex-shrink-0 p-5 border-b border-gray-700">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold font-recoleta text-white">Manage Rolls</h2>
+            <h2 className="text-xl font-bold font-recoleta text-white">Add Rolls to Album</h2>
             <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full">
               <X className="w-5 h-5" />
             </button>
           </div>
-          <p className="text-gray-400 text-sm mt-1">Select rolls to include in "{album.title}".</p>
+          <p className="text-gray-400 text-sm mt-1">Select uncategorized rolls to add to "{album.title}".</p>
         </div>
 
         <div className="overflow-y-auto no-scrollbar p-5 space-y-3">
-          {developedRolls.length > 0 ? (
-            developedRolls.map(roll => {
+          {availableRolls.length > 0 ? (
+            availableRolls.map(roll => {
               const isSelected = selectedRollIds.includes(roll.id);
               const developedDate = new Date(roll.developed_at || roll.completed_at!).toLocaleDateString();
               return (
@@ -80,7 +78,7 @@ const ManageRollsModal: React.FC<ManageRollsModalProps> = ({ album, onClose }) =
               );
             })
           ) : (
-            <p className="text-center text-gray-500 py-8">You have no developed rolls to add.</p>
+            <p className="text-center text-gray-500 py-8">You have no uncategorized rolls to add.</p>
           )}
         </div>
 
@@ -93,10 +91,10 @@ const ManageRollsModal: React.FC<ManageRollsModalProps> = ({ album, onClose }) =
           </div>
           <button
             onClick={handleSaveChanges}
-            disabled={isLoading || !canSave}
+            disabled={isLoading || !canSave || selectedRollIds.length === 0}
             className="w-full py-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Saving...' : 'Save Changes'}
+            {isLoading ? 'Saving...' : 'Add Selected Rolls'}
           </button>
         </div>
       </div>

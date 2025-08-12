@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { ArrowLeft, Edit, Image as ImageIcon, Film } from 'lucide-react';
 import ManageRollsModal from './ManageRollsModal';
-import { Photo, Roll } from '../context/AppContext';
+import { Photo, Roll } from '../types';
 
 const AlbumDetailView: React.FC = () => {
   const { selectedAlbum, setCurrentView, setSelectedAlbum } = useAppContext();
@@ -10,9 +10,8 @@ const AlbumDetailView: React.FC = () => {
   const [photos, setPhotos] = useState<Photo[]>([]);
 
   useEffect(() => {
-    if (selectedAlbum?.album_rolls) {
-      const allPhotos = selectedAlbum.album_rolls.flatMap((ar: any) => {
-        const roll = ar.rolls;
+    if (selectedAlbum?.rolls) {
+      const allPhotos = selectedAlbum.rolls.flatMap((roll: Roll) => {
         if (!roll || !roll.photos) return [];
         const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
         return roll.photos.map((photo: Photo) => ({
@@ -25,16 +24,16 @@ const AlbumDetailView: React.FC = () => {
   }, [selectedAlbum]);
 
   if (!selectedAlbum) {
-    setCurrentView('albums');
+    setCurrentView('rolls');
     return null;
   }
 
   const handleBack = () => {
     setSelectedAlbum(null);
-    setCurrentView('albums');
+    setCurrentView('rolls');
   };
 
-  const rollCount = selectedAlbum.album_rolls?.length || 0;
+  const rollCount = selectedAlbum.rolls?.length || 0;
 
   return (
     <div className="flex flex-col w-full">

@@ -13,8 +13,8 @@ export const useAlbums = (profile: UserProfile | null) => {
     if (data) {
       const enhanced = data.map(album => ({
         ...album,
-        rollCount: album.album_rolls?.length || 0,
-        photoCount: album.album_rolls?.reduce((s, ar) => s + (ar.rolls?.shots_used || 0), 0) || 0,
+        rollCount: album.rolls?.length || 0,
+        photoCount: album.rolls?.reduce((s, r) => s + (r.shots_used || 0), 0) || 0,
       }));
       setAlbums(enhanced);
     }
@@ -36,15 +36,29 @@ export const useAlbums = (profile: UserProfile | null) => {
     if (data) setSelectedAlbum(data as Album);
   }, []);
 
-  const updateAlbumRolls = useCallback(async (albumId: string, rollIds: string[]) => {
-    await api.deleteAlbumRolls(albumId);
-    if (rollIds.length > 0) {
-      const newLinks = rollIds.map(roll_id => ({ album_id: albumId, roll_id }));
-      await api.insertAlbumRolls(newLinks);
+  const addRollsToAlbum = useCallback(async (albumId: string, rollIds: string[]) => {
+    const { error } = await api.updateRollsAlbum(rollIds, albumId);
+    if (error) {
+      showErrorToast('Failed to add rolls.');
+    } else {
+      fetchAlbums();
+      if (selectedAlbum?.id === albumId) {
+        selectAlbum(albumId);
+      }
     }
-    await selectAlbum(albumId);
-    fetchAlbums();
-  }, [selectAlbum, fetchAlbums]);
+  }, [fetchAlbums, selectedAlbum, selectAlbum]);
+
+  const removeRollFromAlbum = useCallback(async (rollId: string) => {
+    const { error } = await api.updateRollsAlbum([rollId], null);
+    if (error) {
+      showErrorToast('Failed to remove roll from album.');
+    } else {
+      fetchAlbums();
+      if (selectedAlbum) {
+        selectAlbum(selectedAlbum.id);
+      }
+    }
+  }, [fetchAlbums, selectedAlbum, selectAlbum]);
 
   return {
     albums,
@@ -52,6 +66,8 @@ export const useAlbums = (profile: UserProfile | null) => {
     setSelectedAlbum,
     createAlbum,
     selectAlbum,
-    updateAlbumRolls,
+    addRollsToAlbum,
+    removeRollFromAlbum,
+    refetchAlbums: fetchAlbums,
   };
 };

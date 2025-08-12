@@ -39,6 +39,8 @@ export interface Roll {
   developed_at?: string | null;
   photos?: Photo[];
   title?: string | null;
+  album_id?: string | null;
+  albums?: { title: string } | null;
 }
 
 export interface Comment {
@@ -71,7 +73,7 @@ export interface Album {
   cover_image_url: string | null;
   type: 'personal' | 'shared' | 'public';
   created_at: string;
-  album_rolls?: { roll_id: string, rolls: { photos: Photo[], developed_at?: string | null } }[];
+  rolls?: Roll[];
   photoCount?: number;
   rollCount?: number;
 }
@@ -149,7 +151,9 @@ export interface AppContextType {
   setSelectedAlbum: (a: Album | null) => void;
   selectAlbum: (albumId: string) => Promise<void>;
   createAlbum: (title: string) => Promise<void>;
-  updateAlbumRolls: (albumId: string, rollIds: string[]) => Promise<void>;
+  addRollsToAlbum: (albumId: string, rollIds: string[]) => Promise<void>;
+  removeRollFromAlbum: (rollId: string) => Promise<void>;
+  refetchAlbums: () => Promise<void>;
   updateRollTitle: (rollId: string, title: string) => Promise<boolean>;
   handleLike: (postId: string, postOwnerId: string, isLiked?: boolean) => Promise<void>;
   handleFollow: (userId: string, isFollowed?: boolean) => Promise<void>;

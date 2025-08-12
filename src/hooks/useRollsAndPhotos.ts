@@ -105,7 +105,6 @@ export const useRollsAndPhotos = (profile: UserProfile | null) => {
         await api.deleteCommentsForPosts(postIds);
       }
       await api.deletePostsForRoll(rollId);
-      await api.deleteAlbumRollsByRollId(rollId);
       const { data: photos } = await api.getPhotosForRoll(rollId);
       if (photos && photos.length > 0) {
         const photoPaths = photos.map(p => filenameFromUrl(p.url)).filter(Boolean);

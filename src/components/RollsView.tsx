@@ -1,117 +1,39 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Film, RefreshCw, ImageIcon, Camera, Trophy, ChevronRight } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Film, Camera, Plus, BookCopy } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { Roll } from '../context/AppContext';
-import RollsControls from './RollsControls';
+import { Roll, Album } from '../types';
 import DevelopedRollCard from './DevelopedRollCard';
 import DevelopingRollCard from './DevelopingRollCard';
 import { isRollDeveloped, isRollDeveloping } from '../utils/rollUtils';
-import TimelineScrubber from './TimelineScrubber';
+import CreateAlbumModal from './CreateAlbumModal';
+import AlbumCard from './AlbumCard';
 
 const RollsView: React.FC = () => {
-  const { profile, activeRoll, completedRolls, developRoll, setCurrentView, setSelectedRoll, setShowFilmModal, setRollToName } = useAppContext();
-  
-  const [activeTab, setActiveTab] = useState<'developed' | 'developing'>('developed');
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState('newest');
-  const [selectedFilm, setSelectedFilm] = useState('all');
+  const {
+    profile,
+    activeRoll,
+    completedRolls,
+    developRoll,
+    setCurrentView,
+    setSelectedRoll,
+    setShowFilmModal,
+    setRollToName,
+    albums,
+    selectAlbum,
+  } = useAppContext();
 
-  const { developedRolls, developingRolls, filmTypes } = useMemo(() => {
+  const [showCreateAlbumModal, setShowCreateAlbumModal] = useState(false);
+
+  const { developedRolls, developingRolls } = useMemo(() => {
     const allCompleted = completedRolls || [];
     const developed = allCompleted.filter(roll => isRollDeveloped(roll) && roll.title);
     const developing = allCompleted.filter(isRollDeveloping);
-    const films = [...new Set(developed.map(r => r.film_type))];
-    
-    return { developedRolls: developed, developingRolls: developing, filmTypes: films };
+    return { developedRolls: developed, developingRolls: developing };
   }, [completedRolls]);
 
-  const filteredAndSortedRolls = useMemo(() => {
-    return developedRolls
-      .filter(roll => {
-        const matchesSearch = (roll.title || roll.film_type).toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilm = selectedFilm === 'all' || roll.film_type === selectedFilm;
-        return matchesSearch && matchesFilm;
-      })
-      .sort((a, b) => {
-        switch (sortOrder) {
-          case 'oldest':
-            return new Date(a.developed_at || a.completed_at!).getTime() - new Date(b.developed_at || b.completed_at!).getTime();
-          case 'title_asc':
-            return (a.title || a.film_type).localeCompare(b.title || b.film_type);
-          case 'title_desc':
-            return (b.title || b.film_type).localeCompare(a.title || a.film_type);
-          case 'newest':
-          default:
-            return new Date(b.developed_at || b.completed_at!).getTime() - new Date(a.developed_at || a.completed_at!).getTime();
-        }
-      });
-  }, [developedRolls, searchTerm, selectedFilm, sortOrder]);
-
-  const groupedRolls = useMemo(() => {
-    const groups: { [key: string]: Roll[] } = {};
-    filteredAndSortedRolls.forEach(roll => {
-      const date = new Date(roll.developed_at || roll.completed_at!);
-      const groupKey = date.toLocaleString('en-US', { month: 'long', year: 'numeric' });
-      if (!groups[groupKey]) {
-        groups[groupKey] = [];
-      }
-      groups[groupKey].push(roll);
-    });
-    return groups;
-  }, [filteredAndSortedRolls]);
-
-  const groupHeaderRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-  const [visibleYear, setVisibleYear] = useState<string | null>(null);
-  const isScrollingRef = useRef<NodeJS.Timeout | null>(null);
-
-  const years = useMemo(() => {
-    const yearSet = new Set<string>();
-    Object.keys(groupedRolls).forEach(groupTitle => {
-        yearSet.add(groupTitle.split(' ')[1]);
-    });
-    return Array.from(yearSet).sort((a, b) => parseInt(b) - parseInt(a));
-  }, [groupedRolls]);
-
-  const handleScroll = () => {
-      if (isScrollingRef.current) return;
-
-      const topOffset = 100; // Approx height of TopBar + some margin
-      let currentVisibleYear = years[0] || null;
-
-      const sortedGroupKeys = Object.keys(groupedRolls).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-
-      for (const groupTitle of sortedGroupKeys) {
-          const headerEl = groupHeaderRefs.current[groupTitle];
-          if (headerEl && headerEl.getBoundingClientRect().top < topOffset) {
-              currentVisibleYear = groupTitle.split(' ')[1];
-              break;
-          }
-      }
-      setVisibleYear(currentVisibleYear);
-  };
-
-  const scrollToYear = (year: string) => {
-      const firstGroupForYear = Object.keys(groupedRolls).find(g => g.endsWith(year));
-      if (firstGroupForYear) {
-          const headerEl = groupHeaderRefs.current[firstGroupForYear];
-          if (headerEl) {
-              if (isScrollingRef.current) clearTimeout(isScrollingRef.current);
-              
-              const top = headerEl.getBoundingClientRect().top + window.scrollY - 80; // 80px for sticky header
-              window.scrollTo({ top, behavior: 'smooth' });
-
-              isScrollingRef.current = setTimeout(() => {
-                  isScrollingRef.current = null;
-              }, 1000);
-          }
-      }
-  };
-
-  useEffect(() => {
-      window.addEventListener('scroll', handleScroll);
-      return () => window.removeEventListener('scroll', handleScroll);
-  }, [groupedRolls, years]);
+  const uncategorizedRolls = useMemo(() => {
+    return developedRolls.filter(r => !r.album_id);
+  }, [developedRolls]);
 
   const handleCurrentRollClick = () => {
     if (activeRoll) {
@@ -122,161 +44,92 @@ const RollsView: React.FC = () => {
     }
   };
 
-  const TabButton: React.FC<{
-    label: string;
-    count: number;
-    isActive: boolean;
-    onClick: () => void;
-  }> = ({ label, count, isActive, onClick }) => (
-    <button
-      onClick={onClick}
-      className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
-        isActive
-          ? 'bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white shadow-lg shadow-brand-amber-start/20'
-          : 'text-gray-300 bg-neutral-800 hover:bg-neutral-700'
-      }`}
-    >
-      <span>{label}</span>
-      <span
-        className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
-          isActive ? 'bg-black/20 text-white' : 'bg-neutral-700 text-gray-300'
-        }`}
-      >
-        {count}
-      </span>
-    </button>
+  const CurrentRollCard = () => (
+    <div onClick={handleCurrentRollClick} className="bg-neutral-800 rounded-xl p-4 border border-neutral-700/80 shadow-lg transition-all duration-300 hover:border-neutral-600 cursor-pointer">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <div className="bg-neutral-700 p-3 rounded-lg">
+            <Camera className="w-6 h-6 text-brand-amber-start" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-white text-lg">Current Roll</h4>
+            <p className="text-gray-400 text-sm">{activeRoll ? activeRoll.film_type : 'No active roll'}</p>
+          </div>
+        </div>
+        {activeRoll && (
+          <div className="text-right">
+            <p className="font-semibold text-white">{activeRoll.shots_used}/{activeRoll.capacity}</p>
+            <p className="text-xs text-gray-500">shots</p>
+          </div>
+        )}
+      </div>
+      {activeRoll && (
+        <div className="w-full bg-neutral-700 rounded-full h-2 mt-3">
+          <div className="bg-brand-amber-start h-2 rounded-full" style={{ width: `${(activeRoll.shots_used / activeRoll.capacity) * 100}%` }}></div>
+        </div>
+      )}
+      {!activeRoll && (
+        <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} className="mt-3 w-full bg-neutral-700 hover:bg-neutral-600 text-white px-4 py-2 rounded-lg flex items-center justify-center space-x-2 font-semibold text-sm">
+          <Film className="w-4 h-4" />
+          <span>Load New Film</span>
+        </button>
+      )}
+    </div>
   );
 
   return (
-    <div className="flex flex-col w-full space-y-6">
-      <div onClick={handleCurrentRollClick} className="bg-gradient-to-br from-brand-amber-start to-brand-amber-end rounded-2xl p-5 text-white shadow-depth transition-all duration-300 hover:scale-[1.01] cursor-pointer">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold mb-2">Current Roll</h2>
-            {activeRoll ? (
-              <>
-                <p className="text-orange-100 font-medium">{activeRoll.film_type}</p>
-                <div className="w-full bg-orange-900/50 rounded-full h-2.5 mt-3">
-                  <div className="bg-white h-2.5 rounded-full" style={{ width: `${(activeRoll.shots_used / activeRoll.capacity) * 100}%` }}></div>
-                </div>
-                <p className="text-sm text-orange-100 mt-2">{activeRoll.shots_used}/{activeRoll.capacity} shots used</p>
-              </>
-            ) : (
-              <>
-                <p className="text-orange-100 mb-4">No active roll. Time to load up!</p>
-                <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} className="bg-black/20 hover:bg-black/30 text-white px-4 py-2 rounded-xl flex items-center space-x-2 font-semibold">
-                  <Film className="w-5 h-5" />
-                  <span>Load New Film</span>
-                </button>
-              </>
-            )}
+    <div className="flex flex-col w-full space-y-8">
+      <CurrentRollCard />
+
+      {developingRolls.length > 0 && (
+        <div>
+          <h3 className="text-xl font-bold text-white mb-4">In the Darkroom</h3>
+          <div className="max-w-2xl mx-auto space-y-4">
+            {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} profile={profile} onDevelop={developRoll} />)}
           </div>
-          {activeRoll && (
-            <div className="text-right flex-shrink-0 ml-4">
-              <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} className="bg-white/20 hover:bg-white/30 text-white text-xs font-semibold py-1.5 px-3 rounded-full flex items-center gap-1.5">
-                <RefreshCw className="w-3 h-3" />
-                <span>Change Film</span>
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div 
-        onClick={() => setCurrentView('challenges')}
-        className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-2xl p-5 text-white shadow-lg transition-all duration-300 hover:scale-[1.01] cursor-pointer"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Trophy className="w-8 h-8 text-yellow-300" />
-            <div>
-              <h2 className="text-xl font-bold">Challenges</h2>
-              <p className="text-purple-100 text-sm">Earn XP, credits, and badges.</p>
-            </div>
-          </div>
-          <ChevronRight className="w-6 h-6 text-purple-200" />
-        </div>
-      </div>
-
-      <div className="bg-neutral-900/50 rounded-2xl p-4 sm:p-6 border border-neutral-700/50">
-        <div className="bg-neutral-800 rounded-xl p-1 flex space-x-1">
-          <TabButton
-            label="Developed"
-            count={developedRolls.length}
-            isActive={activeTab === 'developed'}
-            onClick={() => setActiveTab('developed')}
-          />
-          <TabButton
-            label="Developing"
-            count={developingRolls.length}
-            isActive={activeTab === 'developing'}
-            onClick={() => setActiveTab('developing')}
-          />
-        </div>
-
-        <div className="mt-6">
-          {activeTab === 'developed' && (
-            <div>
-              <RollsControls
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                sortOrder={sortOrder}
-                setSortOrder={setSortOrder}
-                filmTypes={filmTypes}
-                selectedFilm={selectedFilm}
-                setSelectedFilm={setSelectedFilm}
-              />
-              {filteredAndSortedRolls.length > 0 ? (
-                <div className="space-y-8">
-                  {Object.entries(groupedRolls).map(([groupTitle, rollsInGroup]) => (
-                    <div key={groupTitle}>
-                      <h3 ref={el => groupHeaderRefs.current[groupTitle] = el} className="sticky top-16 bg-neutral-900/80 backdrop-blur-md py-2 text-lg font-bold text-white mb-4 z-10 -mx-6 px-6 border-b border-neutral-700/50">{groupTitle}</h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                        {rollsInGroup.map(roll => (
-                          <DevelopedRollCard
-                            key={roll.id}
-                            roll={roll}
-                            onSelect={() => { setSelectedRoll(roll); setCurrentView('rollDetail'); }}
-                            onRename={() => setRollToName(roll)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-16 px-4">
-                  <ImageIcon className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-semibold mb-2 text-white">{searchTerm || selectedFilm !== 'all' ? 'No Rolls Found' : 'No Developed Rolls'}</h3>
-                  <p className="text-gray-400 max-w-md mx-auto">{searchTerm || selectedFilm !== 'all' ? "Try adjusting your search or filter to find what you're looking for." : "Finish a roll and develop it to see your photos here."}</p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === 'developing' && (
-            <div className="max-w-2xl mx-auto space-y-4">
-              {developingRolls.length > 0 ? developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} profile={profile} onDevelop={developRoll} />) : (
-                <div className="text-center py-16 px-4">
-                  <Camera className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-semibold mb-2 text-white">Nothing in the Darkroom</h3>
-                  <p className="text-gray-400 max-w-md mx-auto">When you finish a roll of film, it will show up here to be developed.</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {activeTab === 'developed' && years.length > 1 && (
-        <div className="fixed top-1/2 -translate-y-1/2 right-1 md:right-3 h-1/2 w-16 z-20 hidden md:block">
-            <TimelineScrubber 
-                years={years}
-                activeYear={visibleYear}
-                onSelectYear={scrollToYear}
-            />
         </div>
       )}
+
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold text-white">Albums</h3>
+          <button onClick={() => setShowCreateAlbumModal(true)} className="flex items-center gap-2 text-sm font-semibold text-brand-amber-start hover:text-brand-amber-mid">
+            <Plus className="w-4 h-4" />
+            New Album
+          </button>
+        </div>
+        {albums.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {albums.map((album: Album) => (
+              <AlbumCard key={album.id} album={album} onClick={() => { selectAlbum(album.id); setCurrentView('albumDetail'); }} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-10 px-4 bg-neutral-800/50 rounded-lg">
+            <BookCopy className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold mb-2 text-white">No Albums Yet</h3>
+            <p className="text-gray-400">Create your first album to organize your rolls.</p>
+          </div>
+        )}
+      </div>
+
+      {uncategorizedRolls.length > 0 && (
+        <div>
+          <h3 className="text-xl font-bold text-white mb-4">Uncategorized Rolls</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {uncategorizedRolls.map(roll => (
+              <DevelopedRollCard
+                key={roll.id}
+                roll={roll}
+                onSelect={() => { setSelectedRoll(roll); setCurrentView('rollDetail'); }}
+                onRename={() => setRollToName(roll)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {showCreateAlbumModal && <CreateAlbumModal onClose={() => setShowCreateAlbumModal(false)} />}
     </div>
   );
 };
