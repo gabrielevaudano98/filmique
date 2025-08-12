@@ -104,17 +104,12 @@ const RollsView: React.FC = () => {
                   title={album.title}
                   rolls={rollsByAlbum[album.id] || []}
                   album={album}
-                  onDeleteRoll={setRollToDelete}
-                  onAssignRoll={setRollToAssign}
                 />
               ))}
               {uncategorizedRolls.length > 0 && (
                 <CollapsibleAlbumSection
                   title="Uncategorized"
                   rolls={uncategorizedRolls}
-                  initiallyOpen={false}
-                  onDeleteRoll={setRollToDelete}
-                  onAssignRoll={setRollToAssign}
                 />
               )}
             </div>
@@ -144,6 +139,3 @@ const RollsView: React.FC = () => {
       )}
     </div>
   );
-};
-
-export default RollsView;

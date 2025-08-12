@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { Roll } from '../types';
-import { Trash2, FolderPlus, Clock } from 'lucide-react';
+import { Trash2, FolderPlus, Clock, FolderMinus } from 'lucide-react';
 import NegativePhoto from './NegativePhoto';
 
 interface RollListItemProps {
@@ -9,9 +9,10 @@ interface RollListItemProps {
   onDelete: (roll: Roll) => void;
   onAssignAlbum: (roll: Roll) => void;
   isDeveloping?: boolean;
+  assignActionIcon?: 'add' | 'remove';
 }
 
-const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlbum, isDeveloping = false }) => {
+const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlbum, isDeveloping = false, assignActionIcon = 'add' }) => {
   const [offsetX, setOffsetX] = useState(0);
   const itemRef = useRef<HTMLDivElement>(null);
   const ACTION_WIDTH = 80;
@@ -57,6 +58,8 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
     }} />
   );
 
+  const AssignIcon = assignActionIcon === 'add' ? FolderPlus : FolderMinus;
+
   return (
     <div className="relative w-full overflow-hidden rounded-xl">
       {!isDeveloping && (
@@ -64,9 +67,9 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
           <button
             onClick={handleAssignAlbum}
             className="h-full w-20 flex items-center justify-center bg-blue-600 text-white transition-colors hover:bg-blue-700"
-            aria-label="Assign to Album"
+            aria-label={assignActionIcon === 'add' ? "Assign to Album" : "Remove from Album"}
           >
-            <FolderPlus className="w-6 h-6" />
+            <AssignIcon className="w-6 h-6" />
           </button>
           <button
             onClick={handleDelete}

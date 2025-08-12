@@ -1,27 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { ArrowLeft, Edit, Image as ImageIcon, Film } from 'lucide-react';
 import ManageRollsModal from './ManageRollsModal';
-import { Photo, Roll } from '../types';
+import { Roll } from '../types';
+import RollListItem from './RollListItem';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
 
 const AlbumDetailView: React.FC = () => {
-  const { selectedAlbum, setCurrentView, setSelectedAlbum } = useAppContext();
+  const { selectedAlbum, setCurrentView, setSelectedAlbum, deleteRoll, removeRollFromAlbum } = useAppContext();
   const [showManageModal, setShowManageModal] = useState(false);
-  const [photos, setPhotos] = useState<Photo[]>([]);
-
-  useEffect(() => {
-    if (selectedAlbum?.rolls) {
-      const allPhotos = selectedAlbum.rolls.flatMap((roll: Roll) => {
-        if (!roll || !roll.photos) return [];
-        const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
-        return roll.photos.map((photo: Photo) => ({
-          ...photo,
-          thumbnail_url: `${photo.thumbnail_url}${cacheBuster}`
-        }));
-      });
-      setPhotos(allPhotos);
-    }
-  }, [selectedAlbum]);
+  const [rollToDelete, setRollToDelete] = useState<Roll | null>(null);
 
   if (!selectedAlbum) {
     setCurrentView('rolls');
@@ -33,7 +21,12 @@ const AlbumDetailView: React.FC = () => {
     setCurrentView('rolls');
   };
 
-  const rollCount = selectedAlbum.rolls?.length || 0;
+  const handleRemoveFromAlbum = (roll: Roll) => {
+    removeRollFromAlbum(roll.id);
+  };
+
+  const rolls = selectedAlbum.rolls || [];
+  const photoCount = rolls.reduce((sum, roll) => sum + (roll.shots_used || 0), 0);
 
   return (
     <div className="flex flex-col w-full">
@@ -51,21 +44,21 @@ const AlbumDetailView: React.FC = () => {
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-white">{selectedAlbum.title}</h2>
         <div className="text-gray-400 mt-2 flex items-center space-x-4">
-          <span className="flex items-center space-x-1.5"><Film className="w-4 h-4" /><span>{rollCount} Rolls</span></span>
-          <span className="flex items-center space-x-1.5"><ImageIcon className="w-4 h-4" /><span>{photos.length} Photos</span></span>
+          <span className="flex items-center space-x-1.5"><Film className="w-4 h-4" /><span>{rolls.length} Rolls</span></span>
+          <span className="flex items-center space-x-1.5"><ImageIcon className="w-4 h-4" /><span>{photoCount} Photos</span></span>
         </div>
       </div>
 
-      {photos.length > 0 ? (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1 sm:gap-2">
-          {photos.map(photo => (
-            <div key={photo.id} className="aspect-square bg-gray-800 rounded-lg overflow-hidden group cursor-pointer">
-              <img 
-                src={photo.thumbnail_url} 
-                alt="User Photo" 
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
-              />
-            </div>
+      {rolls.length > 0 ? (
+        <div className="space-y-2">
+          {rolls.map(roll => (
+            <RollListItem
+              key={roll.id}
+              roll={roll}
+              onDelete={setRollToDelete}
+              onAssignAlbum={handleRemoveFromAlbum}
+              assignActionIcon="remove"
+            />
           ))}
         </div>
       ) : (
@@ -82,6 +75,20 @@ const AlbumDetailView: React.FC = () => {
         <ManageRollsModal
           album={selectedAlbum}
           onClose={() => setShowManageModal(false)}
+        />
+      )}
+
+      {rollToDelete && (
+        <ConfirmDeleteModal
+          isOpen={!!rollToDelete}
+          onClose={() => setRollToDelete(null)}
+          onConfirm={() => {
+            if (rollToDelete) deleteRoll(rollToDelete.id);
+            setRollToDelete(null);
+          }}
+          title="Delete Roll"
+          message={`Are you sure you want to permanently delete "${rollToDelete.title || rollToDelete.film_type}"? This cannot be undone.`}
+          confirmText="Delete"
         />
       )}
     </div>

@@ -15,6 +15,7 @@ import NameRollModal from './components/NameRollModal';
 import NotificationsView from './components/NotificationsView';
 import TopBar from './components/TopBar';
 import BottomNavBar from './components/BottomNavBar';
+import UncategorizedRollsView from './components/UncategorizedRollsView';
 
 function App() {
   const { session, profile, isLoading, currentView, authStep, rollToName, setRollToName } = useAppContext();
@@ -29,6 +30,7 @@ function App() {
       case 'rollDetail': return <RollDetailView />;
       case 'albumDetail': return <AlbumDetailView />;
       case 'notifications': return <NotificationsView />;
+      case 'uncategorizedRolls': return <UncategorizedRollsView />;
       default: return <CommunityView />;
     }
   };

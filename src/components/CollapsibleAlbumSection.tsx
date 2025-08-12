@@ -1,28 +1,20 @@
 import React from 'react';
-import { ChevronDown, ChevronRight, Film, Image as ImageIcon } from 'lucide-react';
+import { ChevronRight, Film, Image as ImageIcon } from 'lucide-react';
 import { Roll, Album } from '../types';
-import RollListItem from './RollListItem';
 import { useAppContext } from '../context/AppContext';
 
 interface CollapsibleAlbumSectionProps {
   title: string;
   rolls: Roll[];
   album?: Album;
-  initiallyOpen?: boolean;
-  onDeleteRoll: (roll: Roll) => void;
-  onAssignRoll: (roll: Roll) => void;
 }
 
 const CollapsibleAlbumSection: React.FC<CollapsibleAlbumSectionProps> = ({
   title,
   rolls,
   album,
-  initiallyOpen = true,
-  onDeleteRoll,
-  onAssignRoll,
 }) => {
   const { setCurrentView, setSelectedAlbum } = useAppContext();
-  const [isOpen, setIsOpen] = React.useState(initiallyOpen);
 
   const photoCount = rolls.reduce((sum, roll) => sum + (roll.shots_used || 0), 0);
 
@@ -31,44 +23,17 @@ const CollapsibleAlbumSection: React.FC<CollapsibleAlbumSectionProps> = ({
       setSelectedAlbum(album);
       setCurrentView('albumDetail');
     } else {
-      setIsOpen(!isOpen);
+      // This is the 'Uncategorized' section
+      setCurrentView('uncategorizedRolls');
     }
   };
 
-  // This is only for the uncategorized accordion
-  const handleToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsOpen(!isOpen);
-  };
-
-  // Album Card (navigates)
-  if (album) {
-    return (
-      <div
-        onClick={handleHeaderClick}
-        className="bg-neutral-800/50 rounded-xl border border-neutral-700/50 overflow-hidden hover:bg-neutral-700/30 transition-colors cursor-pointer"
-      >
-        <header className="flex items-center justify-between p-4">
-          <div className="flex-1">
-            <h4 className="font-bold text-lg text-white">{title}</h4>
-            <div className="flex items-center space-x-4 text-sm text-gray-400 mt-1">
-              <span className="flex items-center gap-1.5"><Film className="w-4 h-4" /> {rolls.length} Rolls</span>
-              <span className="flex items-center gap-1.5"><ImageIcon className="w-4 h-4" /> {photoCount} Photos</span>
-            </div>
-          </div>
-          <ChevronRight className="w-5 h-5 text-gray-500" />
-        </header>
-      </div>
-    );
-  }
-
-  // Uncategorized Accordion
   return (
-    <div className="bg-neutral-800/50 rounded-xl border border-neutral-700/50 overflow-hidden">
-      <header
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-between p-4 cursor-pointer hover:bg-neutral-700/30 transition-colors"
-      >
+    <div
+      onClick={handleHeaderClick}
+      className="bg-neutral-800/50 rounded-xl border border-neutral-700/50 overflow-hidden hover:bg-neutral-700/30 transition-colors cursor-pointer"
+    >
+      <header className="flex items-center justify-between p-4">
         <div className="flex-1">
           <h4 className="font-bold text-lg text-white">{title}</h4>
           <div className="flex items-center space-x-4 text-sm text-gray-400 mt-1">
@@ -76,32 +41,8 @@ const CollapsibleAlbumSection: React.FC<CollapsibleAlbumSectionProps> = ({
             <span className="flex items-center gap-1.5"><ImageIcon className="w-4 h-4" /> {photoCount} Photos</span>
           </div>
         </div>
-        <button
-          onClick={handleToggle}
-          className="p-2 rounded-full hover:bg-neutral-600 transition-colors"
-          aria-label={isOpen ? 'Collapse section' : 'Expand section'}
-        >
-          <ChevronDown
-            className={`w-5 h-5 text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}
-          />
-        </button>
+        <ChevronRight className="w-5 h-5 text-gray-500" />
       </header>
-      {isOpen && (
-        <div className="p-2 space-y-2">
-          {rolls.length > 0 ? (
-            rolls.map(roll => (
-              <RollListItem
-                key={roll.id}
-                roll={roll}
-                onDelete={onDeleteRoll}
-                onAssignAlbum={onAssignRoll}
-              />
-            ))
-          ) : (
-            <p className="text-sm text-gray-500 px-4 py-6 text-center">This album is empty.</p>
-          )}
-        </div>
-      )}
     </div>
   );
 };
