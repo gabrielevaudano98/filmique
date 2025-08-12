@@ -7,24 +7,18 @@ interface SegmentedControlProps {
 }
 
 const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onChange }) => {
-  const activeIndex = options.findIndex(opt => opt.value === value);
-
   return (
-    <div className="relative flex w-full p-1.5 bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-full">
-      {/* Sliding background */}
-      <div
-        className="absolute top-1.5 bottom-1.5 h-auto bg-gradient-to-r from-brand-amber-start to-brand-amber-end shadow-lg shadow-brand-amber-start/20 rounded-full transition-all duration-300 ease-spring-soft"
-        style={{
-          width: `calc(${100 / options.length}% - 6px)`,
-          transform: `translateX(${activeIndex * 100}%)`,
-          margin: '0 3px',
-        }}
-      />
+    <div className="flex w-full p-1 bg-neutral-900/70 border border-neutral-800 rounded-xl">
       {options.map(opt => (
         <button
           key={opt.value}
           onClick={() => onChange(opt.value)}
-          className="relative z-10 flex-1 py-2.5 text-sm font-bold text-center transition-colors duration-300 text-white"
+          className={`relative z-10 flex-1 py-3 text-sm font-bold text-center transition-all duration-300 rounded-lg
+            ${value === opt.value
+              ? 'bg-neutral-700 text-white shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]'
+              : 'text-gray-400 hover:bg-neutral-800/50'
+            }
+          `}
         >
           {opt.label}
         </button>
