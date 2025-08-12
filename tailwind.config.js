@@ -7,22 +7,56 @@ export default {
   theme: {
     extend: {
       colors: {
-        'brand-dark': '#0c0c0f',
-        'brand-purple-dark': '#41354c',
-        'brand-blue-muted': '#566293',
-        'brand-beige-smoky': '#b5aaac',
-        'brand-bg': '#0c0c0f', // Main background
-        'brand-surface': 'rgba(28, 28, 32, 0.7)', // Semi-transparent surface for cards
-        'brand-orange': {
-          DEFAULT: '#d46a2e',
-          start: '#e98a43',
-          end: '#d46a2e',
-        },
-        'brand-border': 'rgba(65, 53, 76, 0.5)', // Semi-transparent border
+        // Neutral scale tuned for iOS aesthetic
+        'neutral-900': '#060608',
+        'neutral-800': '#0f1113',
+        'neutral-700': '#1b1d20',
+        'neutral-600': '#2a2d31',
+        'neutral-400': '#9aa0a6',
+        'neutral-300': '#c6c9cd',
+        'neutral-100': '#f7f7f8',
+
+        // Brand amber gradient stops
+        'brand-amber-start': '#F6AE55',
+        'brand-amber-mid': '#E98A43',
+        'brand-amber-end': '#D46A2E',
+
+        // Accent colors
+        'accent-violet': '#7C6AFE',
+        'accent-teal': '#2FD1B0',
+        'accent-coral': '#FF6B6B',
+
+        // Glass tokens (use with alpha)
+        'glass-thin': 'rgba(255,255,255,0.06)',
+        'glass-medium': 'rgba(255,255,255,0.10)',
+        'glass-dark': 'rgba(6,6,8,0.64)',
+
+        // Semantic
+        'brand-bg': '#060608',
+        'brand-surface': 'rgba(28, 28, 32, 0.7)',
+        'brand-border': 'rgba(65, 53, 76, 0.5)'
       },
       fontFamily: {
-        sans: ['SF Pro Display', 'sans-serif'],
+        sans: ['"SF Pro Display"', 'Inter', 'system-ui'],
+        ui: ['"SF Pro Text"', 'Inter', 'system-ui'],
+        mono: ['"SF Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo']
       },
+      boxShadow: {
+        'micro': '0 1px 2px rgba(6,6,8,0.24)',
+        'soft': '0 6px 18px rgba(11,11,12,0.28)',
+        'depth': '0 24px 60px rgba(6,6,8,0.46)'
+      },
+      borderRadius: {
+        'card': '16px',
+        'lg': '12px'
+      },
+      transitionTimingFunction: {
+        'spring-soft': 'cubic-bezier(0.20, 1.0, 0.35, 1.0)',
+        'quick': 'cubic-bezier(0.25, 0.9, 0.4, 1)'
+      },
+      spacing: {
+        'safe-6': 'env(safe-area-inset-bottom)',
+      }
     },
   },
   plugins: [],
