@@ -1,3 +1,4 @@
+@import "./styles/tokens.css";
 @import url('https://fonts.cdnfonts.com/css/sf-pro-display');
 
 @tailwind base;
@@ -7,7 +8,7 @@
 @layer base {
   body {
     font-family: 'SF Pro Display', sans-serif;
-    background-color: #0c0c0f;
+    background-color: var(--bg-900);
   }
   #root {
     position: relative;
@@ -21,21 +22,17 @@
     width: 100vw;
     height: 100vh;
     background-image: 
-      /* Deeper orange at the top */
-      radial-gradient(ellipse 80% 50% at 50% -20%, #d46a2e 0%, transparent 50%),
-      /* Larger dark purple for the middle band */
-      radial-gradient(ellipse 120% 70% at 50% 50%, #41354c 0%, transparent 60%),
-      /* Light grey at the bottom */
-      radial-gradient(ellipse 60% 40% at 50% 110%, #b5aaac 0%, transparent 60%);
-    filter: blur(100px); /* Even more blur */
+      radial-gradient(ellipse 80% 50% at 50% -20%, var(--brand-primary-1) 0%, transparent 50%),
+      radial-gradient(ellipse 120% 70% at 50% 50%, var(--brand-alt-1) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 50% 110%, rgba(255,255,255,0.02) 0%, transparent 60%);
+    filter: blur(100px);
     z-index: -1;
-    transform: scale(1.3); /* Scale up a bit more to avoid hard edges */
-    opacity: 0.6; /* Make it lighter */
+    transform: scale(1.25);
+    opacity: 0.55;
   }
+
   /*
     Custom Focus Handling:
-    - Removes the default outline for mouse users (`:focus:not(:focus-visible)`).
-    - Adds a custom, branded outline for keyboard users (`:focus-visible`) for accessibility.
   */
   *:focus:not(:focus-visible) {
     outline: none;
@@ -114,16 +111,12 @@ body.camera-running {
   width: 100%;
 }
 
-/*
-  When the camera is running, we hide the entire body,
+/* When the camera is running, we hide the entire body,
   but then make the specific camera component visible again.
-  This allows the native camera view (which is behind the webview)
-  to show through, while still rendering our UI on top.
 */
 .camera-modal {
   visibility: visible;
 }
-
 
 /* Base mobile optimizations */
 html {

@@ -1,0 +1,92 @@
+:root{
+  /* Brand Gradients */
+  --brand-primary-1: #EFA15A; /* amber warm */
+  --brand-primary-2: #D46A2E; /* core orange */
+
+  --brand-alt-1: #8B6AD6; /* violet */
+  --brand-alt-2: #5B47C9; /* indigo */
+
+  /* Neutrals - Dark (default) */
+  --bg-900: #07070a;
+  --bg-800: #0f1013;
+  --surface-800: rgba(255,255,255,0.03);
+  --surface-700: rgba(255,255,255,0.04);
+  --muted-500: #9ea3ad;
+  --text-100: #ffffff;
+  --text-200: #e6e7e9;
+
+  /* Semantic */
+  --success: #34D399;
+  --error: #FB7185;
+  --warning: #FBBF24;
+  --info: #60A5FA;
+
+  /* Radii */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 18px;
+  --r-pill: 9999px;
+
+  /* Elevation / shadows */
+  --elev-1: 0 6px 18px rgba(7,8,11,0.36);
+  --elev-2: 0 12px 36px rgba(7,8,11,0.46);
+
+  /* Glass / blur */
+  --glass-blur: 18px;
+  --glass-alpha: 0.18;
+
+  /* Motion */
+  --motion-fast: 120ms;
+  --motion-medium: 260ms;
+  --motion-slow: 420ms;
+  --motion-ease: cubic-bezier(0.22,1,0.36,1);
+
+  /* Utility */
+  --brand-grad: linear-gradient(135deg,var(--brand-primary-1),var(--brand-primary-2));
+  --brand-alt-grad: linear-gradient(135deg,var(--brand-alt-1),var(--brand-alt-2));
+}
+
+/* Light theme override */
+[data-theme="light"]{
+  --bg-900: #f7f7f8;
+  --bg-800: #f0f1f2;
+  --surface-800: rgba(0,0,0,0.04);
+  --surface-700: rgba(255,255,255,0.9);
+  --muted-500: #6b7280;
+  --text-100: #0b0b0c;
+  --glass-alpha: 0.9;
+}
+
+/* Small helper classes that mirror token usage (optional helpers for quick prototyping) */
+.token-bg {
+  background: var(--bg-900);
+}
+.token-surface {
+  background: rgba(255,255,255,0.02);
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+/* Glass utility: use as a wrapper to create frosted surfaces */
+.glass {
+  backdrop-filter: blur(var(--glass-blur));
+  background-color: rgba(255,255,255,var(--glass-alpha));
+  box-shadow: var(--elev-1);
+  border-radius: var(--r-md);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+/* Accessible focus ring */
+:where(button, a, input, textarea):focus-visible {
+  outline: 3px solid rgba(249,115,22,0.18);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 1ms;
+    --motion-medium: 1ms;
+    --motion-slow: 1ms;
+  }
+}
