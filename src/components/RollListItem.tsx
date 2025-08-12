@@ -46,11 +46,10 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
 
   const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
 
-  const numHoles = (roll.photos?.length || 5) * 2;
-
+  // A static component to render a long strip of holes to fill any screen width.
   const SprocketHoles = () => (
     <div className="flex space-x-3 h-4 px-2 shrink-0">
-      {Array.from({ length: numHoles }).map((_, i) => (
+      {Array.from({ length: 100 }).map((_, i) => (
         <div key={i} className="w-4 h-full bg-black/60" />
       ))}
     </div>
@@ -87,10 +86,15 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
         </div>
         
         {/* Film Strip */}
-        <div className="bg-brand-amber-start/20 overflow-x-auto no-scrollbar">
-          <div className="inline-flex flex-col space-y-3 py-3">
+        <div className="relative bg-gradient-to-b from-warm-300/20 to-warm-400/10 overflow-hidden">
+          {/* Top holes overlay */}
+          <div className="absolute top-2 left-0 w-full pointer-events-none z-10">
             <SprocketHoles />
-            <div className="flex space-x-2 px-2">
+          </div>
+
+          {/* Photo scroll area */}
+          <div className="overflow-x-auto no-scrollbar py-8">
+            <div className="inline-flex px-2 space-x-2">
               {roll.photos && roll.photos.length > 0 ? (
                 roll.photos.map(photo => (
                   <img
@@ -105,6 +109,10 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
                 <div className="h-24 flex items-center justify-center text-gray-400 text-sm px-4 shrink-0">No photos in this roll.</div>
               )}
             </div>
+          </div>
+
+          {/* Bottom holes overlay */}
+          <div className="absolute bottom-2 left-0 w-full pointer-events-none z-10">
             <SprocketHoles />
           </div>
         </div>
