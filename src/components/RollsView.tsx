@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Film, RefreshCw, ImageIcon, Camera } from 'lucide-react';
+import { Film, RefreshCw, ImageIcon, Camera, Trophy } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../context/AppContext';
 import RollsControls from './RollsControls';
@@ -172,10 +172,20 @@ const RollsView: React.FC = () => {
             )}
           </div>
           {activeRoll && (
-            <div className="text-right flex-shrink-0 ml-4">
+            <div className="flex flex-col items-end space-y-2 text-right flex-shrink-0 ml-4">
               <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} className="bg-white/20 hover:bg-white/30 text-white text-xs font-semibold py-1.5 px-3 rounded-full flex items-center gap-1.5">
                 <RefreshCw className="w-3 h-3" />
                 <span>Change Film</span>
+              </button>
+
+              {/* Challenges CTA — semantic, placed inside Rolls view */}
+              <button
+                onClick={(e) => { e.stopPropagation(); setCurrentView('challenges'); }}
+                className="mt-1 w-full flex items-center justify-center gap-2 bg-neutral-900/40 hover:bg-neutral-900/60 text-amber-400 border border-amber-400/10 px-3 py-2 rounded-lg text-sm font-semibold transition-colors"
+                aria-label="Open Challenges"
+              >
+                <Trophy className="w-4 h-4" />
+                <span>Challenges</span>
               </button>
             </div>
           )}
