@@ -102,7 +102,7 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
           </div>
         )}
         
-        <div className="bg-cyan-900/20 overflow-x-auto no-scrollbar">
+        <div className="bg-neutral-900 overflow-x-auto no-scrollbar">
           <div className="inline-flex flex-col space-y-3 py-3">
             <div className="px-2 w-full"><SprocketHoles /></div>
             <div className="flex space-x-2 px-2">
