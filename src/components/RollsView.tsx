@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import { Film, Camera, Plus, BookCopy } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Roll, Album } from '../types';
-import DevelopingRollCard from './DevelopingRollCard';
 import { isRollDeveloped, isRollDeveloping } from '../utils/rollUtils';
 import CreateAlbumModal from './CreateAlbumModal';
 import RollListItem from './RollListItem';
@@ -14,11 +13,9 @@ const RollsView: React.FC = () => {
     profile,
     activeRoll,
     completedRolls,
-    developRoll,
     setCurrentView,
     setShowFilmModal,
     albums,
-    createAlbum,
     deleteRoll,
   } = useAppContext();
 
@@ -99,8 +96,16 @@ const RollsView: React.FC = () => {
       {developingRolls.length > 0 && (
         <div>
           <h3 className="text-xl font-bold text-white mb-4">In the Darkroom</h3>
-          <div className="max-w-2xl mx-auto space-y-4">
-            {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} profile={profile} onDevelop={developRoll} />)}
+          <div className="space-y-3">
+            {developingRolls.map(roll => (
+              <RollListItem
+                key={roll.id}
+                roll={roll}
+                onDelete={() => {}}
+                onAssignAlbum={() => {}}
+                isDeveloping={true}
+              />
+            ))}
           </div>
         </div>
       )}
