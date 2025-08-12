@@ -39,6 +39,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCameraMode,
     showFilmModal,
     setShowFilmModal,
+    refetchRolls: rollsAndPhotos.refetchRolls,
   }), [auth, profileData, rollsAndPhotos, social, albumsData, currentView, cameraMode, showFilmModal]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;

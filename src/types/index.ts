@@ -154,6 +154,7 @@ export interface AppContextType {
   addRollsToAlbum: (albumId: string, rollIds: string[]) => Promise<void>;
   removeRollFromAlbum: (rollId: string) => Promise<void>;
   refetchAlbums: () => Promise<void>;
+  refetchRolls: () => Promise<void>;
   updateRollTitle: (rollId: string, title: string) => Promise<boolean>;
   handleLike: (postId: string, postOwnerId: string, isLiked?: boolean) => Promise<void>;
   handleFollow: (userId: string, isFollowed?: boolean) => Promise<void>;
