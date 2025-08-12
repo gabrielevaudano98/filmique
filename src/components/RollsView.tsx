@@ -7,8 +7,6 @@ import DevelopedRollCard from './DevelopedRollCard';
 import DevelopingRollCard from './DevelopingRollCard';
 import { isRollDeveloped, isRollDeveloping } from '../utils/rollUtils';
 import TimelineScrubber from './TimelineScrubber';
-import GlassCard from './ui/GlassCard';
-import PrimaryButton from './ui/PrimaryButton';
 
 const RollsView: React.FC = () => {
   const { profile, activeRoll, completedRolls, developRoll, setCurrentView, setSelectedRoll, setShowFilmModal, setRollToName } = useAppContext();
@@ -134,7 +132,7 @@ const RollsView: React.FC = () => {
       onClick={onClick}
       className={`flex-1 py-2.5 px-4 rounded-md text-sm font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
         isActive
-          ? 'bg-brand-primary-1/10 text-white shadow-lg'
+          ? 'bg-brand-orange text-white shadow-lg shadow-brand-orange/20'
           : 'text-gray-300 hover:bg-brand-surface/50'
       }`}
     >
@@ -151,7 +149,7 @@ const RollsView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full space-y-6">
-      <GlassCard className="p-4">
+      <div onClick={handleCurrentRollClick} className="bg-gradient-to-br from-brand-orange-start to-brand-orange-end rounded-2xl p-5 text-white shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold mb-2">Current Roll</h2>
@@ -166,23 +164,23 @@ const RollsView: React.FC = () => {
             ) : (
               <>
                 <p className="text-orange-100 mb-4">No active roll. Time to load up!</p>
-                <PrimaryButton onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }}>
-                  <Film className="w-4 h-4 mr-2" />
-                  Load New Film
-                </PrimaryButton>
+                <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} className="bg-black/20 hover:bg-black/30 text-white px-4 py-2 rounded-xl flex items-center space-x-2 font-semibold">
+                  <Film className="w-5 h-5" />
+                  <span>Load New Film</span>
+                </button>
               </>
             )}
           </div>
           {activeRoll && (
             <div className="text-right flex-shrink-0 ml-4">
-              <PrimaryButton onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} variant="ghost">
+              <button onClick={(e) => { e.stopPropagation(); setShowFilmModal(true); setCurrentView('camera'); }} className="bg-white/20 hover:bg-white/30 text-white text-xs font-semibold py-1.5 px-3 rounded-full flex items-center gap-1.5">
                 <RefreshCw className="w-3 h-3" />
-                <span className="ml-2 text-xs font-semibold">Change Film</span>
-              </PrimaryButton>
+                <span>Change Film</span>
+              </button>
             </div>
           )}
         </div>
-      </GlassCard>
+      </div>
 
       <div className="bg-brand-surface rounded-2xl p-4 sm:p-6 border border-brand-border">
         <div className="bg-brand-dark rounded-xl p-1 flex space-x-1">
