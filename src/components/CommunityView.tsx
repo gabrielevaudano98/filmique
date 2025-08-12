@@ -12,8 +12,8 @@ const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => vo
     onClick={onClick}
     className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex-shrink-0 whitespace-nowrap
       ${isActive
-        ? 'bg-gradient-to-r from-brand-orange-start to-brand-orange-end text-white shadow-lg shadow-brand-orange/20'
-        : 'bg-gray-800/60 text-gray-300 hover:bg-gray-700/50 border border-gray-700/50'
+        ? 'bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white shadow-lg shadow-brand-amber-start/20'
+        : 'bg-neutral-800/60 text-gray-300 hover:bg-neutral-700/50 border border-neutral-700/50'
       }`}
   >
     {label}
@@ -57,17 +57,15 @@ const CommunityView: React.FC = () => {
     let postsToShow: Post[] = [];
     let initialIdx = 0;
 
-    // Try to find in recent stories first (for carousel clicks)
     const userStories = recentStories.get(userId);
     if (userStories) {
       postsToShow = userStories.posts;
       initialIdx = postsToShow.findIndex(p => p.id === postId);
     } 
     
-    // If not found in recent stories, or if it's a general feed click, get all posts by that user
     if (initialIdx === -1 || postsToShow.length === 0) {
       postsToShow = feed.filter(p => p.user_id === userId)
-                        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()); // Ensure chronological order
+                        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
       initialIdx = postsToShow.findIndex(p => p.id === postId);
     }
@@ -78,7 +76,6 @@ const CommunityView: React.FC = () => {
       setShowFullStoryViewer(true);
     } else {
       console.warn("Could not find post in any sequence for story viewer:", postId);
-      // Optionally show a toast error here
     }
   };
 
@@ -90,14 +87,14 @@ const CommunityView: React.FC = () => {
         <div className="flex space-x-3">
           <button
             onClick={() => setCurrentView('profile')}
-            className="bg-gray-800/60 backdrop-blur-lg border border-gray-700/50 rounded-full p-3 shadow-lg text-white hover:bg-gray-700 transition-colors"
+            className="bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-full p-3 shadow-lg text-white hover:bg-neutral-700 transition-colors"
             aria-label="View Profile"
           >
             <User className="w-6 h-6" />
           </button>
           <button
             onClick={() => setShowCreatePostModal(true)}
-            className="bg-brand-orange text-white font-bold p-3 rounded-full shadow-lg shadow-brand-orange/20 hover:bg-brand-orange-end transition-colors"
+            className="bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white font-bold p-3 rounded-full shadow-lg shadow-brand-amber-start/20 hover:opacity-90 transition-all"
             aria-label="Create New Post"
           >
             <Plus className="w-6 h-6" />
@@ -155,7 +152,7 @@ const CommunityView: React.FC = () => {
           initialPostIndex={initialStoryPostIndex}
           onClose={() => {
             setShowFullStoryViewer(false);
-            setPostsForFullStoryViewer(null); // Clear state on close
+            setPostsForFullStoryViewer(null);
           }}
         />
       )}
