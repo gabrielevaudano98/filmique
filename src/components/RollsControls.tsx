@@ -61,7 +61,7 @@ const RollsControls: React.FC<RollsControlsProps> = ({
           placeholder="Search rolls by title..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-brand-brown-dark border border-brand-border rounded-lg pl-11 pr-4 py-2.5 text-white focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition-colors h-12"
+          className="w-full bg-warm-800 border border-warm-700 rounded-lg pl-11 pr-4 py-2.5 text-white focus:ring-2 focus:ring-brand-amber-start focus:border-brand-amber-start transition-colors h-12"
         />
       </div>
 
@@ -69,23 +69,23 @@ const RollsControls: React.FC<RollsControlsProps> = ({
         <div className="relative" ref={filterRef}>
           <button 
             onClick={() => setIsFilterOpen(!isFilterOpen)} 
-            className="flex items-center justify-center w-12 h-12 bg-brand-brown-dark border border-brand-border rounded-lg text-white hover:bg-brand-brown-light/80 transition-colors"
+            className="flex items-center justify-center w-12 h-12 bg-warm-800 border border-warm-700 rounded-lg text-white hover:bg-warm-700 transition-colors"
             aria-label="Filter rolls"
           >
             <Filter className="w-5 h-5 text-gray-400" />
           </button>
           {isFilterOpen && (
-            <div className="absolute top-full right-0 mt-2 w-56 bg-brand-brown-dark border border-brand-border rounded-lg shadow-2xl z-10 p-2">
+            <div className="absolute top-full right-0 mt-2 w-56 bg-warm-800 border border-warm-700 rounded-lg shadow-2xl z-10 p-2">
               <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Filter by Film</div>
-              <button onClick={() => { setSelectedFilm('all'); setIsFilterOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-brand-brown-light rounded-md">
+              <button onClick={() => { setSelectedFilm('all'); setIsFilterOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-warm-700 rounded-md">
                 <span className="flex items-center gap-2"><FilmIcon className="w-4 h-4" /> All Film Types</span>
-                {selectedFilm === 'all' && <Check className="w-4 h-4 text-brand-orange-start" />}
+                {selectedFilm === 'all' && <Check className="w-4 h-4 text-brand-amber-start" />}
               </button>
-              <div className="h-px bg-brand-border my-1"></div>
+              <div className="h-px bg-warm-700 my-1"></div>
               {filmTypes.map(film => (
-                <button key={film} onClick={() => { setSelectedFilm(film); setIsFilterOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-brand-brown-light rounded-md">
+                <button key={film} onClick={() => { setSelectedFilm(film); setIsFilterOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-warm-700 rounded-md">
                   <span className="flex items-center gap-2"><FilmIcon className="w-4 h-4" /> {film}</span>
-                  {selectedFilm === film && <Check className="w-4 h-4 text-brand-orange-start" />}
+                  {selectedFilm === film && <Check className="w-4 h-4 text-brand-amber-start" />}
                 </button>
               ))}
             </div>
@@ -95,18 +95,18 @@ const RollsControls: React.FC<RollsControlsProps> = ({
         <div className="relative" ref={sortRef}>
           <button 
             onClick={() => setIsSortOpen(!isSortOpen)} 
-            className="flex items-center justify-center w-12 h-12 bg-brand-brown-dark border border-brand-border rounded-lg text-white hover:bg-brand-brown-light/80 transition-colors"
+            className="flex items-center justify-center w-12 h-12 bg-warm-800 border border-warm-700 rounded-lg text-white hover:bg-warm-700 transition-colors"
             aria-label="Sort rolls"
           >
             <ArrowUpDown className="w-5 h-5 text-gray-400" />
           </button>
           {isSortOpen && (
-            <div className="absolute top-full right-0 mt-2 w-56 bg-brand-brown-dark border border-brand-border rounded-lg shadow-2xl z-10 p-2">
+            <div className="absolute top-full right-0 mt-2 w-56 bg-warm-800 border border-warm-700 rounded-lg shadow-2xl z-10 p-2">
               <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Sort by</div>
               {sortOptions.map(opt => (
-                <button key={opt.key} onClick={() => { setSortOrder(opt.key); setIsSortOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-brand-brown-light rounded-md">
+                <button key={opt.key} onClick={() => { setSortOrder(opt.key); setIsSortOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-warm-700 rounded-md">
                   <span className="flex items-center gap-2">{opt.icon} {opt.label}</span>
-                  {sortOrder === opt.key && <Check className="w-4 h-4 text-brand-orange-start" />}
+                  {sortOrder === opt.key && <Check className="w-4 h-4 text-brand-amber-start" />}
                 </button>
               ))}
             </div>

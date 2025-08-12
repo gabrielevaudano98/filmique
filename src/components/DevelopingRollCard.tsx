@@ -55,11 +55,10 @@ const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, 
   const progress = Math.min(100, ((currentTime - completedTime) / (readyTime - completedTime)) * 100);
 
   return (
-    <div className="bg-brand-brown-dark rounded-xl p-4 space-y-4 border border-brand-border">
-      {/* Top section: Info */}
+    <div className="bg-warm-800 rounded-xl p-4 space-y-4 border border-warm-700">
       <div className="flex items-center space-x-4">
-        <div className="bg-brand-brown-light p-3 rounded-lg">
-          <Film className="w-6 h-6 text-brand-orange-start" />
+        <div className="bg-warm-700 p-3 rounded-lg">
+          <Film className="w-6 h-6 text-brand-amber-start" />
         </div>
         <div>
           <h4 className="font-semibold text-white text-lg">{roll.film_type}</h4>
@@ -67,7 +66,6 @@ const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, 
         </div>
       </div>
 
-      {/* Middle section: Progress and Time */}
       <div className="space-y-2">
         <div className="flex justify-between items-center text-sm text-gray-400 mb-1">
           <span className="font-medium">Developing...</span>
@@ -76,19 +74,18 @@ const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, 
             {getRemainingTime()}
           </span>
         </div>
-        <div className="w-full bg-brand-brown-light rounded-full h-2">
+        <div className="w-full bg-warm-900 rounded-full h-2">
           <div
-            className="bg-brand-orange h-2 rounded-full transition-all duration-500"
+            className="bg-gradient-to-r from-brand-amber-start to-brand-amber-end h-2 rounded-full transition-all duration-1000"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
       </div>
 
-      {/* Bottom section: Action */}
       <div className="pt-4">
         <button
           onClick={() => onDevelop(roll)}
-          className="w-full py-3 flex items-center justify-center bg-brand-orange hover:bg-brand-orange-end rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed font-bold text-white text-base shadow-lg shadow-brand-orange/20 disabled:shadow-none"
+          className="w-full py-3 flex items-center justify-center bg-gradient-to-r from-brand-amber-start to-brand-amber-end hover:opacity-90 rounded-lg transition-all disabled:bg-neutral-600 disabled:opacity-70 disabled:shadow-none font-bold text-white text-base shadow-lg shadow-brand-amber-start/20"
           disabled={!canAfford}
           aria-label="Develop Now"
         >
