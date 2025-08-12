@@ -130,16 +130,16 @@ const RollsView: React.FC = () => {
   }> = ({ label, count, isActive, onClick }) => (
     <button
       onClick={onClick}
-      className={`flex-1 py-2.5 px-4 rounded-md text-sm font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
+      className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-bold transition-all duration-300 flex items-center justify-center space-x-2 ${
         isActive
-          ? 'bg-brand-orange text-white shadow-lg shadow-brand-orange/20'
-          : 'text-gray-300 hover:bg-brand-surface/50'
+          ? 'bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white shadow-lg shadow-brand-amber-start/20'
+          : 'text-gray-300 bg-neutral-800 hover:bg-neutral-700'
       }`}
     >
       <span>{label}</span>
       <span
         className={`px-2 py-0.5 rounded-full text-xs transition-colors ${
-          isActive ? 'bg-black/10 text-white' : 'bg-brand-surface text-gray-300'
+          isActive ? 'bg-black/20 text-white' : 'bg-neutral-700 text-gray-300'
         }`}
       >
         {count}
@@ -149,7 +149,7 @@ const RollsView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full space-y-6">
-      <div onClick={handleCurrentRollClick} className="bg-gradient-to-br from-brand-orange-start to-brand-orange-end rounded-2xl p-5 text-white shadow-xl transition-all duration-300 hover:scale-[1.01] cursor-pointer">
+      <div onClick={handleCurrentRollClick} className="bg-gradient-to-br from-brand-amber-start to-brand-amber-end rounded-2xl p-5 text-white shadow-depth transition-all duration-300 hover:scale-[1.01] cursor-pointer">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold mb-2">Current Roll</h2>
@@ -182,8 +182,8 @@ const RollsView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-brand-surface rounded-2xl p-4 sm:p-6 border border-brand-border">
-        <div className="bg-brand-dark rounded-xl p-1 flex space-x-1">
+      <div className="bg-neutral-900/50 rounded-2xl p-4 sm:p-6 border border-neutral-700/50">
+        <div className="bg-neutral-800 rounded-xl p-1 flex space-x-1">
           <TabButton
             label="Developed"
             count={developedRolls.length}
@@ -214,7 +214,7 @@ const RollsView: React.FC = () => {
                 <div className="space-y-8">
                   {Object.entries(groupedRolls).map(([groupTitle, rollsInGroup]) => (
                     <div key={groupTitle}>
-                      <h3 ref={el => groupHeaderRefs.current[groupTitle] = el} className="sticky top-16 bg-brand-dark/80 backdrop-blur-sm py-2 text-lg font-bold text-white mb-4 z-10 -mx-4 px-4">{groupTitle}</h3>
+                      <h3 ref={el => groupHeaderRefs.current[groupTitle] = el} className="sticky top-16 bg-neutral-900/80 backdrop-blur-md py-2 text-lg font-bold text-white mb-4 z-10 -mx-6 px-6 border-b border-neutral-700/50">{groupTitle}</h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         {rollsInGroup.map(roll => (
                           <DevelopedRollCard

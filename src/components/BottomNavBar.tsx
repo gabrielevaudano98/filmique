@@ -41,17 +41,16 @@ const BottomNavBar: React.FC = () => {
     { view: 'challenges', label: 'Challenges', icon: Trophy },
     { view: 'rolls', label: 'Rolls', icon: Film },
     { view: 'community', label: 'Community', icon: Users },
-    { view: 'profile', label: 'Profile', icon: User },
   ];
 
   const leftItems = navItems.slice(0, 2);
-  const rightItems = navItems.slice(2, 4);
+  const rightItems = navItems.slice(2, 3);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-28 flex justify-center z-50 pointer-events-none pb-safe">
       <div className="relative flex items-center pointer-events-auto">
         {/* Main glass pill background */}
-        <div className="absolute top-1/2 -translate-y-1/2 h-[72px] w-full bg-warm-800/60 backdrop-blur-2xl rounded-[36px] border border-warm-700/40 shadow-depth"></div>
+        <div className="absolute top-1/2 -translate-y-1/2 h-[72px] w-full bg-warm-900/70 backdrop-blur-2xl rounded-[36px] border border-white/10 shadow-depth"></div>
 
         <div className="relative flex items-center justify-center px-3">
           {/* Left Items */}

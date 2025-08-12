@@ -16,15 +16,15 @@ const DevelopedRollCard: React.FC<DevelopedRollCardProps> = ({ roll, onSelect, o
 
   return (
     <div className="group relative aspect-[4/5] cursor-pointer transition-transform duration-300 ease-in-out hover:-translate-y-2" onClick={onSelect}>
-      <div className="w-full h-full bg-warm-800 rounded-lg shadow-xl overflow-hidden flex flex-col border border-warm-700">
-        <div className="w-full aspect-square bg-warm-900 overflow-hidden">
+      <div className="w-full h-full bg-neutral-800 rounded-2xl shadow-xl overflow-hidden flex flex-col border border-neutral-700/80">
+        <div className="w-full aspect-square bg-neutral-900 overflow-hidden">
           <img
             src={finalThumbnailUrl}
             alt={roll.title || roll.film_type}
             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         </div>
-        <div className="p-3 flex-1 flex flex-col justify-between bg-warm-800">
+        <div className="p-3 flex-1 flex flex-col justify-between bg-neutral-800">
           <div>
             <h4 className="font-bold text-white truncate text-base leading-tight">{roll.title || roll.film_type}</h4>
             <p className="text-xs text-gray-400">{roll.film_type}</p>

@@ -55,9 +55,9 @@ const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, 
   const progress = Math.min(100, ((currentTime - completedTime) / (readyTime - completedTime)) * 100);
 
   return (
-    <div className="bg-warm-800 rounded-xl p-4 space-y-4 border border-warm-700">
+    <div className="bg-neutral-800 rounded-xl p-4 space-y-4 border border-neutral-700/80 shadow-lg">
       <div className="flex items-center space-x-4">
-        <div className="bg-warm-700 p-3 rounded-lg">
+        <div className="bg-neutral-700 p-3 rounded-lg">
           <Film className="w-6 h-6 text-brand-amber-start" />
         </div>
         <div>
@@ -74,7 +74,7 @@ const DevelopingRollCard: React.FC<DevelopingRollCardProps> = ({ roll, profile, 
             {getRemainingTime()}
           </span>
         </div>
-        <div className="w-full bg-warm-900 rounded-full h-2">
+        <div className="w-full bg-neutral-900 rounded-full h-2">
           <div
             className="bg-gradient-to-r from-brand-amber-start to-brand-amber-end h-2 rounded-full transition-all duration-1000"
             style={{ width: `${progress}%` }}
