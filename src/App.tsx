@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera as CameraIcon, Film, User, Trophy, Users } from 'lucide-react';
+import { Camera, Film, User, Trophy, Users } from 'lucide-react';
 import CameraView from './components/CameraView';
 import RollsView from './components/RollsView';
 import CommunityView from './components/CommunityView';
