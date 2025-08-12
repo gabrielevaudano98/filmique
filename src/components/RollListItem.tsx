@@ -46,6 +46,19 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
 
   const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
 
+  // Calculate number of sprocket holes based on photo count.
+  // Assuming each photo is roughly 96px wide (h-24) and we want a hole every 24px.
+  // So 4 holes per photo. Add a few extra for padding.
+  const numHoles = (roll.photos?.length || 5) * 4;
+
+  const SprocketHoles = () => (
+    <div className="flex space-x-2 h-2 px-2 shrink-0">
+      {Array.from({ length: numHoles }).map((_, i) => (
+        <div key={i} className="w-4 h-full bg-black/50 rounded-sm" />
+      ))}
+    </div>
+  );
+
   return (
     <div className="relative w-full overflow-hidden rounded-xl">
       <div className="absolute inset-0 flex items-center justify-between bg-neutral-900">
@@ -75,20 +88,28 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
           <h4 className="font-bold text-white truncate">{roll.title || 'Untitled Roll'}</h4>
           <p className="text-sm text-gray-400">{roll.film_type}</p>
         </div>
-        <div className="flex overflow-x-auto no-scrollbar space-x-2 p-2 bg-black/20">
-          {roll.photos && roll.photos.length > 0 ? (
-            roll.photos.map(photo => (
-              <img
-                key={photo.id}
-                src={`${photo.thumbnail_url}${cacheBuster}`}
-                alt="roll photo"
-                className="h-24 w-auto rounded-md object-cover bg-neutral-700"
-                draggable="false"
-              />
-            ))
-          ) : (
-            <div className="h-24 flex items-center justify-center text-gray-500 text-sm px-4">No photos in this roll.</div>
-          )}
+        
+        {/* Film Strip */}
+        <div className="bg-warm-700/40 overflow-x-auto no-scrollbar">
+          <div className="inline-flex flex-col space-y-1 py-2">
+            <SprocketHoles />
+            <div className="flex space-x-2 px-2">
+              {roll.photos && roll.photos.length > 0 ? (
+                roll.photos.map(photo => (
+                  <img
+                    key={photo.id}
+                    src={`${photo.thumbnail_url}${cacheBuster}`}
+                    alt="roll photo"
+                    className="h-24 w-auto rounded-sm object-cover bg-neutral-700 shrink-0"
+                    draggable="false"
+                  />
+                ))
+              ) : (
+                <div className="h-24 flex items-center justify-center text-gray-400 text-sm px-4 shrink-0">No photos in this roll.</div>
+              )}
+            </div>
+            <SprocketHoles />
+          </div>
         </div>
       </div>
     </div>
