@@ -29,7 +29,7 @@ const RollPostCard: React.FC<RollPostCardProps> = ({ post, onClick }) => {
           <AvatarRing src={post.profiles.avatar_url} size={40} />
           <div>
             <h3 className="font-bold text-base leading-tight">{post.rolls.title}</h3>
-            <p className="text-sm text-gray-300">@{post.profiles.username}</p>
+            <p className="text-sm text-gray-300">{post.profiles.username}</p>
           </div>
         </div>
         <p className="text-sm text-gray-200 mt-3 line-clamp-2">{post.caption}</p>
