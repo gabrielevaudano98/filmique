@@ -13,13 +13,23 @@ interface RollListItemProps {
 }
 
 const SprocketHoles = ({ isDeveloping }: { isDeveloping?: boolean }) => {
-  const holeColor = isDeveloping ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.1)';
-  return (
-    <div className="h-4 w-full bg-black" style={{
-      backgroundImage: `repeating-linear-gradient(to right, transparent, transparent 16px, ${holeColor} 16px, ${holeColor} 28px)`,
-      backgroundSize: '28px 100%',
-    }} />
-  );
+  // For developing rolls: a warmer, slightly darker color from the palette for a realistic feel.
+  const holeColor = isDeveloping ? 'rgba(240, 198, 171, 0.4)' : 'rgba(255, 255, 255, 0.1)';
+
+  // Use radial gradients for "roundy" holes on developing film, and linear for developed.
+  const gradientStyle = isDeveloping
+    ? {
+        backgroundImage: `radial-gradient(circle, ${holeColor} 4px, transparent 5px)`,
+        backgroundSize: '28px 16px', // A 28px wide pattern block, 16px high
+        backgroundPosition: 'center center',
+        backgroundRepeat: 'repeat-x',
+      }
+    : {
+        backgroundImage: `repeating-linear-gradient(to right, transparent, transparent 16px, ${holeColor} 16px, ${holeColor} 28px)`,
+        backgroundSize: '28px 100%',
+      };
+
+  return <div className="h-4 w-full bg-black" style={gradientStyle} />;
 };
 
 const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlbum, isDeveloping = false, assignActionIcon = 'add' }) => {
