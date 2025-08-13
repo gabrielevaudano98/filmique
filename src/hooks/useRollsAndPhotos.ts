@@ -59,12 +59,13 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
         throw new Error(functionError?.message || result.error);
       }
 
-      const { url, thumbnailUrl, width, height } = result;
+      const { url, previewUrl, thumbnailUrl, width, height } = result;
 
       const { error: recordError } = await api.createPhotoRecord(
         profile.id,
         activeRoll.id,
         url,
+        previewUrl,
         thumbnailUrl,
         { ...metadata, width, height }
       );

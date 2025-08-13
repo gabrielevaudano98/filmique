@@ -32,7 +32,7 @@ export const deleteRollById = (rollId: string) => supabase.from('rolls').delete(
 export const createNewRoll = (userId: string, filmType: string, capacity: number) => supabase.from('rolls').insert({ user_id: userId, film_type: filmType, capacity }).select().single();
 export const updateRoll = (rollId: string, data: any) => supabase.from('rolls').update(data).eq('id', rollId).select('*, photos(*), albums(title)').single();
 export const uploadPhotoToStorage = (path: string, blob: Blob) => supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg' });
-export const createPhotoRecord = (userId: string, rollId: string, url: string, thumbnailUrl: string, metadata: any) => supabase.from('photos').insert({ user_id: userId, roll_id: rollId, url, thumbnail_url: thumbnailUrl, metadata });
+export const createPhotoRecord = (userId: string, rollId: string, url: string, previewUrl: string, thumbnailUrl: string, metadata: any) => supabase.from('photos').insert({ user_id: userId, roll_id: rollId, url, preview_url: previewUrl, thumbnail_url: thumbnailUrl, metadata });
 export const deletePhotosFromStorage = (paths: string[]) => supabase.storage.from('photos').remove(paths);
 export const getPhotosForRoll = (rollId: string) => supabase.from('photos').select('url').eq('roll_id', rollId);
 export const deletePhotosForRoll = (rollId: string) => supabase.from('photos').delete().eq('roll_id', rollId);
