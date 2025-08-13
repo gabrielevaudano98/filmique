@@ -40,6 +40,7 @@ const CameraView: React.FC = () => {
   const [activeProControl, setActiveProControl] = useState<ProControl | null>(null);
   const [zoom, setZoom] = useState(1);
   const [zoomLevels, setZoomLevels] = useState<number[]>([1]);
+  const [isShutterAnimating, setIsShutterAnimating] = useState(false);
 
   const [manualSettings, setManualSettings] = useState({
     iso: 400,
@@ -191,10 +192,13 @@ const CameraView: React.FC = () => {
   };
 
   const handleTakePhoto = async () => {
-    if (!activeRoll || activeRoll.is_completed) {
-      setShowFilmModal(true);
+    if (!activeRoll || activeRoll.is_completed || isShutterAnimating) {
+      if (!activeRoll) setShowFilmModal(true);
       return;
     }
+
+    setIsShutterAnimating(true);
+    setTimeout(() => setIsShutterAnimating(false), 300);
 
     let imageBlob: Blob | null = null;
 
@@ -250,7 +254,8 @@ const CameraView: React.FC = () => {
         shutterSpeed: cameraMode === 'pro' && !isNative ? formatShutterSpeed(manualSettings.shutterSpeed) : '1/125',
         zoom: `${zoom}x`,
       };
-      await takePhoto(imageBlob, metadata);
+      // Don't await this, let it run in the background
+      takePhoto(imageBlob, metadata);
     }
   };
 
@@ -275,6 +280,8 @@ const CameraView: React.FC = () => {
   if (hasPermission === false) {
     return <div className="h-screen flex items-center justify-center bg-black text-red-400 p-4 text-center">Camera access denied. Please enable camera permissions in your browser or device settings.</div>;
   }
+
+  const shotsLeft = activeRoll ? activeRoll.capacity - activeRoll.shots_used : 0;
 
   return (
     <div className={`h-screen flex flex-col overflow-hidden text-white camera-modal ${isNative ? 'bg-transparent' : 'bg-black'}`}>
@@ -304,6 +311,7 @@ const CameraView: React.FC = () => {
               className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
             />
           )}
+          {isShutterAnimating && <div className="absolute inset-0 bg-black z-50 animate-shutter"></div>}
         </div>
       </div>
 
@@ -353,6 +361,9 @@ const CameraView: React.FC = () => {
                     {activeRoll?.is_completed && <Lock className="w-8 h-8 text-gray-500" />}
                     {!activeRoll?.is_completed && <Camera className="w-6 h-6 text-gray-900" />}
                   </button>
+                </div>
+                <div className="text-sm font-mono text-gray-300 h-5">
+                  {activeRoll ? `${shotsLeft} SHOTS LEFT` : 'NO ROLL'}
                 </div>
               </div>
             </div>

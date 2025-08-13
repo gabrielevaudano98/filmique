@@ -174,3 +174,14 @@
 .animate-fade-in {
   animation: fadeIn 0.4s ease-out forwards;
 }
+
+/* Shutter Animation */
+@keyframes shutter {
+  0% { opacity: 0; }
+  50% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.animate-shutter {
+  animation: shutter 300ms ease-in-out;
+}

@@ -4,7 +4,15 @@ import { saveAs } from 'file-saver';
 import * as api from '../services/api';
 import { UserProfile, Roll, Photo, FilmStock } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
-import { filenameFromUrl } from '../utils/storage';
+import { extractStoragePathFromPublicUrl } from '../utils/storage';
+import { supabase } from '../integrations/supabase/client';
+
+const toBase64 = (file: Blob) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+});
 
 export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmStock[]) => {
   const [activeRoll, setActiveRoll] = useState<Roll | null>(null);
@@ -35,12 +43,33 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
 
   const takePhoto = useCallback(async (imageBlob: Blob, metadata: any) => {
     if (!profile || !activeRoll) return;
-    const filePath = `${profile.id}/${activeRoll.id}/${Date.now()}.jpeg`;
+
     try {
-      await api.uploadPhotoToStorage(filePath, imageBlob);
-      const { data: urlData } = api.getPublicUrl('photos', filePath);
-      await api.createPhotoRecord(profile.id, activeRoll.id, urlData.publicUrl, metadata);
-      
+      const base64Image = await toBase64(imageBlob);
+
+      const { data: result, error: functionError } = await supabase.functions.invoke('process-photo', {
+        body: {
+          image: base64Image,
+          userId: profile.id,
+          rollId: activeRoll.id,
+        },
+      });
+
+      if (functionError || result.error) {
+        throw new Error(functionError?.message || result.error);
+      }
+
+      const { url, thumbnailUrl, width, height } = result;
+
+      const { error: recordError } = await api.createPhotoRecord(
+        profile.id,
+        activeRoll.id,
+        url,
+        thumbnailUrl,
+        { ...metadata, width, height }
+      );
+      if (recordError) throw new Error(`Failed to create photo record: ${recordError.message}`);
+
       const newShotsUsed = activeRoll.shots_used + 1;
       const isCompleted = newShotsUsed >= activeRoll.capacity;
       const updatePayload: any = { shots_used: newShotsUsed, is_completed: isCompleted };
@@ -56,8 +85,8 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
           setActiveRoll(updatedRoll);
         }
       }
-    } catch (error) {
-      showErrorToast('Failed to save photo.');
+    } catch (error: any) {
+      showErrorToast(error?.message || 'Failed to save photo.');
     }
   }, [profile, activeRoll]);
 
@@ -105,12 +134,13 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
         await api.deleteCommentsForPosts(postIds);
       }
       await api.deletePostsForRoll(rollId);
+      
       const { data: photos } = await api.getPhotosForRoll(rollId);
       if (photos && photos.length > 0) {
-        const photoPaths = photos.map(p => filenameFromUrl(p.url)).filter(Boolean);
+        const photoPaths = photos.map(p => extractStoragePathFromPublicUrl(p.url)).filter(Boolean) as string[];
         if (photoPaths.length > 0) await api.deletePhotosFromStorage(photoPaths);
       }
-      await api.deletePhotosForRoll(rollId);
+      
       await api.deleteRollById(rollId);
       setCompletedRolls(prev => prev.filter(r => r.id !== rollId));
       setSelectedRoll(null);
@@ -123,23 +153,28 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
   }, [profile]);
 
   const downloadPhoto = useCallback(async (photo: Photo) => {
+    const toastId = showLoadingToast('Preparing photo for download...');
     try {
       const response = await fetch(photo.url);
-      saveAs(await response.blob(), filenameFromUrl(photo.url));
+      const blob = await response.blob();
+      saveAs(blob, `photo-${photo.id}.jpeg`);
       showSuccessToast('Photo download started!');
     } catch (error) {
       showErrorToast('Could not download photo.');
+    } finally {
+      dismissToast(toastId);
     }
   }, []);
 
   const downloadRoll = useCallback(async (roll: Roll) => {
     if (!roll.photos || roll.photos.length === 0) return;
-    const toastId = showLoadingToast(`Zipping ${roll.photos.length} photos...`);
+    const toastId = showLoadingToast(`Preparing ${roll.photos.length} photos for download...`);
     try {
       const zip = new JSZip();
       await Promise.all(roll.photos.map(async (photo) => {
         const response = await fetch(photo.url);
-        zip.file(filenameFromUrl(photo.url), await response.blob());
+        const blob = await response.blob();
+        zip.file(`photo-${photo.id}.jpeg`, blob);
       }));
       saveAs(await zip.generateAsync({ type: 'blob' }), `${(roll.title || roll.film_type)}.zip`);
       showSuccessToast('Roll download started!');
