@@ -47,16 +47,11 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
     try {
       const base64Image = await toBase64(imageBlob);
 
-      const { data: result, error: functionError } = await supabase.functions.invoke('process-photo', {
-        body: {
-          image: base64Image,
-          userId: profile.id,
-          rollId: activeRoll.id,
-        },
-      });
+      // Use the fixed processPhoto function
+      const { data: result, error: functionError } = await api.processPhoto(base64Image, profile.id, activeRoll.id);
 
-      if (functionError || result.error) {
-        throw new Error(functionError?.message || result.error);
+      if (functionError || result?.error) {
+        throw new Error(functionError?.message || result?.error);
       }
 
       const { url, previewUrl, thumbnailUrl, width, height } = result;

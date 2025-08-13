@@ -80,9 +80,17 @@ export const updateRollsAlbum = (rollIds: string[], albumId: string | null) => s
 export const fetchNotifications = (userId: string) => supabase.from('notifications').select(NOTIFICATION_SELECT_QUERY).eq('user_id', userId).order('created_at', { ascending: false }).limit(30);
 export const markNotificationsRead = (ids: string[]) => supabase.from('notifications').update({ is_read: true }).in('id', ids);
 
-// Edge Functions
+// Edge Functions - Fixed to use correct invocation method
 export const recordActivity = (activityType: string, actorId: string, entityId: string, entityOwnerId?: string) => {
+  // Use the correct Supabase function invocation syntax
   return supabase.functions.invoke('record-activity', {
     body: { activityType, actorId, entityId, entityOwnerId },
+  });
+};
+
+// Fixed process-photo function call
+export const processPhoto = (image: string, userId: string, rollId: string) => {
+  return supabase.functions.invoke('process-photo', {
+    body: { image, userId, rollId },
   });
 };
