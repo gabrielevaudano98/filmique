@@ -4,10 +4,7 @@ import { saveAs } from 'file-saver';
 import * as api from '../services/api';
 import { UserProfile, Roll, Photo, FilmStock } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
-import { extractStoragePathFromPublicUrl } from '../utils/storage';
-import AvifWorkerUrl from '../avif.worker.ts?worker';
-import AvifToJpegWorkerUrl from '../avif-to-jpeg.worker.ts?worker'; // New worker import
-import { TARGET_LONG_EDGE_PX } from '../utils/imageUtils';
+import { filenameFromUrl } from '../utils/storage';
 
 export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmStock[]) => {
   const [activeRoll, setActiveRoll] = useState<Roll | null>(null);
@@ -38,64 +35,12 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
 
   const takePhoto = useCallback(async (imageBlob: Blob, metadata: any) => {
     if (!profile || !activeRoll) return;
-    const toastId = showLoadingToast('Processing photo...');
-
+    const filePath = `${profile.id}/${activeRoll.id}/${Date.now()}.jpeg`;
     try {
-      const buf = new Uint8Array(await imageBlob.arrayBuffer());
-      const worker = new AvifWorkerUrl();
-
-      const avifResult: { avif?: Uint8Array; width?: number; height?: number; error?: string } =
-        await new Promise((resolve) => {
-          worker.onmessage = (e: MessageEvent) => {
-            resolve(e.data);
-            worker.terminate();
-          };
-          worker.onerror = (err) => {
-            resolve({ error: `Worker error: ${err.message}` });
-            worker.terminate();
-          };
-          worker.postMessage({
-            buf,
-            mime: imageBlob.type.toLowerCase(),
-            targetLong: TARGET_LONG_EDGE_PX,
-            cqLevel: 22, // print quality
-            speed: 6,
-            chroma: '444'
-          }, [buf.buffer]);
-        });
-
-      if (avifResult.error) {
-        throw new Error(`AVIF encoding failed: ${avifResult.error}`);
-      }
-
-      const avifBlob = new Blob([avifResult.avif!], { type: 'image/avif' });
+      await api.uploadPhotoToStorage(filePath, imageBlob);
+      const { data: urlData } = api.getPublicUrl('photos', filePath);
+      await api.createPhotoRecord(profile.id, activeRoll.id, urlData.publicUrl, metadata);
       
-      // Generate unique path for the AVIF image
-      const filePath = `photos/${profile.id}/${activeRoll.id}/${crypto.randomUUID()}.avif`;
-      const thumbnailPath = `photos/${profile.id}/${activeRoll.id}/thumbnails/${crypto.randomUUID()}_thumb.avif`; // For thumbnail
-
-      // Upload full-size AVIF
-      const { error: uploadError } = await api.uploadPhotoToStorage(filePath, avifBlob, 'image/avif');
-      if (uploadError) throw new Error(`Failed to upload photo: ${uploadError.message}`);
-
-      const { data: publicUrlData } = api.getPublicUrl('photos', filePath);
-      const publicUrl = publicUrlData.publicUrl;
-
-      // For thumbnail, we can use the same AVIF blob but potentially resize it smaller if needed
-      // For simplicity, let's use the same public URL for thumbnail, but in a real app, you'd generate a smaller thumbnail.
-      const thumbnailUrl = publicUrl; 
-
-      // Create photo record in database
-      const { error: recordError } = await api.createPhotoRecord(
-        profile.id,
-        activeRoll.id,
-        publicUrl,
-        thumbnailUrl,
-        { ...metadata, width: avifResult.width, height: avifResult.height }
-      );
-      if (recordError) throw new Error(`Failed to create photo record: ${recordError.message}`);
-
-      // Update roll status
       const newShotsUsed = activeRoll.shots_used + 1;
       const isCompleted = newShotsUsed >= activeRoll.capacity;
       const updatePayload: any = { shots_used: newShotsUsed, is_completed: isCompleted };
@@ -111,11 +56,8 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
           setActiveRoll(updatedRoll);
         }
       }
-      showSuccessToast('Photo captured!');
-    } catch (error: any) {
-      showErrorToast(error?.message || 'Failed to save photo.');
-    } finally {
-      dismissToast(toastId);
+    } catch (error) {
+      showErrorToast('Failed to save photo.');
     }
   }, [profile, activeRoll]);
 
@@ -163,13 +105,12 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
         await api.deleteCommentsForPosts(postIds);
       }
       await api.deletePostsForRoll(rollId);
-      
       const { data: photos } = await api.getPhotosForRoll(rollId);
       if (photos && photos.length > 0) {
-        const photoPaths = photos.map(p => extractStoragePathFromPublicUrl(p.url)).filter(Boolean) as string[];
+        const photoPaths = photos.map(p => filenameFromUrl(p.url)).filter(Boolean);
         if (photoPaths.length > 0) await api.deletePhotosFromStorage(photoPaths);
       }
-      
+      await api.deletePhotosForRoll(rollId);
       await api.deleteRollById(rollId);
       setCompletedRolls(prev => prev.filter(r => r.id !== rollId));
       setSelectedRoll(null);
@@ -181,63 +122,24 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
     }
   }, [profile]);
 
-  const convertAvifToJpeg = useCallback(async (avifUrl: string): Promise<Blob | null> => {
+  const downloadPhoto = useCallback(async (photo: Photo) => {
     try {
-      const response = await fetch(avifUrl);
-      const buf = new Uint8Array(await response.arrayBuffer());
-      const worker = new AvifToJpegWorkerUrl();
-
-      const jpegResult: { jpeg?: Uint8Array; error?: string } = await new Promise((resolve) => {
-        worker.onmessage = (e: MessageEvent) => {
-          resolve(e.data);
-          worker.terminate();
-        };
-        worker.onerror = (err) => {
-          resolve({ error: `Worker error: ${err.message}` });
-          worker.terminate();
-        };
-        worker.postMessage({ buf }, [buf.buffer]);
-      });
-
-      if (jpegResult.error) {
-        throw new Error(`JPEG encoding failed: ${jpegResult.error}`);
-      }
-      return new Blob([jpegResult.jpeg!], { type: 'image/jpeg' });
+      const response = await fetch(photo.url);
+      saveAs(await response.blob(), filenameFromUrl(photo.url));
+      showSuccessToast('Photo download started!');
     } catch (error) {
-      console.error('Error converting AVIF to JPEG:', error);
-      return null;
+      showErrorToast('Could not download photo.');
     }
   }, []);
 
-  const downloadPhoto = useCallback(async (photo: Photo) => {
-    const toastId = showLoadingToast('Converting photo for download...');
-    try {
-      const jpegBlob = await convertAvifToJpeg(photo.url);
-      if (jpegBlob) {
-        saveAs(jpegBlob, `photo-${photo.id}.jpeg`);
-        showSuccessToast('Photo download started!');
-      } else {
-        showErrorToast('Failed to convert photo for download.');
-      }
-    } catch (error) {
-      showErrorToast('Could not download photo.');
-    } finally {
-      dismissToast(toastId);
-    }
-  }, [convertAvifToJpeg]);
-
   const downloadRoll = useCallback(async (roll: Roll) => {
     if (!roll.photos || roll.photos.length === 0) return;
-    const toastId = showLoadingToast(`Preparing ${roll.photos.length} photos for download...`);
+    const toastId = showLoadingToast(`Zipping ${roll.photos.length} photos...`);
     try {
       const zip = new JSZip();
       await Promise.all(roll.photos.map(async (photo) => {
-        const jpegBlob = await convertAvifToJpeg(photo.url);
-        if (jpegBlob) {
-          zip.file(`photo-${photo.id}.jpeg`, jpegBlob);
-        } else {
-          console.warn(`Skipping photo ${photo.id} due to conversion failure.`);
-        }
+        const response = await fetch(photo.url);
+        zip.file(filenameFromUrl(photo.url), await response.blob());
       }));
       saveAs(await zip.generateAsync({ type: 'blob' }), `${(roll.title || roll.film_type)}.zip`);
       showSuccessToast('Roll download started!');
@@ -246,7 +148,7 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
     } finally {
       dismissToast(toastId);
     }
-  }, [convertAvifToJpeg]);
+  }, []);
 
   return {
     activeRoll,

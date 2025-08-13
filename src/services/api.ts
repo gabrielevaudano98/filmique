@@ -31,24 +31,11 @@ export const fetchAllRolls = (userId: string) => supabase.from('rolls').select('
 export const deleteRollById = (rollId: string) => supabase.from('rolls').delete().eq('id', rollId);
 export const createNewRoll = (userId: string, filmType: string, capacity: number) => supabase.from('rolls').insert({ user_id: userId, film_type: filmType, capacity }).select().single();
 export const updateRoll = (rollId: string, data: any) => supabase.from('rolls').update(data).eq('id', rollId).select('*, photos(*), albums(title)').single();
+export const uploadPhotoToStorage = (path: string, blob: Blob) => supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg' });
+export const createPhotoRecord = (userId: string, rollId: string, url: string, metadata: any) => supabase.from('photos').insert({ user_id: userId, roll_id: rollId, url, thumbnail_url: url, metadata });
+export const deletePhotosFromStorage = (paths: string[]) => supabase.storage.from('photos').remove(paths);
 export const getPhotosForRoll = (rollId: string) => supabase.from('photos').select('url').eq('roll_id', rollId);
-
-// New functions for client-side AVIF workflow
-export const uploadPhotoToStorage = (path: string, file: Blob, contentType: string) => {
-  return supabase.storage.from('photos').upload(path, file, {
-    cacheControl: '3600',
-    upsert: true,
-    contentType: contentType
-  });
-};
-
-export const createPhotoRecord = (userId: string, rollId: string, url: string, thumbnailUrl: string, metadata: any) => {
-  return supabase.from('photos').insert({ user_id: userId, roll_id: rollId, url, thumbnail_url: thumbnailUrl, metadata }).select().single();
-};
-
-export const deletePhotosFromStorage = (paths: string[]) => {
-  return supabase.storage.from('photos').remove(paths);
-};
+export const deletePhotosForRoll = (rollId: string) => supabase.from('photos').delete().eq('roll_id', rollId);
 
 export const developRollPhotos = async (roll: Roll, filmStocks: FilmStock[]) => {
   const filmStock = filmStocks.find(fs => fs.name === roll.film_type);
@@ -61,7 +48,7 @@ export const developRollPhotos = async (roll: Roll, filmStocks: FilmStock[]) => 
     const { error } = await supabase.storage.from('photos').update(path, filteredBlob, {
       cacheControl: '3600',
       upsert: true,
-      contentType: 'image/jpeg' // Keep as JPEG for client-side filtering, AVIF conversion happens on upload
+      contentType: 'image/jpeg'
     });
     if (error) throw error;
   }));
@@ -93,7 +80,7 @@ export const updateRollsAlbum = (rollIds: string[], albumId: string | null) => s
 export const fetchNotifications = (userId: string) => supabase.from('notifications').select(NOTIFICATION_SELECT_QUERY).eq('user_id', userId).order('created_at', { ascending: false }).limit(30);
 export const markNotificationsRead = (ids: string[]) => supabase.from('notifications').update({ is_read: true }).in('id', ids);
 
-// Edge Functions (record-activity is still used)
+// Edge Functions
 export const recordActivity = (activityType: string, actorId: string, entityId: string, entityOwnerId?: string) => {
   return supabase.functions.invoke('record-activity', {
     body: { activityType, actorId, entityId, entityOwnerId },
