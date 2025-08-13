@@ -3,6 +3,7 @@ import { useSwipeable } from 'react-swipeable';
 import { Roll } from '../types';
 import { Trash2, FolderPlus, Clock, FolderMinus } from 'lucide-react';
 import NegativePhoto from './NegativePhoto';
+import FilmCanisterIcon from './FilmCanisterIcon';
 
 interface RollListItemProps {
   roll: Roll;
@@ -91,7 +92,8 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
             backgroundSize: 'auto 100%',
           }}
         >
-          <div className="flex space-x-2 px-4">
+          <div className="flex space-x-2 px-4 items-center">
+            <FilmCanisterIcon filmType={roll.film_type} className="h-24 w-auto shrink-0 mr-1" />
             {roll.photos && roll.photos.length > 0 ? (
               roll.photos.map(photo => (
                 <NegativePhoto
