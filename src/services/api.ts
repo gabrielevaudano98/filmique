@@ -31,9 +31,7 @@ export const fetchAllRolls = (userId: string) => supabase.from('rolls').select('
 export const deleteRollById = (rollId: string) => supabase.from('rolls').delete().eq('id', rollId);
 export const createNewRoll = (userId: string, filmType: string, capacity: number) => supabase.from('rolls').insert({ user_id: userId, film_type: filmType, capacity }).select().single();
 export const updateRoll = (rollId: string, data: any) => supabase.from('rolls').update(data).eq('id', rollId).select('*, photos(*), albums(title)').single();
-export const uploadPhotoToStorage = (path: string, blob: Blob) => supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg' });
-export const createPhotoRecord = (userId: string, rollId: string, url: string, metadata: any) => supabase.from('photos').insert({ user_id: userId, roll_id: rollId, url, thumbnail_url: url, metadata });
-export const deletePhotosFromStorage = (paths: string[]) => supabase.storage.from('photos').remove(paths);
+// Removed direct uploadPhotoToStorage and createPhotoRecord from here, now handled by Edge Function
 export const getPhotosForRoll = (rollId: string) => supabase.from('photos').select('url').eq('roll_id', rollId);
 export const deletePhotosForRoll = (rollId: string) => supabase.from('photos').delete().eq('roll_id', rollId);
 
@@ -48,7 +46,7 @@ export const developRollPhotos = async (roll: Roll, filmStocks: FilmStock[]) => 
     const { error } = await supabase.storage.from('photos').update(path, filteredBlob, {
       cacheControl: '3600',
       upsert: true,
-      contentType: 'image/jpeg'
+      contentType: 'image/jpeg' // Keep as JPEG for client-side filtering, AVIF conversion happens on upload
     });
     if (error) throw error;
   }));
@@ -85,4 +83,12 @@ export const recordActivity = (activityType: string, actorId: string, entityId: 
   return supabase.functions.invoke('record-activity', {
     body: { activityType, actorId, entityId, entityOwnerId },
   });
+};
+
+// New function to process and upload photo via Edge Function
+export const processAndUploadPhoto = async (imageBase64: string, userId: string, rollId: string, metadata: any) => {
+  const { data, error } = await supabase.functions.invoke('process-photo', {
+    body: { imageBase64, userId, rollId, metadata },
+  });
+  return { publicUrl: data?.publicUrl, error };
 };

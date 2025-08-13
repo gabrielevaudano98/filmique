@@ -35,27 +35,43 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
 
   const takePhoto = useCallback(async (imageBlob: Blob, metadata: any) => {
     if (!profile || !activeRoll) return;
-    const filePath = `${profile.id}/${activeRoll.id}/${Date.now()}.jpeg`;
     try {
-      await api.uploadPhotoToStorage(filePath, imageBlob);
-      const { data: urlData } = api.getPublicUrl('photos', filePath);
-      await api.createPhotoRecord(profile.id, activeRoll.id, urlData.publicUrl, metadata);
-      
-      const newShotsUsed = activeRoll.shots_used + 1;
-      const isCompleted = newShotsUsed >= activeRoll.capacity;
-      const updatePayload: any = { shots_used: newShotsUsed, is_completed: isCompleted };
-      if (isCompleted) updatePayload.completed_at = new Date().toISOString();
-      
-      const { data: updatedRoll } = await api.updateRoll(activeRoll.id, updatePayload);
-      if (updatedRoll) {
-        if (isCompleted) {
-          setActiveRoll(null);
-          setCompletedRolls(prev => [updatedRoll, ...prev]);
-          setRollToName(updatedRoll);
-        } else {
-          setActiveRoll(updatedRoll);
+      // Convert blob to base64 string to send to Edge Function
+      const reader = new FileReader();
+      reader.readAsDataURL(imageBlob);
+      reader.onloadend = async () => {
+        const base64data = reader.result?.toString().split(',')[1]; // Get base64 part of data URL
+
+        if (!base64data) {
+          showErrorToast('Failed to encode image for upload.');
+          return;
         }
-      }
+
+        // Call the new Edge Function to process and upload the photo
+        const { publicUrl, error: processError } = await api.processAndUploadPhoto(base64data, profile.id, activeRoll.id, metadata);
+
+        if (processError) {
+          showErrorToast(`Failed to process and save photo: ${processError.message}`);
+          return;
+        }
+
+        // The photo record is now created by the Edge Function, so we only need to update the roll status here.
+        const newShotsUsed = activeRoll.shots_used + 1;
+        const isCompleted = newShotsUsed >= activeRoll.capacity;
+        const updatePayload: any = { shots_used: newShotsUsed, is_completed: isCompleted };
+        if (isCompleted) updatePayload.completed_at = new Date().toISOString();
+        
+        const { data: updatedRoll } = await api.updateRoll(activeRoll.id, updatePayload);
+        if (updatedRoll) {
+          if (isCompleted) {
+            setActiveRoll(null);
+            setCompletedRolls(prev => [updatedRoll, ...prev]);
+            setRollToName(updatedRoll);
+          } else {
+            setActiveRoll(updatedRoll);
+          }
+        }
+      };
     } catch (error) {
       showErrorToast('Failed to save photo.');
     }
