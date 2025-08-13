@@ -1,111 +1,95 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
-import { decode } from "https://deno.land/std@0.224.0/encoding/base64.ts";
-import { Image } from "https://deno.land/x/imagescript@1.2.17/mod.ts";
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { Image } from "https://esm.sh/imagescript@1.2.16";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+const FULL_LONG_EDGE = 1920;
+const PREVIEW_LONG_EDGE = 1080;
+const THUMB_LONG_EDGE = 400;
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const body = await req.json().catch(() => null);
-    if (!body) {
-      return new Response(
-        JSON.stringify({ error: "Invalid or missing JSON body" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
 
-    const { image, userId, rollId } = body;
-
+    const { image, userId, rollId } = await req.json();
+    
     if (!image || !userId || !rollId) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields: image, userId, rollId" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      throw new Error("Missing required parameters: image, userId, or rollId");
     }
 
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-      return new Response(
-        JSON.stringify({ error: "Server configuration missing SUPABASE env variables" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const base64 = image.split(',')[1];
+    const decodedImage = atob(base64);
+    const imageBuffer = new Uint8Array(decodedImage.length);
+    for (let i = 0; i < decodedImage.length; i++) {
+      imageBuffer[i] = decodedImage.charCodeAt(i);
     }
 
-    // Normalize base64 string (remove data URL prefix if present)
-    const normalizedBase64 = typeof image === "string" ? image.replace(/^data:image\/(png|jpeg|jpg);base64,/, "") : null;
-    if (!normalizedBase64) {
-      return new Response(
-        JSON.stringify({ error: "Image must be a base64 string" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const originalImage = await Image.decode(imageBuffer);
+    const { width: originalWidth, height: originalHeight } = originalImage;
 
-    // Decode base64 -> Uint8Array
-    const imgBytes = decode(normalizedBase64);
+    // Create copies for each size to process independently
+    const fullImage = originalImage.clone();
+    const previewImage = originalImage.clone();
+    const thumbImage = originalImage.clone();
 
-    // Decode image via imagescript
-    const originalImage = await Image.decode(imgBytes);
-    const { width, height } = originalImage;
+    // Process full-size image
+    fullImage.resize(originalWidth > originalHeight ? FULL_LONG_EDGE : Image.RESIZE_AUTO, originalHeight > originalWidth ? FULL_LONG_EDGE : Image.RESIZE_AUTO);
+    const fullJpeg = await fullImage.encodeJPEG(90);
+    
+    // Process preview-size image
+    previewImage.resize(originalWidth > originalHeight ? PREVIEW_LONG_EDGE : Image.RESIZE_AUTO, originalHeight > originalWidth ? PREVIEW_LONG_EDGE : Image.RESIZE_AUTO);
+    const previewJpeg = await previewImage.encodeJPEG(85);
 
-    // Prepare resized versions
-    const preview = originalImage.clone().resize(1080, Image.RESIZE_AUTO);
-    const thumbnail = originalImage.clone().resize(400, Image.RESIZE_AUTO);
+    // Process thumbnail
+    thumbImage.resize(originalWidth > originalHeight ? THUMB_LONG_EDGE : Image.RESIZE_AUTO, originalHeight > originalWidth ? THUMB_LONG_EDGE : Image.RESIZE_AUTO);
+    const thumbJpeg = await thumbImage.encodeJPEG(75);
 
-    const previewBuf = await preview.encodeJPEG(90);
-    const thumbnailBuf = await thumbnail.encodeJPEG(80);
-    const originalBuf = await originalImage.encodeJPEG(95);
+    const fileId = crypto.randomUUID();
+    const basePath = `photos/${userId}/${rollId}`;
+    const fullPath = `${basePath}/full/${fileId}.jpeg`;
+    const previewPath = `${basePath}/preview/${fileId}_preview.jpeg`;
+    const thumbPath = `${basePath}/thumbnail/${fileId}_thumb.jpeg`;
 
-    const timestamp = Date.now();
-    const originalPath = `${userId}/${rollId}/${timestamp}_original.jpg`;
-    const previewPath = `${userId}/${rollId}/${timestamp}_preview.jpg`;
-    const thumbnailPath = `${userId}/${rollId}/${timestamp}_thumbnail.jpg`;
-
-    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-    // Upload (upsert true to be safe)
-    const [oRes, pRes, tRes] = await Promise.all([
-      supabaseAdmin.storage.from("photos").upload(originalPath, originalBuf, { contentType: "image/jpeg", upsert: true }),
-      supabaseAdmin.storage.from("photos").upload(previewPath, previewBuf, { contentType: "image/jpeg", upsert: true }),
-      supabaseAdmin.storage.from("photos").upload(thumbnailPath, thumbnailBuf, { contentType: "image/jpeg", upsert: true }),
+    // Upload all three images in parallel
+    const [fullResult, previewResult, thumbResult] = await Promise.all([
+      supabase.storage.from('photos').upload(fullPath, fullJpeg, { contentType: 'image/jpeg', upsert: true }),
+      supabase.storage.from('photos').upload(previewPath, previewJpeg, { contentType: 'image/jpeg', upsert: true }),
+      supabase.storage.from('photos').upload(thumbPath, thumbJpeg, { contentType: 'image/jpeg', upsert: true })
     ]);
 
-    if (oRes.error || pRes.error || tRes.error) {
-      const message = oRes.error?.message || pRes.error?.message || tRes.error?.message || "Upload failed";
-      return new Response(
-        JSON.stringify({ error: message }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    if (fullResult.error) throw fullResult.error;
+    if (previewResult.error) throw previewResult.error;
+    if (thumbResult.error) throw thumbResult.error;
 
-    const { data: originalData } = supabaseAdmin.storage.from("photos").getPublicUrl(originalPath);
-    const { data: previewData } = supabaseAdmin.storage.from("photos").getPublicUrl(previewPath);
-    const { data: thumbnailData } = supabaseAdmin.storage.from("photos").getPublicUrl(thumbnailPath);
+    const { data: fullUrlData } = supabase.storage.from('photos').getPublicUrl(fullPath);
+    const { data: previewUrlData } = supabase.storage.from('photos').getPublicUrl(previewPath);
+    const { data: thumbUrlData } = supabase.storage.from('photos').getPublicUrl(thumbPath);
 
     return new Response(
-      JSON.stringify({
-        url: originalData.publicUrl,
-        previewUrl: previewData.publicUrl,
-        thumbnailUrl: thumbnailData.publicUrl,
-        width,
-        height,
+      JSON.stringify({ 
+        url: fullUrlData.publicUrl,
+        previewUrl: previewUrlData.publicUrl,
+        thumbnailUrl: thumbUrlData.publicUrl,
+        width: fullImage.width,
+        height: fullImage.height,
       }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-  } catch (err: any) {
-    return new Response(
-      JSON.stringify({ error: err?.message || String(err) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    })
   }
-});
+})
