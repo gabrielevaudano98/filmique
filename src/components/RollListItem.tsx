@@ -14,15 +14,26 @@ interface RollListItemProps {
 
 /**
  * Generate a small SVG pattern for sprocket holes.
- * We encode the SVG as a data URI and use it as a background image so the holes look rectangular
- * with slightly rounded corners and use the palette color passed in.
+ * Encoded as a data URL used as background (rectangular holes with slight rounding).
  */
-const generateSprocketDataUrl = (fillColor: string, holeW = 12, holeH = 8, spacing = 16, rx = 2) => {
+const generateSprocketDataUrl = (fillColor: string, holeW = 12, holeH = 8, spacing = 18, rx = 2) => {
   const patternW = holeW + spacing;
-  // simple pattern that repeats horizontally
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='${holeH}' viewBox='0 0 ${patternW} ${holeH}' preserveAspectRatio='none'>
-    <rect width='${patternW}' height='${holeH}' fill='black' />
-    <rect x='${Math.round(spacing/2)}' y='1' rx='${rx}' ry='${rx}' width='${holeW}' height='${holeH - 2}' fill='${fillColor}'/>
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${patternW}' height='${holeH}' viewBox='0 0 ${patternW} ${holeH}'>
+    <rect width='${patternW}' height='${holeH}' fill='black'/>
+    <rect x='${Math.round(spacing/2)}' y='1' rx='${rx}' ry='${rx}' width='${holeW}' height='${holeH-2}' fill='${fillColor}'/>
+  </svg>`;
+  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
+};
+
+/**
+ * Generate a small ruler SVG background with repeating frame numbers.
+ * We use a compact pattern that repeats horizontally.
+ */
+const generateRulerDataUrl = (text = '34', width = 56, height = 16, color = '#d78657') => {
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}' viewBox='0 0 ${width} ${height}'>
+    <rect width='100%' height='100%' fill='black' />
+    <text x='50%' y='12' font-family='Inter, Arial, sans-serif' font-size='10' fill='${color}' text-anchor='middle'>${text}</text>
+    <rect x='2' y='2' width='4' height='6' fill='${color}' rx='1' />
   </svg>`;
   return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
 };
@@ -37,8 +48,8 @@ const SprocketRow: React.FC<{ isDeveloping?: boolean }> = ({ isDeveloping }) => 
         backgroundImage: bg,
         backgroundRepeat: 'repeat-x',
         backgroundPosition: 'left center',
-        backgroundSize: '28px 100%',
-        height: 14,
+        backgroundSize: '30px 100%',
+        height: 16,
       }}
     />
   );
@@ -46,17 +57,23 @@ const SprocketRow: React.FC<{ isDeveloping?: boolean }> = ({ isDeveloping }) => 
 
 const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlbum, isDeveloping = false, assignActionIcon = 'add' }) => {
   const [offsetX, setOffsetX] = useState(0);
-  const itemRef = useRef<HTMLDivElement>(null);
-  const ACTION_WIDTH = 80;
+  const containerRef = useRef<HTMLDivElement>(null);
+  const framesScrollRef = useRef<HTMLDivElement>(null);
+  const ACTION_WIDTH = 84;
 
+  // Swipeable handles reveal actions when user swipes the entire card horizontally.
   const handlers = useSwipeable({
     onSwiping: (event) => {
-      if (isDeveloping) return;
-      if (event.deltaX < -ACTION_WIDTH * 1.5 || event.deltaX > ACTION_WIDTH * 1.5) return;
-      setOffsetX(event.deltaX);
+      // don't intercept when the user is interacting with the inner scroll container
+      const sc = framesScrollRef.current;
+      if (sc && (Math.abs(event.deltaX) < Math.abs(event.deltaY))) return;
+      setOffsetX(Math.max(-ACTION_WIDTH, Math.min(ACTION_WIDTH, event.deltaX)));
     },
     onSwiped: (event) => {
-      if (isDeveloping) return;
+      if (Math.abs(event.deltaX) < Math.abs(event.deltaY)) {
+        setOffsetX(0);
+        return;
+      }
       if (event.deltaX < -ACTION_WIDTH / 2) {
         setOffsetX(-ACTION_WIDTH);
       } else if (event.deltaX > ACTION_WIDTH / 2) {
@@ -65,8 +82,9 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
         setOffsetX(0);
       }
     },
-    preventScrollOnSwipe: true,
     trackMouse: true,
+    preventDefaultTouchmoveEvent: false,
+    delta: 10,
   });
 
   const resetPosition = () => setOffsetX(0);
@@ -84,55 +102,81 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
   const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
   const AssignIcon = assignActionIcon === 'add' ? FolderPlus : FolderMinus;
 
-  // Film frame nodes
-  const frames = roll.photos && roll.photos.length > 0 ? roll.photos : [];
+  // film frames list (first frame shows negative for developed rolls if desired)
+  const frames = roll.photos || [];
+
+  // careful: allow native horizontal scrolling — stop propagation on pointer events inside the scroll element
+  const stopPropagation = (e: React.SyntheticEvent) => {
+    e.stopPropagation();
+  };
+
+  const rulerBg = useMemo(() => generateRulerDataUrl('34'), []);
 
   return (
-    <div className="relative w-full overflow-hidden rounded-xl">
-      {/* Action panels (swipe-to-reveal) */}
-      {!isDeveloping && (
-        <div className="absolute inset-0 flex items-center justify-between z-0">
+    <div className="relative w-full overflow-visible rounded-xl">
+      {/* Action panels */}
+      <div className="absolute inset-0 flex items-center justify-between z-0 pointer-events-none">
+        {/* left action */}
+        <div className="h-full w-20 flex items-center justify-center pointer-events-auto">
           <button
             onClick={handleAssignAlbum}
-            className="h-full w-20 flex items-center justify-center bg-blue-600 text-white transition-colors hover:bg-blue-700"
+            className="h-12 w-12 rounded-lg bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700"
             aria-label={assignActionIcon === 'add' ? "Assign to Album" : "Remove from Album"}
           >
-            <AssignIcon className="w-6 h-6" />
-          </button>
-          <button
-            onClick={handleDelete}
-            className="h-full w-20 flex items-center justify-center bg-red-600 text-white transition-colors hover:bg-red-700"
-            aria-label="Delete Roll"
-          >
-            <Trash2 className="w-6 h-6" />
+            <AssignIcon className="w-5 h-5" />
           </button>
         </div>
-      )}
+
+        {/* right action */}
+        <div className="h-full w-20 flex items-center justify-center pointer-events-auto">
+          <button
+            onClick={handleDelete}
+            className="h-12 w-12 rounded-lg bg-red-600 text-white flex items-center justify-center hover:bg-red-700"
+            aria-label="Delete Roll"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
 
       <div
         {...handlers}
-        ref={itemRef}
-        className={`relative transition-transform duration-200 ease-out cursor-grab active:cursor-grabbing z-10`}
+        ref={containerRef}
+        className="relative z-10 transition-transform duration-200 ease-out"
         style={{ transform: `translateX(${offsetX}px)` }}
       >
-        <div className="film-strip rounded-xl overflow-hidden border border-neutral-800 shadow-sm">
+        <div className="film-strip rounded-xl overflow-visible border border-neutral-800 shadow-sm relative bg-neutral-900">
+          {/* top perforation / notch */}
+          <div className="film-top-notch" />
+
           {/* top sprocket row */}
           <SprocketRow isDeveloping={isDeveloping} />
 
-          {/* film frames area */}
-          <div className={`film-frames flex items-stretch ${isDeveloping ? 'developing' : ''}`}>
+          {/* frames scroll area: this is the native-scroll container, allow touch/scroll events here */}
+          <div
+            ref={framesScrollRef}
+            onTouchStart={stopPropagation as any}
+            onPointerDown={stopPropagation as any}
+            onWheel={stopPropagation as any}
+            className={`film-frames-scroll no-scrollbar ${isDeveloping ? 'developing' : ''}`}
+            role="region"
+            aria-label="Film strip frames"
+          >
+            <div className="film-frames inline-flex items-center gap-3 px-3 py-3">
+              {/* left film border */}
+              <div className="film-edge left" />
 
-            {/* left edge: film border */}
-            <div className="film-edge left" />
-
-            {/* frames */}
-            <div className="flex gap-2 px-2 py-3 overflow-x-auto no-scrollbar">
               {frames.length > 0 ? (
-                frames.map((photo) => (
-                  <div key={photo.id} className="film-frame flex-shrink-0">
+                frames.map((photo, idx) => (
+                  <div
+                    key={photo.id}
+                    className="film-frame snap-center flex-shrink-0"
+                    style={{ scrollSnapAlign: 'center' }}
+                  >
                     {isDeveloping ? (
                       <NegativePhoto src={photo.thumbnail_url} className="film-frame-img" />
                     ) : (
+                      // emulate the scanned strip look by showing first frame as darker/negative when the roll is developed
                       <img
                         src={`${photo.thumbnail_url}${cacheBuster}`}
                         alt="roll photo"
@@ -147,29 +191,40 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
                   No photos
                 </div>
               )}
-            </div>
 
-            {/* right edge: film border */}
-            <div className="film-edge right" />
+              {/* right film border */}
+              <div className="film-edge right" />
+            </div>
           </div>
 
-          {/* bottom sprocket row */}
-          <SprocketRow isDeveloping={isDeveloping} />
+          {/* bottom sprocket & ruler */}
+          <div className="relative">
+            <SprocketRow isDeveloping={isDeveloping} />
+            <div
+              className="film-ruler"
+              style={{
+                backgroundImage: rulerBg,
+                backgroundRepeat: 'repeat-x',
+                backgroundPosition: 'left center',
+                backgroundSize: '56px 100%',
+              }}
+            />
+          </div>
         </div>
 
-        {/* Header band */}
+        {/* header below the strip */}
         <div className="p-4 border-b border-black/20 bg-gradient-to-r from-brand-amber-start to-brand-amber-end">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-bold text-white truncate">{roll.title || roll.film_type || 'Untitled Roll'}</h4>
               <p className="text-sm text-white/80">{roll.shots_used} photos • {roll.film_type}</p>
             </div>
-            {isDeveloping ? (
+            {isDeveloping && (
               <div className="flex items-center gap-2 text-sm text-amber-100">
                 <Clock className="w-4 h-4" />
                 <span>Developing...</span>
               </div>
-            ) : null}
+            )}
           </div>
         </div>
       </div>
