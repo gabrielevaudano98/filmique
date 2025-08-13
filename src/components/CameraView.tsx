@@ -5,7 +5,7 @@ import { RefreshCw, Film, Lock, Camera, ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
 import RangeSelector from './RangeSelector';
-import ShutterAnimation from './ShutterAnimation';
+import FocalPlaneShutter from './FocalPlaneShutter';
 
 type ProControl = 'iso' | 'shutterSpeed' | 'focus';
 
@@ -199,7 +199,6 @@ const CameraView: React.FC = () => {
     }
 
     setIsShutterAnimating(true);
-    setTimeout(() => setIsShutterAnimating(false), 1500);
 
     let imageBlob: Blob | null = null;
 
@@ -309,7 +308,10 @@ const CameraView: React.FC = () => {
               className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
             />
           )}
-          <ShutterAnimation isAnimating={isShutterAnimating} />
+          <FocalPlaneShutter 
+            isAnimating={isShutterAnimating} 
+            onAnimationEnd={() => setIsShutterAnimating(false)} 
+          />
         </div>
       </div>
 
