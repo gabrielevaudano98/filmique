@@ -23,6 +23,7 @@ self.onmessage = async (e: MessageEvent<MsgIn>) => {
 
     (self as any).postMessage({ jpeg }, [jpeg.buffer]);
   } catch (err: any) {
-    (self as any).postMessage({ error: err?.message ?? String(err) });
+    const errorMessage = err?.message ?? String(err);
+    (self as any).postMessage({ error: `Worker execution failed: ${errorMessage}` });
   }
 };

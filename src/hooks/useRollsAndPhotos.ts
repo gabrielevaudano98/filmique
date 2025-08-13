@@ -51,7 +51,10 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
             worker.terminate();
           };
           worker.onerror = (err) => {
-            resolve({ error: `Worker error: ${err.message}` });
+            const errorMessage = err.message 
+              ? err.message 
+              : `Worker failed at ${err.filename}:${err.lineno}. This is often due to a script loading issue.`;
+            resolve({ error: `Worker script error: ${errorMessage}` });
             worker.terminate();
           };
           worker.postMessage({
