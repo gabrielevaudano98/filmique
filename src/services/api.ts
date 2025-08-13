@@ -80,54 +80,29 @@ export const updateRollsAlbum = (rollIds: string[], albumId: string | null) => s
 export const fetchNotifications = (userId: string) => supabase.from('notifications').select(NOTIFICATION_SELECT_QUERY).eq('user_id', userId).order('created_at', { ascending: false }).limit(30);
 export const markNotificationsRead = (ids: string[]) => supabase.from('notifications').update({ is_read: true }).in('id', ids);
 
-// Edge Functions - Fixed to use correct invocation method with better error handling and logging
+// Edge Functions
 export const recordActivity = async (activityType: string, actorId: string, entityId: string, entityOwnerId?: string) => {
-  console.log('=== API: recordActivity called ===');
-  console.log('Parameters:', { activityType, actorId, entityId, entityOwnerId });
-  
-  try {
-    console.log('Calling supabase.functions.invoke for record-activity...');
-    const { data, error } = await supabase.functions.invoke('record-activity', {
-      body: { activityType, actorId, entityId, entityOwnerId },
-    });
-    console.log('record-activity response:', { data, error });
-    
-    if (error) {
-      console.error('record-activity function error:', error);
-      throw new Error(`Function error: ${error.message}`);
-    }
-    
-    console.log('record-activity completed successfully');
-    return data;
-  } catch (err) {
-    console.error('Error in recordActivity:', err);
-    console.error('Error stack:', err.stack);
-    throw err;
+  console.log('--- Client API: recordActivity called with:', { activityType, actorId, entityId, entityOwnerId });
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    console.error("--- Client API: No active session. Aborting function call. ---");
+    return { error: new Error("User not authenticated") };
   }
+  console.log("--- Client API: Active session found. Invoking function... ---");
+  return supabase.functions.invoke('record-activity', {
+    body: { activityType, actorId, entityId, entityOwnerId },
+  });
 };
 
-// Fixed process-photo function call with better error handling and logging
 export const processPhoto = async (image: string, userId: string, rollId: string) => {
-  console.log('=== API: processPhoto called ===');
-  console.log('Parameters:', { userId, rollId });
-  
-  try {
-    console.log('Calling supabase.functions.invoke for process-photo...');
-    const { data, error } = await supabase.functions.invoke('process-photo', {
-      body: { image, userId, rollId },
-    });
-    console.log('process-photo response:', { data, error });
-    
-    if (error) {
-      console.error('process-photo function error:', error);
-      throw new Error(`Function error: ${error.message}`);
-    }
-    
-    console.log('process-photo completed successfully');
-    return data;
-  } catch (err) {
-    console.error('Error in processPhoto:', err);
-    console.error('Error stack:', err.stack);
-    throw err;
+  console.log('--- Client API: processPhoto called with:', { userId, rollId });
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) {
+    console.error("--- Client API: No active session. Aborting function call. ---");
+    return { error: new Error("User not authenticated") };
   }
+  console.log("--- Client API: Active session found. Invoking function... ---");
+  return supabase.functions.invoke('process-photo', {
+    body: { image, userId, rollId },
+  });
 };

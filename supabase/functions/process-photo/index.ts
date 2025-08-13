@@ -9,115 +9,72 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  console.log('=== process-photo function called ===');
-  console.log('Request method:', req.method);
-  console.log('Request headers:', Object.fromEntries(req.headers.entries()));
+  console.log('--- process-photo: Request received ---');
+  console.log(`Method: ${req.method}, URL: ${req.url}`);
 
   if (req.method === 'OPTIONS') {
-    console.log('Handling OPTIONS request');
-    return new Response(null, { headers: corsHeaders })
+    console.log('--- process-photo: Handling OPTIONS preflight request ---');
+    return new Response(null, {
+      status: 204, // No Content
+      headers: corsHeaders,
+    });
   }
 
   try {
-    // Parse JSON body
-    const bodyText = await req.text();
-    console.log('Raw request body:', bodyText);
-    
-    if (!bodyText) {
-      console.error('No request body provided');
-      return new Response(JSON.stringify({ error: 'No request body provided' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
-      })
-    }
-
-    const body = JSON.parse(bodyText);
-    console.log('Parsed body:', body);
+    const body = await req.json();
+    console.log('--- process-photo: Parsed request body ---');
     
     const { image, userId, rollId } = body;
     
-    // Validate required fields
     if (!image || !userId || !rollId) {
-      console.error('Missing required fields:', { image: image ? 'present' : 'missing', userId, rollId });
-      return new Response(JSON.stringify({ error: 'Missing required fields: image, userId, rollId' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      console.error('--- process-photo: ERROR - Missing required fields ---');
+      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
-      })
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
-    console.log('All required fields present');
+    console.log('--- process-photo: Decoding base64 image... ---');
+    const imageContent = decode(image.replace(/^data:image\/(png|jpeg|jpg);base64,/, ''));
     
-    // Decode base64 image
-    console.log('Decoding base64 image...');
-    const imageContent = decode(image.replace(/^data:image\/(png|jpeg|jpg);base64,/, ''))
-    console.log('Image decoded successfully, size:', imageContent.length, 'bytes');
-
-    console.log('Creating Supabase admin client');
+    console.log('--- process-photo: Creating Supabase admin client... ---');
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    )
+    );
 
-    console.log('Decoding image with ImageScript...');
+    console.log('--- process-photo: Processing images (original, preview, thumb)... ---');
     const originalImage = await Image.decode(imageContent);
     const { width, height } = originalImage;
-    console.log('Image decoded successfully:', { width, height });
 
-    // Create preview (1080px wide)
-    console.log('Creating preview image...');
     const previewImage = originalImage.clone().resize(1080, Image.RESIZE_AUTO);
     const previewBuffer = await previewImage.encodeJPEG(90);
-    console.log('Preview image created, size:', previewBuffer.length, 'bytes');
 
-    // Create thumbnail (400px wide)
-    console.log('Creating thumbnail image...');
     const thumbnailImage = originalImage.clone().resize(400, Image.RESIZE_AUTO);
     const thumbnailBuffer = await thumbnailImage.encodeJPEG(80);
-    console.log('Thumbnail image created, size:', thumbnailBuffer.length, 'bytes');
 
     const timestamp = Date.now();
     const originalPath = `${userId}/${rollId}/${timestamp}_original.jpg`;
     const previewPath = `${userId}/${rollId}/${timestamp}_preview.jpg`;
     const thumbnailPath = `${userId}/${rollId}/${timestamp}_thumbnail.jpg`;
 
-    console.log('Uploading images to storage...');
-    // Upload all three versions
+    console.log('--- process-photo: Uploading images to storage... ---');
     const [originalUpload, previewUpload, thumbnailUpload] = await Promise.all([
       supabaseAdmin.storage.from('photos').upload(originalPath, imageContent, { contentType: 'image/jpeg', upsert: true }),
       supabaseAdmin.storage.from('photos').upload(previewPath, previewBuffer, { contentType: 'image/jpeg', upsert: true }),
       supabaseAdmin.storage.from('photos').upload(thumbnailPath, thumbnailBuffer, { contentType: 'image/jpeg', upsert: true }),
     ]);
 
-    console.log('Upload results:', {
-      original: originalUpload.error ? 'ERROR' : 'SUCCESS',
-      preview: previewUpload.error ? 'ERROR' : 'SUCCESS',
-      thumbnail: thumbnailUpload.error ? 'ERROR' : 'SUCCESS'
-    });
+    if (originalUpload.error) throw originalUpload.error;
+    if (previewUpload.error) throw previewUpload.error;
+    if (thumbnailUpload.error) throw thumbnailUpload.error;
 
-    if (originalUpload.error) {
-      console.error('Original upload error:', originalUpload.error);
-      throw originalUpload.error;
-    }
-    if (previewUpload.error) {
-      console.error('Preview upload error:', previewUpload.error);
-      throw previewUpload.error;
-    }
-    if (thumbnailUpload.error) {
-      console.error('Thumbnail upload error:', thumbnailUpload.error);
-      throw thumbnailUpload.error;
-    }
-
-    console.log('All uploads successful, getting public URLs...');
-    // Get public URLs
+    console.log('--- process-photo: Getting public URLs... ---');
     const { data: originalUrlData } = supabaseAdmin.storage.from('photos').getPublicUrl(originalPath);
     const { data: previewUrlData } = supabaseAdmin.storage.from('photos').getPublicUrl(previewPath);
     const { data: thumbnailUrlData } = supabaseAdmin.storage.from('photos').getPublicUrl(thumbnailPath);
 
-    console.log('Public URLs generated successfully');
-    console.log('Original URL:', originalUrlData.publicUrl);
-    console.log('Preview URL:', previewUrlData.publicUrl);
-    console.log('Thumbnail URL:', thumbnailUrlData.publicUrl);
-
+    console.log('--- process-photo: Successfully processed. Returning URLs. ---');
     return new Response(JSON.stringify({
       url: originalUrlData.publicUrl,
       previewUrl: previewUrlData.publicUrl,
@@ -125,15 +82,15 @@ serve(async (req) => {
       width,
       height,
     }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
-    })
-  } catch (err) {
-    console.error('Error in process-photo function:', err);
-    console.error('Error stack:', err.stack);
-    return new Response(JSON.stringify({ error: String(err?.message ?? err) }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+
+  } catch (err) {
+    console.error('--- process-photo: FATAL ERROR ---', err.message, err.stack);
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
-    })
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 })
