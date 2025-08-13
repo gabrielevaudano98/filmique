@@ -20,6 +20,10 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
   const itemRef = useRef<HTMLDivElement>(null);
   const ACTION_WIDTH = 80;
 
+  // Refs for parallax effect
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const canisterRef = useRef<HTMLDivElement>(null);
+
   const handlers = useSwipeable({
     onSwiping: (event) => {
       if (isDeveloping) return;
@@ -43,6 +47,14 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
   const resetPosition = () => setOffsetX(0);
   const handleDelete = () => { onDelete(roll); resetPosition(); };
   const handleAssignAlbum = () => { onAssignAlbum(roll); resetPosition(); };
+
+  const handleParallaxScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    if (canisterRef.current) {
+      const scrollLeft = event.currentTarget.scrollLeft;
+      // Move the canister at 60% of the scroll speed to create a parallax effect.
+      canisterRef.current.style.transform = `translateX(${scrollLeft * 0.6}px)`;
+    }
+  };
 
   const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
   const AssignIcon = assignActionIcon === 'add' ? FolderPlus : FolderMinus;
@@ -89,6 +101,8 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
           </div>
         </div>
         <div
+          ref={scrollContainerRef}
+          onScroll={handleParallaxScroll}
           className="overflow-x-auto no-scrollbar py-3"
           style={{
             backgroundImage: filmStripBg,
@@ -97,11 +111,13 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
           }}
         >
           <div className="flex space-x-2 px-4 items-center">
-            <FilmCanisterIcon
-              filmType={roll.film_type}
-              imageUrl={filmStock?.roll_image_url}
-              className="h-24 w-auto shrink-0 mr-1"
-            />
+            <div ref={canisterRef} className="z-10">
+              <FilmCanisterIcon
+                filmType={roll.film_type}
+                imageUrl={filmStock?.roll_image_url}
+                className="h-24 w-auto shrink-0 mr-1"
+              />
+            </div>
             {roll.photos && roll.photos.length > 0 ? (
               roll.photos.map(photo => (
                 <NegativePhoto
