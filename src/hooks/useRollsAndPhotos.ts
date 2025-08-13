@@ -5,14 +5,20 @@ import * as api from '../services/api';
 import { UserProfile, Roll, Photo, FilmStock } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
 import { extractStoragePathFromPublicUrl } from '../utils/storage';
-import { usePhotoQueue } from './usePhotoQueue';
+import { supabase } from '../integrations/supabase/client';
+
+const toBase64 = (file: Blob) => new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+});
 
 export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmStock[]) => {
   const [activeRoll, setActiveRoll] = useState<Roll | null>(null);
   const [completedRolls, setCompletedRolls] = useState<Roll[]>([]);
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
   const [rollToName, setRollToName] = useState<Roll | null>(null);
-  const { addPhotoToQueue, processQueue } = usePhotoQueue(profile);
 
   const fetchRolls = useCallback(async () => {
     if (!profile) return;
@@ -25,9 +31,7 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
 
   useEffect(() => {
     fetchRolls();
-    // On startup, try to process any pending photos
-    processQueue();
-  }, [fetchRolls, processQueue]);
+  }, [fetchRolls]);
 
   const startNewRoll = useCallback(async (filmType: string, capacity: number) => {
     if (!profile) return;
@@ -39,37 +43,56 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
 
   const takePhoto = useCallback(async (imageBlob: Blob, metadata: any) => {
     if (!profile || !activeRoll) return;
-    
-    // Add to queue and let the hook handle the rest
-    await addPhotoToQueue(imageBlob, metadata, profile.id, activeRoll.id, activeRoll.film_type);
+    const toastId = showLoadingToast('Uploading photo...');
 
-    // Optimistically update the UI
-    const newShotsUsed = activeRoll.shots_used + 1;
-    const isCompleted = newShotsUsed >= activeRoll.capacity;
-    const updatedRollData = { 
-      ...activeRoll, 
-      shots_used: newShotsUsed,
-      is_completed: isCompleted,
-      completed_at: isCompleted ? new Date().toISOString() : null,
-    };
+    try {
+      const base64Image = await toBase64(imageBlob);
 
-    // Update the database in the background
-    api.updateRoll(activeRoll.id, { 
-      shots_used: newShotsUsed, 
-      is_completed: isCompleted,
-      completed_at: isCompleted ? new Date().toISOString() : null,
-    });
+      const { data: result, error: functionError } = await supabase.functions.invoke('process-photo', {
+        body: {
+          image: base64Image,
+          userId: profile.id,
+          rollId: activeRoll.id,
+        },
+      });
 
-    if (isCompleted) {
-      setActiveRoll(null);
-      setCompletedRolls(prev => [updatedRollData, ...prev]);
-      setRollToName(updatedRollData);
-    } else {
-      setActiveRoll(updatedRollData);
+      if (functionError || result.error) {
+        throw new Error(functionError?.message || result.error);
+      }
+
+      const { url, thumbnailUrl, width, height } = result;
+
+      const { error: recordError } = await api.createPhotoRecord(
+        profile.id,
+        activeRoll.id,
+        url,
+        thumbnailUrl,
+        { ...metadata, width, height }
+      );
+      if (recordError) throw new Error(`Failed to create photo record: ${recordError.message}`);
+
+      const newShotsUsed = activeRoll.shots_used + 1;
+      const isCompleted = newShotsUsed >= activeRoll.capacity;
+      const updatePayload: any = { shots_used: newShotsUsed, is_completed: isCompleted };
+      if (isCompleted) updatePayload.completed_at = new Date().toISOString();
+      
+      const { data: updatedRoll } = await api.updateRoll(activeRoll.id, updatePayload);
+      if (updatedRoll) {
+        if (isCompleted) {
+          setActiveRoll(null);
+          setCompletedRolls(prev => [updatedRoll, ...prev]);
+          setRollToName(updatedRoll);
+        } else {
+          setActiveRoll(updatedRoll);
+        }
+      }
+      showSuccessToast('Photo captured!');
+    } catch (error: any) {
+      showErrorToast(error?.message || 'Failed to save photo.');
+    } finally {
+      dismissToast(toastId);
     }
-    showSuccessToast('Photo captured! Processing in background.');
-
-  }, [profile, activeRoll, addPhotoToQueue]);
+  }, [profile, activeRoll]);
 
   const developRoll = useCallback(async (roll: Roll) => {
     if (!profile) return;
