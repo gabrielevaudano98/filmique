@@ -32,6 +32,11 @@ self.onmessage = async (e: MessageEvent<MsgIn>) => {
 
     let { data, width, height } = decoded;
 
+    // Validate decoded image data
+    if (!data || !width || !height) {
+      throw new Error(`Decoded image data is invalid: data=${!!data}, width=${width}, height=${height}`);
+    }
+
     // Optional downscale to target long edge
     const long = Math.max(width, height);
     if (targetLong && long > targetLong) {
@@ -58,7 +63,12 @@ self.onmessage = async (e: MessageEvent<MsgIn>) => {
         subsample,
       });
     } catch (encodeErr: any) {
-      throw new Error(`AVIF encode failed: ${encodeErr instanceof Error ? encodeErr.message : String(encodeErr)}`);
+      throw new Error(`AVIF encode failed with dimensions ${width}x${height}: ${encodeErr instanceof Error ? encodeErr.message : String(encodeErr)}`);
+    }
+
+    // Validate AVIF encoding result
+    if (!avif || !avif.buffer) {
+      throw new Error(`AVIF encoding returned an invalid or empty result.`);
     }
 
     (self as any).postMessage({ avif, width, height }, [avif.buffer]);
