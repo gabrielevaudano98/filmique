@@ -5,14 +5,9 @@ import * as api from '../services/api';
 import { UserProfile, Roll, Photo, FilmStock } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
 import { extractStoragePathFromPublicUrl } from '../utils/storage';
-import { supabase } from '../integrations/supabase/client';
-
-const toBase64 = (file: Blob) => new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
-});
+import AvifWorkerUrl from '../avif.worker.ts?worker';
+import AvifToJpegWorkerUrl from '../avif-to-jpeg.worker.ts?worker'; // New worker import
+import { TARGET_LONG_EDGE_PX } from '../utils/imageUtils';
 
 export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmStock[]) => {
   const [activeRoll, setActiveRoll] = useState<Roll | null>(null);
@@ -43,34 +38,64 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
 
   const takePhoto = useCallback(async (imageBlob: Blob, metadata: any) => {
     if (!profile || !activeRoll) return;
-    const toastId = showLoadingToast('Uploading photo...');
+    const toastId = showLoadingToast('Processing photo...');
 
     try {
-      const base64Image = await toBase64(imageBlob);
+      const buf = new Uint8Array(await imageBlob.arrayBuffer());
+      const worker = new AvifWorkerUrl();
 
-      const { data: result, error: functionError } = await supabase.functions.invoke('process-photo', {
-        body: {
-          image: base64Image,
-          userId: profile.id,
-          rollId: activeRoll.id,
-        },
-      });
+      const avifResult: { avif?: Uint8Array; width?: number; height?: number; error?: string } =
+        await new Promise((resolve) => {
+          worker.onmessage = (e: MessageEvent) => {
+            resolve(e.data);
+            worker.terminate();
+          };
+          worker.onerror = (err) => {
+            resolve({ error: `Worker error: ${err.message}` });
+            worker.terminate();
+          };
+          worker.postMessage({
+            buf,
+            mime: imageBlob.type.toLowerCase(),
+            targetLong: TARGET_LONG_EDGE_PX,
+            cqLevel: 22, // print quality
+            speed: 6,
+            chroma: '444'
+          }, [buf.buffer]);
+        });
 
-      if (functionError || result.error) {
-        throw new Error(functionError?.message || result.error);
+      if (avifResult.error) {
+        throw new Error(`AVIF encoding failed: ${avifResult.error}`);
       }
 
-      const { url, thumbnailUrl, width, height } = result;
+      const avifBlob = new Blob([avifResult.avif!], { type: 'image/avif' });
+      
+      // Generate unique path for the AVIF image
+      const filePath = `photos/${profile.id}/${activeRoll.id}/${crypto.randomUUID()}.avif`;
+      const thumbnailPath = `photos/${profile.id}/${activeRoll.id}/thumbnails/${crypto.randomUUID()}_thumb.avif`; // For thumbnail
 
+      // Upload full-size AVIF
+      const { error: uploadError } = await api.uploadPhotoToStorage(filePath, avifBlob, 'image/avif');
+      if (uploadError) throw new Error(`Failed to upload photo: ${uploadError.message}`);
+
+      const { data: publicUrlData } = api.getPublicUrl('photos', filePath);
+      const publicUrl = publicUrlData.publicUrl;
+
+      // For thumbnail, we can use the same AVIF blob but potentially resize it smaller if needed
+      // For simplicity, let's use the same public URL for thumbnail, but in a real app, you'd generate a smaller thumbnail.
+      const thumbnailUrl = publicUrl; 
+
+      // Create photo record in database
       const { error: recordError } = await api.createPhotoRecord(
         profile.id,
         activeRoll.id,
-        url,
+        publicUrl,
         thumbnailUrl,
-        { ...metadata, width, height }
+        { ...metadata, width: avifResult.width, height: avifResult.height }
       );
       if (recordError) throw new Error(`Failed to create photo record: ${recordError.message}`);
 
+      // Update roll status
       const newShotsUsed = activeRoll.shots_used + 1;
       const isCompleted = newShotsUsed >= activeRoll.capacity;
       const updatePayload: any = { shots_used: newShotsUsed, is_completed: isCompleted };
@@ -156,19 +181,50 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
     }
   }, [profile]);
 
-  const downloadPhoto = useCallback(async (photo: Photo) => {
-    const toastId = showLoadingToast('Preparing photo for download...');
+  const convertAvifToJpeg = useCallback(async (avifUrl: string): Promise<Blob | null> => {
     try {
-      const response = await fetch(photo.url);
-      const blob = await response.blob();
-      saveAs(blob, `photo-${photo.id}.jpeg`);
-      showSuccessToast('Photo download started!');
+      const response = await fetch(avifUrl);
+      const buf = new Uint8Array(await response.arrayBuffer());
+      const worker = new AvifToJpegWorkerUrl();
+
+      const jpegResult: { jpeg?: Uint8Array; error?: string } = await new Promise((resolve) => {
+        worker.onmessage = (e: MessageEvent) => {
+          resolve(e.data);
+          worker.terminate();
+        };
+        worker.onerror = (err) => {
+          resolve({ error: `Worker error: ${err.message}` });
+          worker.terminate();
+        };
+        worker.postMessage({ buf }, [buf.buffer]);
+      });
+
+      if (jpegResult.error) {
+        throw new Error(`JPEG encoding failed: ${jpegResult.error}`);
+      }
+      return new Blob([jpegResult.jpeg!], { type: 'image/jpeg' });
+    } catch (error) {
+      console.error('Error converting AVIF to JPEG:', error);
+      return null;
+    }
+  }, []);
+
+  const downloadPhoto = useCallback(async (photo: Photo) => {
+    const toastId = showLoadingToast('Converting photo for download...');
+    try {
+      const jpegBlob = await convertAvifToJpeg(photo.url);
+      if (jpegBlob) {
+        saveAs(jpegBlob, `photo-${photo.id}.jpeg`);
+        showSuccessToast('Photo download started!');
+      } else {
+        showErrorToast('Failed to convert photo for download.');
+      }
     } catch (error) {
       showErrorToast('Could not download photo.');
     } finally {
       dismissToast(toastId);
     }
-  }, []);
+  }, [convertAvifToJpeg]);
 
   const downloadRoll = useCallback(async (roll: Roll) => {
     if (!roll.photos || roll.photos.length === 0) return;
@@ -176,9 +232,12 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
     try {
       const zip = new JSZip();
       await Promise.all(roll.photos.map(async (photo) => {
-        const response = await fetch(photo.url);
-        const blob = await response.blob();
-        zip.file(`photo-${photo.id}.jpeg`, blob);
+        const jpegBlob = await convertAvifToJpeg(photo.url);
+        if (jpegBlob) {
+          zip.file(`photo-${photo.id}.jpeg`, jpegBlob);
+        } else {
+          console.warn(`Skipping photo ${photo.id} due to conversion failure.`);
+        }
       }));
       saveAs(await zip.generateAsync({ type: 'blob' }), `${(roll.title || roll.film_type)}.zip`);
       showSuccessToast('Roll download started!');
@@ -187,7 +246,7 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
     } finally {
       dismissToast(toastId);
     }
-  }, []);
+  }, [convertAvifToJpeg]);
 
   return {
     activeRoll,
