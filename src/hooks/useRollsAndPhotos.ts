@@ -4,7 +4,9 @@ import { saveAs } from 'file-saver';
 import * as api from '../services/api';
 import { UserProfile, Roll, Photo, FilmStock } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
-import { filenameFromUrl } from '../utils/storage';
+import { extractStoragePathFromPublicUrl } from '../utils/storage';
+import AvifWorkerUrl from '../avif.worker.ts?worker';
+import { TARGET_LONG_EDGE_PX } from '../utils/imageUtils';
 
 export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmStock[]) => {
   const [activeRoll, setActiveRoll] = useState<Roll | null>(null);
@@ -35,45 +37,85 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
 
   const takePhoto = useCallback(async (imageBlob: Blob, metadata: any) => {
     if (!profile || !activeRoll) return;
+    const toastId = showLoadingToast('Processing photo...');
+
     try {
-      // Convert blob to base64 string to send to Edge Function
-      const reader = new FileReader();
-      reader.readAsDataURL(imageBlob);
-      reader.onloadend = async () => {
-        const base64data = reader.result?.toString().split(',')[1]; // Get base64 part of data URL
+      const buf = new Uint8Array(await imageBlob.arrayBuffer());
+      const worker = new AvifWorkerUrl();
 
-        if (!base64data) {
-          showErrorToast('Failed to encode image for upload.');
-          return;
+      const avifResult: { avif?: Uint8Array; width?: number; height?: number; error?: string } =
+        await new Promise((resolve) => {
+          worker.onmessage = (e: MessageEvent) => {
+            resolve(e.data);
+            worker.terminate();
+          };
+          worker.onerror = (err) => {
+            resolve({ error: `Worker error: ${err.message}` });
+            worker.terminate();
+          };
+          worker.postMessage({
+            buf,
+            mime: imageBlob.type.toLowerCase(),
+            targetLong: TARGET_LONG_EDGE_PX,
+            cqLevel: 22, // print quality
+            speed: 6,
+            chroma: '444'
+          }, [buf.buffer]);
+        });
+
+      if (avifResult.error) {
+        throw new Error(`AVIF encoding failed: ${avifResult.error}`);
+      }
+
+      const avifBlob = new Blob([avifResult.avif!], { type: 'image/avif' });
+      
+      // Generate unique path for the AVIF image
+      const filePath = `photos/${profile.id}/${activeRoll.id}/${crypto.randomUUID()}.avif`;
+      const thumbnailPath = `photos/${profile.id}/${activeRoll.id}/thumbnails/${crypto.randomUUID()}_thumb.avif`; // For thumbnail
+
+      // Upload full-size AVIF
+      const { error: uploadError } = await api.uploadPhotoToStorage(filePath, avifBlob, 'image/avif');
+      if (uploadError) throw new Error(`Failed to upload photo: ${uploadError.message}`);
+
+      const { data: publicUrlData } = api.getPublicUrl('photos', filePath);
+      const publicUrl = publicUrlData.publicUrl;
+
+      // For thumbnail, we can use the same AVIF blob but potentially resize it smaller if needed
+      // For simplicity, let's use the same blob for thumbnail for now, or generate a smaller one if performance is an issue.
+      // For now, we'll just use the same public URL for thumbnail, but in a real app, you'd generate a smaller thumbnail.
+      const thumbnailUrl = publicUrl; 
+
+      // Create photo record in database
+      const { error: recordError } = await api.createPhotoRecord(
+        profile.id,
+        activeRoll.id,
+        publicUrl,
+        thumbnailUrl,
+        { ...metadata, width: avifResult.width, height: avifResult.height }
+      );
+      if (recordError) throw new Error(`Failed to create photo record: ${recordError.message}`);
+
+      // Update roll status
+      const newShotsUsed = activeRoll.shots_used + 1;
+      const isCompleted = newShotsUsed >= activeRoll.capacity;
+      const updatePayload: any = { shots_used: newShotsUsed, is_completed: isCompleted };
+      if (isCompleted) updatePayload.completed_at = new Date().toISOString();
+      
+      const { data: updatedRoll } = await api.updateRoll(activeRoll.id, updatePayload);
+      if (updatedRoll) {
+        if (isCompleted) {
+          setActiveRoll(null);
+          setCompletedRolls(prev => [updatedRoll, ...prev]);
+          setRollToName(updatedRoll);
+        } else {
+          setActiveRoll(updatedRoll);
         }
-
-        // Call the new Edge Function to process and upload the photo
-        const { publicUrl, error: processError } = await api.processAndUploadPhoto(base64data, profile.id, activeRoll.id, metadata);
-
-        if (processError) {
-          showErrorToast(`Failed to process and save photo: ${processError.message}`);
-          return;
-        }
-
-        // The photo record is now created by the Edge Function, so we only need to update the roll status here.
-        const newShotsUsed = activeRoll.shots_used + 1;
-        const isCompleted = newShotsUsed >= activeRoll.capacity;
-        const updatePayload: any = { shots_used: newShotsUsed, is_completed: isCompleted };
-        if (isCompleted) updatePayload.completed_at = new Date().toISOString();
-        
-        const { data: updatedRoll } = await api.updateRoll(activeRoll.id, updatePayload);
-        if (updatedRoll) {
-          if (isCompleted) {
-            setActiveRoll(null);
-            setCompletedRolls(prev => [updatedRoll, ...prev]);
-            setRollToName(updatedRoll);
-          } else {
-            setActiveRoll(updatedRoll);
-          }
-        }
-      };
-    } catch (error) {
-      showErrorToast('Failed to save photo.');
+      }
+      showSuccessToast('Photo captured!');
+    } catch (error: any) {
+      showErrorToast(error?.message || 'Failed to save photo.');
+    } finally {
+      dismissToast(toastId);
     }
   }, [profile, activeRoll]);
 
@@ -121,12 +163,13 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
         await api.deleteCommentsForPosts(postIds);
       }
       await api.deletePostsForRoll(rollId);
+      
       const { data: photos } = await api.getPhotosForRoll(rollId);
       if (photos && photos.length > 0) {
-        const photoPaths = photos.map(p => filenameFromUrl(p.url)).filter(Boolean);
+        const photoPaths = photos.map(p => extractStoragePathFromPublicUrl(p.url)).filter(Boolean) as string[];
         if (photoPaths.length > 0) await api.deletePhotosFromStorage(photoPaths);
       }
-      await api.deletePhotosForRoll(rollId);
+      
       await api.deleteRollById(rollId);
       setCompletedRolls(prev => prev.filter(r => r.id !== rollId));
       setSelectedRoll(null);
@@ -141,7 +184,7 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
   const downloadPhoto = useCallback(async (photo: Photo) => {
     try {
       const response = await fetch(photo.url);
-      saveAs(await response.blob(), filenameFromUrl(photo.url));
+      saveAs(await response.blob(), `photo-${photo.id}.avif`); // Use .avif extension
       showSuccessToast('Photo download started!');
     } catch (error) {
       showErrorToast('Could not download photo.');
@@ -155,7 +198,7 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
       const zip = new JSZip();
       await Promise.all(roll.photos.map(async (photo) => {
         const response = await fetch(photo.url);
-        zip.file(filenameFromUrl(photo.url), await response.blob());
+        zip.file(`photo-${photo.id}.avif`, await response.blob()); // Use .avif extension
       }));
       saveAs(await zip.generateAsync({ type: 'blob' }), `${(roll.title || roll.film_type)}.zip`);
       showSuccessToast('Roll download started!');
