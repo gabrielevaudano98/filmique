@@ -39,35 +39,48 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
 
   const takePhoto = useCallback(async (imageBlob: Blob, metadata: any) => {
     if (!profile || !activeRoll) return;
-    
-    // Add to queue and let the hook handle the rest
+
+    // Add to the queue first. This is fast and ensures the photo is saved.
     await addPhotoToQueue(imageBlob, metadata, profile.id, activeRoll.id, activeRoll.film_type);
-
-    // Optimistically update the UI
-    const newShotsUsed = activeRoll.shots_used + 1;
-    const isCompleted = newShotsUsed >= activeRoll.capacity;
-    const updatedRollData = { 
-      ...activeRoll, 
-      shots_used: newShotsUsed,
-      is_completed: isCompleted,
-      completed_at: isCompleted ? new Date().toISOString() : null,
-    };
-
-    // Update the database in the background
-    api.updateRoll(activeRoll.id, { 
-      shots_used: newShotsUsed, 
-      is_completed: isCompleted,
-      completed_at: isCompleted ? new Date().toISOString() : null,
-    });
-
-    if (isCompleted) {
-      setActiveRoll(null);
-      setCompletedRolls(prev => [updatedRollData, ...prev]);
-      setRollToName(updatedRollData);
-    } else {
-      setActiveRoll(updatedRollData);
-    }
     showSuccessToast('Photo captured! Processing in background.');
+
+    // Run the database update in the background without blocking the UI thread.
+    (async () => {
+      try {
+        const newShotsUsed = activeRoll.shots_used + 1;
+        const isCompleted = newShotsUsed >= activeRoll.capacity;
+        
+        const updatePayload: any = { 
+          shots_used: newShotsUsed, 
+          is_completed: isCompleted 
+        };
+        if (isCompleted) {
+          updatePayload.completed_at = new Date().toISOString();
+        }
+        
+        // Await the update and get the new roll data directly from the database response.
+        const { data: updatedRoll, error } = await api.updateRoll(activeRoll.id, updatePayload);
+
+        if (error) {
+          console.error("Failed to update roll in DB:", error);
+          showErrorToast("Couldn't update roll count. Please refresh.");
+          return;
+        }
+
+        // Use the confirmed data from the database to update the local state.
+        if (updatedRoll) {
+          if (updatedRoll.is_completed) {
+            setActiveRoll(null);
+            setCompletedRolls(prev => [updatedRoll, ...prev.filter(r => r.id !== updatedRoll.id)]);
+            setRollToName(updatedRoll);
+          } else {
+            setActiveRoll(updatedRoll);
+          }
+        }
+      } catch (e) {
+        console.error("Error in background roll update:", e);
+      }
+    })();
 
   }, [profile, activeRoll, addPhotoToQueue]);
 
