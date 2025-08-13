@@ -6,6 +6,7 @@ import { UserProfile, Roll, Photo, FilmStock } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
 import { extractStoragePathFromPublicUrl } from '../utils/storage';
 import AvifWorkerUrl from '../avif.worker.ts?worker';
+import AvifToJpegWorkerUrl from '../avif-to-jpeg.worker.ts?worker'; // New worker import
 import { TARGET_LONG_EDGE_PX } from '../utils/imageUtils';
 
 export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmStock[]) => {
@@ -81,8 +82,7 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
       const publicUrl = publicUrlData.publicUrl;
 
       // For thumbnail, we can use the same AVIF blob but potentially resize it smaller if needed
-      // For simplicity, let's use the same blob for thumbnail for now, or generate a smaller one if performance is an issue.
-      // For now, we'll just use the same public URL for thumbnail, but in a real app, you'd generate a smaller thumbnail.
+      // For simplicity, let's use the same public URL for thumbnail, but in a real app, you'd generate a smaller thumbnail.
       const thumbnailUrl = publicUrl; 
 
       // Create photo record in database
@@ -181,24 +181,63 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
     }
   }, [profile]);
 
-  const downloadPhoto = useCallback(async (photo: Photo) => {
+  const convertAvifToJpeg = useCallback(async (avifUrl: string): Promise<Blob | null> => {
     try {
-      const response = await fetch(photo.url);
-      saveAs(await response.blob(), `photo-${photo.id}.avif`); // Use .avif extension
-      showSuccessToast('Photo download started!');
+      const response = await fetch(avifUrl);
+      const buf = new Uint8Array(await response.arrayBuffer());
+      const worker = new AvifToJpegWorkerUrl();
+
+      const jpegResult: { jpeg?: Uint8Array; error?: string } = await new Promise((resolve) => {
+        worker.onmessage = (e: MessageEvent) => {
+          resolve(e.data);
+          worker.terminate();
+        };
+        worker.onerror = (err) => {
+          resolve({ error: `Worker error: ${err.message}` });
+          worker.terminate();
+        };
+        worker.postMessage({ buf }, [buf.buffer]);
+      });
+
+      if (jpegResult.error) {
+        throw new Error(`JPEG encoding failed: ${jpegResult.error}`);
+      }
+      return new Blob([jpegResult.jpeg!], { type: 'image/jpeg' });
     } catch (error) {
-      showErrorToast('Could not download photo.');
+      console.error('Error converting AVIF to JPEG:', error);
+      return null;
     }
   }, []);
 
+  const downloadPhoto = useCallback(async (photo: Photo) => {
+    const toastId = showLoadingToast('Converting photo for download...');
+    try {
+      const jpegBlob = await convertAvifToJpeg(photo.url);
+      if (jpegBlob) {
+        saveAs(jpegBlob, `photo-${photo.id}.jpeg`);
+        showSuccessToast('Photo download started!');
+      } else {
+        showErrorToast('Failed to convert photo for download.');
+      }
+    } catch (error) {
+      showErrorToast('Could not download photo.');
+    } finally {
+      dismissToast(toastId);
+    }
+  }, [convertAvifToJpeg]);
+
   const downloadRoll = useCallback(async (roll: Roll) => {
     if (!roll.photos || roll.photos.length === 0) return;
-    const toastId = showLoadingToast(`Zipping ${roll.photos.length} photos...`);
+    const toastId = showLoadingToast(`Preparing ${roll.photos.length} photos for download...`);
     try {
       const zip = new JSZip();
       await Promise.all(roll.photos.map(async (photo) => {
-        const response = await fetch(photo.url);
-        zip.file(`photo-${photo.id}.avif`, await response.blob()); // Use .avif extension
+        const jpegBlob = await convertAvifToJpeg(photo.url);
+        if (jpegBlob) {
+          zip.file(`photo-${photo.id}.jpeg`, jpegBlob);
+        } else {
+          console.warn(`Skipping photo ${photo.id} due to conversion failure.`);
+        }
       }));
       saveAs(await zip.generateAsync({ type: 'blob' }), `${(roll.title || roll.film_type)}.zip`);
       showSuccessToast('Roll download started!');
@@ -207,7 +246,7 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
     } finally {
       dismissToast(toastId);
     }
-  }, []);
+  }, [convertAvifToJpeg]);
 
   return {
     activeRoll,
