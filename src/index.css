@@ -4,125 +4,173 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Brand CSS variables */
+/* Brand CSS variables — match tokens in src/design/brand.ts */
 :root {
   --brand-amber-start: #F6AE55;
   --brand-amber-mid: #E98A43;
   --brand-amber-end: #D46A2E;
+
+  --warm-900: #2b0f06;
+  --warm-800: #3a190a;
   --warm-700: #5a2b12;
-  --film-edge: rgba(0,0,0,0.75);
+  --warm-600: #7a3e19;
+  --warm-500: #a65a2b;
+  --warm-400: #d78657;
+  --warm-300: #f0c6ab;
+
+  --glass-thin: rgba(255,255,255,0.06);
+  --glass-medium: rgba(255,255,255,0.10);
+
+  --shadow-soft: 0 6px 18px rgba(11,11,12,0.28);
+  --shadow-depth: 0 24px 60px rgba(6,6,8,0.46);
+
+  --avatar-ring: linear-gradient(135deg, #D46A2E 0%, #7C6AFE 60%);
+
+  /* motion tokens */
+  --motion-micro: 90ms;
+  --motion-short: 180ms;
+  --motion-medium: 320ms;
+  --motion-long: 520ms;
 }
 
-/* base */
+/* existing base overrides */
 @layer base {
   body {
     font-family: 'SF Pro Display', Inter, system-ui;
-    background-color: #0f1113;
+    background-color: var(--warm-900);
     color: white;
+  }
+  #root {
+    position: relative;
+    z-index: 1;
   }
 }
 
-/* film strip container */
-.film-strip {
-  background: linear-gradient(180deg, rgba(6,6,6,0.98), rgba(18,16,15,0.96));
-  border-radius: 12px;
+/* Glass Card — stacked rounded cards with warm translucent surface */
+.glass-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.18));
+  border-radius: 16px;
   border: 1px solid rgba(255,255,255,0.04);
-  overflow: visible;
-  position: relative;
-  padding-top: 6px;
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  transition: transform var(--motion-short) var(--spring-soft), box-shadow var(--motion-short);
 }
 
-/* Top notch (simulates the camera spool notch) */
-.film-top-notch {
+/* Stacked card variant (used on onboarding / hero) */
+.glass-card.stacked {
+  transform: translateY(8px);
+  background: linear-gradient(180deg, rgba(58,25,10,0.88), rgba(27,29,32,0.78));
+}
+
+/* Hero card image overlay for warming and vignette */
+.card-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+}
+.card-hero::after {
+  content: '';
   position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 48px;
-  height: 18px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.9), rgba(50,20,10,0.6));
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(27,29,32,0.36));
   pointer-events: none;
 }
 
-/* sprocket row */
-.sprocket-row {
-  height: 16px;
-  background-color: #000;
-  border-top: 1px solid rgba(255,255,255,0.02);
-  border-bottom: 1px solid rgba(255,255,255,0.02);
+/* Avatar ring (gradient ring) */
+.avatar-ring {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 9999px;
+  padding: 3px;
+  background: var(--avatar-ring);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+}
+.avatar-ring img {
+  display: block;
+  border-radius: 9999px;
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border: 2px solid rgba(0,0,0,0.35);
 }
 
-/* film frames scroll container (native horizontal scroll, snap per frame) */
-.film-frames-scroll {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scroll-snap-type: x mandatory;
-  scroll-padding: 1rem;
-}
-
-/* film frames list */
-.film-frames {
+/* Pill CTA — used across header filters and bottom actions */
+.pill-cta {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 8px 16px;
+  font-weight: 600;
+  color: white;
+  background: linear-gradient(90deg, var(--brand-amber-start), var(--brand-amber-mid));
+  box-shadow: 0 6px 28px rgba(214,106,46,0.12), inset 0 -6px 14px rgba(255,255,255,0.02);
+  transition: transform var(--motion-micro) var(--curve-quick), box-shadow var(--motion-micro);
+}
+.pill-cta:active { transform: translateY(1px) scale(0.997); }
+
+/* Secondary pill (outline) */
+.pill-cta.outline {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.06);
+  color: var(--warm-300);
+  box-shadow: none;
 }
 
-/* film edges */
-.film-edge {
-  width: 12px;
-  min-width: 12px;
-  background: linear-gradient(180deg, rgba(10,10,10,1), rgba(20,16,14,0.95));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
-}
-.film-edge.left { border-right: 1px solid rgba(255,255,255,0.02); }
-.film-edge.right { border-left: 1px solid rgba(255,255,255,0.02); }
-
-/* each film frame cell */
-.film-frame {
-  scroll-snap-align: center;
-  min-width: 200px; /* visible width; adjust to match desired frame aspect */
-  height: 120px;
-  flex: 0 0 auto;
-  border-radius: 6px;
-  overflow: hidden;
-  background: linear-gradient(180deg, rgba(18,18,18,0.96), rgba(12,12,12,0.9));
-  border: 1px solid rgba(255,255,255,0.03);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), 0 6px 18px rgba(0,0,0,0.6);
+/* Floating bottom nav (glass) */
+.floating-nav {
+  background: linear-gradient(180deg, rgba(12,7,5,0.6), rgba(12,7,5,0.36));
+  border-radius: 28px;
+  padding: 10px;
   display: flex;
+  gap: 16px;
   align-items: center;
   justify-content: center;
+  box-shadow: var(--shadow-depth);
+  border: 1px solid rgba(255,255,255,0.04);
 }
 
-/* image inside */
-.film-frame-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+/* Story avatar carousel minor tweaks */
+.story-carousel {
+  padding: 8px 12px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* developing warm tint */
-.film-frames.developing .film-frame {
-  background: linear-gradient(180deg, rgba(54,26,14,0.86), rgba(30,18,12,0.9));
-  border: 1px solid rgba(214,106,46,0.06);
-}
+/* small utilities used by components */
+.card-shadow-deep { box-shadow: var(--shadow-depth); }
+.glass-border { border: 1px solid rgba(255,255,255,0.04); }
 
-/* film ruler below with subtle numbers */
-.film-ruler {
-  height: 14px;
-  background-color: #060606;
-  border-top: 1px solid rgba(255,255,255,0.03);
-}
-
-/* small utilities */
+/* Hide scrollbar */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* subtle focus outline for accessibility */
-.film-frames-scroll:focus { outline: 2px solid rgba(246,174,85,0.12); outline-offset: 4px; }
+/* Camera Button Glow Animation */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px 0px rgba(246, 174, 85, 0.2), 0 0 0px 0px rgba(246, 174, 85, 0.2);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 35px 8px rgba(246, 174, 85, 0.3), 0 0 0px 0px rgba(246, 174, 85, 0.3);
+    transform: scale(1.02);
+  }
+}
 
-/* make sure the entire RollListItem doesn't clip the scrolling */
-.relative.w-full.overflow-visible { overflow: visible !important; }
+.camera-button-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+/* Content fade-in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
