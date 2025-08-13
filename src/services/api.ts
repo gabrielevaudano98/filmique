@@ -80,17 +80,38 @@ export const updateRollsAlbum = (rollIds: string[], albumId: string | null) => s
 export const fetchNotifications = (userId: string) => supabase.from('notifications').select(NOTIFICATION_SELECT_QUERY).eq('user_id', userId).order('created_at', { ascending: false }).limit(30);
 export const markNotificationsRead = (ids: string[]) => supabase.from('notifications').update({ is_read: true }).in('id', ids);
 
-// Edge Functions - Fixed to use correct invocation method
-export const recordActivity = (activityType: string, actorId: string, entityId: string, entityOwnerId?: string) => {
-  // Use the correct Supabase function invocation syntax
-  return supabase.functions.invoke('record-activity', {
-    body: { activityType, actorId, entityId, entityOwnerId },
-  });
+// Edge Functions - Fixed to use correct invocation method with better error handling
+export const recordActivity = async (activityType: string, actorId: string, entityId: string, entityOwnerId?: string) => {
+  try {
+    console.log('Calling record-activity function with:', { activityType, actorId, entityId, entityOwnerId });
+    const { data, error } = await supabase.functions.invoke('record-activity', {
+      body: { activityType, actorId, entityId, entityOwnerId },
+    });
+    console.log('record-activity response:', { data, error });
+    if (error) {
+      throw new Error(`Function error: ${error.message}`);
+    }
+    return data;
+  } catch (err) {
+    console.error('Error in recordActivity:', err);
+    throw err;
+  }
 };
 
-// Fixed process-photo function call
-export const processPhoto = (image: string, userId: string, rollId: string) => {
-  return supabase.functions.invoke('process-photo', {
-    body: { image, userId, rollId },
-  });
+// Fixed process-photo function call with better error handling
+export const processPhoto = async (image: string, userId: string, rollId: string) => {
+  try {
+    console.log('Calling process-photo function with:', { userId, rollId });
+    const { data, error } = await supabase.functions.invoke('process-photo', {
+      body: { image, userId, rollId },
+    });
+    console.log('process-photo response:', { data, error });
+    if (error) {
+      throw new Error(`Function error: ${error.message}`);
+    }
+    return data;
+  } catch (err) {
+    console.error('Error in processPhoto:', err);
+    throw err;
+  }
 };
