@@ -67,24 +67,6 @@ export default {
       spacing: {
         'safe-6': 'env(safe-area-inset-bottom)',
       },
-      keyframes: {
-        'shutter-close-top': {
-          '0%': { transform: 'translateY(-100%)' },
-          '20%': { transform: 'translateY(0)' },
-          '80%': { transform: 'translateY(0)' },
-          '100%': { transform: 'translateY(-100%)' },
-        },
-        'shutter-close-bottom': {
-          '0%': { transform: 'translateY(100%)' },
-          '20%': { transform: 'translateY(0)' },
-          '80%': { transform: 'translateY(0)' },
-          '100%': { transform: 'translateY(100%)' },
-        },
-      },
-      animation: {
-        'shutter-top': 'shutter-close-top 1.5s ease-in-out forwards',
-        'shutter-bottom': 'shutter-close-bottom 1.5s ease-in-out forwards',
-      },
     },
   },
   plugins: [],

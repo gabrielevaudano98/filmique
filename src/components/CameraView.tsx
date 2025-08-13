@@ -5,6 +5,7 @@ import { RefreshCw, Film, Lock, Camera, ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
 import RangeSelector from './RangeSelector';
+import ShutterAnimation from './ShutterAnimation';
 
 type ProControl = 'iso' | 'shutterSpeed' | 'focus';
 
@@ -308,12 +309,7 @@ const CameraView: React.FC = () => {
               className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
             />
           )}
-          {isShutterAnimating && (
-            <div className="absolute inset-0 z-50 overflow-hidden pointer-events-none">
-              <div className="absolute top-0 left-0 w-full h-1/2 bg-black animate-shutter-top"></div>
-              <div className="absolute bottom-0 left-0 w-full h-1/2 bg-black animate-shutter-bottom"></div>
-            </div>
-          )}
+          <ShutterAnimation isAnimating={isShutterAnimating} />
         </div>
       </div>
 
