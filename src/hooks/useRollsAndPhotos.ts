@@ -2,11 +2,11 @@ import { useState, useEffect, useCallback } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import * as api from '../services/api';
-import { UserProfile, Roll, Photo } from '../types';
+import { UserProfile, Roll, Photo, FilmStock } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
 import { filenameFromUrl } from '../utils/storage';
 
-export const useRollsAndPhotos = (profile: UserProfile | null) => {
+export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmStock[]) => {
   const [activeRoll, setActiveRoll] = useState<Roll | null>(null);
   const [completedRolls, setCompletedRolls] = useState<Roll[]>([]);
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
@@ -71,7 +71,7 @@ export const useRollsAndPhotos = (profile: UserProfile | null) => {
     const toastId = showLoadingToast('Developing your film...');
     try {
       await api.updateProfile(profile.id, { credits: profile.credits - cost });
-      await api.developRollPhotos(roll);
+      await api.developRollPhotos(roll, filmStocks);
       const { data: updatedRoll } = await api.updateRoll(roll.id, { developed_at: new Date().toISOString() });
       if (updatedRoll) {
         setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
@@ -83,7 +83,7 @@ export const useRollsAndPhotos = (profile: UserProfile | null) => {
     } finally {
       dismissToast(toastId);
     }
-  }, [profile]);
+  }, [profile, filmStocks]);
 
   const updateRollTitle = useCallback(async (rollId: string, title: string) => {
     if (!profile) return false;

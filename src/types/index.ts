@@ -1,5 +1,36 @@
 import { Session } from '@supabase/supabase-js';
 
+export interface Grain { amt: number; size?: number; rough?: number; chroma?: number; }
+export interface Vignette { ev: number; radius?: number; softness?: number; }
+export interface BW { enable: boolean; }
+
+export interface FilmPreset {
+  ev?: number;
+  wbK?: number;
+  tint?: number;
+  contrast?: number;
+  saturation?: number;
+  grain?: Grain;
+  bloom?: number;
+  vignette?: Vignette;
+  bw?: BW;
+}
+
+export interface FilmStock {
+  id: string;
+  name: string;
+  description: string | null;
+  brand: string | null;
+  type: string | null;
+  capacity: number;
+  price: number;
+  preset: FilmPreset;
+  image_url: string | null;
+  roll_image_url: string | null;
+  unlocked: boolean;
+  created_at: string;
+}
+
 export interface UserProfile {
   id: string;
   username: string;
@@ -135,6 +166,7 @@ export interface AppContextType {
   notifications: Notification[];
   userBadges: UserBadge[];
   recentStories: Map<string, { user: UserProfile, posts: Post[] }>;
+  filmStocks: FilmStock[];
   startNewRoll: (filmType: string, capacity: number) => Promise<void>;
   takePhoto: (imageBlob: Blob, metadata: any) => Promise<void>;
   setFeed: React.Dispatch<React.SetStateAction<Post[]>>;

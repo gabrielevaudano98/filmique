@@ -1,10 +1,11 @@
-import React, { createContext, useContext, useState, useMemo } from 'react';
-import { AppContextType } from '../types';
+import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import { AppContextType, FilmStock } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileData } from '../hooks/useProfileData';
 import { useRollsAndPhotos } from '../hooks/useRollsAndPhotos';
 import { useSocial } from '../hooks/useSocial';
 import { useAlbums } from '../hooks/useAlbums';
+import * as api from '../services/api';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -20,12 +21,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
   const [showFilmModal, setShowFilmModal] = useState(false);
 
+  // Data State
+  const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
+
   // Modular Hooks
   const auth = useAuth();
   const profileData = useProfileData(auth.profile);
-  const rollsAndPhotos = useRollsAndPhotos(auth.profile);
+  const rollsAndPhotos = useRollsAndPhotos(auth.profile, filmStocks);
   const social = useSocial(auth.profile);
   const albumsData = useAlbums(auth.profile);
+
+  useEffect(() => {
+    const getFilmStocks = async () => {
+      const { data, error } = await api.fetchFilmStocks();
+      if (error) {
+        console.error("Failed to fetch film stocks:", error);
+      } else {
+        setFilmStocks(data as FilmStock[]);
+      }
+    };
+    if (auth.session) {
+      getFilmStocks();
+    }
+  }, [auth.session]);
 
   const value = useMemo(() => ({
     ...auth,
@@ -33,6 +51,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ...rollsAndPhotos,
     ...social,
     ...albumsData,
+    filmStocks,
     currentView,
     setCurrentView,
     cameraMode,
@@ -40,7 +59,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showFilmModal,
     setShowFilmModal,
     refetchRolls: rollsAndPhotos.refetchRolls,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, currentView, cameraMode, showFilmModal]);
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, filmStocks, currentView, cameraMode, showFilmModal]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };

@@ -1,8 +1,7 @@
 import { supabase } from '../integrations/supabase/client';
 import { extractStoragePathFromPublicUrl } from '../utils/storage';
 import { applyFilter } from '../utils/imageProcessor';
-import { filmPresets } from '../utils/filters';
-import { Roll, Photo } from '../types';
+import { Roll, Photo, FilmStock } from '../types';
 
 export const POST_SELECT_QUERY = '*, cover_photo_url, profiles!posts_user_id_fkey(username, avatar_url, level, id), rolls!posts_roll_id_fkey(title, film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))';
 const NOTIFICATION_SELECT_QUERY = '*, actors:profiles!notifications_actor_id_fkey(username, avatar_url), posts(rolls(photos(thumbnail_url)))';
@@ -24,6 +23,9 @@ export const fetchFollowerCount = (userId: string) => supabase.from('followers')
 export const fetchFollowingCount = (userId: string) => supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', userId);
 export const searchUsers = (query: string) => supabase.from('profiles').select('*').ilike('username', `%${query}%`).limit(10);
 
+// Film Stocks
+export const fetchFilmStocks = () => supabase.from('film_stocks').select('*');
+
 // Rolls & Photos
 export const fetchAllRolls = (userId: string) => supabase.from('rolls').select('*, photos(*), albums(title)').eq('user_id', userId).order('created_at', { ascending: false });
 export const deleteRollById = (rollId: string) => supabase.from('rolls').delete().eq('id', rollId);
@@ -35,12 +37,12 @@ export const deletePhotosFromStorage = (paths: string[]) => supabase.storage.fro
 export const getPhotosForRoll = (rollId: string) => supabase.from('photos').select('url').eq('roll_id', rollId);
 export const deletePhotosForRoll = (rollId: string) => supabase.from('photos').delete().eq('roll_id', rollId);
 
-export const developRollPhotos = async (roll: Roll) => {
-  const preset = filmPresets[roll.film_type] || filmPresets['Kodak Portra 400'];
-  if (!preset || !roll.photos) return;
+export const developRollPhotos = async (roll: Roll, filmStocks: FilmStock[]) => {
+  const filmStock = filmStocks.find(fs => fs.name === roll.film_type);
+  if (!filmStock || !roll.photos) return;
 
   await Promise.all(roll.photos.map(async (photo: Photo) => {
-    const filteredBlob = await applyFilter(photo.url, preset);
+    const filteredBlob = await applyFilter(photo.url, filmStock.preset);
     const path = extractStoragePathFromPublicUrl(photo.url);
     if (!path) throw new Error('Could not determine storage path for photo.');
     const { error } = await supabase.storage.from('photos').update(path, filteredBlob, {

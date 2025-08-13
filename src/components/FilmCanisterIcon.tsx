@@ -3,9 +3,14 @@ import React from 'react';
 interface FilmCanisterIconProps {
   filmType: string;
   className?: string;
+  imageUrl?: string | null;
 }
 
-const FilmCanisterIcon: React.FC<FilmCanisterIconProps> = ({ filmType, className }) => {
+const FilmCanisterIcon: React.FC<FilmCanisterIconProps> = ({ filmType, className, imageUrl }) => {
+  if (imageUrl) {
+    return <img src={imageUrl} alt={`${filmType} canister`} className={className} />;
+  }
+
   const filmBrand = filmType.split(' ')[0] || 'Filmique';
   const filmSpeed = filmType.match(/\d+/)?.[0] || '400';
 

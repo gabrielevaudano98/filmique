@@ -4,6 +4,7 @@ import { Roll } from '../types';
 import { Trash2, FolderPlus, Clock, FolderMinus } from 'lucide-react';
 import NegativePhoto from './NegativePhoto';
 import FilmCanisterIcon from './FilmCanisterIcon';
+import { useAppContext } from '../context/AppContext';
 
 interface RollListItemProps {
   roll: Roll;
@@ -14,6 +15,7 @@ interface RollListItemProps {
 }
 
 const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlbum, isDeveloping = false, assignActionIcon = 'add' }) => {
+  const { filmStocks } = useAppContext();
   const [offsetX, setOffsetX] = useState(0);
   const itemRef = useRef<HTMLDivElement>(null);
   const ACTION_WIDTH = 80;
@@ -72,6 +74,8 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
   `)}")`;
 
   if (isDeveloping) {
+    const filmStock = filmStocks.find(fs => fs.name === roll.film_type);
+
     return (
       <div className="bg-warm-800/50 rounded-xl overflow-hidden border border-warm-700/30">
         <div className="p-4 flex items-center justify-between">
@@ -93,7 +97,11 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
           }}
         >
           <div className="flex space-x-2 px-4 items-center">
-            <FilmCanisterIcon filmType={roll.film_type} className="h-24 w-auto shrink-0 mr-1" />
+            <FilmCanisterIcon
+              filmType={roll.film_type}
+              imageUrl={filmStock?.roll_image_url}
+              className="h-24 w-auto shrink-0 mr-1"
+            />
             {roll.photos && roll.photos.length > 0 ? (
               roll.photos.map(photo => (
                 <NegativePhoto

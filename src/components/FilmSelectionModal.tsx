@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { X, Search, Check, ArrowDownAZ, DollarSign, Film, Lock } from 'lucide-react';
+import { X, Search, Check, Lock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { filmStockCategories, FilmStock } from '../utils/filters';
+import { FilmStock } from '../types';
 
 interface FilmSelectionModalProps {
   onStartRoll: (filmType: string, capacity: number) => void;
@@ -29,45 +29,41 @@ const SegmentedControl: React.FC<{
 );
 
 const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, onClose }) => {
-  const { profile, activeRoll } = useAppContext();
+  const { profile, activeRoll, filmStocks } = useAppContext();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [groupBy, setGroupBy] = useState<'type' | 'brand'>('type');
   const [sortOrder, setSortOrder] = useState<'name' | 'price'>('name');
 
   const firstUnlockedFilm = useMemo(() => 
-    Object.values(filmStockCategories).flat().find(f => f.unlocked) || Object.values(filmStockCategories).flat()[0]
-  , []);
+    filmStocks.find(f => f.unlocked) || filmStocks[0]
+  , [filmStocks]);
 
-  const [selectedFilm, setSelectedFilm] = useState<FilmStock>(firstUnlockedFilm);
+  const [selectedFilm, setSelectedFilm] = useState<FilmStock | undefined>(firstUnlockedFilm);
 
   const processedFilms = useMemo(() => {
-    const allFilms = Object.values(filmStockCategories).flat();
     const lowerCaseSearch = searchTerm.toLowerCase();
 
-    const filtered = allFilms.filter(film => film.name.toLowerCase().includes(lowerCaseSearch));
+    const filtered = filmStocks.filter(film => film.name.toLowerCase().includes(lowerCaseSearch));
 
     filtered.sort((a, b) => {
       if (sortOrder === 'price') return a.price - b.price;
       return a.name.localeCompare(b.name);
     });
 
-    const getBrand = (name: string) => name.split(' ')[0];
-    const findCategory = (film: FilmStock) => Object.keys(filmStockCategories).find(cat => filmStockCategories[cat].includes(film)) || 'Uncategorized';
-
     return filtered.reduce((acc, film) => {
-      const key = groupBy === 'brand' ? getBrand(film.name) : findCategory(film);
+      const key = groupBy === 'brand' ? (film.brand || 'Other') : (film.type || 'Uncategorized');
       if (!acc[key]) acc[key] = [];
       acc[key].push(film);
       return acc;
     }, {} as Record<string, FilmStock[]>);
-  }, [searchTerm, sortOrder, groupBy]);
+  }, [searchTerm, sortOrder, groupBy, filmStocks]);
 
-  const totalCost = selectedFilm.price;
+  const totalCost = selectedFilm?.price || 0;
   const canAfford = profile ? profile.credits >= totalCost : false;
 
   const handleStartRoll = () => {
-    if (canAfford && selectedFilm.unlocked) {
+    if (selectedFilm && canAfford && selectedFilm.unlocked) {
       onStartRoll(selectedFilm.name, selectedFilm.capacity);
       onClose();
     }
@@ -121,11 +117,11 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
               <div className="space-y-2">
                 {processedFilms[groupName].map(film => (
                   <button
-                    key={film.name}
+                    key={film.id}
                     onClick={() => setSelectedFilm(film)}
                     disabled={!film.unlocked}
                     className={`w-full p-3 rounded-xl border-2 text-left transition-all duration-200 flex items-center justify-between
-                      ${selectedFilm.name === film.name ? 'border-amber-400 bg-amber-400/10' : film.unlocked ? 'border-gray-700 bg-gray-800 hover:border-gray-600' : 'border-gray-800 bg-gray-800 opacity-50 cursor-not-allowed'}`}
+                      ${selectedFilm?.name === film.name ? 'border-amber-400 bg-amber-400/10' : film.unlocked ? 'border-gray-700 bg-gray-800 hover:border-gray-600' : 'border-gray-800 bg-gray-800 opacity-50 cursor-not-allowed'}`}
                   >
                     <div className="flex-grow">
                       <h4 className="font-semibold text-base text-white">{film.name}</h4>
@@ -136,7 +132,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
                         <div className="font-bold text-white">{film.price}</div>
                         <div className="text-xs text-gray-500">credits</div>
                       </div>
-                      {selectedFilm.name === film.name ? (
+                      {selectedFilm?.name === film.name ? (
                         <div className="w-6 h-6 rounded-full bg-amber-400 flex items-center justify-center">
                           <Check className="w-4 h-4 text-gray-900" />
                         </div>
@@ -162,10 +158,10 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
         <div className="p-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900/80 backdrop-blur-lg">
           <button
             onClick={handleStartRoll}
-            disabled={!canAfford || !selectedFilm.unlocked}
+            disabled={!selectedFilm || !canAfford || !selectedFilm.unlocked}
             className="w-full py-3.5 rounded-xl transition-colors font-bold text-base shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed disabled:shadow-none enabled:bg-amber-500 enabled:hover:bg-amber-600 enabled:text-gray-900 enabled:shadow-amber-500/20"
           >
-            {!selectedFilm.unlocked 
+            {!selectedFilm?.unlocked 
               ? 'Film Locked'
               : !canAfford 
               ? 'Not Enough Credits'
