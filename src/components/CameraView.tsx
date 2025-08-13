@@ -49,6 +49,7 @@ const CameraView: React.FC = () => {
 
   const [aspectRatioClass, setAspectRatioClass] = useState('aspect-[3/2]');
   const [targetAspectRatio, setTargetAspectRatio] = useState(3 / 2);
+  const [isShutterAnimating, setIsShutterAnimating] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -196,6 +197,9 @@ const CameraView: React.FC = () => {
       return;
     }
 
+    setIsShutterAnimating(true);
+    setTimeout(() => setIsShutterAnimating(false), 1500);
+
     let imageBlob: Blob | null = null;
 
     if (isNative) {
@@ -303,6 +307,12 @@ const CameraView: React.FC = () => {
               playsInline
               className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
             />
+          )}
+          {isShutterAnimating && (
+            <div className="absolute inset-0 z-50 overflow-hidden pointer-events-none">
+              <div className="absolute top-0 left-0 w-full h-1/2 bg-black animate-shutter-top"></div>
+              <div className="absolute bottom-0 left-0 w-full h-1/2 bg-black animate-shutter-bottom"></div>
+            </div>
           )}
         </div>
       </div>
