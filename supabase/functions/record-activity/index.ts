@@ -6,70 +6,86 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-serve(async (req) => {
-  console.log('--- record-activity: Request received ---');
-  console.log(`Method: ${req.method}, URL: ${req.url}`);
+// --- Gamification Rules ---
+const XP_REWARDS = {
+  GIVE_LIKE: 1,
+  RECEIVE_LIKE: 5,
+  GIVE_COMMENT: 5,
+  RECEIVE_COMMENT: 10,
+  NEW_POST: 25,
+  NEW_FOLLOWER: 15,
+};
 
+const getLevelFromXp = (xp: number) => Math.floor(Math.sqrt(xp / 100)) + 1;
+
+serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    console.log('--- record-activity: Handling OPTIONS preflight request ---');
-    return new Response(null, {
-      status: 204, // No Content
-      headers: corsHeaders,
-    });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const body = await req.json();
-    console.log('--- record-activity: Parsed request body ---', body);
-    
-    const { activityType, actorId, entityId, entityOwnerId } = body;
-
-    if (!activityType || !actorId || !entityId) {
-      console.error('--- record-activity: ERROR - Missing required fields ---');
-      return new Response(JSON.stringify({ error: 'Missing required fields' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (actorId === entityOwnerId) {
-      console.log('--- record-activity: Self-activity detected, skipping notification. ---');
-      return new Response(JSON.stringify({ message: 'Self-activity, no notification needed.' }), {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    console.log('--- record-activity: Creating Supabase client to insert notification. ---');
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_ANON_KEY')!,
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
     );
 
-    const { error } = await supabase.from('notifications').insert({
-      user_id: entityOwnerId,
-      actor_id: actorId,
-      type: activityType,
-      entity_id: entityId,
-    });
+    const { activityType, actorId, entityId, entityOwnerId } = await req.json();
 
-    if (error) {
-      console.error('--- record-activity: ERROR - Supabase insert failed ---', error);
-      throw error;
+    if (!activityType || !actorId) {
+      return new Response(JSON.stringify({ error: 'Missing required parameters' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    console.log('--- record-activity: Notification inserted successfully. ---');
+    // --- 1. Award XP and update profiles ---
+    const awardXp = async (userId: string, amount: number) => {
+      const { data: profile, error } = await supabase.from('profiles').select('xp').eq('id', userId).single();
+      if (error || !profile) return;
+
+      const newXp = profile.xp + amount;
+      const newLevel = getLevelFromXp(newXp);
+      
+      await supabase.from('profiles').update({ xp: newXp, level: newLevel }).eq('id', userId);
+    };
+
+    switch (activityType) {
+      case 'like':
+        await awardXp(actorId, XP_REWARDS.GIVE_LIKE);
+        if (entityOwnerId) await awardXp(entityOwnerId, XP_REWARDS.RECEIVE_LIKE);
+        break;
+      case 'comment':
+        await awardXp(actorId, XP_REWARDS.GIVE_COMMENT);
+        if (entityOwnerId) await awardXp(entityOwnerId, XP_REWARDS.RECEIVE_COMMENT);
+        break;
+      case 'post':
+        await awardXp(actorId, XP_REWARDS.NEW_POST);
+        break;
+      case 'follow':
+        if (entityOwnerId) await awardXp(entityOwnerId, XP_REWARDS.NEW_FOLLOWER);
+        break;
+    }
+
+    // --- 2. Create Notification ---
+    if (entityOwnerId && actorId !== entityOwnerId) {
+      await supabase.from('notifications').insert({
+        user_id: entityOwnerId,
+        actor_id: actorId,
+        type: activityType,
+        entity_id: entityId,
+      });
+    }
+
+    // --- 3. Check for Badges (Simplified for now) ---
+    // A full implementation would check counts against badge criteria here.
+    // This is a good place for future expansion.
+
     return new Response(JSON.stringify({ success: true }), {
-      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
     });
 
-  } catch (err) {
-    console.error('--- record-activity: FATAL ERROR ---', err.message, err.stack);
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
     });
   }
 })

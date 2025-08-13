@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Heart, MessageCircle, Clock, Camera, UserPlus, Check, Send, Shield, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useAppContext, Post, Photo } from '../context/AppContext';
+import { useAppContext, Post } from '../context/AppContext';
 import { formatDistanceToNow } from '../utils/time';
 
 interface PostViewProps {
@@ -85,9 +85,9 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
             onScroll={handleScroll}
             className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar aspect-square bg-gray-900"
           >
-            {post.rolls.photos.map((photo: Photo) => (
+            {post.rolls.photos.map((photo: any) => (
               <div key={photo.id} className="w-full h-full flex-shrink-0 snap-center flex items-center justify-center">
-                <img src={`${photo.preview_url || photo.url}${cacheBuster}`} alt="Post photo" className="w-auto h-auto max-w-full max-h-full object-contain" />
+                <img src={`${photo.url}${cacheBuster}`} alt="Post photo" className="w-auto h-auto max-w-full max-h-full object-contain" />
               </div>
             ))}
           </div>

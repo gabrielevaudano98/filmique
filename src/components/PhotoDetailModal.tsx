@@ -17,12 +17,11 @@ const PhotoDetailModal: React.FC<PhotoDetailModalProps> = ({ photo, onClose }) =
   };
 
   const cacheBuster = `?t=${new Date().getTime()}`;
-  const displayUrl = photo.preview_url || photo.url;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-[60] p-4" onClick={onClose}>
       <div className="relative max-w-4xl max-h-[90vh] w-full h-full" onClick={e => e.stopPropagation()}>
-        <img src={`${displayUrl}${cacheBuster}`} alt="Full size view" className="w-full h-full object-contain" />
+        <img src={`${photo.url}${cacheBuster}`} alt="Full size view" className="w-full h-full object-contain" />
         <div className="absolute top-4 right-4 flex space-x-2">
           <button onClick={handleDownload} className="bg-gray-800/70 hover:bg-gray-700 text-white font-semibold p-3 rounded-full transition-colors">
             <Download className="w-6 h-6" />

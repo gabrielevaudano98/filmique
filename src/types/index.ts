@@ -53,7 +53,6 @@ export interface Photo {
   user_id: string;
   roll_id: string;
   url: string;
-  preview_url: string;
   thumbnail_url: string;
   metadata: any;
   created_at: string;
