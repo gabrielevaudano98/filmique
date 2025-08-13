@@ -57,88 +57,68 @@
   transition: transform var(--motion-short) var(--spring-soft), box-shadow var(--motion-short);
 }
 
-/* Stacked card variant (used on onboarding / hero) */
-.glass-card.stacked {
-  transform: translateY(8px);
-  background: linear-gradient(180deg, rgba(58,25,10,0.88), rgba(27,29,32,0.78));
-}
-
-/* Hero card image overlay for warming and vignette */
-.card-hero {
-  position: relative;
+/* --- Film strip & frames --- */
+.film-strip {
+  background: linear-gradient(180deg, rgba(8,8,8,1), rgba(12,12,12,0.98));
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.6);
   overflow: hidden;
-  border-radius: 16px;
-}
-.card-hero::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(27,29,32,0.36));
-  pointer-events: none;
-}
-
-/* Avatar ring (gradient ring) */
-.avatar-ring {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 9999px;
-  padding: 3px;
-  background: var(--avatar-ring);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
-}
-.avatar-ring img {
   display: block;
-  border-radius: 9999px;
-  width: 48px;
-  height: 48px;
+}
+
+.film-frames {
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  min-height: 84px;
+}
+
+/* film-edge: decorative thin border to suggest the thicker film border */
+.film-edge {
+  width: 8px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.7), rgba(6,6,6,0.9));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+}
+.film-edge.left { border-right: 1px solid rgba(255,255,255,0.02); }
+.film-edge.right { border-left: 1px solid rgba(255,255,255,0.02); }
+
+/* container for each frame inside the strip */
+.film-frame {
+  width: 120px;
+  height: 72px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(18,18,18,0.96), rgba(12,12,12,0.9));
+  border: 1px solid rgba(255,255,255,0.03);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), 0 2px 8px rgba(0,0,0,0.45);
+}
+
+/* image inside film frame */
+.film-frame-img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border: 2px solid rgba(0,0,0,0.35);
+  display: block;
 }
 
-/* Pill CTA — used across header filters and bottom actions */
-.pill-cta {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  padding: 8px 16px;
-  font-weight: 600;
-  color: white;
-  background: linear-gradient(90deg, var(--brand-amber-start), var(--brand-amber-mid));
-  box-shadow: 0 6px 28px rgba(214,106,46,0.12), inset 0 -6px 14px rgba(255,255,255,0.02);
-  transition: transform var(--motion-micro) var(--curve-quick), box-shadow var(--motion-micro);
-}
-.pill-cta:active { transform: translateY(1px) scale(0.997); }
-
-/* Secondary pill (outline) */
-.pill-cta.outline {
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.06);
-  color: var(--warm-300);
-  box-shadow: none;
+/* when showing developing state, warm-tint the background slightly */
+.film-frames.developing .film-frame {
+  background: linear-gradient(180deg, rgba(48,26,18,0.88), rgba(28,18,12,0.9));
+  border: 1px solid rgba(214,106,46,0.06);
 }
 
-/* Floating bottom nav (glass) */
-.floating-nav {
-  background: linear-gradient(180deg, rgba(12,7,5,0.6), rgba(12,7,5,0.36));
-  border-radius: 28px;
-  padding: 10px;
-  display: flex;
-  gap: 16px;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-depth);
-  border: 1px solid rgba(255,255,255,0.04);
+/* sprocket row styles (uses data-URI SVG backgrounds generated in JS) */
+.sprocket-row {
+  height: 14px;
+  display: block;
+  background-color: #000;
+  border-bottom: 1px solid rgba(255,255,255,0.02);
 }
 
-/* Story avatar carousel minor tweaks */
-.story-carousel {
-  padding: 8px 12px;
-  display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+/* Helper: small gap and padding for film frames list */
+.film-frames > .px-2 {
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 /* small utilities used by components */

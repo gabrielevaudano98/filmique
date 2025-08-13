@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { Roll } from '../types';
 import { Trash2, FolderPlus, Clock, FolderMinus } from 'lucide-react';
@@ -12,15 +12,35 @@ interface RollListItemProps {
   assignActionIcon?: 'add' | 'remove';
 }
 
-const SprocketHoles = ({ isDeveloping }: { isDeveloping?: boolean }) => {
-  // For developing rolls: a warmer, slightly darker color from the palette for a realistic feel.
-  const holeColor = isDeveloping ? 'rgba(240, 198, 171, 0.4)' : 'rgba(255, 255, 255, 0.1)';
+/**
+ * Generate a small SVG pattern for sprocket holes.
+ * We encode the SVG as a data URI and use it as a background image so the holes look rectangular
+ * with slightly rounded corners and use the palette color passed in.
+ */
+const generateSprocketDataUrl = (fillColor: string, holeW = 12, holeH = 8, spacing = 16, rx = 2) => {
+  const patternW = holeW + spacing;
+  // simple pattern that repeats horizontally
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='${holeH}' viewBox='0 0 ${patternW} ${holeH}' preserveAspectRatio='none'>
+    <rect width='${patternW}' height='${holeH}' fill='black' />
+    <rect x='${Math.round(spacing/2)}' y='1' rx='${rx}' ry='${rx}' width='${holeW}' height='${holeH - 2}' fill='${fillColor}'/>
+  </svg>`;
+  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}")`;
+};
 
+const SprocketRow: React.FC<{ isDeveloping?: boolean }> = ({ isDeveloping }) => {
+  const holeColor = isDeveloping ? 'rgba(214,106,46,0.38)' : 'rgba(255,255,255,0.08)';
+  const bg = useMemo(() => generateSprocketDataUrl(holeColor), [holeColor]);
   return (
-    <div className="h-4 w-full bg-black" style={{
-      backgroundImage: `repeating-linear-gradient(to right, transparent, transparent 16px, ${holeColor} 16px, ${holeColor} 28px)`,
-      backgroundSize: '28px 100%',
-    }} />
+    <div
+      className="sprocket-row"
+      style={{
+        backgroundImage: bg,
+        backgroundRepeat: 'repeat-x',
+        backgroundPosition: 'left center',
+        backgroundSize: '28px 100%',
+        height: 14,
+      }}
+    />
   );
 };
 
@@ -64,60 +84,14 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
   const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
   const AssignIcon = assignActionIcon === 'add' ? FolderPlus : FolderMinus;
 
-  const photoStrip = (
-    <div className={`overflow-x-auto no-scrollbar ${isDeveloping ? 'bg-black' : 'bg-neutral-900'}`}>
-      <div className="inline-flex flex-col space-y-3 py-3">
-        <div className="px-2 w-full"><SprocketHoles isDeveloping={isDeveloping} /></div>
-        <div className="flex space-x-2 px-2">
-          {roll.photos && roll.photos.length > 0 ? (
-            roll.photos.map(photo => (
-              isDeveloping ? (
-                <NegativePhoto
-                  key={photo.id}
-                  src={`${photo.thumbnail_url}`}
-                  className="h-24 w-auto rounded-sm object-cover bg-neutral-700 shrink-0"
-                />
-              ) : (
-                <img
-                  key={photo.id}
-                  src={`${photo.thumbnail_url}${cacheBuster}`}
-                  alt="roll photo"
-                  className="h-24 w-auto rounded-sm object-cover bg-neutral-700 shrink-0"
-                  draggable="false"
-                />
-              )
-            ))
-          ) : (
-            <div className="h-24 flex items-center justify-center text-gray-400 text-sm px-4 shrink-0">No photos in this roll.</div>
-          )}
-        </div>
-        <div className="px-2 w-full"><SprocketHoles isDeveloping={isDeveloping} /></div>
-      </div>
-    </div>
-  );
-
-  if (isDeveloping) {
-    return (
-      <div className="bg-warm-800/50 rounded-xl overflow-hidden border border-warm-700/30">
-        <div className="p-4 flex items-center justify-between">
-          <div>
-            <h4 className="font-bold text-white truncate">{roll.film_type}</h4>
-            <p className="text-sm text-gray-400">{roll.shots_used} photos</p>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-cyan-400">
-            <Clock className="w-4 h-4" />
-            <span>Developing...</span>
-          </div>
-        </div>
-        {photoStrip}
-      </div>
-    );
-  }
+  // Film frame nodes
+  const frames = roll.photos && roll.photos.length > 0 ? roll.photos : [];
 
   return (
     <div className="relative w-full overflow-hidden rounded-xl">
+      {/* Action panels (swipe-to-reveal) */}
       {!isDeveloping && (
-        <div className="absolute inset-0 flex items-center justify-between bg-neutral-900">
+        <div className="absolute inset-0 flex items-center justify-between z-0">
           <button
             onClick={handleAssignAlbum}
             className="h-full w-20 flex items-center justify-center bg-blue-600 text-white transition-colors hover:bg-blue-700"
@@ -138,14 +112,66 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
       <div
         {...handlers}
         ref={itemRef}
-        className={`relative bg-neutral-800 transition-transform duration-200 ease-out cursor-grab active:cursor-grabbing`}
+        className={`relative transition-transform duration-200 ease-out cursor-grab active:cursor-grabbing z-10`}
         style={{ transform: `translateX(${offsetX}px)` }}
       >
-        <div className="p-4 border-b border-black/20 bg-gradient-to-r from-brand-amber-start to-brand-amber-end">
-          <h4 className="font-bold text-white truncate">{roll.title || 'Untitled Roll'}</h4>
-          <p className="text-sm text-white/80">{roll.film_type}</p>
+        <div className="film-strip rounded-xl overflow-hidden border border-neutral-800 shadow-sm">
+          {/* top sprocket row */}
+          <SprocketRow isDeveloping={isDeveloping} />
+
+          {/* film frames area */}
+          <div className={`film-frames flex items-stretch ${isDeveloping ? 'developing' : ''}`}>
+
+            {/* left edge: film border */}
+            <div className="film-edge left" />
+
+            {/* frames */}
+            <div className="flex gap-2 px-2 py-3 overflow-x-auto no-scrollbar">
+              {frames.length > 0 ? (
+                frames.map((photo) => (
+                  <div key={photo.id} className="film-frame flex-shrink-0">
+                    {isDeveloping ? (
+                      <NegativePhoto src={photo.thumbnail_url} className="film-frame-img" />
+                    ) : (
+                      <img
+                        src={`${photo.thumbnail_url}${cacheBuster}`}
+                        alt="roll photo"
+                        className="film-frame-img"
+                        draggable={false}
+                      />
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="film-frame flex items-center justify-center text-gray-400 px-6">
+                  No photos
+                </div>
+              )}
+            </div>
+
+            {/* right edge: film border */}
+            <div className="film-edge right" />
+          </div>
+
+          {/* bottom sprocket row */}
+          <SprocketRow isDeveloping={isDeveloping} />
         </div>
-        {photoStrip}
+
+        {/* Header band */}
+        <div className="p-4 border-b border-black/20 bg-gradient-to-r from-brand-amber-start to-brand-amber-end">
+          <div className="flex items-center justify-between">
+            <div>
+              <h4 className="font-bold text-white truncate">{roll.title || roll.film_type || 'Untitled Roll'}</h4>
+              <p className="text-sm text-white/80">{roll.shots_used} photos • {roll.film_type}</p>
+            </div>
+            {isDeveloping ? (
+              <div className="flex items-center gap-2 text-sm text-amber-100">
+                <Clock className="w-4 h-4" />
+                <span>Developing...</span>
+              </div>
+            ) : null}
+          </div>
+        </div>
       </div>
     </div>
   );
