@@ -16,9 +16,10 @@ import NotificationsView from './components/NotificationsView';
 import TopBar from './components/TopBar';
 import BottomNavBar from './components/BottomNavBar';
 import UncategorizedRollsView from './components/UncategorizedRollsView';
+import ConfirmDevelopmentModal from './components/ConfirmDevelopmentModal';
 
 function App() {
-  const { session, profile, isLoading, currentView, authStep, rollToName, setRollToName } = useAppContext();
+  const { session, profile, isLoading, currentView, authStep, rollToName, setRollToName, rollToConfirm, setRollToConfirm, developRoll, deleteRoll } = useAppContext();
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -37,6 +38,20 @@ function App() {
 
   const handleNamingModalClose = () => {
     setRollToName(null);
+  };
+
+  const handleConfirmDevelop = () => {
+    if (rollToConfirm) {
+      developRoll(rollToConfirm);
+    }
+    setRollToConfirm(null);
+  };
+
+  const handleConfirmTrash = () => {
+    if (rollToConfirm) {
+      deleteRoll(rollToConfirm.id);
+    }
+    setRollToConfirm(null);
   };
 
   if (isLoading) {
@@ -66,6 +81,15 @@ function App() {
     return (
       <>
         {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
+        {rollToConfirm && (
+          <ConfirmDevelopmentModal
+            isOpen={!!rollToConfirm}
+            onClose={() => setRollToConfirm(null)}
+            onDevelop={handleConfirmDevelop}
+            onTrash={handleConfirmTrash}
+            roll={rollToConfirm}
+          />
+        )}
         <CameraView />
       </>
     );
@@ -75,6 +99,15 @@ function App() {
     <div className="bg-transparent text-white">
       <TopBar />
       {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
+      {rollToConfirm && (
+        <ConfirmDevelopmentModal
+          isOpen={!!rollToConfirm}
+          onClose={() => setRollToConfirm(null)}
+          onDevelop={handleConfirmDevelop}
+          onTrash={handleConfirmTrash}
+          roll={rollToConfirm}
+        />
+      )}
       <main className="min-h-screen w-full pb-28">
         <div className="max-w-6xl mx-auto w-full h-full px-4 py-4">
           {renderCurrentView()}

@@ -11,6 +11,7 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
   const [completedRolls, setCompletedRolls] = useState<Roll[]>([]);
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
   const [rollToName, setRollToName] = useState<Roll | null>(null);
+  const [rollToConfirm, setRollToConfirm] = useState<Roll | null>(null);
 
   const fetchRolls = useCallback(async () => {
     if (!profile) return;
@@ -51,7 +52,7 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
         if (isCompleted) {
           setActiveRoll(null);
           setCompletedRolls(prev => [updatedRoll, ...prev]);
-          setRollToName(updatedRoll);
+          setRollToConfirm(updatedRoll);
         } else {
           setActiveRoll(updatedRoll);
         }
@@ -157,6 +158,8 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
     setSelectedRoll,
     rollToName,
     setRollToName,
+    rollToConfirm,
+    setRollToConfirm,
     startNewRoll,
     takePhoto,
     developRoll,
