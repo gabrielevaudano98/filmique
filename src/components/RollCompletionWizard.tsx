@@ -66,20 +66,20 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
             <p className="text-lg text-warm-300 mt-2 mb-8">
               You've finished your roll of <span className="font-semibold text-white">{roll.film_type}</span>.
             </p>
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col space-y-4">
               <button onClick={() => handleDecision('develop')} className="w-full flex justify-center items-center space-x-2 py-3 px-4 rounded-xl shadow-lg shadow-brand-amber-start/20 text-base font-bold text-white bg-gradient-to-r from-brand-amber-start to-brand-amber-end hover:opacity-90 transition-all transform hover:scale-105 active:scale-100">
                 <Zap className="w-5 h-5" />
                 <span>Develop Photos</span>
               </button>
-              <button onClick={() => setStep('confirm_trash')} className="w-full px-4 py-3 rounded-xl bg-warm-700/50 hover:bg-warm-700/80 text-white font-bold transition-colors flex items-center justify-center space-x-2">
-                <Trash2 className="w-5 h-5" />
-                <span>Trash Roll</span>
-              </button>
-            </div>
-            <div className="mt-6">
-              <button onClick={() => handleDecision('decide_later')} className="px-4 py-2 text-sm rounded-lg text-warm-400 hover:text-white font-semibold transition-colors">
-                Decide Later
-              </button>
+              <div className="flex justify-center items-center space-x-8 pt-2">
+                <button onClick={() => setStep('confirm_trash')} className="flex items-center space-x-2 text-red-400 hover:text-red-300 font-bold text-sm transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                    <span>Trash Roll</span>
+                </button>
+                <button onClick={() => handleDecision('decide_later')} className="text-warm-400 hover:text-white font-bold text-sm transition-colors">
+                    Decide Later
+                </button>
+              </div>
             </div>
           </div>
         );
@@ -131,7 +131,7 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
 
   return (
     <div className="fixed inset-0 bg-warm-900/50 backdrop-blur-xl flex items-center justify-center z-[60] p-4">
-      <div className="bg-warm-800/80 rounded-2xl max-w-sm w-full p-6 shadow-depth animate-modal-enter">
+      <div className="bg-transparent max-w-sm w-full p-6 animate-modal-enter">
         <div key={step} className="animate-fade-in">
           {renderStepContent()}
         </div>
