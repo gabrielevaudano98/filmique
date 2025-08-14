@@ -19,22 +19,33 @@ export const useRollsAndPhotos = (
 
   const fetchRolls = useCallback(async () => {
     if (!profile) return;
-    const { data } = await api.fetchAllRolls(profile.id);
-    if (data) {
-      const active = data.find(r => !r.is_completed) || null;
-      const completed = data.filter(r => r.is_completed);
-      
-      setActiveRoll(active);
-      setCompletedRolls(completed);
+    const { data: fetchedRolls, error } = await api.fetchAllRolls(profile.id);
+    if (error || !fetchedRolls) return;
 
-      if (!rollToConfirm) {
-        const rollToFinalize = completed.find(r => !r.title);
-        if (rollToFinalize) {
-          setRollToConfirm(rollToFinalize);
-        }
-      }
+    const untitledCompletedRolls = fetchedRolls.filter(r => r.is_completed && !r.title);
+    let finalRolls = fetchedRolls;
+
+    if (untitledCompletedRolls.length > 0) {
+        const updates = untitledCompletedRolls.map(roll => {
+            const date = new Date(roll.created_at);
+            const formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+            const shortId = roll.id.substring(0, 8);
+            const defaultTitle = `Untitled ${formattedDate} - ${shortId}`;
+            return api.updateRoll(roll.id, { title: defaultTitle }).then(response => response.data);
+        });
+
+        const updatedRollsData = (await Promise.all(updates)).filter(Boolean) as Roll[];
+        const updatedRollsMap = new Map(updatedRollsData.map(r => [r.id, r]));
+        
+        finalRolls = fetchedRolls.map(r => updatedRollsMap.get(r.id) || r);
     }
-  }, [profile, rollToConfirm]);
+
+    const active = finalRolls.find(r => !r.is_completed) || null;
+    const completed = finalRolls.filter(r => r.is_completed);
+    setActiveRoll(active);
+    setCompletedRolls(completed);
+    
+  }, [profile]);
 
   useEffect(() => {
     fetchRolls();
@@ -100,21 +111,30 @@ export const useRollsAndPhotos = (
   }, [profile, activeRoll]);
 
   const sendToDarkroom = async (roll: Roll, title: string) => {
-    const { error } = await api.updateRoll(roll.id, { title, completed_at: new Date().toISOString() });
-    if (error) { showErrorToast('Failed to send roll to darkroom.'); }
-    else {
-        showSuccessToast("Roll sent to the darkroom!");
-        fetchRolls();
+    const completedAt = new Date().toISOString();
+    const updatedRoll = { ...roll, title, completed_at: completedAt };
+    setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
+
+    const { error } = await api.updateRoll(roll.id, { title, completed_at: completedAt });
+    if (error) {
+      showErrorToast('Failed to send roll to darkroom.');
+      setCompletedRolls(prev => prev.map(r => r.id === roll.id ? roll : r));
+    } else {
+      showSuccessToast("Roll sent to the darkroom!");
     }
   };
 
   const putOnShelf = async (roll: Roll, title: string) => {
-      const { error } = await api.updateRoll(roll.id, { title });
-      if (error) { showErrorToast('Failed to place roll on shelf.'); }
-      else {
-          showSuccessToast("Roll placed on your shelf.");
-          fetchRolls();
-      }
+    const updatedRoll = { ...roll, title };
+    setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
+
+    const { error } = await api.updateRoll(roll.id, { title });
+    if (error) {
+      showErrorToast('Failed to place roll on shelf.');
+      setCompletedRolls(prev => prev.map(r => r.id === roll.id ? roll : r));
+    } else {
+      showSuccessToast("Roll placed on your shelf.");
+    }
   };
 
   const developShelvedRoll = async (rollId: string) => {
