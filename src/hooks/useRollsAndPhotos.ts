@@ -21,10 +21,22 @@ export const useRollsAndPhotos = (
     if (!profile) return;
     const { data } = await api.fetchAllRolls(profile.id);
     if (data) {
-      setActiveRoll(data.find(r => !r.is_completed) || null);
-      setCompletedRolls(data.filter(r => r.is_completed));
+      const active = data.find(r => !r.is_completed) || null;
+      const completed = data.filter(r => r.is_completed);
+      
+      setActiveRoll(active);
+      setCompletedRolls(completed);
+
+      // Recover state for a roll that was completed but the app was closed
+      // before a develop/trash/save decision was made.
+      if (!rollToConfirm) { // Only do this if a confirmation isn't already showing
+        const rollToRecover = completed.find(r => !r.developed_at && !r.title);
+        if (rollToRecover) {
+          setRollToConfirm(rollToRecover);
+        }
+      }
     }
-  }, [profile]);
+  }, [profile, rollToConfirm]);
 
   useEffect(() => {
     fetchRolls();

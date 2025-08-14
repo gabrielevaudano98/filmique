@@ -32,19 +32,13 @@ const NameRollModal: React.FC<NameRollModalProps> = ({ roll, onClose }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
-        <div className="flex items-center justify-between mb-4">
+        <div className="text-center mb-4">
           <h2 className="text-xl font-bold text-white">
             {isRenaming ? 'Rename Roll' : 'Name Your Roll'}
           </h2>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-white transition-colors rounded-full"
-          >
-            <X className="w-5 h-5" />
-          </button>
         </div>
         <form onSubmit={handleSubmit}>
-          <p className="text-gray-400 mb-4 text-sm">
+          <p className="text-gray-400 mb-4 text-sm text-center">
             {isRenaming
               ? "Give this roll a new unique name."
               : "Give your completed roll a name to continue. You can change this later."}
