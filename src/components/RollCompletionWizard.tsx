@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Zap, Trash2, Film, Edit, Check, AlertTriangle } from 'lucide-react';
+import { Zap, Trash2, Film, Edit, Check, AlertTriangle, PartyPopper } from 'lucide-react';
 import { Roll } from '../types';
 import { useAppContext } from '../context/AppContext';
 
@@ -60,11 +60,11 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
         return (
           <div className="text-center">
             <div className="inline-block p-4 bg-warm-700/50 rounded-full mb-4">
-              <Film className="w-10 h-10 text-brand-amber-start" />
+              <PartyPopper className="w-10 h-10 text-brand-amber-start" />
             </div>
-            <h2 className="text-3xl font-bold text-white">Roll Completed!</h2>
+            <h2 className="text-3xl font-bold text-white">That's a Wrap!</h2>
             <p className="text-lg text-warm-300 mt-2 mb-8">
-              You've finished your roll of <span className="font-semibold text-white">{roll.film_type}</span>.
+              You've captured all {roll.shots_used} photos on your <span className="font-semibold text-white">{roll.film_type}</span> roll. What's next?
             </p>
             <div className="flex flex-col space-y-4">
               <button onClick={() => handleDecision('develop')} className="w-full flex justify-center items-center space-x-2 py-3 px-4 rounded-xl shadow-lg shadow-brand-amber-start/20 text-base font-bold text-white bg-gradient-to-r from-brand-amber-start to-brand-amber-end hover:opacity-90 transition-all transform hover:scale-105 active:scale-100">
@@ -76,7 +76,7 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
                     <Trash2 className="w-4 h-4" />
                     <span>Trash Roll</span>
                 </button>
-                <button onClick={() => handleDecision('decide_later')} className="text-warm-400 hover:text-white font-bold text-sm transition-colors">
+                <button onClick={() => handleDecision('decide_later')} className="text-white opacity-80 hover:opacity-100 font-bold text-sm transition-colors">
                     Decide Later
                 </button>
               </div>
