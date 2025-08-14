@@ -71,7 +71,7 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
                 <Zap className="w-5 h-5" />
                 <span>Develop Photos</span>
               </button>
-              <button onClick={() => setStep('confirm_trash')} className="w-full px-4 py-3 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-white font-bold transition-colors flex items-center justify-center space-x-2">
+              <button onClick={() => setStep('confirm_trash')} className="w-full px-4 py-3 rounded-xl bg-warm-700/50 hover:bg-warm-700/80 text-white font-bold transition-colors flex items-center justify-center space-x-2">
                 <Trash2 className="w-5 h-5" />
                 <span>Trash Roll</span>
               </button>
@@ -96,8 +96,8 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
               </div>
               {error && <p className="text-red-400 text-sm mt-2 text-center">{error}</p>}
               <div className="mt-8 flex justify-end space-x-3">
-                <button type="button" onClick={() => setStep('decision')} className="px-5 py-3 rounded-xl bg-neutral-700 hover:bg-neutral-600 font-bold transition-colors">Back</button>
-                <button type="submit" disabled={isLoading || !title.trim()} className="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center space-x-2">
+                <button type="button" onClick={() => setStep('decision')} className="px-5 py-3 rounded-xl bg-warm-700/50 hover:bg-warm-700/80 font-bold transition-colors">Back</button>
+                <button type="submit" disabled={isLoading || !title.trim()} className="px-5 py-3 rounded-xl bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2">
                   <Check className="w-5 h-5" />
                   <span>{isLoading ? 'Saving...' : 'Save & Continue'}</span>
                 </button>
@@ -117,10 +117,10 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
               This will permanently delete all {roll.shots_used} photos. This action cannot be undone.
             </p>
             <div className="flex space-x-3">
-              <button onClick={() => setStep('decision')} className="flex-1 px-4 py-3 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-white font-bold transition-colors">
+              <button onClick={() => setStep('decision')} className="flex-1 px-4 py-3 rounded-xl bg-warm-700/50 hover:bg-warm-700/80 text-white font-bold transition-colors">
                 Cancel
               </button>
-              <button onClick={handleTrashConfirm} className="flex-1 px-4 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition-colors">
+              <button onClick={handleTrashConfirm} className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-red-600 to-red-800 text-white font-bold transition-colors">
                 Confirm Trash
               </button>
             </div>
@@ -131,7 +131,7 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
 
   return (
     <div className="fixed inset-0 bg-warm-900/50 backdrop-blur-xl flex items-center justify-center z-[60] p-4">
-      <div className="bg-warm-800/80 border border-warm-700/50 rounded-2xl max-w-sm w-full p-6 shadow-depth animate-modal-enter">
+      <div className="bg-warm-800/80 rounded-2xl max-w-sm w-full p-6 shadow-depth animate-modal-enter">
         <div key={step} className="animate-fade-in">
           {renderStepContent()}
         </div>
