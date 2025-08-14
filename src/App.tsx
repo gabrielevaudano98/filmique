@@ -11,20 +11,18 @@ import OnboardingView from './components/OnboardingView';
 import { useAppContext } from './context/AppContext';
 import RollDetailView from './components/RollDetailView';
 import AlbumDetailView from './components/AlbumDetailView';
-import NameRollModal from './components/NameRollModal';
 import NotificationsView from './components/NotificationsView';
 import TopBar from './components/TopBar';
 import BottomNavBar from './components/BottomNavBar';
 import UncategorizedRollsView from './components/UncategorizedRollsView';
-import ConfirmDevelopmentModal from './components/ConfirmDevelopmentModal';
+import RollCompletionWizard from './components/RollCompletionWizard';
+import { Roll } from './types';
 
 function App() {
   const { 
     session, profile, isLoading, currentView, authStep, 
-    rollToName, setRollToName, 
     rollToConfirm, setRollToConfirm, 
-    actionAfterNaming, setActionAfterNaming,
-    developRoll, deleteRoll 
+    developRoll, deleteRoll, refetchRolls
   } = useAppContext();
 
   const renderCurrentView = () => {
@@ -42,34 +40,19 @@ function App() {
     }
   };
 
-  const handleNamingModalClose = () => {
-    if (actionAfterNaming === 'develop' && rollToName) {
-      developRoll(rollToName);
-    }
-    setRollToName(null);
-    setActionAfterNaming(null);
+  const handleWizardDevelop = (roll: Roll, title: string) => {
+    developRoll({ ...roll, title });
+    setRollToConfirm(null);
   };
 
-  const handleConfirmDevelop = () => {
-    if (rollToConfirm) {
-      setActionAfterNaming('develop');
-      setRollToName(rollToConfirm);
-      setRollToConfirm(null);
-    }
-  };
-  
-  const handleDecideLater = () => {
-    if (rollToConfirm) {
-      setActionAfterNaming(null);
-      setRollToName(rollToConfirm);
-      setRollToConfirm(null);
-    }
+  const handleWizardTrash = (rollId: string) => {
+    deleteRoll(rollId);
+    setRollToConfirm(null);
   };
 
-  const handleConfirmTrash = () => {
-    if (rollToConfirm) {
-      deleteRoll(rollToConfirm.id);
-    }
+  const handleWizardDecideLater = (roll: Roll, title: string) => {
+    // The title is already saved, we just need to refetch and close.
+    refetchRolls();
     setRollToConfirm(null);
   };
 
@@ -96,19 +79,20 @@ function App() {
     return <OnboardingView />;
   }
   
+  const wizard = rollToConfirm && (
+    <RollCompletionWizard
+      roll={rollToConfirm}
+      onDevelop={handleWizardDevelop}
+      onTrash={handleWizardTrash}
+      onDecideLater={handleWizardDecideLater}
+      onClose={() => setRollToConfirm(null)}
+    />
+  );
+
   if (currentView === 'camera') {
     return (
       <>
-        {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
-        {rollToConfirm && (
-          <ConfirmDevelopmentModal
-            isOpen={!!rollToConfirm}
-            onClose={handleDecideLater}
-            onDevelop={handleConfirmDevelop}
-            onTrash={handleConfirmTrash}
-            roll={rollToConfirm}
-          />
-        )}
+        {wizard}
         <CameraView />
       </>
     );
@@ -117,16 +101,7 @@ function App() {
   return (
     <div className="bg-transparent text-white">
       <TopBar />
-      {rollToName && <NameRollModal roll={rollToName} onClose={handleNamingModalClose} />}
-      {rollToConfirm && (
-        <ConfirmDevelopmentModal
-          isOpen={!!rollToConfirm}
-          onClose={handleDecideLater}
-          onDevelop={handleConfirmDevelop}
-          onTrash={handleConfirmTrash}
-          roll={rollToConfirm}
-        />
-      )}
+      {wizard}
       <main className="min-h-screen w-full pb-28">
         <div className="max-w-6xl mx-auto w-full h-full px-4 py-4">
           {renderCurrentView()}

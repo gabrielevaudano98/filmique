@@ -194,12 +194,8 @@ export interface AppContextType {
   addComment: (postId: string, postOwnerId: string, content: string) => Promise<void>;
   deleteComment: (commentId: string) => Promise<void>;
   searchUsers: (query: string) => Promise<UserProfile[] | null>;
-  rollToName: Roll | null;
-  setRollToName: (r: Roll | null) => void;
   rollToConfirm: Roll | null;
   setRollToConfirm: (r: Roll | null) => void;
-  actionAfterNaming: 'develop' | null;
-  setActionAfterNaming: (action: 'develop' | null) => void;
   deleteRoll: (rollId: string) => Promise<void>;
   downloadPhoto: (photo: Photo) => Promise<void>;
   downloadRoll: (roll: Roll) => Promise<void>;
