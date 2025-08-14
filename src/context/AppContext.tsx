@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
-import { AppContextType, FilmStock } from '../types';
+import { AppContextType, FilmStock, Roll } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileData } from '../hooks/useProfileData';
 import { useRollsAndPhotos } from '../hooks/useRollsAndPhotos';
@@ -59,6 +59,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showFilmModal,
     setShowFilmModal,
     refetchRolls: rollsAndPhotos.refetchRolls,
+    developShelvedRoll: rollsAndPhotos.developShelvedRoll,
   }), [auth, profileData, rollsAndPhotos, social, albumsData, filmStocks, currentView, cameraMode, showFilmModal]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;

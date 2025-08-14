@@ -22,7 +22,7 @@ function App() {
   const { 
     session, profile, isLoading, currentView, authStep, 
     rollToConfirm, setRollToConfirm, 
-    developRoll, deleteRoll, refetchRolls
+    sendToDarkroom, putOnShelf
   } = useAppContext();
 
   const renderCurrentView = () => {
@@ -40,19 +40,13 @@ function App() {
     }
   };
 
-  const handleWizardDevelop = (roll: Roll, title: string) => {
-    developRoll({ ...roll, title });
+  const handleWizardSendToDarkroom = (roll: Roll, title: string) => {
+    sendToDarkroom(roll, title);
     setRollToConfirm(null);
   };
 
-  const handleWizardTrash = (rollId: string) => {
-    deleteRoll(rollId);
-    setRollToConfirm(null);
-  };
-
-  const handleWizardDecideLater = (roll: Roll, title: string) => {
-    // The title is already saved, we just need to refetch and close.
-    refetchRolls();
+  const handleWizardPutOnShelf = (roll: Roll, title: string) => {
+    putOnShelf(roll, title);
     setRollToConfirm(null);
   };
 
@@ -82,9 +76,8 @@ function App() {
   const wizard = rollToConfirm && (
     <RollCompletionWizard
       roll={rollToConfirm}
-      onDevelop={handleWizardDevelop}
-      onTrash={handleWizardTrash}
-      onDecideLater={handleWizardDecideLater}
+      onSendToDarkroom={handleWizardSendToDarkroom}
+      onPutOnShelf={handleWizardPutOnShelf}
       onClose={() => setRollToConfirm(null)}
     />
   );

@@ -27,12 +27,10 @@ export const useRollsAndPhotos = (
       setActiveRoll(active);
       setCompletedRolls(completed);
 
-      // Recover state for a roll that was completed but the app was closed
-      // before a develop/trash/save decision was made.
-      if (!rollToConfirm) { // Only do this if a confirmation isn't already showing
-        const rollToRecover = completed.find(r => !r.developed_at && !r.title);
-        if (rollToRecover) {
-          setRollToConfirm(rollToRecover);
+      if (!rollToConfirm) {
+        const rollToFinalize = completed.find(r => !r.title);
+        if (rollToFinalize) {
+          setRollToConfirm(rollToFinalize);
         }
       }
     }
@@ -85,7 +83,6 @@ export const useRollsAndPhotos = (
       const newShotsUsed = activeRoll.shots_used + 1;
       const isCompleted = newShotsUsed >= activeRoll.capacity;
       const updatePayload: any = { shots_used: newShotsUsed, is_completed: isCompleted };
-      if (isCompleted) updatePayload.completed_at = new Date().toISOString();
       
       const { data: updatedRoll } = await api.updateRoll(activeRoll.id, updatePayload);
       if (updatedRoll) {
@@ -101,6 +98,33 @@ export const useRollsAndPhotos = (
       showErrorToast('Failed to save photo.');
     }
   }, [profile, activeRoll]);
+
+  const sendToDarkroom = async (roll: Roll, title: string) => {
+    const { error } = await api.updateRoll(roll.id, { title, completed_at: new Date().toISOString() });
+    if (error) { showErrorToast('Failed to send roll to darkroom.'); }
+    else {
+        showSuccessToast("Roll sent to the darkroom!");
+        fetchRolls();
+    }
+  };
+
+  const putOnShelf = async (roll: Roll, title: string) => {
+      const { error } = await api.updateRoll(roll.id, { title });
+      if (error) { showErrorToast('Failed to place roll on shelf.'); }
+      else {
+          showSuccessToast("Roll placed on your shelf.");
+          fetchRolls();
+      }
+  };
+
+  const developShelvedRoll = async (rollId: string) => {
+      const { error } = await api.updateRoll(rollId, { completed_at: new Date().toISOString() });
+      if (error) { showErrorToast('Could not send to darkroom.'); }
+      else {
+        showSuccessToast("Roll sent to the darkroom!");
+        fetchRolls();
+      }
+  };
 
   const developRoll = useCallback(async (roll: Roll) => {
     if (!profile) return;
@@ -201,5 +225,8 @@ export const useRollsAndPhotos = (
     downloadPhoto,
     downloadRoll,
     refetchRolls: fetchRolls,
+    sendToDarkroom,
+    putOnShelf,
+    developShelvedRoll,
   };
 };

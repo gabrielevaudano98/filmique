@@ -2,32 +2,28 @@ import React, { useState, useMemo } from 'react';
 import { Plus, Clock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
-import { isRollDeveloped, isRollDeveloping } from '../utils/rollUtils';
+import { isRollDeveloped } from '../utils/rollUtils';
 import CreateAlbumModal from './CreateAlbumModal';
-import ConfirmDeleteModal from './ConfirmDeleteModal';
-import AssignAlbumModal from './AssignAlbumModal';
 import SegmentedControl from './SegmentedControl';
 import CollapsibleAlbumSection from './CollapsibleAlbumSection';
-import RollListItem from './RollListItem';
+import RollOnShelf from './RollOnShelf';
 
 const RollsView: React.FC = () => {
-  const {
-    completedRolls,
-    albums,
-    deleteRoll,
-    rollToAssign,
-    setRollToAssign,
-  } = useAppContext();
+  const { completedRolls, albums } = useAppContext();
 
-  const [activeSection, setActiveSection] = useState<'rolls' | 'darkroom'>('rolls');
+  const [activeSection, setActiveSection] = useState<'shelf' | 'darkroom' | 'albums'>('shelf');
   const [showCreateAlbumModal, setShowCreateAlbumModal] = useState(false);
-  const [rollToDelete, setRollToDelete] = useState<Roll | null>(null);
 
-  const { developedRolls, developingRolls } = useMemo(() => {
+  const { developingRolls, shelvedRolls, developedRollsOnShelf } = useMemo(() => {
     const allCompleted = completedRolls || [];
-    const developed = allCompleted.filter(roll => isRollDeveloped(roll));
-    const developing = allCompleted.filter(isRollDeveloping);
-    return { developedRolls: developed, developingRolls: developing };
+    const developing = allCompleted.filter(r => r.is_completed && r.completed_at && !isRollDeveloped(r));
+    const shelved = allCompleted.filter(r => r.is_completed && !r.completed_at && !r.developed_at);
+    const developedOnShelf = allCompleted.filter(r => isRollDeveloped(r));
+    return { 
+      developingRolls: developing.sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime()), 
+      shelvedRolls: shelved.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()), 
+      developedRollsOnShelf: developedOnShelf.sort((a, b) => new Date(b.developed_at!).getTime() - new Date(a.developed_at!).getTime()) 
+    };
   }, [completedRolls]);
 
   const rollsByAlbum = useMemo(() => {
@@ -35,25 +31,31 @@ const RollsView: React.FC = () => {
     albums.forEach(album => {
       grouped[album.id] = [];
     });
-    developedRolls.forEach(roll => {
+    developedRollsOnShelf.forEach(roll => {
       if (roll.album_id && grouped[roll.album_id]) {
         grouped[roll.album_id].push(roll);
       }
     });
     return grouped;
-  }, [developedRolls, albums]);
+  }, [developedRollsOnShelf, albums]);
 
   const uncategorizedRolls = useMemo(() => {
-    return developedRolls
-      .filter(r => !r.album_id)
-      .sort((a, b) => new Date(b.developed_at!).getTime() - new Date(a.developed_at!).getTime());
-  }, [developedRolls]);
+    return developedRollsOnShelf.filter(r => !r.album_id);
+  }, [developedRollsOnShelf]);
 
   const DarkroomEmptyState = () => (
     <div className="text-center py-24 text-neutral-500">
       <Clock className="w-16 h-16 mx-auto mb-4" />
       <h3 className="text-xl font-bold text-white">Darkroom is Empty</h3>
-      <p className="mt-2">Completed rolls will appear here while they develop.</p>
+      <p className="mt-2">Send undeveloped rolls from your shelf to the darkroom to start the development process.</p>
+    </div>
+  );
+
+  const ShelfEmptyState = () => (
+    <div className="text-center py-24 text-neutral-500">
+      <div className="w-full h-1 bg-neutral-800 rounded-full mb-4"></div>
+      <h3 className="text-xl font-bold text-white">Shelf is Empty</h3>
+      <p className="mt-2">Finish a roll of film and it will appear here.</p>
     </div>
   );
 
@@ -61,11 +63,12 @@ const RollsView: React.FC = () => {
     <div className="flex flex-col w-full space-y-6">
       <SegmentedControl
         options={[
-          { label: 'My Rolls', value: 'rolls' },
+          { label: 'Shelf', value: 'shelf' },
           { label: `Darkroom (${developingRolls.length})`, value: 'darkroom' },
+          { label: 'Albums', value: 'albums' },
         ]}
         value={activeSection}
-        onChange={(value) => setActiveSection(value as 'rolls' | 'darkroom')}
+        onChange={(value) => setActiveSection(value as 'shelf' | 'darkroom' | 'albums')}
       />
 
       <div key={activeSection} className="animate-fade-in">
@@ -89,7 +92,34 @@ const RollsView: React.FC = () => {
           </div>
         )}
 
-        {activeSection === 'rolls' && (
+        {activeSection === 'shelf' && (
+          <div className="space-y-8">
+            {shelvedRolls.length === 0 && developedRollsOnShelf.length === 0 ? (
+              <ShelfEmptyState />
+            ) : (
+              <>
+                {shelvedRolls.length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-4">Undeveloped</h3>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                      {shelvedRolls.map(roll => <RollOnShelf key={roll.id} roll={roll} />)}
+                    </div>
+                  </div>
+                )}
+                {developedRollsOnShelf.length > 0 && (
+                  <div>
+                    <h3 className="text-xl font-bold text-white mb-4">Developed</h3>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                      {developedRollsOnShelf.map(roll => <RollOnShelf key={roll.id} roll={roll} />)}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {activeSection === 'albums' && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-bold text-white">My Albums</h3>
@@ -119,25 +149,6 @@ const RollsView: React.FC = () => {
       </div>
 
       {showCreateAlbumModal && <CreateAlbumModal onClose={() => setShowCreateAlbumModal(false)} />}
-      {rollToDelete && (
-        <ConfirmDeleteModal
-          isOpen={!!rollToDelete}
-          onClose={() => setRollToDelete(null)}
-          onConfirm={() => {
-            if (rollToDelete) deleteRoll(rollToDelete.id);
-            setRollToDelete(null);
-          }}
-          title="Delete Roll"
-          message={`Are you sure you want to permanently delete "${rollToDelete.title || rollToDelete.film_type}"? This cannot be undone.`}
-          confirmText="Delete"
-        />
-      )}
-      {rollToAssign && (
-        <AssignAlbumModal
-          roll={rollToAssign}
-          onClose={() => setRollToAssign(null)}
-        />
-      )}
     </div>
   );
 };
