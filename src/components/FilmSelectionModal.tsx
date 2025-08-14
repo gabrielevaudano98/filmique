@@ -4,7 +4,7 @@ import { useAppContext } from '../context/AppContext';
 import { FilmStock } from '../types';
 
 interface FilmSelectionModalProps {
-  onStartRoll: (filmType: string, capacity: number) => void;
+  onStartRoll: (film: FilmStock) => void;
   onClose: () => void;
 }
 
@@ -64,7 +64,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
 
   const handleStartRoll = () => {
     if (selectedFilm && canAfford && selectedFilm.unlocked) {
-      onStartRoll(selectedFilm.name, selectedFilm.capacity);
+      onStartRoll(selectedFilm);
       onClose();
     }
   };

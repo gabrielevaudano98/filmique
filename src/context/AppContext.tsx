@@ -27,7 +27,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Modular Hooks
   const auth = useAuth();
   const profileData = useProfileData(auth.profile);
-  const rollsAndPhotos = useRollsAndPhotos(auth.profile, filmStocks);
+  const rollsAndPhotos = useRollsAndPhotos(auth.profile, filmStocks, auth.refreshProfile);
   const social = useSocial(auth.profile);
   const albumsData = useAlbums(auth.profile);
 

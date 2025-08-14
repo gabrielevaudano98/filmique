@@ -167,7 +167,7 @@ export interface AppContextType {
   userBadges: UserBadge[];
   recentStories: Map<string, { user: UserProfile, posts: Post[] }>;
   filmStocks: FilmStock[];
-  startNewRoll: (filmType: string, capacity: number) => Promise<void>;
+  startNewRoll: (film: FilmStock) => Promise<void>;
   takePhoto: (imageBlob: Blob, metadata: any) => Promise<void>;
   setFeed: React.Dispatch<React.SetStateAction<Post[]>>;
   refreshProfile: () => Promise<void>;

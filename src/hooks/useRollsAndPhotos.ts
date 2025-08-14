@@ -6,7 +6,11 @@ import { UserProfile, Roll, Photo, FilmStock } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
 import { filenameFromUrl } from '../utils/storage';
 
-export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmStock[]) => {
+export const useRollsAndPhotos = (
+  profile: UserProfile | null, 
+  filmStocks: FilmStock[],
+  refreshProfile: () => Promise<void>
+) => {
   const [activeRoll, setActiveRoll] = useState<Roll | null>(null);
   const [completedRolls, setCompletedRolls] = useState<Roll[]>([]);
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
@@ -26,13 +30,37 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
     fetchRolls();
   }, [fetchRolls]);
 
-  const startNewRoll = useCallback(async (filmType: string, capacity: number) => {
+  const startNewRoll = useCallback(async (film: FilmStock) => {
     if (!profile) return;
-    if (activeRoll) await api.deleteRollById(activeRoll.id);
-    const { data, error } = await api.createNewRoll(profile.id, filmType, capacity);
-    if (error) showErrorToast('Failed to load new film.');
-    else setActiveRoll(data);
-  }, [profile, activeRoll]);
+    if (profile.credits < film.price) {
+      showErrorToast('Not enough credits to buy this film.');
+      return;
+    }
+    
+    const toastId = showLoadingToast('Purchasing film...');
+    try {
+      const { error: updateError } = await api.updateProfile(profile.id, { credits: profile.credits - film.price });
+      if (updateError) throw updateError;
+
+      await refreshProfile();
+
+      if (activeRoll) {
+        await api.deleteRollById(activeRoll.id);
+      }
+
+      const { data, error } = await api.createNewRoll(profile.id, film.name, film.capacity);
+      if (error) {
+        throw error;
+      }
+      
+      setActiveRoll(data);
+      dismissToast(toastId);
+      showSuccessToast(`${film.name} loaded!`);
+    } catch (error: any) {
+      showErrorToast(error.message || 'An error occurred while loading film.');
+      dismissToast(toastId);
+    }
+  }, [profile, activeRoll, refreshProfile]);
 
   const takePhoto = useCallback(async (imageBlob: Blob, metadata: any) => {
     if (!profile || !activeRoll) return;
@@ -64,14 +92,8 @@ export const useRollsAndPhotos = (profile: UserProfile | null, filmStocks: FilmS
 
   const developRoll = useCallback(async (roll: Roll) => {
     if (!profile) return;
-    const cost = 1 + Math.ceil(0.2 * roll.shots_used);
-    if (profile.credits < cost) {
-      showErrorToast('Not enough credits.');
-      return;
-    }
     const toastId = showLoadingToast('Developing your film...');
     try {
-      await api.updateProfile(profile.id, { credits: profile.credits - cost });
       await api.developRollPhotos(roll, filmStocks);
       const { data: updatedRoll } = await api.updateRoll(roll.id, { developed_at: new Date().toISOString() });
       if (updatedRoll) {
