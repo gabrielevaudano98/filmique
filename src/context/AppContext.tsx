@@ -20,6 +20,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentView, setCurrentView] = useState<string>('rolls');
   const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
   const [showFilmModal, setShowFilmModal] = useState(false);
+  const [actionAfterNaming, setActionAfterNaming] = useState<'develop' | null>(null);
 
   // Data State
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
@@ -58,8 +59,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCameraMode,
     showFilmModal,
     setShowFilmModal,
+    actionAfterNaming,
+    setActionAfterNaming,
     refetchRolls: rollsAndPhotos.refetchRolls,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, filmStocks, currentView, cameraMode, showFilmModal]);
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, filmStocks, currentView, cameraMode, showFilmModal, actionAfterNaming]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };

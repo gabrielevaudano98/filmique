@@ -198,6 +198,8 @@ export interface AppContextType {
   setRollToName: (r: Roll | null) => void;
   rollToConfirm: Roll | null;
   setRollToConfirm: (r: Roll | null) => void;
+  actionAfterNaming: 'develop' | null;
+  setActionAfterNaming: (action: 'develop' | null) => void;
   deleteRoll: (rollId: string) => Promise<void>;
   downloadPhoto: (photo: Photo) => Promise<void>;
   downloadRoll: (roll: Roll) => Promise<void>;

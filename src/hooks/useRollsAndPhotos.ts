@@ -98,7 +98,6 @@ export const useRollsAndPhotos = (
       const { data: updatedRoll } = await api.updateRoll(roll.id, { developed_at: new Date().toISOString() });
       if (updatedRoll) {
         setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
-        setRollToName(updatedRoll);
       }
       showSuccessToast('Roll developed successfully!');
     } catch (error: any) {

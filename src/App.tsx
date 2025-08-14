@@ -19,7 +19,13 @@ import UncategorizedRollsView from './components/UncategorizedRollsView';
 import ConfirmDevelopmentModal from './components/ConfirmDevelopmentModal';
 
 function App() {
-  const { session, profile, isLoading, currentView, authStep, rollToName, setRollToName, rollToConfirm, setRollToConfirm, developRoll, deleteRoll } = useAppContext();
+  const { 
+    session, profile, isLoading, currentView, authStep, 
+    rollToName, setRollToName, 
+    rollToConfirm, setRollToConfirm, 
+    actionAfterNaming, setActionAfterNaming,
+    developRoll, deleteRoll 
+  } = useAppContext();
 
   const renderCurrentView = () => {
     switch (currentView) {
@@ -37,14 +43,27 @@ function App() {
   };
 
   const handleNamingModalClose = () => {
+    if (actionAfterNaming === 'develop' && rollToName) {
+      developRoll(rollToName);
+    }
     setRollToName(null);
+    setActionAfterNaming(null);
   };
 
   const handleConfirmDevelop = () => {
     if (rollToConfirm) {
-      developRoll(rollToConfirm);
+      setActionAfterNaming('develop');
+      setRollToName(rollToConfirm);
+      setRollToConfirm(null);
     }
-    setRollToConfirm(null);
+  };
+  
+  const handleDecideLater = () => {
+    if (rollToConfirm) {
+      setActionAfterNaming(null);
+      setRollToName(rollToConfirm);
+      setRollToConfirm(null);
+    }
   };
 
   const handleConfirmTrash = () => {
@@ -84,7 +103,7 @@ function App() {
         {rollToConfirm && (
           <ConfirmDevelopmentModal
             isOpen={!!rollToConfirm}
-            onClose={() => setRollToConfirm(null)}
+            onClose={handleDecideLater}
             onDevelop={handleConfirmDevelop}
             onTrash={handleConfirmTrash}
             roll={rollToConfirm}
@@ -102,7 +121,7 @@ function App() {
       {rollToConfirm && (
         <ConfirmDevelopmentModal
           isOpen={!!rollToConfirm}
-          onClose={() => setRollToConfirm(null)}
+          onClose={handleDecideLater}
           onDevelop={handleConfirmDevelop}
           onTrash={handleConfirmTrash}
           roll={rollToConfirm}
