@@ -21,7 +21,6 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
   const { updateRollTitle } = useAppContext();
 
   useEffect(() => {
-    // Pre-fill title if it exists, for a potential rename flow in the future
     if (roll.title) setTitle(roll.title);
   }, [roll]);
 
@@ -39,10 +38,11 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
     const success = await updateRollTitle(roll.id, title.trim());
     
     if (success) {
+      const updatedRoll = { ...roll, title: title.trim() };
       if (action === 'develop') {
-        onDevelop(roll, title.trim());
+        onDevelop(updatedRoll, title.trim());
       } else if (action === 'decide_later') {
-        onDecideLater(roll, title.trim());
+        onDecideLater(updatedRoll, title.trim());
       }
     } else {
       setError('This title is already in use. Please choose another one.');
@@ -54,24 +54,24 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
     onTrash(roll.id);
   };
 
-  const renderStep = () => {
+  const renderStepContent = () => {
     switch (step) {
       case 'decision':
         return (
-          <div className="text-center animate-fade-in">
-            <div className="inline-block p-3 bg-warm-700/50 rounded-full mb-3">
-              <Film className="w-8 h-8 text-brand-amber-start" />
+          <div className="text-center">
+            <div className="inline-block p-4 bg-warm-700/50 rounded-full mb-4">
+              <Film className="w-10 h-10 text-brand-amber-start" />
             </div>
-            <h2 className="text-2xl font-bold text-white">Roll Completed!</h2>
-            <p className="text-warm-300 mt-2 mb-6 text-base">
+            <h2 className="text-3xl font-bold text-white">Roll Completed!</h2>
+            <p className="text-lg text-warm-300 mt-2 mb-8">
               You've finished your roll of <span className="font-semibold text-white">{roll.film_type}</span>.
             </p>
             <div className="flex flex-col space-y-3">
-              <button onClick={() => handleDecision('develop')} className="w-full flex justify-center items-center space-x-2 py-3 px-4 rounded-lg shadow-lg shadow-brand-amber-start/20 text-base font-bold text-white bg-gradient-to-r from-brand-amber-start to-brand-amber-end hover:opacity-90 transition-all transform hover:scale-105 active:scale-100">
+              <button onClick={() => handleDecision('develop')} className="w-full flex justify-center items-center space-x-2 py-3 px-4 rounded-xl shadow-lg shadow-brand-amber-start/20 text-base font-bold text-white bg-gradient-to-r from-brand-amber-start to-brand-amber-end hover:opacity-90 transition-all transform hover:scale-105 active:scale-100">
                 <Zap className="w-5 h-5" />
                 <span>Develop Photos</span>
               </button>
-              <button onClick={() => setStep('confirm_trash')} className="w-full px-4 py-3 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-white font-bold transition-colors flex items-center justify-center space-x-2">
+              <button onClick={() => setStep('confirm_trash')} className="w-full px-4 py-3 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-white font-bold transition-colors flex items-center justify-center space-x-2">
                 <Trash2 className="w-5 h-5" />
                 <span>Trash Roll</span>
               </button>
@@ -86,19 +86,19 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
       
       case 'naming':
         return (
-          <div className="animate-fade-in">
-            <h2 className="text-2xl font-bold text-white text-center mb-2">Name Your Roll</h2>
-            <p className="text-gray-400 mb-6 text-sm text-center">Give your roll a unique name to save it. You can change this later.</p>
+          <div>
+            <h2 className="text-3xl font-bold text-white text-center mb-2">Name Your Roll</h2>
+            <p className="text-lg text-warm-300 mb-8 text-center">Give your roll a unique name. You can change it later.</p>
             <form onSubmit={handleNameSubmit}>
               <div className="relative">
                 <Edit className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Summer Vacation '24" className="w-full bg-gray-700 border border-gray-600 rounded-lg pl-12 pr-4 py-3 text-white focus:ring-amber-500 focus:border-amber-500" required maxLength={30} autoFocus />
+                <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Summer Vacation '24" className="w-full bg-warm-900/50 border-2 border-warm-700 rounded-lg pl-12 pr-4 py-3 text-white text-lg focus:ring-brand-amber-start focus:border-brand-amber-start transition-all" required maxLength={30} autoFocus />
               </div>
               {error && <p className="text-red-400 text-sm mt-2 text-center">{error}</p>}
-              <div className="mt-6 flex justify-end space-x-3">
-                <button type="button" onClick={() => setStep('decision')} className="px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 font-semibold transition-colors">Back</button>
-                <button type="submit" disabled={isLoading || !title.trim()} className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center space-x-2">
-                  <Check className="w-4 h-4" />
+              <div className="mt-8 flex justify-end space-x-3">
+                <button type="button" onClick={() => setStep('decision')} className="px-5 py-3 rounded-xl bg-neutral-700 hover:bg-neutral-600 font-bold transition-colors">Back</button>
+                <button type="submit" disabled={isLoading || !title.trim()} className="px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center space-x-2">
+                  <Check className="w-5 h-5" />
                   <span>{isLoading ? 'Saving...' : 'Save & Continue'}</span>
                 </button>
               </div>
@@ -108,19 +108,19 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
 
       case 'confirm_trash':
         return (
-          <div className="text-center animate-fade-in">
-            <div className="inline-block p-3 bg-red-900/50 rounded-full mb-3">
-              <AlertTriangle className="w-8 h-8 text-red-400" />
+          <div className="text-center">
+            <div className="inline-block p-4 bg-red-900/50 rounded-full mb-4">
+              <AlertTriangle className="w-10 h-10 text-red-400" />
             </div>
-            <h2 className="text-2xl font-bold text-white">Are you sure?</h2>
-            <p className="text-warm-300 mt-2 mb-6 text-base">
-              Trashing this roll will permanently delete all {roll.shots_used} photos. This action cannot be undone.
+            <h2 className="text-3xl font-bold text-white">Are you sure?</h2>
+            <p className="text-lg text-warm-300 mt-2 mb-8">
+              This will permanently delete all {roll.shots_used} photos. This action cannot be undone.
             </p>
             <div className="flex space-x-3">
-              <button onClick={() => setStep('decision')} className="flex-1 px-4 py-3 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-white font-bold transition-colors">
+              <button onClick={() => setStep('decision')} className="flex-1 px-4 py-3 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-white font-bold transition-colors">
                 Cancel
               </button>
-              <button onClick={handleTrashConfirm} className="flex-1 px-4 py-3 rounded-lg bg-red-600 hover:bg-red-700 text-white font-bold transition-colors">
+              <button onClick={handleTrashConfirm} className="flex-1 px-4 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition-colors">
                 Confirm Trash
               </button>
             </div>
@@ -131,8 +131,10 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onDev
 
   return (
     <div className="fixed inset-0 bg-warm-900/50 backdrop-blur-xl flex items-center justify-center z-[60] p-4">
-      <div className="bg-warm-800/80 border border-warm-700/50 rounded-2xl max-w-sm w-full p-6 shadow-depth transition-all duration-300">
-        {renderStep()}
+      <div className="bg-warm-800/80 border border-warm-700/50 rounded-2xl max-w-sm w-full p-6 shadow-depth animate-modal-enter">
+        <div key={step} className="animate-fade-in">
+          {renderStepContent()}
+        </div>
       </div>
     </div>
   );
