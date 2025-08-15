@@ -127,11 +127,9 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset, precomputedData
 
       const { r, g, b, l } = histogramData;
       
-      // Use the 99th percentile for the max value to prevent outlier pixels from squashing the graph
-      const allValues = [...r, ...g, ...b, ...l].filter(v => v > 0);
-      const sortedValues = allValues.sort((a, b) => a - b);
-      const percentileIndex = Math.floor(sortedValues.length * 0.99);
-      const maxVal = sortedValues[percentileIndex] || Math.max(...l) || 1;
+      // Use the peak of the luminance data to scale the graph.
+      // This ensures the histogram uses the full vertical space for better readability.
+      const maxVal = Math.max(...l) || 1;
 
       const drawChannel = (data: number[], color: string, lineWidth: number) => {
         if (maxVal === 0) return;
@@ -141,7 +139,7 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset, precomputedData
         
         data.forEach((val, index) => {
           const x = (index / 255) * width;
-          const y = height - (Math.min(val, maxVal) / maxVal) * height;
+          const y = height - (val / maxVal) * height;
           ctx.lineTo(x, y);
         });
         
