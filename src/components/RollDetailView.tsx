@@ -5,10 +5,12 @@ import toast from 'react-hot-toast';
 import PhotoDetailModal from './PhotoDetailModal';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import { Photo } from '../context/AppContext';
+import PhotoInfoModal from './PhotoInfoModal';
 
 const RollDetailView: React.FC = () => {
   const { selectedRoll, setCurrentView, setSelectedRoll, downloadRoll, deleteRoll } = useAppContext();
   const [photoToView, setPhotoToView] = useState<Photo | null>(null);
+  const [photoToShowInfo, setPhotoToShowInfo] = useState<Photo | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (!selectedRoll) {
@@ -86,7 +88,24 @@ const RollDetailView: React.FC = () => {
         </div>
       )}
 
-      {photoToView && <PhotoDetailModal photo={photoToView} onClose={() => setPhotoToView(null)} />}
+      {photoToView && (
+        <PhotoDetailModal 
+          photo={photoToView} 
+          onClose={() => setPhotoToView(null)}
+          onShowInfo={() => {
+            setPhotoToShowInfo(photoToView);
+            setPhotoToView(null);
+          }}
+        />
+      )}
+
+      {photoToShowInfo && (
+        <PhotoInfoModal 
+          photo={photoToShowInfo} 
+          roll={selectedRoll} 
+          onClose={() => setPhotoToShowInfo(null)} 
+        />
+      )}
       
       {showDeleteConfirm && (
         <ConfirmDeleteModal
