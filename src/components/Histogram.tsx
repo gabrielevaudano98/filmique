@@ -2,18 +2,27 @@ import React, { useRef, useEffect, useState } from 'react';
 import { FilmPreset } from '../types';
 import { applyFilter } from '../utils/imageProcessor';
 
+type HistogramData = { r: number[], g: number[], b: number[], l: number[] };
+
 interface HistogramProps {
   imageUrl: string;
   preset?: FilmPreset;
+  precomputedData?: HistogramData | null;
 }
 
-const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset }) => {
+const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset, precomputedData }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [histogramData, setHistogramData] = useState<{ r: number[], g: number[], b: number[], l: number[] } | null>(null);
+  const [histogramData, setHistogramData] = useState<HistogramData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (precomputedData) {
+      setHistogramData(precomputedData);
+      setIsLoading(false);
+      return;
+    }
+
     let isMounted = true;
     let objectUrl: string | null = null;
     setIsLoading(true);
@@ -52,7 +61,7 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset }) => {
           const r = new Array(256).fill(0);
           const g = new Array(256).fill(0);
           const b = new Array(256).fill(0);
-          const l = new Array(256).fill(0); // Luminance channel
+          const l = new Array(256).fill(0);
 
           for (let i = 0; i < imageData.length; i += 4) {
             const red = imageData[i];
@@ -63,7 +72,6 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset }) => {
             g[green]++;
             b[blue]++;
 
-            // Calculate luminance using weighted average for perceived brightness
             const luminance = Math.round(0.299 * red + 0.587 * green + 0.114 * blue);
             l[luminance]++;
           }
@@ -95,7 +103,7 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset }) => {
         URL.revokeObjectURL(objectUrl);
       }
     };
-  }, [imageUrl, JSON.stringify(preset)]);
+  }, [imageUrl, preset, precomputedData]);
 
   useEffect(() => {
     if (histogramData && canvasRef.current) {
@@ -107,7 +115,6 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset }) => {
       const height = canvas.height;
       ctx.clearRect(0, 0, width, height);
 
-      // Draw subtle background grid for readability
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
       ctx.lineWidth = 0.5;
       for (let i = 1; i < 4; i++) {
@@ -121,7 +128,6 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset }) => {
       const { r, g, b, l } = histogramData;
       
       const drawChannel = (data: number[], color: string, lineWidth: number) => {
-        // Normalize all channels by the same max value to keep their proportions correct
         const maxVal = Math.max(...r, ...g, ...b, ...l);
         if (maxVal === 0) return;
 
@@ -139,17 +145,14 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset }) => {
         ctx.stroke();
       };
       
-      // Draw luminance channel first with normal blending
       ctx.globalCompositeOperation = 'source-over';
       drawChannel(l, 'rgba(255, 255, 255, 0.6)', 2);
 
-      // Draw RGB channels with additive blending for a nice color mixing effect
       ctx.globalCompositeOperation = 'lighten';
       drawChannel(r, 'rgba(255, 80, 80, 0.9)', 1.5);
       drawChannel(g, 'rgba(80, 255, 80, 0.9)', 1.5);
       drawChannel(b, 'rgba(80, 120, 255, 0.9)', 1.5);
       
-      // Reset composite operation
       ctx.globalCompositeOperation = 'source-over';
     }
   }, [histogramData]);

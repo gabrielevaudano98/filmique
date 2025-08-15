@@ -29,6 +29,7 @@ export interface FilmStock {
   roll_image_url: string | null;
   unlocked: boolean;
   created_at: string;
+  histogram_data?: { r: number[], g: number[], b: number[], l: number[] } | null;
 }
 
 export interface UserProfile {

@@ -28,7 +28,11 @@ const FilmInfoPanel: React.FC<FilmInfoPanelProps> = ({ film, onClose }) => {
           <div>
             <h3 className="text-lg font-semibold text-brand-amber-start mb-2">Color Profile</h3>
             <p className="text-sm text-gray-400 mb-4">This histogram shows how the film preset affects a neutral sample image.</p>
-            <Histogram imageUrl={SAMPLE_IMAGE_URL} preset={film.preset} />
+            <Histogram 
+              imageUrl={SAMPLE_IMAGE_URL} 
+              preset={film.preset} 
+              precomputedData={film.histogram_data}
+            />
           </div>
           <div>
             <h3 className="text-lg font-semibold text-brand-amber-start mb-2">Description</h3>
