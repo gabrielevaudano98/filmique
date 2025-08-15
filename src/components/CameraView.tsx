@@ -13,6 +13,13 @@ const formatShutterSpeed = (seconds: number): string => {
   return `1/${Math.round(1 / seconds)}`;
 };
 
+// Helper to generate a range of numbers for sliders
+const generateNumericOptions = (min: number, max: number, steps: number): number[] => {
+  if (min >= max) return [min];
+  const step = (max - min) / (steps - 1);
+  return Array.from({ length: steps }, (_, i) => min + i * step);
+};
+
 const CameraView: React.FC = () => {
   const {
     cameraMode,
