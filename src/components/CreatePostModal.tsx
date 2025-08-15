@@ -37,14 +37,12 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
   };
 
   const handlePublish = async () => {
-    if (!selectedRoll) return;
+    if (!selectedRoll || !caption.trim()) return;
     setIsLoading(true);
     await createPost(selectedRoll.id, caption, selectedCoverUrl, selectedAlbumId);
     setIsLoading(false);
     onClose();
   };
-
-  const selectedAlbum = albums.find(a => a.id === selectedAlbumId);
 
   return (
     <>
@@ -80,7 +78,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                         <Image src={`${thumbnailUrl}${cacheBuster}`} alt="Roll thumbnail" className="w-16 h-16 rounded-md object-cover bg-gray-600 mr-4" />
                         <div>
                           <p className="font-semibold text-white">{roll.title || roll.film_type}</p>
-                          <p className="text-xs text-gray-400">{roll.shots_used} photos • Developed {roll.developed_at ? new Date(roll.developed_at).toLocaleDateString() : 'unknown'}</p>
+                          <p className="text-xs text-gray-400">{roll.shots_used} photos • Developed {new Date(roll.developed_at!).toLocaleDateString()}</p>
                         </div>
                       </button>
                     );
@@ -133,22 +131,14 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                     >
                       <option value="">Uncategorized</option>
                       {albums.map(album => (
-                        <option key={album.id} value={album.id}>{album.title} {album.type !== 'public' ? `(${album.type})` : ''}</option>
+                        <option key={album.id} value={album.id}>{album.title}</option>
                       ))}
                     </select>
-
                     <button type="button" onClick={() => setShowCreateAlbumModal(true)} className="flex items-center space-x-2 text-amber-400 text-sm font-semibold p-2 hover:bg-amber-500/10 rounded-lg">
                       <PlusCircle className="w-4 h-4" />
                       <span>Create New Album</span>
                     </button>
                   </div>
-
-                  {/* Warning for non-public album */}
-                  {selectedAlbum && selectedAlbum.type !== 'public' && (
-                    <div className="mt-3 p-3 rounded-md bg-yellow-900/20 border border-yellow-700/30 text-sm text-yellow-200">
-                      <strong>Note:</strong> This album is <span className="font-semibold">{selectedAlbum.type}</span>. The album itself will not be viewable publicly — only the individual post (or roll) you publish will be visible to others.
-                    </div>
-                  )}
                 </div>
               </div>
             )}
@@ -158,7 +148,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
             <div className="flex-shrink-0 p-5 border-t border-gray-700">
               <button
                 onClick={handlePublish}
-                disabled={isLoading}
+                disabled={isLoading || !caption.trim()}
                 className="w-full py-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 <Send className="w-4 h-4" />
