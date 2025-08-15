@@ -40,7 +40,8 @@
   }
   body {
     font-family: 'SF Pro Display', Inter, system-ui;
-    background-image: linear-gradient(rgba(10, 10, 12, 0.7), rgba(10, 10, 12, 0.7)), url('/src/assets/background.avif');
+    /* Adjusted opacity from 0.7 to 0.4 for a more subtle overlay */
+    background-image: linear-gradient(rgba(10, 10, 12, 0.4), rgba(10, 10, 12, 0.4)), url('/src/assets/background.avif');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
