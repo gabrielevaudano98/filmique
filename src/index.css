@@ -35,14 +35,28 @@
 
 /* existing base overrides */
 @layer base {
+  html {
+    overscroll-behavior-y: contain;
+  }
   body {
     font-family: 'SF Pro Display', Inter, system-ui;
     background-color: var(--warm-900);
     color: white;
+    /* Prevent viewport bounce */
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior-y: contain;
   }
   #root {
     position: relative;
     z-index: 1;
+    /* Make root the main scroller */
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

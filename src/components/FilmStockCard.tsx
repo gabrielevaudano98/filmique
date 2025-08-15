@@ -14,9 +14,11 @@ const FilmStockCard: React.FC<FilmStockCardProps> = ({ film, isSelected, onClick
   const isLocked = !film.unlocked;
 
   return (
-    <button
-      onClick={onClick}
-      disabled={isLocked}
+    <div
+      onClick={isLocked ? undefined : onClick}
+      role="button"
+      tabIndex={isLocked ? -1 : 0}
+      onKeyDown={(e) => { if (!isLocked && (e.key === 'Enter' || e.key === ' ')) onClick(); }}
       className={`w-full p-3 rounded-xl text-left transition-all duration-200 flex items-center gap-4 border-2
         ${isSelected 
           ? 'border-brand-amber-start bg-brand-amber-start/10 shadow-lg shadow-brand-amber-start/10' 
@@ -54,7 +56,7 @@ const FilmStockCard: React.FC<FilmStockCardProps> = ({ film, isSelected, onClick
           )}
         </div>
       </div>
-    </button>
+    </div>
   );
 };
 
