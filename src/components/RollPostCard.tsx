@@ -3,6 +3,8 @@ import { Heart, MessageCircle, Bookmark } from 'lucide-react';
 import { Post } from '../context/AppContext';
 import { useAppContext } from '../context/AppContext';
 import AvatarRing from './AvatarRing';
+import LazyImage from './LazyImage';
+import { getTransformedUrl } from '../utils/image';
 
 interface RollPostCardProps {
   post: Post;
@@ -15,11 +17,17 @@ const RollPostCard: React.FC<RollPostCardProps> = ({ post, onClick }) => {
 
   const cacheBuster = post.rolls.developed_at ? `?t=${new Date(post.rolls.developed_at).getTime()}` : '';
   const coverPhotoUrl = post.cover_photo_url || post.rolls.photos?.[0]?.url;
+  const transformedCoverUrl = coverPhotoUrl ? getTransformedUrl(coverPhotoUrl, { width: 512, quality: 80 }) : '';
 
   return (
     <button onClick={onClick} className="relative aspect-[9/16] w-64 flex-shrink-0 rounded-2xl overflow-hidden shadow-lg group bg-neutral-900 text-left">
       {coverPhotoUrl && (
-        <img src={`${coverPhotoUrl}${cacheBuster}`} alt={post.rolls.title || 'Roll cover'} className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" />
+        <LazyImage 
+          src={`${transformedCoverUrl}${cacheBuster}`} 
+          alt={post.rolls.title || 'Roll cover'} 
+          containerClassName="absolute inset-0 w-full h-full"
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
+        />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent"></div>
@@ -54,4 +62,4 @@ const RollPostCard: React.FC<RollPostCardProps> = ({ post, onClick }) => {
   );
 };
 
-export default RollPostCard;
+export default React.memo(RollPostCard);
