@@ -113,16 +113,20 @@ const FilmSelectionModal: React.FC<{
             
             {Object.keys(processedFilms).sort().map(groupName => (
               <div key={groupName}>
-                <h3 className="text-lg font-semibold mb-3 text-brand-amber-start">{groupName}</h3>
-                <div className="space-y-2">
-                  {processedFilms[groupName].map(film => (
-                    <FilmStockCard
-                      key={film.id}
-                      film={film}
-                      isSelected={selectedFilm?.id === film.id}
-                      onClick={() => setSelectedFilm(film)}
-                      onInfoClick={() => setInfoFilm(film)}
-                    />
+                <h3 className="text-xs font-bold uppercase text-neutral-400 tracking-wider px-2 mb-2">{groupName}</h3>
+                <div className="bg-neutral-800/50 rounded-xl">
+                  {processedFilms[groupName].map((film, index) => (
+                    <React.Fragment key={film.id}>
+                      <FilmStockCard
+                        film={film}
+                        isSelected={selectedFilm?.id === film.id}
+                        onClick={() => setSelectedFilm(film)}
+                        onInfoClick={() => setInfoFilm(film)}
+                      />
+                      {index < processedFilms[groupName].length - 1 && (
+                        <div className="h-px bg-neutral-700/50 mx-4"></div>
+                      )}
+                    </React.Fragment>
                   ))}
                 </div>
               </div>

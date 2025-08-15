@@ -17,8 +17,8 @@ const FilmStockCard: React.FC<FilmStockCardProps> = ({ film, isSelected, onClick
     <button
       onClick={onClick}
       disabled={isLocked}
-      className={`w-full p-3 rounded-xl border-2 text-left transition-all duration-200 flex items-center gap-4
-        ${isSelected ? 'border-brand-amber-start bg-brand-amber-start/10 shadow-lg shadow-brand-amber-start/10' : 'border-neutral-700 bg-neutral-800/50 hover:border-neutral-600'}
+      className={`w-full p-3 rounded-xl text-left transition-colors duration-200 flex items-center gap-4
+        ${isSelected ? 'bg-brand-amber-start/10' : 'bg-transparent hover:bg-neutral-700/50'}
         ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
       `}
     >
