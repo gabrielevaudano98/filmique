@@ -221,3 +221,19 @@
 .animate-modal-enter {
   animation: modal-enter 0.3s cubic-bezier(0.2, 1, 0.35, 1) forwards;
 }
+
+/* Unread Notification Glow */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 6px 0px var(--brand-amber-start);
+    opacity: 0.7;
+  }
+  50% {
+    box-shadow: 0 0 12px 2px var(--brand-amber-start);
+    opacity: 1;
+  }
+}
+
+.unread-indicator-glow {
+  animation: glow 2.5s ease-in-out infinite;
+}
