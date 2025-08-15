@@ -1,7 +1,6 @@
 import React from 'react';
 import CameraView from './components/CameraView';
 import RollsView from './components/RollsView';
-import AlbumsView from './components/AlbumsView';
 import CommunityView from './components/CommunityView';
 import ChallengesView from './components/ChallengesView';
 import ProfileView from './components/ProfileView';
@@ -29,7 +28,6 @@ function App() {
   const renderCurrentView = () => {
     switch (currentView) {
       case 'rolls': return <RollsView />;
-      case 'albums': return <AlbumsView />;
       case 'community': return <CommunityView />;
       case 'challenges': return <ChallengesView />;
       case 'profile': return <ProfileView />;
@@ -80,6 +78,7 @@ function App() {
       roll={rollToConfirm}
       onSendToDarkroom={handleWizardSendToDarkroom}
       onPutOnShelf={handleWizardPutOnShelf}
+      onClose={() => setRollToConfirm(null)}
     />
   );
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, Film, Users, BookCopy } from 'lucide-react';
+import { Camera, Film, Users } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const NavItem: React.FC<{
@@ -39,12 +39,11 @@ const BottomNavBar: React.FC = () => {
 
   const navItems = [
     { view: 'rolls', label: 'Rolls', icon: Film },
-    { view: 'albums', label: 'Library', icon: BookCopy },
     { view: 'community', label: 'Community', icon: Users },
   ];
 
-  const leftItems = navItems.slice(0, 2);
-  const rightItems = navItems.slice(2);
+  const leftItems = navItems.slice(0, 1);
+  const rightItems = navItems.slice(1, 2);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-28 flex justify-center z-50 pointer-events-none pb-safe">

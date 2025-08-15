@@ -1,26 +1,24 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ArrowLeft, Edit, Image as ImageIcon, Film, Send } from 'lucide-react';
-import ManageRollsOnAlbumModal from './ManageRollsOnAlbumModal';
+import { ArrowLeft, Edit, Image as ImageIcon, Film } from 'lucide-react';
+import ManageRollsModal from './ManageRollsModal';
 import { Roll } from '../types';
 import RollListItem from './RollListItem';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
-import CreatePostModal from './CreatePostModal';
 
 const AlbumDetailView: React.FC = () => {
   const { selectedAlbum, setCurrentView, setSelectedAlbum, deleteRoll, removeRollFromAlbum } = useAppContext();
   const [showManageModal, setShowManageModal] = useState(false);
-  const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [rollToDelete, setRollToDelete] = useState<Roll | null>(null);
 
   if (!selectedAlbum) {
-    setCurrentView('albums');
+    setCurrentView('profile');
     return null;
   }
 
   const handleBack = () => {
     setSelectedAlbum(null);
-    setCurrentView('albums');
+    setCurrentView('profile');
   };
 
   const handleRemoveFromAlbum = (roll: Roll) => {
@@ -35,18 +33,12 @@ const AlbumDetailView: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <button onClick={handleBack} className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors p-2 -ml-2">
           <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Library</span>
+          <span className="font-medium">Back to Profile</span>
         </button>
-        <div className="flex items-center space-x-2">
-          <button onClick={() => setShowManageModal(true)} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
-            <Edit className="w-4 h-4" />
-            <span>Manage</span>
-          </button>
-          <button onClick={() => setShowCreatePostModal(true)} className="bg-brand-amber-start hover:bg-brand-amber-mid text-black font-bold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
-            <Send className="w-4 h-4" />
-            <span>Post</span>
-          </button>
-        </div>
+        <button onClick={() => setShowManageModal(true)} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
+          <Edit className="w-4 h-4" />
+          <span>Manage Rolls</span>
+        </button>
       </div>
       
       <div className="mb-8">
@@ -80,16 +72,9 @@ const AlbumDetailView: React.FC = () => {
       )}
 
       {showManageModal && (
-        <ManageRollsOnAlbumModal
+        <ManageRollsModal
           album={selectedAlbum}
           onClose={() => setShowManageModal(false)}
-        />
-      )}
-
-      {showCreatePostModal && (
-        <CreatePostModal
-          album={selectedAlbum}
-          onClose={() => setShowCreatePostModal(false)}
         />
       )}
 
