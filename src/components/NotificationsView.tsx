@@ -74,15 +74,14 @@ const NotificationItem: React.FC<{ notification: Notification }> = ({ notificati
 
 
 const NotificationsView: React.FC = () => {
-  const { notifications, markNotificationsAsRead, setCurrentView } = useAppContext();
+  const { notifications, markNotificationsAsRead, fetchNotifications, setCurrentView } = useAppContext();
 
   useEffect(() => {
-    // Notifications are now fetched globally by the useProfileData hook.
-    // This effect now only handles marking notifications as read when the view is left.
+    fetchNotifications();
     return () => {
       markNotificationsAsRead();
     };
-  }, [markNotificationsAsRead]);
+  }, [fetchNotifications, markNotificationsAsRead]);
 
   return (
     <div className="w-full flex flex-col">
