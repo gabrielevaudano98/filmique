@@ -5,6 +5,7 @@ import { Roll, Photo, FilmStock, UserProfile, Album } from '../types';
 import { getCache, setCache, invalidateCache } from '../utils/cache';
 
 export const POST_SELECT_QUERY = 'id,user_id,roll_id,caption,created_at,cover_photo_url,profiles!posts_user_id_fkey(id,username,avatar_url),rolls!posts_roll_id_fkey(id,title,film_type,developed_at,photos(id,url,thumbnail_url)),likes(user_id),comments(id,content,created_at,user_id,profiles(username,avatar_url))';
+const NOTIFICATION_SELECT_QUERY_BASE = '*, actors:profiles!notifications_actor_id_fkey(username, avatar_url)';
 
 // Auth
 export const getSession = () => supabase.auth.getSession();
@@ -170,4 +171,55 @@ export const updateRollsAlbum = async (rollIds: string[], albumId: string | null
     invalidateCache([`albums-${rolls[0].user_id}`, `rolls-${rolls[0].user_id}`]);
   }
   return result;
+};
+
+// Notifications
+export const fetchNotifications = async (userId: string) => {
+  const { data: notifications, error } = await supabase
+    .from('notifications')
+    .select(NOTIFICATION_SELECT_QUERY_BASE)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(30);
+
+  if (error || !notifications) {
+    return { data: notifications, error };
+  }
+
+  const postIds = notifications
+    .filter(n => (n.type === 'like' || n.type === 'comment') && n.entity_id)
+    .map(n => n.entity_id);
+
+  if (postIds.length === 0) {
+    return { data: notifications.map(n => ({...n, posts: null })), error: null };
+  }
+
+  const { data: posts, error: postsError } = await supabase
+    .from('posts')
+    .select('id, rolls(photos(thumbnail_url))')
+    .in('id', postIds);
+
+  if (postsError) {
+    console.error("Failed to fetch post details for notifications:", postsError);
+    return { data: notifications.map(n => ({...n, posts: null })), error: null };
+  }
+
+  const postsById = new Map(posts.map(p => [p.id, p]));
+
+  const enrichedNotifications = notifications.map(n => {
+    if (postsById.has(n.entity_id)) {
+      return { ...n, posts: postsById.get(n.entity_id) };
+    }
+    return { ...n, posts: null };
+  });
+
+  return { data: enrichedNotifications, error: null };
+};
+export const markNotificationsRead = (ids: string[]) => supabase.from('notifications').update({ is_read: true }).in('id', ids);
+
+// Edge Functions
+export const recordActivity = (activityType: string, actorId: string, entityId: string, entityOwnerId?: string) => {
+  return supabase.functions.invoke('record-activity', {
+    body: { activityType, actorId, entityId, entityOwnerId },
+  });
 };

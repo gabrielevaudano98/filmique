@@ -16,6 +16,7 @@ const OtpView = React.lazy(() => import('./components/OtpView'));
 const OnboardingView = React.lazy(() => import('./components/OnboardingView'));
 const RollDetailView = React.lazy(() => import('./components/RollDetailView'));
 const AlbumDetailView = React.lazy(() => import('./components/AlbumDetailView'));
+const NotificationsView = React.lazy(() => import('./components/NotificationsView'));
 const UncategorizedRollsView = React.lazy(() => import('./components/UncategorizedRollsView'));
 const RollCompletionWizard = React.lazy(() => import('./components/RollCompletionWizard'));
 
@@ -41,6 +42,7 @@ function App() {
       case 'settings': return <SettingsView />;
       case 'rollDetail': return <RollDetailView />;
       case 'albumDetail': return <AlbumDetailView />;
+      case 'notifications': return <NotificationsView />;
       case 'uncategorizedRolls': return <UncategorizedRollsView />;
       default: return <CommunityView />;
     }

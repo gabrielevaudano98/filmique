@@ -88,6 +88,12 @@ const SettingsView: React.FC = () => {
 
         <SettingsGroup title="Preferences">
           <SettingsRow
+            icon={<Bell className="w-5 h-5 text-white" />}
+            color="bg-accent-coral"
+            title="Notifications"
+            onClick={() => setCurrentView('notifications')}
+          />
+          <SettingsRow
             icon={<CameraIcon className="w-5 h-5 text-white" />}
             color="bg-accent-teal"
             title="Camera Preferences"
