@@ -13,7 +13,7 @@ function loadImage(url: string): Promise<HTMLImageElement> {
 export async function applyFilter(imageUrl: string, preset: FilmPreset): Promise<Blob> {
   const image = await loadImage(imageUrl);
   const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
   if (!ctx) {
     throw new Error('Could not get canvas context');
@@ -21,31 +21,83 @@ export async function applyFilter(imageUrl: string, preset: FilmPreset): Promise
 
   canvas.width = image.naturalWidth;
   canvas.height = image.naturalHeight;
-
-  // 1. Apply base CSS filters
-  let filterString = '';
-  if (preset.ev) filterString += `brightness(${1 + preset.ev * 0.1}) `;
-  if (preset.contrast) filterString += `contrast(${1 + preset.contrast / 100}) `;
-  if (preset.saturation) filterString += `saturate(${1 + preset.saturation / 100}) `;
-  if (preset.wbK && preset.wbK > 0) filterString += `sepia(${preset.wbK / 2500}) `;
-  if (preset.tint) filterString += `hue-rotate(${preset.tint}deg) `;
-  if (preset.bw?.enable) filterString += `grayscale(1) `;
   
-  ctx.filter = filterString.trim();
   ctx.drawImage(image, 0, 0);
-  ctx.filter = 'none';
 
-  // 2. Bloom
-  if (preset.bloom && preset.bloom > 0) {
-    addBloom(ctx, image, preset.bloom);
+  // Get image data to manipulate pixels
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  // --- Pixel Manipulation Loop ---
+  const ev = preset.ev || 0;
+  const contrast = preset.contrast || 0;
+  const saturation = preset.saturation || 0;
+  const wbK = preset.wbK || 0; // Sepia-like effect
+  const isBw = preset.bw?.enable || false;
+
+  const brightnessMultiplier = Math.pow(2, ev / 2); // EV adjustment
+  const contrastFactor = (259 * (contrast + 255)) / (255 * (259 - contrast));
+  const saturationFactor = saturation / 100 + 1;
+
+  for (let i = 0; i < data.length; i += 4) {
+    let r = data[i];
+    let g = data[i + 1];
+    let b = data[i + 2];
+
+    // 1. Brightness (EV)
+    r *= brightnessMultiplier;
+    g *= brightnessMultiplier;
+    b *= brightnessMultiplier;
+
+    // 2. Contrast - this is a non-linear adjustment affecting the whole tonal range
+    r = contrastFactor * (r - 128) + 128;
+    g = contrastFactor * (g - 128) + 128;
+    b = contrastFactor * (b - 128) + 128;
+
+    // 3. Saturation
+    if (!isBw) {
+      const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+      r = gray + saturationFactor * (r - gray);
+      g = gray + saturationFactor * (g - gray);
+      b = gray + saturationFactor * (b - gray);
+    }
+
+    // 4. Color Balance / Tinting (Sepia for wbK)
+    if (!isBw && wbK > 0) {
+      const sepiaAmount = wbK / 6500; // Normalize wbK to a 0-1 range
+      const sr = r, sg = g, sb = b;
+      r = sr * (1 - (0.607 * sepiaAmount)) + sg * (0.769 * sepiaAmount) + sb * (0.189 * sepiaAmount);
+      g = sr * (0.349 * sepiaAmount) + sg * (1 - (0.314 * sepiaAmount)) + sb * (0.168 * sepiaAmount);
+      b = sr * (0.272 * sepiaAmount) + sg * (0.534 * sepiaAmount) + sb * (1 - (0.869 * sepiaAmount));
+    }
+
+    // 5. Black & White
+    if (isBw) {
+      const gray = 0.299 * r + 0.587 * g + 0.114 * b;
+      r = g = b = gray;
+    }
+
+    // Clamp values to the 0-255 range
+    data[i] = Math.max(0, Math.min(255, r));
+    data[i + 1] = Math.max(0, Math.min(255, g));
+    data[i + 2] = Math.max(0, Math.min(255, b));
   }
 
-  // 3. Grain
+  // Put the modified data back
+  ctx.putImageData(imageData, 0, 0);
+
+  // --- Apply post-processing effects ---
+  // Bloom
+  if (preset.bloom && preset.bloom > 0) {
+    addBloom(ctx, canvas, preset.bloom);
+  }
+
+  // Grain
   if (preset.grain && preset.grain.amt > 0) {
     addGrain(ctx, preset.grain);
   }
 
-  // 4. Vignette
+  // Vignette
   if (preset.vignette && preset.vignette.ev < 0) {
     addVignette(ctx, preset.vignette);
   }
@@ -61,11 +113,11 @@ export async function applyFilter(imageUrl: string, preset: FilmPreset): Promise
   });
 }
 
-function addBloom(ctx: CanvasRenderingContext2D, image: HTMLImageElement, amount: number) {
+function addBloom(ctx: CanvasRenderingContext2D, source: HTMLCanvasElement | HTMLImageElement, amount: number) {
   ctx.globalCompositeOperation = 'screen';
   ctx.globalAlpha = amount / 150;
   ctx.filter = `blur(${amount / 5}px) brightness(1.1)`;
-  ctx.drawImage(image, 0, 0);
+  ctx.drawImage(source, 0, 0);
   
   ctx.globalCompositeOperation = 'source-over';
   ctx.globalAlpha = 1.0;
