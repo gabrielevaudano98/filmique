@@ -7,6 +7,7 @@ import CreateAlbumModal from './CreateAlbumModal';
 import SegmentedControl from './SegmentedControl';
 import CollapsibleAlbumSection from './CollapsibleAlbumSection';
 import RollOnShelf from './RollOnShelf';
+import RollListItem from './RollListItem';
 
 const RollsView: React.FC = () => {
   const { completedRolls, albums } = useAppContext();
