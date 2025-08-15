@@ -38,7 +38,7 @@ export const searchUsers = (query: string) => supabase.from('profiles').select('
 
 // Film Stocks
 export const fetchFilmStocks = async () => {
-  const cacheKey = 'filmStocks-v2'; // Bust the cache by using a new key
+  const cacheKey = 'filmStocks-v3'; // Bust the cache by using a new key
   const cached = getCache<FilmStock[]>(cacheKey, 60 * 60 * 1000); // 1 hour TTL
   if (cached) return { data: cached, error: null };
 

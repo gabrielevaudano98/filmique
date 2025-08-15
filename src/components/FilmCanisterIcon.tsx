@@ -13,10 +13,12 @@ const FilmCanisterIcon: React.FC<FilmCanisterIconProps> = ({ filmType, className
 
   const fullImageUrl = useMemo(() => {
     if (!imageUrl) return null;
+    // If it's already a full URL, use it directly
     if (imageUrl.startsWith('http')) {
       return imageUrl;
     }
-    return `${SUPABASE_STORAGE_BASE_URL}${imageUrl}`;
+    // Otherwise, construct the URL, removing any leading slashes to prevent errors
+    return `${SUPABASE_STORAGE_BASE_URL}${imageUrl.replace(/^\//, '')}`;
   }, [imageUrl]);
 
   const handleError = () => {
