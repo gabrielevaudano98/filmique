@@ -52,7 +52,7 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-brand-bg flex items-center justify-center">
+      <div className="min-h-screen bg-transparent flex items-center justify-center">
         <p className="text-white">Loading...</p>
       </div>
     );
@@ -61,7 +61,7 @@ function App() {
   if (!session) {
     const AuthComponent = authStep === 'otp' ? <OtpView /> : <LoginView />;
     return (
-      <div className="min-h-screen bg-brand-bg text-white flex flex-col">
+      <div className="min-h-screen bg-transparent text-white flex flex-col">
         <main className="flex-1 max-w-6xl mx-auto w-full flex">
           {AuthComponent}
         </main>
@@ -78,7 +78,6 @@ function App() {
       roll={rollToConfirm}
       onSendToDarkroom={handleWizardSendToDarkroom}
       onPutOnShelf={handleWizardPutOnShelf}
-      onClose={() => setRollToConfirm(null)}
     />
   );
 

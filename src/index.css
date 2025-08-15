@@ -40,7 +40,11 @@
   }
   body {
     font-family: 'SF Pro Display', Inter, system-ui;
-    background-color: var(--warm-900);
+    background-image: linear-gradient(rgba(10, 10, 12, 0.7), rgba(10, 10, 12, 0.7)), url('/src/assets/background.avif');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     color: white;
     /* Prevent viewport bounce */
     position: fixed;

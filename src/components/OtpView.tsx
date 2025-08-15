@@ -27,10 +27,9 @@ const OtpView: React.FC = () => {
   };
 
   return (
-    <div className="w-full min-h-screen flex items-center justify-center bg-warm-900 p-4 relative overflow-hidden">
+    <div className="w-full min-h-screen flex items-center justify-center bg-transparent p-4 relative overflow-hidden">
       {/* Background Effects */}
       <div className="absolute -bottom-1/2 -left-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_center,_rgba(246,174,85,0.08),_transparent_30%)] animate-[spin_20s_linear_infinite]"></div>
-      <div className="absolute inset-0 bg-gradient-to-b from-warm-900/0 via-warm-900 to-warm-900"></div>
 
       <div className="w-full max-w-md mx-auto flex flex-col justify-center z-10 text-center">
         <div className="bg-warm-800/60 backdrop-blur-lg border border-warm-700/50 rounded-2xl p-8 shadow-2xl">
