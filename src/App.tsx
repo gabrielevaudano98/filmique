@@ -10,7 +10,7 @@ import OtpView from './components/OtpView';
 import OnboardingView from './components/OnboardingView';
 import { useAppContext } from './context/AppContext';
 import RollDetailView from './components/RollDetailView';
-import AlbumDetailView from './components/AlbumDetailView';
+import ShelfDetailView from './components/ShelfDetailView';
 import NotificationsView from './components/NotificationsView';
 import TopBar from './components/TopBar';
 import BottomNavBar from './components/BottomNavBar';
@@ -33,7 +33,7 @@ function App() {
       case 'profile': return <ProfileView />;
       case 'settings': return <SettingsView />;
       case 'rollDetail': return <RollDetailView />;
-      case 'albumDetail': return <AlbumDetailView />;
+      case 'shelfDetail': return <ShelfDetailView />;
       case 'notifications': return <NotificationsView />;
       case 'uncategorizedRolls': return <UncategorizedRollsView />;
       default: return <CommunityView />;
@@ -78,7 +78,6 @@ function App() {
       roll={rollToConfirm}
       onSendToDarkroom={handleWizardSendToDarkroom}
       onPutOnShelf={handleWizardPutOnShelf}
-      onClose={() => setRollToConfirm(null)}
     />
   );
 
