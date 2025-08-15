@@ -1,6 +1,5 @@
 import React from 'react';
 import CameraView from './components/CameraView';
-import RollsView from './components/RollsView';
 import CommunityView from './components/CommunityView';
 import ChallengesView from './components/ChallengesView';
 import ProfileView from './components/ProfileView';
@@ -16,6 +15,7 @@ import TopBar from './components/TopBar';
 import BottomNavBar from './components/BottomNavBar';
 import UncategorizedRollsView from './components/UncategorizedRollsView';
 import RollCompletionWizard from './components/RollCompletionWizard';
+import DarkroomView from './components/DarkroomView';
 import { Roll } from './types';
 
 function App() {
@@ -27,7 +27,6 @@ function App() {
 
   const renderCurrentView = () => {
     switch (currentView) {
-      case 'rolls': return <RollsView />;
       case 'community': return <CommunityView />;
       case 'challenges': return <ChallengesView />;
       case 'profile': return <ProfileView />;
@@ -36,6 +35,7 @@ function App() {
       case 'albumDetail': return <AlbumDetailView />;
       case 'notifications': return <NotificationsView />;
       case 'uncategorizedRolls': return <UncategorizedRollsView />;
+      case 'darkroom': return <DarkroomView />;
       default: return <CommunityView />;
     }
   };
@@ -78,7 +78,6 @@ function App() {
       roll={rollToConfirm}
       onSendToDarkroom={handleWizardSendToDarkroom}
       onPutOnShelf={handleWizardPutOnShelf}
-      onClose={() => setRollToConfirm(null)}
     />
   );
 

@@ -171,6 +171,14 @@ export const updateRollsAlbum = async (rollIds: string[], albumId: string | null
   }
   return result;
 };
+export const updateAlbum = async (albumId: string, data: { type?: 'personal' | 'public' }) => {
+  const { data: album } = await supabase.from('albums').select('user_id').eq('id', albumId).single();
+  const result = await supabase.from('albums').update(data).eq('id', albumId);
+  if (!result.error && album) {
+    invalidateCache(`albums-${album.user_id}`);
+  }
+  return result;
+};
 
 // Notifications
 export const fetchNotifications = (userId: string) => supabase.from('notifications').select('*, actors:profiles!notifications_actor_id_fkey(username, avatar_url)').eq('user_id', userId).order('created_at', { ascending: false }).limit(30);

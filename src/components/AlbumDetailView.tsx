@@ -1,32 +1,38 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ArrowLeft, Edit, Image as ImageIcon, Film } from 'lucide-react';
+import { ArrowLeft, Edit, Image as ImageIcon, Film, Globe, Lock } from 'lucide-react';
 import ManageRollsModal from './ManageRollsModal';
 import { Roll } from '../types';
 import RollListItem from './RollListItem';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 
 const AlbumDetailView: React.FC = () => {
-  const { selectedAlbum, setCurrentView, setSelectedAlbum, deleteRoll, removeRollFromAlbum } = useAppContext();
+  const { selectedAlbum, setCurrentView, setSelectedAlbum, deleteRoll, removeRollFromAlbum, updateAlbumPrivacy } = useAppContext();
   const [showManageModal, setShowManageModal] = useState(false);
   const [rollToDelete, setRollToDelete] = useState<Roll | null>(null);
 
   if (!selectedAlbum) {
-    setCurrentView('rolls');
+    setCurrentView('profile');
     return null;
   }
 
   const handleBack = () => {
     setSelectedAlbum(null);
-    setCurrentView('rolls');
+    setCurrentView('profile');
   };
 
   const handleRemoveFromAlbum = (roll: Roll) => {
     removeRollFromAlbum(roll.id);
   };
 
+  const handleTogglePrivacy = () => {
+    const newType = selectedAlbum.type === 'public' ? 'personal' : 'public';
+    updateAlbumPrivacy(selectedAlbum.id, newType);
+  };
+
   const rolls = selectedAlbum.rolls || [];
   const photoCount = rolls.reduce((sum, roll) => sum + (roll.shots_used || 0), 0);
+  const isPublic = selectedAlbum.type === 'public';
 
   return (
     <div className="flex flex-col w-full">
@@ -35,10 +41,16 @@ const AlbumDetailView: React.FC = () => {
           <ArrowLeft className="w-5 h-5" />
           <span className="font-medium">Back to Albums</span>
         </button>
-        <button onClick={() => setShowManageModal(true)} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
-          <Edit className="w-4 h-4" />
-          <span>Manage Rolls</span>
-        </button>
+        <div className="flex items-center space-x-2">
+          <button onClick={handleTogglePrivacy} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
+            {isPublic ? <Globe className="w-4 h-4 text-green-400" /> : <Lock className="w-4 h-4 text-red-400" />}
+            <span>{isPublic ? 'Public' : 'Private'}</span>
+          </button>
+          <button onClick={() => setShowManageModal(true)} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
+            <Edit className="w-4 h-4" />
+            <span>Manage</span>
+          </button>
+        </div>
       </div>
       
       <div className="mb-8">
