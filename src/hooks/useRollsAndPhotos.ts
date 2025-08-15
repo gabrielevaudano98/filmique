@@ -5,7 +5,6 @@ import * as api from '../services/api';
 import { UserProfile, Roll, Photo, FilmStock } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
 import { filenameFromUrl } from '../utils/storage';
-import { getCache, setCache, invalidateCache } from '../utils/cache';
 
 export const useRollsAndPhotos = (
   profile: UserProfile | null, 
@@ -20,16 +19,6 @@ export const useRollsAndPhotos = (
 
   const fetchRolls = useCallback(async () => {
     if (!profile) return;
-    const cacheKey = `rolls-${profile.id}`;
-
-    const cachedRolls = getCache<Roll[]>(cacheKey);
-    if (cachedRolls) {
-      const active = cachedRolls.find(r => !r.is_completed) || null;
-      const completed = cachedRolls.filter(r => r.is_completed);
-      setActiveRoll(active);
-      setCompletedRolls(completed);
-    }
-
     const { data: fetchedRolls, error } = await api.fetchAllRolls(profile.id);
     if (error || !fetchedRolls) return;
 
@@ -55,7 +44,6 @@ export const useRollsAndPhotos = (
     const completed = finalRolls.filter(r => r.is_completed);
     setActiveRoll(active);
     setCompletedRolls(completed);
-    setCache(cacheKey, finalRolls);
     
   }, [profile]);
 
@@ -87,7 +75,6 @@ export const useRollsAndPhotos = (
       }
       
       setActiveRoll(data);
-      invalidateCache(`rolls-${profile.id}`);
       dismissToast(toastId);
       showSuccessToast(`${film.name} loaded!`);
     } catch (error: any) {
@@ -110,7 +97,6 @@ export const useRollsAndPhotos = (
       
       const { data: updatedRoll } = await api.updateRoll(activeRoll.id, updatePayload);
       if (updatedRoll) {
-        invalidateCache(`rolls-${profile.id}`);
         if (isCompleted) {
           setActiveRoll(null);
           setCompletedRolls(prev => [updatedRoll, ...prev]);
@@ -134,7 +120,6 @@ export const useRollsAndPhotos = (
       showErrorToast('Failed to send roll to darkroom.');
       setCompletedRolls(prev => prev.map(r => r.id === roll.id ? roll : r));
     } else {
-      if (profile) invalidateCache(`rolls-${profile.id}`);
       showSuccessToast("Roll sent to the darkroom!");
     }
   };
@@ -148,7 +133,6 @@ export const useRollsAndPhotos = (
       showErrorToast('Failed to place roll on shelf.');
       setCompletedRolls(prev => prev.map(r => r.id === roll.id ? roll : r));
     } else {
-      if (profile) invalidateCache(`rolls-${profile.id}`);
       showSuccessToast("Roll placed on your shelf.");
     }
   };
@@ -158,7 +142,6 @@ export const useRollsAndPhotos = (
       if (error) { showErrorToast('Could not send to darkroom.'); }
       else {
         showSuccessToast("Roll sent to the darkroom!");
-        if (profile) invalidateCache(`rolls-${profile.id}`);
         fetchRolls();
       }
   };
@@ -170,7 +153,6 @@ export const useRollsAndPhotos = (
       await api.developRollPhotos(roll, filmStocks);
       const { data: updatedRoll } = await api.updateRoll(roll.id, { developed_at: new Date().toISOString() });
       if (updatedRoll) {
-        invalidateCache(`rolls-${profile.id}`);
         setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
       }
       showSuccessToast('Roll developed successfully!');
@@ -185,7 +167,6 @@ export const useRollsAndPhotos = (
     if (!profile) return false;
     const { error } = await api.updateRoll(rollId, { title });
     if (error) return false;
-    invalidateCache(`rolls-${profile.id}`);
     setCompletedRolls(prev => prev.map(r => r.id === rollId ? { ...r, title } : r));
     if (selectedRoll?.id === rollId) setSelectedRoll(prev => prev ? { ...prev, title } : null);
     return true;
@@ -209,7 +190,6 @@ export const useRollsAndPhotos = (
       }
       await api.deletePhotosForRoll(rollId);
       await api.deleteRollById(rollId);
-      invalidateCache([`rolls-${profile.id}`, `albums-${profile.id}`, 'feed']);
       setCompletedRolls(prev => prev.filter(r => r.id !== rollId));
       setSelectedRoll(null);
       showSuccessToast('Roll deleted.');

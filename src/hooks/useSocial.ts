@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import * as api from '../services/api';
 import { UserProfile, Post, Comment } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
-import { getCache, setCache, invalidateCache } from '../utils/cache';
 
 export const useSocial = (profile: UserProfile | null) => {
   const [feed, setFeed] = useState<Post[]>([]);
@@ -10,27 +9,16 @@ export const useSocial = (profile: UserProfile | null) => {
 
   const fetchFeed = useCallback(async () => {
     if (!profile) return;
-    const cacheKey = 'feed';
-
-    const cachedFeed = getCache<Post[]>(cacheKey);
-    if (cachedFeed) {
-      setFeed(cachedFeed);
-    }
-
     const { data: followingData } = await api.fetchFollowedIds(profile.id);
     const followedUserIds = new Set(followingData?.map(f => f.following_id) || []);
     const { data: postsData, error } = await api.fetchFeedPosts();
-    if (error) {
-      console.error("Failed to revalidate feed:", error);
-      return;
-    }
+    if (error) return;
     const augmented = postsData.map(post => ({
       ...post,
       isLiked: post.likes?.some(l => l.user_id === profile.id),
       isFollowed: followedUserIds.has(post.user_id),
     })) as Post[];
     setFeed(augmented);
-    setCache(cacheKey, augmented);
   }, [profile]);
 
   const fetchRecentStories = useCallback(async () => {
@@ -73,11 +61,8 @@ export const useSocial = (profile: UserProfile | null) => {
     if (error) {
       showErrorToast('Failed to update like.');
       fetchFeed(); // Revert on error
-    } else {
-      invalidateCache('feed');
-      if (!isLiked) {
-        api.recordActivity('like', profile.id, postId, postOwnerId);
-      }
+    } else if (!isLiked) {
+      api.recordActivity('like', profile.id, postId, postOwnerId);
     }
   }, [profile, fetchFeed]);
 
@@ -91,11 +76,8 @@ export const useSocial = (profile: UserProfile | null) => {
     if (error) {
       showErrorToast('Could not update follow status.');
       fetchFeed(); // Revert on error
-    } else {
-      invalidateCache('feed');
-      if (!isFollowed) {
-        api.recordActivity('follow', profile.id, userId, userId);
-      }
+    } else if (!isFollowed) {
+      api.recordActivity('follow', profile.id, userId, userId);
     }
   }, [profile, fetchFeed]);
 
@@ -105,7 +87,6 @@ export const useSocial = (profile: UserProfile | null) => {
     const { data, error } = await api.createPost(profile.id, rollId, caption, coverUrl);
     if (error) showErrorToast(error.message);
     else {
-      invalidateCache(['feed', `rolls-${profile.id}`]);
       api.recordActivity('post', profile.id, data.id, profile.id);
       showSuccessToast('Post published!');
       fetchFeed();
@@ -130,7 +111,6 @@ export const useSocial = (profile: UserProfile | null) => {
       showErrorToast(error.message);
       fetchFeed(); // Revert
     } else {
-      invalidateCache('feed');
       api.recordActivity('comment', profile.id, postId, postOwnerId);
       fetchFeed(); // Re-fetch to sync real comment ID
     }
@@ -144,7 +124,6 @@ export const useSocial = (profile: UserProfile | null) => {
       showErrorToast(error.message);
       fetchFeed(); // Revert
     } else {
-      invalidateCache('feed');
       showSuccessToast('Comment deleted');
     }
   }, [fetchFeed]);
