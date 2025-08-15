@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserPlus, Check } from 'lucide-react';
-import { UserProfile } from '../context/AppContext';
+import { UserProfile } from '../types';
 import { useAppContext } from '../context/AppContext';
 
 interface UserSearchResultCardProps {

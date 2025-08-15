@@ -1,4 +1,4 @@
-import { Roll } from '../context/AppContext';
+import { Roll } from '../types';
 
 // A roll is considered "developed" if it has a developed_at timestamp,
 // OR if 36 hours have passed since it was completed.
