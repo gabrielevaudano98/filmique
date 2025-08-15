@@ -34,6 +34,7 @@ export const fetchUserBadges = (userId: string) => supabase.from('user_badges').
 export const fetchFollowerCount = (userId: string) => supabase.from('followers').select('*', { count: 'exact', head: true }).eq('following_id', userId);
 export const fetchFollowingCount = (userId: string) => supabase.from('followers').select('*', { count: 'exact', head: true }).eq('follower_id', userId);
 export const searchUsers = (query: string) => supabase.from('profiles').select('*').ilike('username', `%${query}%`).limit(10);
+export const fetchUserPosts = (userId: string) => supabase.from('posts').select(POST_SELECT_QUERY).eq('user_id', userId).order('created_at', { ascending: false });
 
 // Film Stocks
 export const fetchFilmStocks = async () => {

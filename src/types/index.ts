@@ -210,6 +210,7 @@ export interface AppContextType {
   followersCount: number;
   followingCount: number;
   updateProfileDetails: (details: { bio?: string; avatarFile?: File }) => Promise<void>;
+  userPosts: Post[];
   sendToDarkroom: (roll: Roll, title: string) => Promise<void>;
   putOnShelf: (roll: Roll, title: string) => Promise<void>;
   developShelvedRoll: (rollId: string) => Promise<void>;

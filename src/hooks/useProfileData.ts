@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as api from '../services/api';
-import { UserProfile, UserBadge, Notification, Challenge } from '../types';
+import { UserProfile, UserBadge, Notification, Challenge, Post } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
 
 export const useProfileData = (profile: UserProfile | null) => {
@@ -9,6 +9,7 @@ export const useProfileData = (profile: UserProfile | null) => {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
+  const [userPosts, setUserPosts] = useState<Post[]>([]);
 
   const fetchNotifications = useCallback(async () => {
     if (!profile) return;
@@ -22,6 +23,7 @@ export const useProfileData = (profile: UserProfile | null) => {
     api.fetchUserBadges(profile.id).then(({ data }) => setUserBadges(data || []));
     api.fetchFollowerCount(profile.id).then(({ count }) => setFollowersCount(count || 0));
     api.fetchFollowingCount(profile.id).then(({ count }) => setFollowingCount(count || 0));
+    api.fetchUserPosts(profile.id).then(({ data }) => setUserPosts(data || []));
   }, [profile]);
 
   useEffect(() => {
@@ -78,5 +80,6 @@ export const useProfileData = (profile: UserProfile | null) => {
     followingCount,
     fetchProfilePageData,
     updateProfileDetails,
+    userPosts,
   };
 };
