@@ -32,7 +32,6 @@ const CameraView: React.FC = () => {
 
   const [isNative, setIsNative] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
   const [activeCameraId, setActiveCameraId] = useState<string | null>(null);
   const [capabilities, setCapabilities] = useState<MediaTrackCapabilities | null>(null);
@@ -73,96 +72,91 @@ const CameraView: React.FC = () => {
     setIsNative(native);
   }, []);
 
-  // Effect for NATIVE camera
+  // This hook now manages the entire lifecycle of the camera stream
   useEffect(() => {
-    if (!isNative) return;
+    let isMounted = true;
+    let activeStream: MediaStream | null = null;
 
-    const startNativeCamera = async () => {
-      try {
-        const permissions = await NativeCameraView.checkPermissions();
-        if (permissions.camera === 'granted') {
-          setHasPermission(true);
-          await NativeCameraView.start({});
-          document.body.classList.add('camera-running');
-        } else {
-          const request = await NativeCameraView.requestPermissions();
-          if (request.camera === 'granted') {
+    const startCamera = async () => {
+      if (isNative) {
+        try {
+          const permissions = await NativeCameraView.checkPermissions();
+          if (permissions.camera !== 'granted') {
+            const request = await NativeCameraView.requestPermissions();
+            if (request.camera !== 'granted') {
+              if (isMounted) setHasPermission(false);
+              return;
+            }
+          }
+          if (isMounted) {
             setHasPermission(true);
-            startNativeCamera(); // Recurse to start camera
+            await NativeCameraView.start({});
+            document.body.classList.add('camera-running');
+          }
+        } catch (e) {
+          console.error(e);
+          if (isMounted) setHasPermission(false);
+        }
+      } else {
+        try {
+          const constraints: MediaStreamConstraints = {
+            video: { deviceId: activeCameraId ? { exact: activeCameraId } : undefined },
+          };
+          const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+          if (!isMounted) {
+            newStream.getTracks().forEach(track => track.stop());
+            return;
+          }
+          
+          activeStream = newStream;
+          setHasPermission(true);
+
+          if (videoRef.current) {
+            videoRef.current.srcObject = newStream;
+          }
+
+          const videoTrack = newStream.getVideoTracks()[0];
+          const settings = videoTrack.getSettings();
+          setIsFrontCamera(settings.facingMode === 'user');
+
+          const trackCapabilities = videoTrack.getCapabilities();
+          setCapabilities(trackCapabilities);
+
+          if (trackCapabilities.zoom?.max && trackCapabilities.zoom.max > 1) {
+            const { min, max } = trackCapabilities.zoom;
+            const levels = [min, min + (max - min) * 0.25, min + (max - min) * 0.5, min + (max - min) * 0.75, max].map(z => parseFloat(z.toFixed(1)));
+            setZoomLevels(levels);
+            setZoom(min);
           } else {
-            setHasPermission(false);
+            setZoomLevels([1]);
+            setZoom(1);
           }
+
+          if (cameras.length === 0) {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(d => d.kind === 'videoinput');
+            setCameras(videoDevices);
+            if (!activeCameraId && videoDevices.length > 0) {
+              setActiveCameraId(videoDevices[0].deviceId);
+            }
+          }
+        } catch (err) {
+          console.error(err);
+          if (isMounted) setHasPermission(false);
         }
-      } catch (e) {
-        console.error(e);
-        setHasPermission(false);
       }
     };
 
-    startNativeCamera();
+    startCamera();
 
     return () => {
-      document.body.classList.remove('camera-running');
-      NativeCameraView.stop();
-    };
-  }, [isNative]);
-
-  // Effect for WEB camera
-  useEffect(() => {
-    if (isNative) return;
-
-    const setupCamera = async () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
+      isMounted = false;
+      if (isNative) {
+        document.body.classList.remove('camera-running');
+        NativeCameraView.stop();
+      } else if (activeStream) {
+        activeStream.getTracks().forEach(track => track.stop());
       }
-
-      try {
-        const constraints: MediaStreamConstraints = {
-          video: { deviceId: activeCameraId ? { exact: activeCameraId } : undefined },
-        };
-        const newStream = await navigator.mediaDevices.getUserMedia(constraints);
-        setStream(newStream);
-        setHasPermission(true);
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = newStream;
-        }
-
-        const videoTrack = newStream.getVideoTracks()[0];
-        const settings = videoTrack.getSettings();
-        setIsFrontCamera(settings.facingMode === 'user');
-
-        const trackCapabilities = videoTrack.getCapabilities();
-        setCapabilities(trackCapabilities);
-
-        if (trackCapabilities.zoom?.max && trackCapabilities.zoom.max > 1) {
-          const { min, max } = trackCapabilities.zoom;
-          const levels = [min, min + (max - min) * 0.25, min + (max - min) * 0.5, min + (max - min) * 0.75, max].map(z => parseFloat(z.toFixed(1)));
-          setZoomLevels(levels);
-          setZoom(min);
-        } else {
-          setZoomLevels([1]);
-          setZoom(1);
-        }
-
-        if (cameras.length === 0) {
-          const devices = await navigator.mediaDevices.enumerateDevices();
-          const videoDevices = devices.filter(d => d.kind === 'videoinput');
-          setCameras(videoDevices);
-          if (!activeCameraId && videoDevices.length > 0) {
-            setActiveCameraId(videoDevices[0].deviceId);
-          }
-        }
-      } catch (err) {
-        console.error(err);
-        setHasPermission(false);
-      }
-    };
-
-    setupCamera();
-
-    return () => {
-      stream?.getTracks().forEach(track => track.stop());
     };
   }, [isNative, activeCameraId]);
 
@@ -179,14 +173,15 @@ const CameraView: React.FC = () => {
   };
 
   const cycleZoom = () => {
-    if (isNative || zoomLevels.length <= 1) return;
+    if (isNative || zoomLevels.length <= 1 || !videoRef.current?.srcObject) return;
     
     const currentIndex = zoomLevels.indexOf(zoom);
     const nextIndex = (currentIndex + 1) % zoomLevels.length;
     const newZoom = zoomLevels[nextIndex];
     setZoom(newZoom);
 
-    const videoTrack = stream?.getVideoTracks()[0];
+    const stream = videoRef.current.srcObject as MediaStream;
+    const videoTrack = stream.getVideoTracks()[0];
     if (videoTrack && capabilities?.zoom) {
       videoTrack.applyConstraints({ advanced: [{ zoom: newZoom }] });
     }
