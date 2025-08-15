@@ -38,13 +38,6 @@ export const useSocial = (profile: UserProfile | null) => {
     setRecentStories(storiesMap);
   }, [profile]);
 
-  useEffect(() => {
-    if (profile) {
-      fetchFeed();
-      fetchRecentStories();
-    }
-  }, [profile, fetchFeed, fetchRecentStories]);
-
   const handleLike = useCallback(async (postId: string, postOwnerId: string, isLiked?: boolean) => {
     if (!profile) return;
     
@@ -132,6 +125,8 @@ export const useSocial = (profile: UserProfile | null) => {
     feed,
     setFeed,
     recentStories,
+    fetchFeed,
+    fetchRecentStories,
     handleLike,
     handleFollow,
     createPost,

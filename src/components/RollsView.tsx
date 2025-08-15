@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Plus, Clock } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
@@ -10,10 +10,15 @@ import RollOnShelf from './RollOnShelf';
 import RollListItem from './RollListItem';
 
 const RollsView: React.FC = () => {
-  const { completedRolls, albums } = useAppContext();
+  const { completedRolls, albums, refetchRolls, refetchAlbums } = useAppContext();
 
   const [activeSection, setActiveSection] = useState<'shelf' | 'darkroom' | 'albums'>('shelf');
   const [showCreateAlbumModal, setShowCreateAlbumModal] = useState(false);
+
+  useEffect(() => {
+    refetchRolls();
+    refetchAlbums();
+  }, [refetchRolls, refetchAlbums]);
 
   const { developingRolls, shelvedRolls, developedRollsOnShelf } = useMemo(() => {
     const allCompleted = completedRolls || [];

@@ -7,7 +7,7 @@ export const useAlbums = (profile: UserProfile | null) => {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [selectedAlbum, setSelectedAlbum] = useState<Album | null>(null);
 
-  const fetchAlbums = useCallback(async () => {
+  const refetchAlbums = useCallback(async () => {
     if (!profile) return;
     const { data } = await api.fetchAlbums(profile.id);
     if (data) {
@@ -20,16 +20,12 @@ export const useAlbums = (profile: UserProfile | null) => {
     }
   }, [profile]);
 
-  useEffect(() => {
-    fetchAlbums();
-  }, [fetchAlbums]);
-
   const createAlbum = useCallback(async (title: string) => {
     if (!profile) return;
     const { error } = await api.createAlbum(profile.id, title);
     if (error) showErrorToast('Failed to create album.');
-    else fetchAlbums();
-  }, [profile, fetchAlbums]);
+    else refetchAlbums();
+  }, [profile, refetchAlbums]);
 
   const selectAlbum = useCallback(async (albumId: string) => {
     const { data } = await api.fetchAlbumDetails(albumId);
@@ -41,24 +37,24 @@ export const useAlbums = (profile: UserProfile | null) => {
     if (error) {
       showErrorToast('Failed to add rolls.');
     } else {
-      fetchAlbums();
+      refetchAlbums();
       if (selectedAlbum?.id === albumId) {
         selectAlbum(albumId);
       }
     }
-  }, [fetchAlbums, selectedAlbum, selectAlbum]);
+  }, [refetchAlbums, selectedAlbum, selectAlbum]);
 
   const removeRollFromAlbum = useCallback(async (rollId: string) => {
     const { error } = await api.updateRollsAlbum([rollId], null);
     if (error) {
       showErrorToast('Failed to remove roll from album.');
     } else {
-      fetchAlbums();
+      refetchAlbums();
       if (selectedAlbum) {
         selectAlbum(selectedAlbum.id);
       }
     }
-  }, [fetchAlbums, selectedAlbum, selectAlbum]);
+  }, [refetchAlbums, selectedAlbum, selectAlbum]);
 
   return {
     albums,
@@ -68,6 +64,6 @@ export const useAlbums = (profile: UserProfile | null) => {
     selectAlbum,
     addRollsToAlbum,
     removeRollFromAlbum,
-    refetchAlbums: fetchAlbums,
+    refetchAlbums,
   };
 };

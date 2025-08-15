@@ -17,6 +17,19 @@ export const useProfileData = (profile: UserProfile | null) => {
     else setNotifications(data || []);
   }, [profile]);
 
+  const fetchProfilePageData = useCallback(async () => {
+    if (!profile) return;
+    api.fetchUserBadges(profile.id).then(({ data }) => setUserBadges(data || []));
+    api.fetchFollowerCount(profile.id).then(({ count }) => setFollowersCount(count || 0));
+    api.fetchFollowingCount(profile.id).then(({ count }) => setFollowingCount(count || 0));
+  }, [profile]);
+
+  useEffect(() => {
+    if (profile) {
+      fetchNotifications();
+    }
+  }, [profile, fetchNotifications]);
+
   const markNotificationsAsRead = useCallback(async () => {
     if (!profile) return;
     const unreadIds = notifications.filter(n => !n.is_read).map(n => n.id);
@@ -54,15 +67,6 @@ export const useProfileData = (profile: UserProfile | null) => {
     }
   }, [profile]);
 
-  useEffect(() => {
-    if (profile) {
-      api.fetchUserBadges(profile.id).then(({ data }) => setUserBadges(data || []));
-      fetchNotifications();
-      api.fetchFollowerCount(profile.id).then(({ count }) => setFollowersCount(count || 0));
-      api.fetchFollowingCount(profile.id).then(({ count }) => setFollowingCount(count || 0));
-    }
-  }, [profile, fetchNotifications]);
-
   return {
     userBadges,
     notifications,
@@ -72,6 +76,7 @@ export const useProfileData = (profile: UserProfile | null) => {
     setChallenges,
     followersCount,
     followingCount,
+    fetchProfilePageData,
     updateProfileDetails,
   };
 };

@@ -58,7 +58,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCameraMode,
     showFilmModal,
     setShowFilmModal,
-    refetchRolls: rollsAndPhotos.refetchRolls,
     developShelvedRoll: rollsAndPhotos.developShelvedRoll,
   }), [auth, profileData, rollsAndPhotos, social, albumsData, filmStocks, currentView, cameraMode, showFilmModal]);
 

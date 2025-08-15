@@ -17,7 +17,7 @@ export const useRollsAndPhotos = (
   const [rollToName, setRollToName] = useState<Roll | null>(null);
   const [rollToConfirm, setRollToConfirm] = useState<Roll | null>(null);
 
-  const fetchRolls = useCallback(async () => {
+  const refetchRolls = useCallback(async () => {
     if (!profile) return;
     const { data: fetchedRolls, error } = await api.fetchAllRolls(profile.id);
     if (error || !fetchedRolls) return;
@@ -48,8 +48,11 @@ export const useRollsAndPhotos = (
   }, [profile]);
 
   useEffect(() => {
-    fetchRolls();
-  }, [fetchRolls]);
+    // Find active roll from already fetched completed rolls on initial load
+    if (profile && completedRolls.length === 0) {
+      refetchRolls();
+    }
+  }, [profile, refetchRolls, completedRolls]);
 
   const startNewRoll = useCallback(async (film: FilmStock) => {
     if (!profile) return;
@@ -142,7 +145,7 @@ export const useRollsAndPhotos = (
       if (error) { showErrorToast('Could not send to darkroom.'); }
       else {
         showSuccessToast("Roll sent to the darkroom!");
-        fetchRolls();
+        refetchRolls();
       }
   };
 
@@ -244,7 +247,7 @@ export const useRollsAndPhotos = (
     deleteRoll,
     downloadPhoto,
     downloadRoll,
-    refetchRolls: fetchRolls,
+    refetchRolls,
     sendToDarkroom,
     putOnShelf,
     developShelvedRoll,

@@ -15,7 +15,7 @@ const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ va
 );
 
 const ProfileView: React.FC = () => {
-  const { profile, feed, followersCount, followingCount, userBadges, updateProfileDetails, setCurrentView, refreshProfile } = useAppContext();
+  const { profile, feed, followersCount, followingCount, userBadges, updateProfileDetails, setCurrentView, refreshProfile, fetchProfilePageData } = useAppContext();
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [activeTab, setActiveTab] = useState<'posts' | 'feed' | 'badges'>('posts');
   
@@ -26,6 +26,10 @@ const ProfileView: React.FC = () => {
   const isBioChanged = useMemo(() => bioText !== (profile?.bio || ''), [bioText, profile?.bio]);
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    fetchProfilePageData();
+  }, [fetchProfilePageData]);
 
   const posts = useMemo(() => {
     if (!profile) return [];

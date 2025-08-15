@@ -207,4 +207,7 @@ export interface AppContextType {
   sendToDarkroom: (roll: Roll, title: string) => Promise<void>;
   putOnShelf: (roll: Roll, title: string) => Promise<void>;
   developShelvedRoll: (rollId: string) => Promise<void>;
+  fetchFeed: () => Promise<void>;
+  fetchRecentStories: () => Promise<void>;
+  fetchProfilePageData: () => Promise<void>;
 }

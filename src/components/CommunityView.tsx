@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Plus, User } from 'lucide-react';
 import { useAppContext, Post } from '../context/AppContext';
 import CreatePostModal from './CreatePostModal';
@@ -21,13 +21,18 @@ const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => vo
 );
 
 const CommunityView: React.FC = () => {
-  const { profile, feed, completedRolls, recentStories, setCurrentView } = useAppContext();
+  const { profile, feed, completedRolls, recentStories, setCurrentView, fetchFeed, fetchRecentStories } = useAppContext();
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState('discover');
 
   const [showFullStoryViewer, setShowFullStoryViewer] = useState(false);
   const [postsForFullStoryViewer, setPostsForFullStoryViewer] = useState<Post[] | null>(null); // New state
   const [initialStoryPostIndex, setInitialStoryPostIndex] = useState(0);
+
+  useEffect(() => {
+    fetchFeed();
+    fetchRecentStories();
+  }, [fetchFeed, fetchRecentStories]);
 
   const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
   
