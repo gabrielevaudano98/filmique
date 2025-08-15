@@ -17,7 +17,13 @@ const RollPostCard: React.FC<RollPostCardProps> = ({ post, onClick }) => {
   const coverPhotoUrl = post.cover_photo_url || post.rolls.photos?.[0]?.url;
 
   return (
-    <button onClick={onClick} className="relative aspect-[9/16] w-64 flex-shrink-0 rounded-2xl overflow-hidden shadow-lg group bg-neutral-900 text-left">
+    <div
+      onClick={onClick}
+      className="relative aspect-[9/16] w-64 flex-shrink-0 rounded-2xl overflow-hidden shadow-lg group bg-neutral-900 text-left cursor-pointer"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
+    >
       {coverPhotoUrl && (
         <img src={`${coverPhotoUrl}${cacheBuster}`} alt={post.rolls.title || 'Roll cover'} className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" />
       )}
@@ -50,7 +56,7 @@ const RollPostCard: React.FC<RollPostCardProps> = ({ post, onClick }) => {
           </button>
         </div>
       </div>
-    </button>
+    </div>
   );
 };
 
