@@ -126,23 +126,6 @@ export interface Challenge {
   isCompleted?: boolean;
 }
 
-export interface Notification {
-  id: string;
-  type: string;
-  is_read: boolean;
-  created_at: string;
-  entity_id: string;
-  actors: {
-    username: string;
-    avatar_url: string | null;
-  };
-  posts?: {
-    rolls?: {
-      photos: { thumbnail_url: string }[];
-    };
-  };
-}
-
 export interface UserBadge {
   created_at: string;
   badges: {
@@ -168,7 +151,6 @@ export interface AppContextType {
   albums: Album[];
   challenges: Challenge[];
   setChallenges: React.Dispatch<React.SetStateAction<Challenge[]>>;
-  notifications: Notification[];
   userBadges: UserBadge[];
   recentStories: Map<string, { user: UserProfile, posts: Post[] }>;
   filmStocks: FilmStock[];
@@ -205,8 +187,6 @@ export interface AppContextType {
   deleteRoll: (rollId: string) => Promise<void>;
   downloadPhoto: (photo: Photo) => Promise<void>;
   downloadRoll: (roll: Roll) => Promise<void>;
-  fetchNotifications: () => Promise<void>;
-  markNotificationsAsRead: () => Promise<void>;
   followersCount: number;
   followingCount: number;
   updateProfileDetails: (details: { bio?: string; avatarFile?: File }) => Promise<void>;

@@ -54,8 +54,6 @@ export const useSocial = (profile: UserProfile | null) => {
     if (error) {
       showErrorToast('Failed to update like.');
       fetchFeed(); // Revert on error
-    } else if (!isLiked) {
-      api.recordActivity('like', profile.id, postId, postOwnerId);
     }
   }, [profile, fetchFeed]);
 
@@ -69,8 +67,6 @@ export const useSocial = (profile: UserProfile | null) => {
     if (error) {
       showErrorToast('Could not update follow status.');
       fetchFeed(); // Revert on error
-    } else if (!isFollowed) {
-      api.recordActivity('follow', profile.id, userId, userId);
     }
   }, [profile, fetchFeed]);
 
@@ -80,7 +76,6 @@ export const useSocial = (profile: UserProfile | null) => {
     const { data, error } = await api.createPost(profile.id, rollId, caption, coverUrl);
     if (error) showErrorToast(error.message);
     else {
-      api.recordActivity('post', profile.id, data.id, profile.id);
       showSuccessToast('Post published!');
       fetchFeed();
     }
@@ -104,7 +99,6 @@ export const useSocial = (profile: UserProfile | null) => {
       showErrorToast(error.message);
       fetchFeed(); // Revert
     } else {
-      api.recordActivity('comment', profile.id, postId, postOwnerId);
       fetchFeed(); // Re-fetch to sync real comment ID
     }
   }, [profile, fetchFeed]);
