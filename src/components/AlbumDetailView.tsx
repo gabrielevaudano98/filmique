@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ArrowLeft, Edit, Image as ImageIcon, Film } from 'lucide-react';
+import { ArrowLeft, Edit, Image as ImageIcon, Film, Lock, Link2, Globe } from 'lucide-react';
 import ManageRollsModal from './ManageRollsModal';
 import { Roll } from '../types';
 import RollListItem from './RollListItem';
@@ -28,6 +28,14 @@ const AlbumDetailView: React.FC = () => {
   const rolls = selectedAlbum.rolls || [];
   const photoCount = rolls.reduce((sum, roll) => sum + (roll.shots_used || 0), 0);
 
+  const visibilityInfo = {
+    private: { icon: Lock, label: 'Private', color: 'text-red-400' },
+    unlisted: { icon: Link2, label: 'Unlisted', color: 'text-yellow-400' },
+    public: { icon: Globe, label: 'Public', color: 'text-green-400' },
+  };
+  const info = visibilityInfo[selectedAlbum.type] || visibilityInfo.private;
+  const Icon = info.icon;
+
   return (
     <div className="flex flex-col w-full">
       <div className="flex items-center justify-between mb-6">
@@ -42,7 +50,13 @@ const AlbumDetailView: React.FC = () => {
       </div>
       
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-white">{selectedAlbum.title}</h2>
+        <div className="flex items-center gap-3 mb-2">
+          <h2 className="text-3xl font-bold text-white">{selectedAlbum.title}</h2>
+          <span className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-full bg-neutral-700/50 ${info.color}`}>
+            <Icon className="w-4 h-4" />
+            {info.label}
+          </span>
+        </div>
         <div className="text-gray-400 mt-2 flex items-center space-x-4">
           <span className="flex items-center space-x-1.5"><Film className="w-4 h-4" /><span>{rolls.length} Rolls</span></span>
           <span className="flex items-center space-x-1.5"><ImageIcon className="w-4 h-4" /><span>{photoCount} Photos</span></span>

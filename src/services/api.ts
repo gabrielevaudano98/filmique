@@ -4,7 +4,7 @@ import { applyFilter } from '../utils/imageProcessor';
 import { Roll, Photo, FilmStock, UserProfile, Album } from '../types';
 import { getCache, setCache, invalidateCache } from '../utils/cache';
 
-export const POST_SELECT_QUERY = '*, cover_photo_url, profiles!posts_user_id_fkey(username, avatar_url, level, id), rolls!posts_roll_id_fkey(title, film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))';
+export const POST_SELECT_QUERY = '*, cover_photo_url, profiles!posts_user_id_fkey(username, avatar_url, level, id), rolls!posts_roll_id_fkey(title, film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url)), albums(*)';
 
 // Auth
 export const getSession = () => supabase.auth.getSession();
@@ -128,8 +128,8 @@ export const unfollowUser = async (followerId: string, followingId: string) => {
   if (!result.error) invalidateCache('feed');
   return result;
 };
-export const createPost = async (userId: string, rollId: string, caption: string, coverUrl: string | null) => {
-  const result = await supabase.from('posts').insert({ user_id: userId, roll_id: rollId, caption, cover_photo_url: coverUrl }).select(POST_SELECT_QUERY).single();
+export const createPost = async (userId: string, rollId: string, caption: string, coverUrl: string | null, albumId: string | null) => {
+  const result = await supabase.from('posts').insert({ user_id: userId, roll_id: rollId, caption, cover_photo_url: coverUrl, album_id: albumId }).select(POST_SELECT_QUERY).single();
   if (!result.error) invalidateCache(['feed', `rolls-${userId}`]);
   return result;
 };
@@ -159,8 +159,8 @@ export const fetchAlbums = async (userId: string) => {
   return { data, error };
 };
 export const fetchAlbumDetails = (albumId: string) => supabase.from('albums').select('*, rolls(*, photos(*))').eq('id', albumId).single();
-export const createAlbum = async (userId: string, title: string) => {
-  const result = await supabase.from('albums').insert({ user_id: userId, title }).select().single();
+export const createAlbum = async (userId: string, title: string, type: 'private' | 'unlisted' | 'public') => {
+  const result = await supabase.from('albums').insert({ user_id: userId, title, type }).select().single();
   if (!result.error) invalidateCache(`albums-${userId}`);
   return result;
 };

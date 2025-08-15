@@ -74,10 +74,10 @@ export const useSocial = (profile: UserProfile | null) => {
     }
   }, [profile, fetchFeed]);
 
-  const createPost = useCallback(async (rollId: string, caption: string, coverUrl: string | null) => {
+  const createPost = useCallback(async (rollId: string, caption: string, coverUrl: string | null, albumId: string | null) => {
     if (!profile) return;
     const toastId = showLoadingToast('Publishing post...');
-    const { data, error } = await api.createPost(profile.id, rollId, caption, coverUrl);
+    const { data, error } = await api.createPost(profile.id, rollId, caption, coverUrl, albumId);
     if (error) showErrorToast(error.message);
     else {
       api.recordActivity('post', profile.id, data.id, profile.id);

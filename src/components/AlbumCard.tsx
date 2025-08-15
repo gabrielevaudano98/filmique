@@ -1,6 +1,6 @@
 import React from 'react';
 import { Album } from '../types';
-import { Image as ImageIcon, Film } from 'lucide-react';
+import { Image as ImageIcon, Film, Lock, Link2, Globe } from 'lucide-react';
 
 interface AlbumCardProps {
   album: Album;
@@ -10,6 +10,14 @@ interface AlbumCardProps {
 const AlbumCard: React.FC<AlbumCardProps> = ({ album, onClick }) => {
   const photoCount = album.rolls?.reduce((sum, roll) => sum + (roll.shots_used || 0), 0) || 0;
   const rollCount = album.rolls?.length || 0;
+
+  const visibilityInfo = {
+    private: { icon: Lock, label: 'Private', color: 'text-red-400' },
+    unlisted: { icon: Link2, label: 'Unlisted', color: 'text-yellow-400' },
+    public: { icon: Globe, label: 'Public', color: 'text-green-400' },
+  };
+  const info = visibilityInfo[album.type] || visibilityInfo.private;
+  const Icon = info.icon;
 
   return (
     <button
@@ -26,6 +34,12 @@ const AlbumCard: React.FC<AlbumCardProps> = ({ album, onClick }) => {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
       </div>
+      
+      <div className="absolute top-3 right-3 bg-gray-900/50 backdrop-blur-sm rounded-full px-2 py-1 text-xs flex items-center gap-1.5 ${info.color}">
+        <Icon className="w-3 h-3" />
+        <span className="font-bold">{info.label}</span>
+      </div>
+
       <div className="relative z-10">
         <h3 className="font-bold text-lg text-white leading-tight">{album.title}</h3>
         <div className="flex items-center space-x-3 text-xs text-gray-300 mt-1">

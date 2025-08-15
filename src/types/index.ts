@@ -100,6 +100,8 @@ export interface Post {
   comments: Comment[];
   isLiked?: boolean;
   isFollowed?: boolean;
+  album_id?: string | null;
+  albums?: Album | null;
 }
 
 export interface Album {
@@ -107,7 +109,7 @@ export interface Album {
   user_id: string;
   title: string;
   cover_image_url: string | null;
-  type: 'personal' | 'shared' | 'public';
+  type: 'private' | 'unlisted' | 'public';
   created_at: string;
   rolls?: Roll[];
   photoCount?: number;
@@ -188,7 +190,7 @@ export interface AppContextType {
   selectedAlbum: Album | null;
   setSelectedAlbum: (a: Album | null) => void;
   selectAlbum: (albumId: string) => Promise<void>;
-  createAlbum: (title: string) => Promise<void>;
+  createAlbum: (title: string, type: 'private' | 'unlisted' | 'public') => Promise<void>;
   addRollsToAlbum: (albumId: string, rollIds: string[]) => Promise<void>;
   removeRollFromAlbum: (rollId: string) => Promise<void>;
   refetchAlbums: () => Promise<void>;
@@ -196,7 +198,7 @@ export interface AppContextType {
   updateRollTitle: (rollId: string, title: string) => Promise<boolean>;
   handleLike: (postId: string, postOwnerId: string, isLiked?: boolean) => Promise<void>;
   handleFollow: (userId: string, isFollowed?: boolean) => Promise<void>;
-  createPost: (rollId: string, caption: string, coverPhotoUrl: string | null) => Promise<void>;
+  createPost: (rollId: string, caption: string, coverPhotoUrl: string | null, albumId: string | null) => Promise<void>;
   addComment: (postId: string, postOwnerId: string, content: string) => Promise<void>;
   deleteComment: (commentId: string) => Promise<void>;
   searchUsers: (query: string) => Promise<UserProfile[] | null>;

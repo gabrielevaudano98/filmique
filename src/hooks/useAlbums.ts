@@ -20,9 +20,9 @@ export const useAlbums = (profile: UserProfile | null) => {
     }
   }, [profile]);
 
-  const createAlbum = useCallback(async (title: string) => {
+  const createAlbum = useCallback(async (title: string, type: 'private' | 'unlisted' | 'public') => {
     if (!profile) return;
-    const { error } = await api.createAlbum(profile.id, title);
+    const { error } = await api.createAlbum(profile.id, title, type);
     if (error) showErrorToast('Failed to create album.');
     else refetchAlbums();
   }, [profile, refetchAlbums]);

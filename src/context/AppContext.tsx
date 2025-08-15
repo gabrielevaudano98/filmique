@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
-import { AppContextType, FilmStock, Roll } from '../types';
+import { AppContextType, FilmStock, Roll, Album } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileData } from '../hooks/useProfileData';
 import { useRollsAndPhotos } from '../hooks/useRollsAndPhotos';
@@ -45,12 +45,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [auth.session]);
 
+  const createAlbumWithRefresh: AppContextType['createAlbum'] = async (title, type) => {
+    await albumsData.createAlbum(title, type);
+    await albumsData.refetchAlbums();
+  };
+
+  const createPostWithRefresh: AppContextType['createPost'] = async (rollId, caption, coverUrl, albumId) => {
+    await social.createPost(rollId, caption, coverUrl, albumId);
+    await social.fetchFeed();
+  };
+
   const value = useMemo(() => ({
     ...auth,
     ...profileData,
     ...rollsAndPhotos,
     ...social,
     ...albumsData,
+    createAlbum: createAlbumWithRefresh,
+    createPost: createPostWithRefresh,
     filmStocks,
     currentView,
     setCurrentView,
