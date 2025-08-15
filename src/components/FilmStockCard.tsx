@@ -1,6 +1,6 @@
 import React from 'react';
 import { FilmStock } from '../types';
-import { Check, Info, Lock } from 'lucide-react';
+import { Check, Info, Lock, Zap } from 'lucide-react';
 import FilmCanisterIcon from './FilmCanisterIcon';
 
 interface FilmStockCardProps {
@@ -25,8 +25,8 @@ const FilmStockCard: React.FC<FilmStockCardProps> = ({ film, isSelected, onClick
       <FilmCanisterIcon filmType={film.name} imageUrl={film.roll_image_url} className="h-16 w-auto flex-shrink-0" />
       
       <div className="flex-grow">
-        <h4 className="font-bold text-base text-white">{film.name}</h4>
-        <p className="text-sm text-gray-400">{film.capacity} exposures</p>
+        <h4 className="font-medium text-base text-white">{film.name}</h4>
+        <p className="text-xs text-gray-500">{film.capacity} exposures</p>
       </div>
 
       <div className="flex items-center space-x-2">
@@ -37,9 +37,9 @@ const FilmStockCard: React.FC<FilmStockCardProps> = ({ film, isSelected, onClick
         >
           <Info className="w-5 h-5" />
         </button>
-        <div className="text-right flex-shrink-0 w-14">
-          <div className="font-bold text-white">{film.price}</div>
-          <div className="text-xs text-gray-500">credits</div>
+        <div className="flex items-center justify-end space-x-1 text-right flex-shrink-0 w-14">
+          <span className="text-sm font-semibold text-white">{film.price}</span>
+          <Zap className="w-4 h-4 text-yellow-400" />
         </div>
         {isLocked ? (
           <Lock className="w-6 h-6 text-gray-500" />
