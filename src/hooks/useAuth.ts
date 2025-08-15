@@ -4,6 +4,7 @@ import * as api from '../services/api';
 import { UserProfile } from '../types';
 import { showErrorToast, showSuccessToast } from '../utils/toasts';
 import { isNonEmptyString, isEmail } from '../utils/validators';
+import { getCache, setCache } from '../utils/cache';
 
 export const useAuth = () => {
   const [session, setSession] = useState<Session | null>(null);
@@ -18,9 +19,19 @@ export const useAuth = () => {
     setSession(currentSession);
 
     if (currentSession?.user) {
+      const cacheKey = `profile-${currentSession.user.id}`;
+      const cachedProfile = getCache<UserProfile>(cacheKey);
+      if (cachedProfile) {
+        setProfile(cachedProfile);
+      }
+
       const { data: profileData, error } = await api.getProfile(currentSession.user.id);
-      if (error) console.error('refreshProfile: failed to fetch profile', error);
-      else setProfile(profileData as UserProfile);
+      if (error) {
+        console.error('refreshProfile: failed to fetch profile', error);
+      } else if (profileData) {
+        setCache(cacheKey, profileData as UserProfile);
+        setProfile(profileData as UserProfile);
+      }
     } else {
       setProfile(null);
     }
