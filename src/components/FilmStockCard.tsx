@@ -1,6 +1,6 @@
 import React from 'react';
 import { FilmStock } from '../types';
-import { Check, Info, Lock, Zap } from 'lucide-react';
+import { Info, Lock, Zap } from 'lucide-react';
 import FilmCanisterIcon from './FilmCanisterIcon';
 
 interface FilmStockCardProps {
@@ -17,9 +17,15 @@ const FilmStockCard: React.FC<FilmStockCardProps> = ({ film, isSelected, onClick
     <button
       onClick={onClick}
       disabled={isLocked}
-      className={`w-full p-3 rounded-xl text-left transition-colors duration-200 flex items-center gap-4
-        ${isSelected ? 'bg-brand-amber-start/10' : 'bg-transparent hover:bg-neutral-700/50'}
-        ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+      className={`w-full p-3 rounded-xl text-left transition-all duration-200 flex items-center gap-4 border-2
+        ${isSelected 
+          ? 'border-brand-amber-start bg-brand-amber-start/10 shadow-lg shadow-brand-amber-start/10' 
+          : 'border-transparent'
+        }
+        ${isLocked 
+          ? 'opacity-50 cursor-not-allowed' 
+          : 'cursor-pointer hover:bg-neutral-700/50'
+        }
       `}
     >
       <FilmCanisterIcon filmType={film.name} imageUrl={film.roll_image_url} className="h-16 w-auto flex-shrink-0" />
@@ -38,18 +44,15 @@ const FilmStockCard: React.FC<FilmStockCardProps> = ({ film, isSelected, onClick
           <Info className="w-5 h-5" />
         </button>
         <div className="flex items-center justify-end space-x-1 text-right flex-shrink-0 w-14">
-          <span className="text-sm font-semibold text-white">{film.price}</span>
-          <Zap className="w-4 h-4 text-yellow-400" />
+          {isLocked ? (
+            <Lock className="w-5 h-5 text-gray-500" />
+          ) : (
+            <>
+              <span className="text-sm font-semibold text-white">{film.price}</span>
+              <Zap className="w-4 h-4 text-yellow-400" />
+            </>
+          )}
         </div>
-        {isLocked ? (
-          <Lock className="w-6 h-6 text-gray-500" />
-        ) : isSelected ? (
-          <div className="w-6 h-6 rounded-full bg-brand-amber-start flex items-center justify-center">
-            <Check className="w-4 h-4 text-gray-900" />
-          </div>
-        ) : (
-          <div className="w-6 h-6 rounded-full border-2 border-gray-600"></div>
-        )}
       </div>
     </button>
   );
