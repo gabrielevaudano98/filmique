@@ -169,6 +169,7 @@ export interface AppContextType {
   filmStocks: FilmStock[];
   startNewRoll: (film: FilmStock) => Promise<void>;
   takePhoto: (imageBlob: Blob, metadata: any) => Promise<void>;
+  isSavingPhoto: boolean;
   setFeed: React.Dispatch<React.SetStateAction<Post[]>>;
   refreshProfile: () => Promise<void>;
   authStep: 'login' | 'otp';

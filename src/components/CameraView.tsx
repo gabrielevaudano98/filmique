@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { CameraView as NativeCameraView } from 'capacitor-camera-view';
-import { RefreshCw, Film, Lock, Camera, ArrowLeft } from 'lucide-react';
+import { RefreshCw, Film, Lock, Camera, ArrowLeft, Loader } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
 import RangeSelector from './RangeSelector';
@@ -25,6 +25,7 @@ const CameraView: React.FC = () => {
     setShowFilmModal,
     takePhoto,
     setCurrentView,
+    isSavingPhoto,
   } = useAppContext();
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -352,9 +353,14 @@ const CameraView: React.FC = () => {
                   {!isNative && <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-amber-400 font-bold' : 'text-white'}>PRO</button>}
                 </div>
                 <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
-                  <button onClick={handleTakePhoto} disabled={activeRoll?.is_completed} aria-label="Take Photo" className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200">
-                    {activeRoll?.is_completed && <Lock className="w-8 h-8 text-gray-500" />}
-                    {!activeRoll?.is_completed && <Camera className="w-6 h-6 text-gray-900" />}
+                  <button onClick={handleTakePhoto} disabled={activeRoll?.is_completed || isSavingPhoto} aria-label="Take Photo" className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200">
+                    {isSavingPhoto ? (
+                      <Loader className="w-8 h-8 text-gray-500 animate-spin" />
+                    ) : activeRoll?.is_completed ? (
+                      <Lock className="w-8 h-8 text-gray-500" />
+                    ) : (
+                      <Camera className="w-6 h-6 text-gray-900" />
+                    )}
                   </button>
                 </div>
               </div>

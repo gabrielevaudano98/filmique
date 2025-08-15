@@ -3,7 +3,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import * as api from '../services/api';
 import { UserProfile, Roll, Photo, FilmStock } from '../types';
-import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
+import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast, showWarningToast } from '../utils/toasts';
 import { filenameFromUrl } from '../utils/storage';
 
 export const useRollsAndPhotos = (
@@ -16,6 +16,7 @@ export const useRollsAndPhotos = (
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
   const [rollToName, setRollToName] = useState<Roll | null>(null);
   const [rollToConfirm, setRollToConfirm] = useState<Roll | null>(null);
+  const [isSavingPhoto, setIsSavingPhoto] = useState(false);
 
   const refetchRolls = useCallback(async () => {
     if (!profile) return;
@@ -87,7 +88,14 @@ export const useRollsAndPhotos = (
   }, [profile, activeRoll, refreshProfile]);
 
   const takePhoto = useCallback(async (imageBlob: Blob, metadata: any) => {
-    if (!profile || !activeRoll) return;
+    if (!profile || !activeRoll || isSavingPhoto) return;
+
+    if (activeRoll.shots_used >= activeRoll.capacity) {
+      showWarningToast("This film roll is already full.");
+      return;
+    }
+
+    setIsSavingPhoto(true);
     const filePath = `${profile.id}/${activeRoll.id}/${Date.now()}.jpeg`;
     try {
       await api.uploadPhotoToStorage(filePath, imageBlob);
@@ -110,8 +118,10 @@ export const useRollsAndPhotos = (
       }
     } catch (error) {
       showErrorToast('Failed to save photo.');
+    } finally {
+      setIsSavingPhoto(false);
     }
-  }, [profile, activeRoll]);
+  }, [profile, activeRoll, isSavingPhoto]);
 
   const sendToDarkroom = async (roll: Roll, title: string) => {
     const completedAt = new Date().toISOString();
@@ -240,6 +250,7 @@ export const useRollsAndPhotos = (
     setRollToName,
     rollToConfirm,
     setRollToConfirm,
+    isSavingPhoto,
     startNewRoll,
     takePhoto,
     developRoll,
