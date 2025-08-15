@@ -5,6 +5,7 @@ import { Trash2, FolderPlus, Clock, FolderMinus } from 'lucide-react';
 import NegativePhoto from './NegativePhoto';
 import FilmCanisterIcon from './FilmCanisterIcon';
 import { useAppContext } from '../context/AppContext';
+import Image from './Image';
 
 interface RollListItemProps {
   roll: Roll;
@@ -171,7 +172,7 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
             <div className="flex space-x-2">
               {roll.photos && roll.photos.length > 0 ? (
                 roll.photos.map(photo => (
-                  <img
+                  <Image
                     key={photo.id}
                     src={`${photo.thumbnail_url}${cacheBuster}`}
                     alt="roll photo"

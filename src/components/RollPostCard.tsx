@@ -3,6 +3,7 @@ import { Heart, MessageCircle, Bookmark } from 'lucide-react';
 import { Post } from '../context/AppContext';
 import { useAppContext } from '../context/AppContext';
 import AvatarRing from './AvatarRing';
+import Image from './Image';
 
 interface RollPostCardProps {
   post: Post;
@@ -24,9 +25,7 @@ const RollPostCard: React.FC<RollPostCardProps> = ({ post, onClick }) => {
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}
     >
-      {coverPhotoUrl && (
-        <img src={`${coverPhotoUrl}${cacheBuster}`} alt={post.rolls.title || 'Roll cover'} className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" />
-      )}
+      <Image src={coverPhotoUrl ? `${coverPhotoUrl}${cacheBuster}` : undefined} alt={post.rolls.title || 'Roll cover'} className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent"></div>
 

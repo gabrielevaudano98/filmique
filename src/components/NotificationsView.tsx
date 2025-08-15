@@ -3,6 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import { Bell, Heart, MessageCircle, UserPlus, Award, ArrowLeft } from 'lucide-react';
 import { formatDistanceToNow } from '../utils/time';
 import { Notification } from '../types';
+import Image from './Image';
 
 const NotificationIcon = ({ type }: { type: string }) => {
   const iconProps = { className: "w-6 h-6 text-white" };
@@ -59,15 +60,13 @@ const NotificationItem: React.FC<{ notification: Notification }> = ({ notificati
         <p className="text-gray-300 text-sm leading-relaxed">{getNotificationText(notification)}</p>
         <p className="text-xs text-gray-500 mt-1">{formatDistanceToNow(notification.created_at)}</p>
       </div>
-      {notification.posts?.rolls?.photos?.[0]?.thumbnail_url && (
-        <img 
-          src={notification.posts.rolls.photos[0].thumbnail_url} 
-          alt="Post thumbnail" 
-          className="w-14 h-14 rounded-lg object-cover flex-shrink-0 border-2 border-neutral-700" 
-          loading="lazy" 
-          decoding="async" 
-        />
-      )}
+      <Image 
+        src={notification.posts?.rolls?.photos?.[0]?.thumbnail_url} 
+        alt="Post thumbnail" 
+        className="w-14 h-14 rounded-lg object-cover flex-shrink-0 border-2 border-neutral-700 bg-neutral-700" 
+        loading="lazy" 
+        decoding="async" 
+      />
     </div>
   );
 };

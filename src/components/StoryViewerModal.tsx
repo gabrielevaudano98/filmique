@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Heart, MessageCircle, Trash2 } from 'lucide-react';
 import { Post } from '../context/AppContext';
 import { useAppContext } from '../context/AppContext';
+import Image from './Image';
 
 const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post, onClose }) => {
   const { profile, handleLike, addComment, deleteComment } = useAppContext();
@@ -104,7 +105,7 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
         {/* Header */}
         <div className="absolute top-6 left-3 right-3 z-20 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <img src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-gray-700" />
+            <Image src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-gray-700" />
             <span className="text-white font-bold text-sm">{post.profiles.username}</span>
           </div>
           <button onClick={onClose} className="p-2 text-white/80 hover:text-white">
@@ -115,17 +116,15 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
         {/* Content Area (Image/Cover) */}
         <div className={`relative flex-shrink-0 transition-all duration-300 ease-in-out ${showComments ? 'h-[60%]' : 'flex-1'}`}>
           {isCover ? (
-            coverPhotoUrl && (
-              <>
-                <img src={`${coverPhotoUrl}${cacheBuster}`} alt="Cover" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
-                  <h2 className="text-4xl font-bold leading-tight">{post.rolls.title}</h2>
-                  <p className="mt-2 text-gray-200 line-clamp-3">{post.caption}</p>
-                </div>
-              </>
-            )
+            <>
+              <Image src={coverPhotoUrl ? `${coverPhotoUrl}${cacheBuster}` : undefined} alt="Cover" className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+                <h2 className="text-4xl font-bold leading-tight">{post.rolls.title}</h2>
+                <p className="mt-2 text-gray-200 line-clamp-3">{post.caption}</p>
+              </div>
+            </>
           ) : (
-            currentPhoto && <img src={`${currentPhoto.url}${cacheBuster}`} alt={`Photo ${currentIndex + 1}`} className="w-full h-full object-contain" />
+            currentPhoto && <Image src={`${currentPhoto.url}${cacheBuster}`} alt={`Photo ${currentIndex + 1}`} className="w-full h-full object-contain" />
           )}
 
           {/* Navigation Overlays */}
@@ -164,7 +163,7 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
                 {post.comments.length > 0 ? (
                   post.comments.map(comment => (
                     <div key={comment.id} className="flex items-start space-x-3 group">
-                      <img src={comment.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${comment.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-gray-700 flex-shrink-0" />
+                      <Image src={comment.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${comment.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-gray-700 flex-shrink-0" />
                       <p className="text-sm text-gray-300 flex-grow">
                         <span className="font-bold text-white mr-2">{comment.profiles.username}</span>
                         {comment.content}
@@ -185,7 +184,7 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
                 )}
               </div>
               <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-4 border-t border-gray-700/50 flex-shrink-0">
-                <img src={profile?.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile?.username}`} alt="Your avatar" className="w-8 h-8 rounded-full bg-gray-700" />
+                <Image src={profile?.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile?.username}`} alt="Your avatar" className="w-8 h-8 rounded-full bg-gray-700" />
                 <input
                   type="text"
                   value={commentText}

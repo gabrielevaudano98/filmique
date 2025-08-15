@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Heart, MessageCircle, Clock, Camera, UserPlus, Check, Send, Shield, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppContext, Post } from '../context/AppContext';
 import { formatDistanceToNow } from '../utils/time';
+import Image from './Image';
 
 interface PostViewProps {
   post: Post;
@@ -56,7 +57,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
       {/* Post Header */}
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <img src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-10 h-10 rounded-full bg-gray-700 border-2 border-gray-600" loading="lazy" decoding="async" />
+          <Image src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-10 h-10 rounded-full bg-gray-700 border-2 border-gray-600" loading="lazy" decoding="async" />
           <div>
             <h3 className="font-bold text-white">{post.profiles.username}</h3>
             <p className="text-gray-400 text-xs">{post.rolls.film_type}</p>
@@ -87,7 +88,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
           >
             {post.rolls.photos.map((photo: any, index: number) => (
               <div key={photo.id} className="w-full h-full flex-shrink-0 snap-center flex items-center justify-center">
-                <img src={`${photo.url}${cacheBuster}`} alt="Post photo" className="w-auto h-auto max-w-full max-h-full object-contain" loading={index > 0 ? 'lazy' : 'eager'} decoding="async" />
+                <Image src={`${photo.url}${cacheBuster}`} alt="Post photo" className="w-auto h-auto max-w-full max-h-full object-contain" loading={index > 0 ? 'lazy' : 'eager'} decoding="async" />
               </div>
             ))}
           </div>
@@ -169,7 +170,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
 
         {/* Comment Form */}
         <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-2 border-t border-gray-700/50">
-          <img src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`} alt="Your avatar" className="w-8 h-8 rounded-full bg-gray-700" loading="lazy" decoding="async" />
+          <Image src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`} alt="Your avatar" className="w-8 h-8 rounded-full bg-gray-700" loading="lazy" decoding="async" />
           <input
             type="text"
             value={commentText}

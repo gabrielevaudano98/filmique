@@ -2,6 +2,7 @@ import React from 'react';
 import { UserPlus, Check } from 'lucide-react';
 import { UserProfile } from '../context/AppContext';
 import { useAppContext } from '../context/AppContext';
+import Image from './Image';
 
 interface UserSearchResultCardProps {
   user: UserProfile;
@@ -14,7 +15,7 @@ const UserSearchResultCard: React.FC<UserSearchResultCardProps> = ({ user, isFol
   return (
     <div className="flex items-center justify-between p-4 bg-gray-800 rounded-xl">
       <div className="flex items-center space-x-4">
-        <img
+        <Image
           src={user.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${user.username}`}
           alt={user.username}
           className="w-12 h-12 rounded-full bg-gray-700 object-cover"

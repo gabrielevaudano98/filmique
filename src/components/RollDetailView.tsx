@@ -6,6 +6,7 @@ import PhotoDetailModal from './PhotoDetailModal';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import { Photo } from '../context/AppContext';
 import PhotoInfoModal from './PhotoInfoModal';
+import Image from './Image';
 
 const RollDetailView: React.FC = () => {
   const { selectedRoll, setCurrentView, setSelectedRoll, downloadRoll, deleteRoll } = useAppContext();
@@ -68,7 +69,7 @@ const RollDetailView: React.FC = () => {
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1 sm:gap-2">
           {selectedRoll.photos.map(photo => (
             <div key={photo.id} className="aspect-square bg-gray-800 rounded-lg overflow-hidden group cursor-pointer" onClick={() => setPhotoToView(photo)}>
-              <img 
+              <Image 
                 src={`${photo.thumbnail_url}${cacheBuster}`} 
                 alt="User Photo" 
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 

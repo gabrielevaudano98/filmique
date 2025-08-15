@@ -1,6 +1,7 @@
 import React from 'react';
 import { Post } from '../types';
 import { Heart, MessageCircle } from 'lucide-react';
+import Image from './Image';
 
 interface SnapshotCardProps {
   post: Post;
@@ -16,17 +17,13 @@ const SnapshotCard: React.FC<SnapshotCardProps> = ({ post, onClick }) => {
       onClick={onClick}
       className="w-full aspect-square bg-neutral-800 rounded-lg overflow-hidden group relative"
     >
-      {coverPhotoUrl ? (
-        <img
-          src={`${coverPhotoUrl}${cacheBuster}`}
-          alt={post.caption || 'Snapshot'}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
-          decoding="async"
-        />
-      ) : (
-        <div className="w-full h-full bg-neutral-700"></div>
-      )}
+      <Image
+        src={coverPhotoUrl ? `${coverPhotoUrl}${cacheBuster}` : undefined}
+        alt={post.caption || 'Snapshot'}
+        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        loading="lazy"
+        decoding="async"
+      />
       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
         <div className="flex items-center space-x-4 text-white">
           <div className="flex items-center space-x-1">

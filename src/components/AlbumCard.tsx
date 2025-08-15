@@ -1,6 +1,7 @@
 import React from 'react';
 import { Album } from '../types';
 import { Image as ImageIcon, Film, Lock, Link2, Globe } from 'lucide-react';
+import Image from './Image';
 
 interface AlbumCardProps {
   album: Album;
@@ -25,13 +26,11 @@ const AlbumCard: React.FC<AlbumCardProps> = ({ album, onClick }) => {
       className="w-full aspect-[4/5] bg-neutral-800 rounded-xl overflow-hidden group relative text-left flex flex-col justify-end p-4 border border-neutral-700/50 hover:border-brand-amber-start/50 transition-all"
     >
       <div className="absolute inset-0 bg-neutral-700">
-        {album.cover_image_url && (
-          <img
-            src={album.cover_image_url}
-            alt={album.title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
-        )}
+        <Image
+          src={album.cover_image_url}
+          alt={album.title}
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
       </div>
       

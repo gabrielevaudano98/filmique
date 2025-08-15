@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from './Image';
 
 interface FilmCanisterIconProps {
   filmType: string;
@@ -8,7 +9,7 @@ interface FilmCanisterIconProps {
 
 const FilmCanisterIcon: React.FC<FilmCanisterIconProps> = ({ filmType, className, imageUrl }) => {
   if (imageUrl) {
-    return <img src={imageUrl} alt={`${filmType} canister`} className={`${className} object-contain bg-transparent`} />;
+    return <Image src={imageUrl} alt={`${filmType} canister`} className={`${className} object-contain bg-transparent`} />;
   }
 
   const filmBrand = filmType.split(' ')[0] || 'Filmique';

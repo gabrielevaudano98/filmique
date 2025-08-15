@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAppContext } from '../context/AppContext';
 import { User, Shield, Image as ImageIcon, ArrowRight, Check } from 'lucide-react';
+import Image from './Image';
 
 const OnboardingView: React.FC = () => {
   const { profile, refreshProfile } = useAppContext();
@@ -95,7 +96,7 @@ const OnboardingView: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
                 <label htmlFor="avatar-upload" className="cursor-pointer">
-                  <img src={avatarPreview || `https://api.dicebear.com/8.x/initials/svg?seed=${profile?.username}`} alt="Avatar" className="w-20 h-20 rounded-full bg-gray-700 object-cover" />
+                  <Image src={avatarPreview || `https://api.dicebear.com/8.x/initials/svg?seed=${profile?.username}`} alt="Avatar" className="w-20 h-20 rounded-full bg-gray-700 object-cover" />
                   <input id="avatar-upload" type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                 </label>
                 <div className="flex-grow space-y-4">

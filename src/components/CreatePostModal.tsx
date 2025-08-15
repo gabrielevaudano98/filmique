@@ -3,6 +3,7 @@ import { X, ArrowLeft, Send, Check, BookCopy, PlusCircle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../context/AppContext';
 import CreateAlbumModal from './CreateAlbumModal';
+import Image from './Image';
 
 interface CreatePostModalProps {
   onClose: () => void;
@@ -74,7 +75,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                         onClick={() => handleSelectRoll(roll)}
                         className="w-full flex items-center p-3 rounded-lg text-left transition-colors bg-gray-700/50 hover:bg-gray-700"
                       >
-                        <img src={`${thumbnailUrl}${cacheBuster}`} alt="Roll thumbnail" className="w-16 h-16 rounded-md object-cover bg-gray-600 mr-4" />
+                        <Image src={`${thumbnailUrl}${cacheBuster}`} alt="Roll thumbnail" className="w-16 h-16 rounded-md object-cover bg-gray-600 mr-4" />
                         <div>
                           <p className="font-semibold text-white">{roll.title || roll.film_type}</p>
                           <p className="text-xs text-gray-400">{roll.shots_used} photos • Developed {new Date(roll.developed_at!).toLocaleDateString()}</p>
@@ -102,7 +103,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                           onClick={() => setSelectedCoverUrl(photo.url)}
                           className={`relative aspect-square w-full rounded-md overflow-hidden border-2 transition-all ${isSelected ? 'border-amber-400' : 'border-transparent'}`}
                         >
-                          <img src={`${photo.thumbnail_url}${cacheBuster}`} alt="Photo preview" className="w-full h-full object-cover bg-gray-700" />
+                          <Image src={`${photo.thumbnail_url}${cacheBuster}`} alt="Photo preview" className="w-full h-full object-cover bg-gray-700" />
                           {isSelected && (
                             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                               <Check className="w-6 h-6 text-white" />
