@@ -14,9 +14,15 @@ function withDeduplication<T extends (...args: any[]) => Promise<any>>(fn: T): T
     if (inFlightRequests.has(key)) {
       return inFlightRequests.get(key);
     }
-    const promise = fn(...args).finally(() => {
-      inFlightRequests.delete(key);
-    });
+
+    const promise = (async () => {
+      try {
+        return await fn(...args);
+      } finally {
+        inFlightRequests.delete(key);
+      }
+    })();
+    
     inFlightRequests.set(key, promise);
     return promise;
   }) as T;
