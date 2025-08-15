@@ -55,7 +55,7 @@ const NotificationsView: React.FC = () => {
                 <p className="text-xs text-gray-500 mt-1">{new Date(n.created_at).toLocaleString()}</p>
               </div>
               {n.posts?.rolls?.photos?.[0]?.thumbnail_url && (
-                <img src={n.posts.rolls.photos[0].thumbnail_url} alt="Post thumbnail" className="w-12 h-12 rounded-md object-cover flex-shrink-0" />
+                <img src={n.posts.rolls.photos[0].thumbnail_url} alt="Post thumbnail" className="w-12 h-12 rounded-md object-cover flex-shrink-0" loading="lazy" decoding="async" />
               )}
             </div>
           ))}

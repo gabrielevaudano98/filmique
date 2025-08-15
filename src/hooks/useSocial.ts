@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as api from '../services/api';
-import { UserProfile, Post } from '../types';
+import { UserProfile, Post, Comment } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
 
 export const useSocial = (profile: UserProfile | null) => {
@@ -47,18 +47,38 @@ export const useSocial = (profile: UserProfile | null) => {
 
   const handleLike = useCallback(async (postId: string, postOwnerId: string, isLiked?: boolean) => {
     if (!profile) return;
+    
+    setFeed(prevFeed => prevFeed.map(p => {
+      if (p.id === postId) {
+        const newLikes = isLiked ? p.likes.filter(l => l.user_id !== profile.id) : [...p.likes, { user_id: profile.id }];
+        return { ...p, isLiked: !isLiked, likes: newLikes };
+      }
+      return p;
+    }));
+
     const action = isLiked ? api.unlikePost(profile.id, postId) : api.likePost(profile.id, postId);
-    await action;
-    if (!isLiked) api.recordActivity('like', profile.id, postId, postOwnerId);
-    fetchFeed();
+    const { error } = await action;
+    if (error) {
+      showErrorToast('Failed to update like.');
+      fetchFeed(); // Revert on error
+    } else if (!isLiked) {
+      api.recordActivity('like', profile.id, postId, postOwnerId);
+    }
   }, [profile, fetchFeed]);
 
   const handleFollow = useCallback(async (userId: string, isFollowed?: boolean) => {
     if (!profile) return;
+
+    setFeed(prevFeed => prevFeed.map(p => p.user_id === userId ? { ...p, isFollowed: !isFollowed } : p));
+
     const action = isFollowed ? api.unfollowUser(profile.id, userId) : api.followUser(profile.id, userId);
-    await action;
-    if (!isFollowed) api.recordActivity('follow', profile.id, userId, userId);
-    fetchFeed();
+    const { error } = await action;
+    if (error) {
+      showErrorToast('Could not update follow status.');
+      fetchFeed(); // Revert on error
+    } else if (!isFollowed) {
+      api.recordActivity('follow', profile.id, userId, userId);
+    }
   }, [profile, fetchFeed]);
 
   const createPost = useCallback(async (rollId: string, caption: string, coverUrl: string | null) => {
@@ -76,20 +96,35 @@ export const useSocial = (profile: UserProfile | null) => {
 
   const addComment = useCallback(async (postId: string, postOwnerId: string, content: string) => {
     if (!profile) return;
+
+    const tempComment: Comment = {
+      id: `temp-${Date.now()}`,
+      content,
+      created_at: new Date().toISOString(),
+      user_id: profile.id,
+      profiles: { username: profile.username, avatar_url: profile.avatar_url },
+    };
+    setFeed(prevFeed => prevFeed.map(p => p.id === postId ? { ...p, comments: [...p.comments, tempComment] } : p));
+
     const { error } = await api.addComment(profile.id, postId, content);
-    if (error) showErrorToast(error.message);
-    else {
+    if (error) {
+      showErrorToast(error.message);
+      fetchFeed(); // Revert
+    } else {
       api.recordActivity('comment', profile.id, postId, postOwnerId);
-      fetchFeed();
+      fetchFeed(); // Re-fetch to sync real comment ID
     }
   }, [profile, fetchFeed]);
 
   const deleteComment = useCallback(async (commentId: string) => {
+    setFeed(prevFeed => prevFeed.map(p => ({ ...p, comments: p.comments.filter(c => c.id !== commentId) })));
+    
     const { error } = await api.deleteComment(commentId);
-    if (error) showErrorToast(error.message);
-    else {
+    if (error) {
+      showErrorToast(error.message);
+      fetchFeed(); // Revert
+    } else {
       showSuccessToast('Comment deleted');
-      fetchFeed();
     }
   }, [fetchFeed]);
 

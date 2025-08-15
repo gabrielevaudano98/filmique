@@ -138,6 +138,8 @@ const ProfileView: React.FC = () => {
                         src={post.cover_photo_url || post.rolls.photos[0]?.thumbnail_url}
                         alt="Post thumbnail"
                         className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
+                        loading="lazy"
+                        decoding="async"
                       />
                     </div>
                   ))}

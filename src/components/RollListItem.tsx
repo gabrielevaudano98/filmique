@@ -177,6 +177,8 @@ const RollListItem: React.FC<RollListItemProps> = ({ roll, onDelete, onAssignAlb
                     alt="roll photo"
                     className="h-24 w-auto rounded-sm object-cover bg-neutral-700 shrink-0"
                     draggable="false"
+                    loading="lazy"
+                    decoding="async"
                   />
                 ))
               ) : (
