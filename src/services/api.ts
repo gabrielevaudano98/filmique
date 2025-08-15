@@ -5,7 +5,7 @@ import { Roll, Photo, FilmStock, UserProfile, Album } from '../types';
 import { getCache, setCache, invalidateCache } from '../utils/cache';
 
 export const POST_SELECT_QUERY = '*, cover_photo_url, profiles!posts_user_id_fkey(username, avatar_url, level, id), rolls!posts_roll_id_fkey(title, film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))';
-const NOTIFICATION_SELECT_QUERY = '*, actors:profiles!notifications_actor_id_fkey(username, avatar_url), posts(rolls(photos(thumbnail_url)))';
+const NOTIFICATION_SELECT_QUERY = '*, actors:profiles!notifications_actor_id_fkey(username, avatar_url)';
 
 // Auth
 export const getSession = () => supabase.auth.getSession();
