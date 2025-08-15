@@ -34,7 +34,6 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
   const [searchTerm, setSearchTerm] = useState('');
   const [groupBy, setGroupBy] = useState<'type' | 'brand'>('type');
   const [sortOrder, setSortOrder] = useState<'name' | 'price'>('name');
-  const [aspectRatio, setAspectRatio] = useState('3:2');
 
   const firstUnlockedFilm = useMemo(() => 
     filmStocks.find(f => f.unlocked) || filmStocks[0]
@@ -65,7 +64,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
 
   const handleStartRoll = () => {
     if (selectedFilm && canAfford && selectedFilm.unlocked) {
-      onStartRoll(selectedFilm, aspectRatio);
+      onStartRoll(selectedFilm, '3:2');
       onClose();
     }
   };
@@ -160,19 +159,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900/80 backdrop-blur-lg space-y-4">
-          <div>
-            <label className="text-sm text-gray-300 font-semibold mb-2 block px-1">Aspect Ratio</label>
-            <SegmentedControl 
-              options={[
-                { value: '3:2', label: '3:2' },
-                { value: '4:3', label: '4:3' },
-                { value: '1:1', label: '1:1' },
-              ]} 
-              value={aspectRatio} 
-              onChange={setAspectRatio} 
-            />
-          </div>
+        <div className="p-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900/80 backdrop-blur-lg">
           <button
             onClick={handleStartRoll}
             disabled={!selectedFilm || !canAfford || !selectedFilm.unlocked}
