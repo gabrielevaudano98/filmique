@@ -1,9 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings, Edit, Loader, CheckCircle } from 'lucide-react';
+import { Settings, Edit, Loader, CheckCircle, Image as ImageIcon, Award } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useDebounce } from '../hooks/useDebounce';
 import AvatarRing from './AvatarRing';
 import AlbumCard from './AlbumCard';
+import BadgeIcon from './BadgeIcon';
+import XPBar from './XPBar';
+import SegmentedControl from './SegmentedControl';
 
 const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ value, label }) => (
   <div className="text-center">
@@ -16,6 +19,7 @@ const ProfileView: React.FC = () => {
   const { 
     profile, 
     albums,
+    userBadges,
     followersCount, 
     followingCount, 
     updateProfileDetails, 
@@ -26,6 +30,7 @@ const ProfileView: React.FC = () => {
     refetchAlbums
   } = useAppContext();
   
+  const [activeTab, setActiveTab] = useState('albums');
   const [bioText, setBioText] = useState(profile?.bio || '');
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [isSavingBio, setIsSavingBio] = useState(false);
@@ -65,10 +70,11 @@ const ProfileView: React.FC = () => {
     return <div className="text-white p-6">Loading profile...</div>;
   }
 
-  const postCount = albums.reduce((sum, album) => sum + (album.photoCount || 0), 0);
+  const photoCount = albums.reduce((sum, album) => sum + (album.photoCount || 0), 0);
 
   return (
     <div className="flex-1 flex flex-col bg-transparent text-white">
+      {/* Header Section */}
       <div className="px-4 pt-4">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold">{profile.username}</h2>
@@ -82,7 +88,7 @@ const ProfileView: React.FC = () => {
             <AvatarRing src={profile.avatar_url} size={80} onClick={() => avatarInputRef.current?.click()} />
           </div>
           <div className="flex-1 flex justify-around ml-4">
-            <HighlightStat value={postCount} label="Photos" />
+            <HighlightStat value={photoCount} label="Photos" />
             <HighlightStat value={followersCount} label="Followers" />
             <HighlightStat value={followingCount} label="Following" />
           </div>
@@ -114,28 +120,68 @@ const ProfileView: React.FC = () => {
             </div>
           )}
         </div>
+        <div className="mt-4">
+          <XPBar xp={profile.xp} level={profile.level} />
+        </div>
       </div>
 
+      {/* Tabs Section */}
       <div className="flex-grow mt-6">
-        <h3 className="px-4 text-lg font-bold mb-4">My Albums</h3>
-        {albums.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 px-4">
-            {albums.map(album => (
-              <AlbumCard 
-                key={album.id} 
-                album={album} 
-                onClick={() => {
-                  setSelectedAlbum(album);
-                  setCurrentView('albumDetail');
-                }} 
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center text-gray-500 py-16">
-            <p>No albums created yet.</p>
-          </div>
-        )}
+        <div className="px-4">
+          <SegmentedControl
+            options={[
+              { label: 'Albums', value: 'albums' },
+              { label: 'Badges', value: 'badges' },
+            ]}
+            value={activeTab}
+            onChange={setActiveTab}
+          />
+        </div>
+        
+        <div className="mt-6 px-4">
+          {activeTab === 'albums' && (
+            albums.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {albums.map(album => (
+                  <AlbumCard 
+                    key={album.id} 
+                    album={album} 
+                    onClick={() => {
+                      setSelectedAlbum(album);
+                      setCurrentView('albumDetail');
+                    }} 
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-gray-500 py-16">
+                <ImageIcon className="w-12 h-12 mx-auto mb-4" />
+                <p>No albums created yet.</p>
+              </div>
+            )
+          )}
+
+          {activeTab === 'badges' && (
+            userBadges.length > 0 ? (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                {userBadges.map(userBadge => (
+                  <div key={userBadge.badges.name} className="flex flex-col items-center text-center p-2">
+                    <div className="w-16 h-16 rounded-full bg-neutral-800 flex items-center justify-center border-2 border-neutral-700">
+                      <BadgeIcon name={userBadge.badges.icon_name} className="w-8 h-8 text-amber-400" />
+                    </div>
+                    <p className="text-sm font-bold mt-2">{userBadge.badges.name}</p>
+                    <p className="text-xs text-gray-400">{userBadge.badges.description}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-gray-500 py-16">
+                <Award className="w-12 h-12 mx-auto mb-4" />
+                <p>No badges earned yet.</p>
+              </div>
+            )
+          )}
+        </div>
       </div>
     </div>
   );
