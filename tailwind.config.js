@@ -29,6 +29,10 @@ export default {
         'brand-amber-start': '#F6AE55',
         'brand-amber-mid': '#E98A43',
         'brand-amber-end': '#D46A2E',
+        
+        // New Orange Gradient
+        'brand-orange-start': '#FF9A47',
+        'brand-orange-end': '#FF7A2B',
 
         // Accent colors
         'accent-violet': '#7C6AFE',
@@ -41,7 +45,7 @@ export default {
         'glass-dark': 'rgba(6,6,8,0.64)',
 
         // Semantic
-        'brand-bg': '#060608',
+        'brand-bg': '#0E0A07',
         'brand-surface': 'rgba(28, 28, 32, 0.7)',
         'brand-border': 'rgba(65, 53, 76, 0.5)'
       },

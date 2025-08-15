@@ -9,6 +9,8 @@
   --brand-amber-start: #F6AE55;
   --brand-amber-mid: #E98A43;
   --brand-amber-end: #D46A2E;
+  --brand-orange-start: #FF9A47;
+  --brand-orange-end: #FF7A2B;
 
   --warm-900: #2b0f06;
   --warm-800: #3a190a;
@@ -17,6 +19,8 @@
   --warm-500: #a65a2b;
   --warm-400: #d78657;
   --warm-300: #f0c6ab;
+
+  --brand-bg: #0E0A07;
 
   --glass-thin: rgba(255,255,255,0.06);
   --glass-medium: rgba(255,255,255,0.10);
@@ -40,7 +44,7 @@
   }
   body {
     font-family: 'SF Pro Display', Inter, system-ui;
-    background-color: var(--warm-900);
+    background-color: var(--brand-bg);
     color: white;
     /* Prevent viewport bounce */
     position: fixed;
@@ -48,6 +52,7 @@
     height: 100%;
     overflow: hidden;
     overscroll-behavior-y: contain;
+    background-image: radial-gradient(circle at 15% 50%, rgba(255, 154, 71, 0.1) 0%, transparent 40%), radial-gradient(circle at 85% 30%, rgba(212, 106, 46, 0.1) 0%, transparent 40%);
   }
   #root {
     position: relative;

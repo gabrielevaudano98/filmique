@@ -6,8 +6,9 @@ import { isRollDeveloped } from '../utils/rollUtils';
 import CreateAlbumModal from './CreateAlbumModal';
 import SegmentedControl from './SegmentedControl';
 import CollapsibleAlbumSection from './CollapsibleAlbumSection';
-import RollOnShelf from './RollOnShelf';
 import RollListItem from './RollListItem';
+import GlassPanel from './GlassPanel';
+import RollCard from './RollCard';
 
 const RollsView: React.FC = () => {
   const { completedRolls, albums, refetchRolls, refetchAlbums } = useAppContext();
@@ -27,7 +28,7 @@ const RollsView: React.FC = () => {
     const developedOnShelf = allCompleted.filter(r => isRollDeveloped(r));
     return { 
       developingRolls: developing.sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime()), 
-      shelvedRolls: shelved.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()), 
+      shelvedRolls: shelved.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at!).getTime()), 
       developedRollsOnShelf: developedOnShelf.sort((a, b) => new Date(b.developed_at!).getTime() - new Date(a.developed_at!).getTime()) 
     };
   }, [completedRolls]);
@@ -57,16 +58,9 @@ const RollsView: React.FC = () => {
     </div>
   );
 
-  const ShelfEmptyState = () => (
-    <div className="text-center py-24 text-neutral-500">
-      <div className="w-full h-1 bg-neutral-800 rounded-full mb-4"></div>
-      <h3 className="text-xl font-bold text-white">Shelf is Empty</h3>
-      <p className="mt-2">Finish a roll of film and it will appear here.</p>
-    </div>
-  );
-
   return (
-    <div className="flex flex-col w-full space-y-6">
+    <div className="flex flex-col w-full space-y-8">
+      <h1 className="text-4xl font-semibold text-white px-2">Shelf</h1>
       <SegmentedControl
         options={[
           { label: 'Shelf', value: 'shelf' },
@@ -78,6 +72,29 @@ const RollsView: React.FC = () => {
       />
 
       <div key={activeSection} className="animate-fade-in">
+        {activeSection === 'shelf' && (
+          <div className="space-y-8">
+            <GlassPanel title="Undeveloped" tint="warm">
+              {shelvedRolls.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {shelvedRolls.map(roll => <RollCard key={roll.id} roll={roll} isDeveloped={false} />)}
+                </div>
+              ) : (
+                <p className="text-center text-neutral-400 py-8">Finish a roll of film and it will appear here.</p>
+              )}
+            </GlassPanel>
+            <GlassPanel title="Developed" tint="cool">
+              {developedRollsOnShelf.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {developedRollsOnShelf.map(roll => <RollCard key={roll.id} roll={roll} isDeveloped={true} />)}
+                </div>
+              ) : (
+                <p className="text-center text-neutral-400 py-8">No developed rolls on your shelf yet.</p>
+              )}
+            </GlassPanel>
+          </div>
+        )}
+
         {activeSection === 'darkroom' && (
           <div>
             {developingRolls.length > 0 ? (
@@ -94,33 +111,6 @@ const RollsView: React.FC = () => {
               </div>
             ) : (
               <DarkroomEmptyState />
-            )}
-          </div>
-        )}
-
-        {activeSection === 'shelf' && (
-          <div className="space-y-8">
-            {shelvedRolls.length === 0 && developedRollsOnShelf.length === 0 ? (
-              <ShelfEmptyState />
-            ) : (
-              <>
-                {shelvedRolls.length > 0 && (
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-4">Undeveloped</h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                      {shelvedRolls.map(roll => <RollOnShelf key={roll.id} roll={roll} />)}
-                    </div>
-                  </div>
-                )}
-                {developedRollsOnShelf.length > 0 && (
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-4">Developed</h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                      {developedRollsOnShelf.map(roll => <RollOnShelf key={roll.id} roll={roll} />)}
-                    </div>
-                  </div>
-                )}
-              </>
             )}
           </div>
         )}
