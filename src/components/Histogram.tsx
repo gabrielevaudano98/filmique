@@ -127,8 +127,13 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset, precomputedData
 
       const { r, g, b, l } = histogramData;
       
+      // Use the 99th percentile for the max value to prevent outlier pixels from squashing the graph
+      const allValues = [...r, ...g, ...b, ...l].filter(v => v > 0);
+      const sortedValues = allValues.sort((a, b) => a - b);
+      const percentileIndex = Math.floor(sortedValues.length * 0.99);
+      const maxVal = sortedValues[percentileIndex] || Math.max(...l) || 1;
+
       const drawChannel = (data: number[], color: string, lineWidth: number) => {
-        const maxVal = Math.max(...r, ...g, ...b, ...l);
         if (maxVal === 0) return;
 
         ctx.beginPath();
@@ -136,7 +141,7 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset, precomputedData
         
         data.forEach((val, index) => {
           const x = (index / 255) * width;
-          const y = height - (val / maxVal) * height;
+          const y = height - (Math.min(val, maxVal) / maxVal) * height;
           ctx.lineTo(x, y);
         });
         
@@ -158,18 +163,25 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset, precomputedData
   }, [histogramData]);
 
   return (
-    <div className="w-full h-[120px] bg-neutral-900/50 rounded-md border border-neutral-700/50 p-2">
-      {isLoading ? (
-        <div className="w-full h-full flex items-center justify-center">
-          <p className="text-gray-400 text-sm">Analyzing...</p>
-        </div>
-      ) : error ? (
-        <div className="w-full h-full flex items-center justify-center">
-          <p className="text-red-400 text-sm">{error}</p>
-        </div>
-      ) : (
-        <canvas ref={canvasRef} width="256" height="104" className="w-full h-full"></canvas>
-      )}
+    <div className="w-full">
+      <div className="w-full h-[120px] bg-neutral-900/50 rounded-md border border-neutral-700/50 p-2">
+        {isLoading ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <p className="text-gray-400 text-sm">Analyzing...</p>
+          </div>
+        ) : error ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <p className="text-red-400 text-sm">{error}</p>
+          </div>
+        ) : (
+          <canvas ref={canvasRef} width="256" height="104" className="w-full h-full"></canvas>
+        )}
+      </div>
+      <div className="flex justify-between items-center mt-1 px-1 text-xs text-gray-500 font-semibold">
+        <span>Shadows</span>
+        <span>Midtones</span>
+        <span>Highlights</span>
+      </div>
     </div>
   );
 };
