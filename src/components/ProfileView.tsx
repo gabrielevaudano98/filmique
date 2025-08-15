@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings, Edit, Loader, CheckCircle, Image as ImageIcon, Award, LayoutGrid } from 'lucide-react';
+import { Settings, Edit, Loader, CheckCircle, Image as ImageIcon, Award } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useDebounce } from '../hooks/useDebounce';
 import AvatarRing from './AvatarRing';
@@ -147,7 +147,7 @@ const ProfileView: React.FC = () => {
           ) : (
             <div className="text-center text-gray-500 py-16">
               <ImageIcon className="w-12 h-12 mx-auto mb-4" />
-              <p>No snapshots to show yet.</p>
+              <p>No posts to show yet.</p>
             </div>
           )
         )}

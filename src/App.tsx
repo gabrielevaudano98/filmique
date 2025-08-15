@@ -1,6 +1,7 @@
 import React from 'react';
 import CameraView from './components/CameraView';
 import RollsView from './components/RollsView';
+import AlbumsView from './components/AlbumsView';
 import CommunityView from './components/CommunityView';
 import ChallengesView from './components/ChallengesView';
 import ProfileView from './components/ProfileView';
@@ -10,7 +11,7 @@ import OtpView from './components/OtpView';
 import OnboardingView from './components/OnboardingView';
 import { useAppContext } from './context/AppContext';
 import RollDetailView from './components/RollDetailView';
-import ShelfDetailView from './components/ShelfDetailView';
+import AlbumDetailView from './components/AlbumDetailView';
 import NotificationsView from './components/NotificationsView';
 import TopBar from './components/TopBar';
 import BottomNavBar from './components/BottomNavBar';
@@ -28,12 +29,13 @@ function App() {
   const renderCurrentView = () => {
     switch (currentView) {
       case 'rolls': return <RollsView />;
+      case 'albums': return <AlbumsView />;
       case 'community': return <CommunityView />;
       case 'challenges': return <ChallengesView />;
       case 'profile': return <ProfileView />;
       case 'settings': return <SettingsView />;
       case 'rollDetail': return <RollDetailView />;
-      case 'shelfDetail': return <ShelfDetailView />;
+      case 'albumDetail': return <AlbumDetailView />;
       case 'notifications': return <NotificationsView />;
       case 'uncategorizedRolls': return <UncategorizedRollsView />;
       default: return <CommunityView />;
