@@ -1,5 +1,5 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, Building, Aperture, Film as FilmIcon, Type } from 'lucide-react';
 import { FilmStock } from '../types';
 import Histogram from './Histogram';
 
@@ -10,7 +10,19 @@ interface FilmInfoPanelProps {
   onClose: () => void;
 }
 
+const SpecRow: React.FC<{ label: string; value: string | number | undefined; icon: React.ReactNode }> = ({ label, value, icon }) => (
+  <div className="flex items-center justify-between text-sm py-3 border-b border-neutral-700/50">
+    <div className="flex items-center text-gray-400">
+      {icon}
+      <span className="ml-3">{label}</span>
+    </div>
+    <p className="font-semibold text-white">{value || 'N/A'}</p>
+  </div>
+);
+
 const FilmInfoPanel: React.FC<FilmInfoPanelProps> = ({ film, onClose }) => {
+  const nativeIso = film.name.match(/\d+/)?.[0] || 'N/A';
+
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-end z-[80]" onClick={onClose}>
       <div 
@@ -26,6 +38,21 @@ const FilmInfoPanel: React.FC<FilmInfoPanelProps> = ({ film, onClose }) => {
 
         <div className="overflow-y-auto p-6 space-y-8 no-scrollbar">
           <div>
+            <h3 className="text-lg font-semibold text-brand-amber-start mb-2">Specifications</h3>
+            <div className="bg-neutral-900/50 rounded-lg border border-neutral-700/50 px-4">
+              <SpecRow label="Manufacturer" value={film.brand} icon={<Building className="w-5 h-5" />} />
+              <SpecRow label="Native ISO" value={nativeIso} icon={<Aperture className="w-5 h-5" />} />
+              <SpecRow label="Exposures" value={film.capacity} icon={<FilmIcon className="w-5 h-5" />} />
+              <SpecRow label="Film Type" value={film.type} icon={<Type className="w-5 h-5" />} />
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold text-brand-amber-start mb-2">Description</h3>
+            <p className="text-gray-300 text-sm leading-relaxed">{film.description || 'No description available.'}</p>
+          </div>
+
+          <div>
             <h3 className="text-lg font-semibold text-brand-amber-start mb-2">Color Profile</h3>
             <p className="text-sm text-gray-400 mb-4">This histogram shows how the film preset affects a neutral sample image.</p>
             <Histogram 
@@ -33,10 +60,6 @@ const FilmInfoPanel: React.FC<FilmInfoPanelProps> = ({ film, onClose }) => {
               preset={film.preset} 
               precomputedData={film.histogram_data}
             />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-brand-amber-start mb-2">Description</h3>
-            <p className="text-gray-300 text-sm leading-relaxed">{film.description || 'No description available.'}</p>
           </div>
         </div>
       </div>
