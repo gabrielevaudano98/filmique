@@ -12,13 +12,13 @@ const AlbumDetailView: React.FC = () => {
   const [rollToDelete, setRollToDelete] = useState<Roll | null>(null);
 
   if (!selectedAlbum) {
-    setCurrentView('rolls');
+    setCurrentView('profile');
     return null;
   }
 
   const handleBack = () => {
     setSelectedAlbum(null);
-    setCurrentView('rolls');
+    setCurrentView('profile');
   };
 
   const handleRemoveFromAlbum = (roll: Roll) => {
@@ -33,7 +33,7 @@ const AlbumDetailView: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <button onClick={handleBack} className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors p-2 -ml-2">
           <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Albums</span>
+          <span className="font-medium">Back to Profile</span>
         </button>
         <button onClick={() => setShowManageModal(true)} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
           <Edit className="w-4 h-4" />

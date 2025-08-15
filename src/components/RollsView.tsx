@@ -6,13 +6,12 @@ import { isRollDeveloped } from '../utils/rollUtils';
 import CreateAlbumModal from './CreateAlbumModal';
 import SegmentedControl from './SegmentedControl';
 import CollapsibleAlbumSection from './CollapsibleAlbumSection';
-import RollOnShelf from './RollOnShelf';
 import RollListItem from './RollListItem';
 
 const RollsView: React.FC = () => {
   const { completedRolls, albums, refetchRolls, refetchAlbums } = useAppContext();
 
-  const [activeSection, setActiveSection] = useState<'shelf' | 'darkroom' | 'albums'>('shelf');
+  const [activeSection, setActiveSection] = useState<'albums' | 'darkroom'>('albums');
   const [showCreateAlbumModal, setShowCreateAlbumModal] = useState(false);
 
   useEffect(() => {
@@ -20,15 +19,13 @@ const RollsView: React.FC = () => {
     refetchAlbums();
   }, [refetchRolls, refetchAlbums]);
 
-  const { developingRolls, shelvedRolls, developedRollsOnShelf } = useMemo(() => {
+  const { developingRolls, developedRolls } = useMemo(() => {
     const allCompleted = completedRolls || [];
     const developing = allCompleted.filter(r => r.is_completed && r.completed_at && !isRollDeveloped(r));
-    const shelved = allCompleted.filter(r => r.is_completed && !r.completed_at && !r.developed_at);
-    const developedOnShelf = allCompleted.filter(r => isRollDeveloped(r));
+    const developed = allCompleted.filter(r => isRollDeveloped(r));
     return { 
       developingRolls: developing.sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime()), 
-      shelvedRolls: shelved.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()), 
-      developedRollsOnShelf: developedOnShelf.sort((a, b) => new Date(b.developed_at!).getTime() - new Date(a.developed_at!).getTime()) 
+      developedRolls: developed.sort((a, b) => new Date(b.developed_at!).getTime() - new Date(a.developed_at!).getTime()) 
     };
   }, [completedRolls]);
 
@@ -37,44 +34,36 @@ const RollsView: React.FC = () => {
     albums.forEach(album => {
       grouped[album.id] = [];
     });
-    developedRollsOnShelf.forEach(roll => {
+    developedRolls.forEach(roll => {
       if (roll.album_id && grouped[roll.album_id]) {
         grouped[roll.album_id].push(roll);
       }
     });
     return grouped;
-  }, [developedRollsOnShelf, albums]);
+  }, [developedRolls, albums]);
 
   const uncategorizedRolls = useMemo(() => {
-    return developedRollsOnShelf.filter(r => !r.album_id);
-  }, [developedRollsOnShelf]);
+    return developedRolls.filter(r => !r.album_id);
+  }, [developedRolls]);
 
   const DarkroomEmptyState = () => (
     <div className="text-center py-24 text-neutral-500">
       <Clock className="w-16 h-16 mx-auto mb-4" />
       <h3 className="text-xl font-bold text-white">Darkroom is Empty</h3>
-      <p className="mt-2">Send undeveloped rolls from your shelf to the darkroom to start the development process.</p>
-    </div>
-  );
-
-  const ShelfEmptyState = () => (
-    <div className="text-center py-24 text-neutral-500">
-      <div className="w-full h-1 bg-neutral-800 rounded-full mb-4"></div>
-      <h3 className="text-xl font-bold text-white">Shelf is Empty</h3>
-      <p className="mt-2">Finish a roll of film and it will appear here.</p>
+      <p className="mt-2">When you finish a roll, it will appear here to be developed.</p>
     </div>
   );
 
   return (
     <div className="flex flex-col w-full space-y-6">
+      <h1 className="text-3xl font-bold text-white">My Rolls</h1>
       <SegmentedControl
         options={[
-          { label: 'Shelf', value: 'shelf' },
-          { label: `Darkroom (${developingRolls.length})`, value: 'darkroom' },
           { label: 'Albums', value: 'albums' },
+          { label: `Darkroom (${developingRolls.length})`, value: 'darkroom' },
         ]}
         value={activeSection}
-        onChange={(value) => setActiveSection(value as 'shelf' | 'darkroom' | 'albums')}
+        onChange={(value) => setActiveSection(value as 'albums' | 'darkroom')}
       />
 
       <div key={activeSection} className="animate-fade-in">
@@ -94,33 +83,6 @@ const RollsView: React.FC = () => {
               </div>
             ) : (
               <DarkroomEmptyState />
-            )}
-          </div>
-        )}
-
-        {activeSection === 'shelf' && (
-          <div className="space-y-8">
-            {shelvedRolls.length === 0 && developedRollsOnShelf.length === 0 ? (
-              <ShelfEmptyState />
-            ) : (
-              <>
-                {shelvedRolls.length > 0 && (
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-4">Undeveloped</h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                      {shelvedRolls.map(roll => <RollOnShelf key={roll.id} roll={roll} />)}
-                    </div>
-                  </div>
-                )}
-                {developedRollsOnShelf.length > 0 && (
-                  <div>
-                    <h3 className="text-xl font-bold text-white mb-4">Developed</h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
-                      {developedRollsOnShelf.map(roll => <RollOnShelf key={roll.id} roll={roll} />)}
-                    </div>
-                  </div>
-                )}
-              </>
             )}
           </div>
         )}
@@ -157,6 +119,3 @@ const RollsView: React.FC = () => {
       {showCreateAlbumModal && <CreateAlbumModal onClose={() => setShowCreateAlbumModal(false)} />}
     </div>
   );
-};
-
-export default RollsView;
