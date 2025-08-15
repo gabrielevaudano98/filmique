@@ -17,7 +17,7 @@ export const useAppContext = () => {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // UI State
-  const [currentView, setCurrentView] = useState<string>('community');
+  const [currentView, setCurrentView] = useState<string>('rolls');
   const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
   const [showFilmModal, setShowFilmModal] = useState(false);
 

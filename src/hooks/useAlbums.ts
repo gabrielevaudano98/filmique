@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as api from '../services/api';
 import { UserProfile, Album } from '../types';
-import { showErrorToast, showSuccessToast } from '../utils/toasts';
+import { showErrorToast } from '../utils/toasts';
 
 export const useAlbums = (profile: UserProfile | null) => {
   const [albums, setAlbums] = useState<Album[]>([]);
@@ -56,19 +56,6 @@ export const useAlbums = (profile: UserProfile | null) => {
     }
   }, [refetchAlbums, selectedAlbum, selectAlbum]);
 
-  const updateAlbumPrivacy = useCallback(async (albumId: string, type: 'personal' | 'public') => {
-    const { error } = await api.updateAlbum(albumId, { type });
-    if (error) {
-      showErrorToast('Failed to update album privacy.');
-    } else {
-      showSuccessToast(`Album is now ${type === 'public' ? 'Public' : 'Private'}.`);
-      refetchAlbums();
-      if (selectedAlbum?.id === albumId) {
-        setSelectedAlbum(prev => prev ? { ...prev, type } : null);
-      }
-    }
-  }, [refetchAlbums, selectedAlbum]);
-
   return {
     albums,
     selectedAlbum,
@@ -78,6 +65,5 @@ export const useAlbums = (profile: UserProfile | null) => {
     addRollsToAlbum,
     removeRollFromAlbum,
     refetchAlbums,
-    updateAlbumPrivacy,
   };
 };

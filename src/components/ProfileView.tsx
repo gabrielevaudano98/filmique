@@ -1,14 +1,11 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { Award, Edit, Grid, Settings, CheckCircle, Loader, LayoutList, BookOpen, Plus, Clock } from 'lucide-react';
+import { Award, Edit, Image as ImageIcon, Grid, Settings, User, CheckCircle, Loader, LayoutList } from 'lucide-react';
 import { useAppContext, Post } from '../context/AppContext';
+import BadgeIcon from './BadgeIcon';
 import PostDetailModal from './PostDetailModal';
 import { useDebounce } from '../hooks/useDebounce';
 import PostView from './PostView';
 import AvatarRing from './AvatarRing';
-import CreateAlbumModal from './CreateAlbumModal';
-import CollapsibleAlbumSection from './CollapsibleAlbumSection';
-import { isRollDeveloped, isRollDeveloping } from '../utils/rollUtils';
-import { Roll } from '../types';
 
 const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ value, label }) => (
   <div className="text-center">
@@ -18,15 +15,9 @@ const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ va
 );
 
 const ProfileView: React.FC = () => {
-  const { 
-    profile, feed, followersCount, followingCount, userBadges, 
-    updateProfileDetails, setCurrentView, refreshProfile, fetchProfilePageData,
-    albums, completedRolls
-  } = useAppContext();
-  
+  const { profile, feed, followersCount, followingCount, userBadges, updateProfileDetails, setCurrentView, refreshProfile, fetchProfilePageData } = useAppContext();
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [activeTab, setActiveTab] = useState<'albums' | 'grid' | 'awards'>('albums');
-  const [showCreateAlbumModal, setShowCreateAlbumModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'posts' | 'feed' | 'badges'>('posts');
   
   const [bioText, setBioText] = useState(profile?.bio || '');
   const [isEditingBio, setIsEditingBio] = useState(false);
@@ -44,29 +35,6 @@ const ProfileView: React.FC = () => {
     if (!profile) return [];
     return feed.filter(post => post.user_id === profile.id).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }, [feed, profile]);
-
-  const { developedRolls, developingCount } = useMemo(() => {
-    const developed = completedRolls.filter(isRollDeveloped);
-    const developing = completedRolls.filter(isRollDeveloping).length;
-    return { developedRolls: developed, developingCount: developing };
-  }, [completedRolls]);
-
-  const rollsByAlbum = useMemo(() => {
-    const grouped: { [albumId: string]: Roll[] } = {};
-    albums.forEach(album => {
-      grouped[album.id] = [];
-    });
-    developedRolls.forEach(roll => {
-      if (roll.album_id && grouped[roll.album_id]) {
-        grouped[roll.album_id].push(roll);
-      }
-    });
-    return grouped;
-  }, [developedRolls, albums]);
-
-  const uncategorizedRolls = useMemo(() => {
-    return developedRolls.filter(r => !r.album_id);
-  }, [developedRolls]);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -97,7 +65,6 @@ const ProfileView: React.FC = () => {
   return (
     <>
       {selectedPost && <PostDetailModal post={selectedPost} onClose={() => setSelectedPost(null)} />}
-      {showCreateAlbumModal && <CreateAlbumModal onClose={() => setShowCreateAlbumModal(false)} />}
       
       <div className="flex-1 flex flex-col bg-transparent text-white">
         <div className="px-4 pt-4">
@@ -150,9 +117,9 @@ const ProfileView: React.FC = () => {
         <div className="flex-grow mt-6">
           <div className="flex border-b border-neutral-700">
             {[
-              { key: 'albums', icon: <BookOpen className="w-6 h-6" /> },
-              { key: 'grid', icon: <Grid className="w-6 h-6" /> },
-              { key: 'awards', icon: <Award className="w-6 h-6" /> },
+              { key: 'posts', icon: <Grid className="w-6 h-6" /> },
+              { key: 'feed', icon: <LayoutList className="w-6 h-6" /> },
+              { key: 'badges', icon: <Award className="w-6 h-6" /> },
             ].map(tab => (
               <button
                 key={tab.key}
@@ -166,37 +133,7 @@ const ProfileView: React.FC = () => {
           </div>
 
           <div className="w-full pt-0.5">
-            {activeTab === 'albums' && (
-              <div className="p-4 space-y-6">
-                <div className="flex items-center justify-between">
-                  <button onClick={() => setCurrentView('darkroom')} className="flex items-center gap-2 text-sm font-semibold text-cyan-400 hover:text-cyan-300">
-                    <Clock className="w-4 h-4" />
-                    Darkroom ({developingCount})
-                  </button>
-                  <button onClick={() => setShowCreateAlbumModal(true)} className="flex items-center gap-2 text-sm font-semibold text-brand-amber-start hover:text-brand-amber-mid">
-                    <Plus className="w-4 h-4" />
-                    New Album
-                  </button>
-                </div>
-                <div className="space-y-4">
-                  {albums.map(album => (
-                    <CollapsibleAlbumSection
-                      key={album.id}
-                      title={album.title}
-                      rolls={rollsByAlbum[album.id] || []}
-                      album={album}
-                    />
-                  ))}
-                  {uncategorizedRolls.length > 0 && (
-                    <CollapsibleAlbumSection
-                      title="Uncategorized"
-                      rolls={uncategorizedRolls}
-                    />
-                  )}
-                </div>
-              </div>
-            )}
-            {activeTab === 'grid' && (
+            {activeTab === 'posts' && (
               posts.length > 0 ? (
                 <div className="grid grid-cols-3 gap-0.5">
                   {posts.map(post => (
@@ -218,7 +155,19 @@ const ProfileView: React.FC = () => {
                 </div>
               )
             )}
-            {activeTab === 'awards' && (
+            {activeTab === 'feed' && (
+              <div className="space-y-4 p-2 sm:p-4">
+                {posts.length > 0 ? (
+                  posts.map(post => <PostView key={post.id} post={post} />)
+                ) : (
+                  <div className="text-center text-gray-500 py-16">
+                    <LayoutList className="w-12 h-12 mx-auto mb-2" />
+                    <p>No posts yet.</p>
+                  </div>
+                )}
+              </div>
+            )}
+            {activeTab === 'badges' && (
               <div className="p-4">
                 {userBadges.length > 0 ? (
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
