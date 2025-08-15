@@ -17,14 +17,12 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
   const totalItems = 1 + photos.length;
 
   const goToNext = useCallback(() => {
-    setCurrentIndex(prev => {
-      if (prev < totalItems - 2) {
-        return prev + 1;
-      }
+    if (currentIndex < totalItems - 2) {
+      setCurrentIndex(prev => prev + 1);
+    } else {
       onClose(); // Close at the end
-      return prev;
-    });
-  }, [totalItems, onClose]);
+    }
+  }, [currentIndex, totalItems, onClose]);
 
   const goToPrev = () => {
     setCurrentIndex(prev => Math.max(-1, prev - 1));
