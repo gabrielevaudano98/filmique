@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Building, Aperture, Film as FilmIcon, Type } from 'lucide-react';
+import { X, Building, Aperture, Film as FilmIcon, Type, ThumbsUp, ThumbsDown, Sun } from 'lucide-react';
 import { FilmStock } from '../types';
 import Histogram from './Histogram';
 
@@ -11,7 +11,7 @@ interface FilmInfoPanelProps {
 }
 
 const SpecRow: React.FC<{ label: string; value: string | number | undefined; icon: React.ReactNode }> = ({ label, value, icon }) => (
-  <div className="flex items-center justify-between text-sm py-3 border-b border-neutral-700/50">
+  <div className="flex items-center justify-between text-sm py-3 border-b border-neutral-700/50 last:border-b-0">
     <div className="flex items-center text-gray-400">
       {icon}
       <span className="ml-3">{label}</span>
@@ -50,6 +50,39 @@ const FilmInfoPanel: React.FC<FilmInfoPanelProps> = ({ film, onClose }) => {
           <div>
             <h3 className="text-lg font-semibold text-brand-amber-start mb-2">Description</h3>
             <p className="text-gray-300 text-sm leading-relaxed">{film.description || 'No description available.'}</p>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold text-brand-amber-start mb-2">Usage & Characteristics</h3>
+            <div className="space-y-4 text-sm">
+              {film.good_for && (
+                <div className="flex items-start">
+                  <ThumbsUp className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
+                  <div className="ml-3">
+                    <p className="font-semibold text-white">Strengths</p>
+                    <p className="text-gray-300">{film.good_for}</p>
+                  </div>
+                </div>
+              )}
+              {film.bad_for && (
+                <div className="flex items-start">
+                  <ThumbsDown className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" />
+                  <div className="ml-3">
+                    <p className="font-semibold text-white">Weaknesses</p>
+                    <p className="text-gray-300">{film.bad_for}</p>
+                  </div>
+                </div>
+              )}
+              {film.usage_notes && (
+                <div className="flex items-start">
+                  <Sun className="w-5 h-5 text-yellow-400 mt-0.5 flex-shrink-0" />
+                  <div className="ml-3">
+                    <p className="font-semibold text-white">Best For</p>
+                    <p className="text-gray-300">{film.usage_notes}</p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
           <div>

@@ -30,6 +30,9 @@ export interface FilmStock {
   unlocked: boolean;
   created_at: string;
   histogram_data?: { r: number[], g: number[], b: number[], l: number[] } | null;
+  good_for?: string | null;
+  bad_for?: string | null;
+  usage_notes?: string | null;
 }
 
 export interface UserProfile {
