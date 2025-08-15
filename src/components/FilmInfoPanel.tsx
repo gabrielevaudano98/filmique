@@ -30,9 +30,9 @@ const SpecRow: React.FC<{ label: string; value: string | number | undefined; ico
 );
 
 // Internal component for usage characteristics
-const CharacteristicCard: React.FC<{ title: string; content: string; icon: React.ReactNode; iconBgColor: string; }> = ({ title, content, icon, iconBgColor }) => (
+const CharacteristicCard: React.FC<{ title: string; content: string; icon: React.ReactNode; }> = ({ title, content, icon }) => (
     <div className="flex items-start">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${iconBgColor}`}>
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-neutral-700">
             {icon}
         </div>
         <div className="ml-4">
@@ -79,24 +79,21 @@ const FilmInfoPanel: React.FC<FilmInfoPanelProps> = ({ film, onClose }) => {
                 <CharacteristicCard 
                   title="Strengths"
                   content={film.good_for}
-                  icon={<ThumbsUp className="w-5 h-5 text-white" />}
-                  iconBgColor="bg-green-500/80"
+                  icon={<ThumbsUp className="w-5 h-5 text-brand-amber-start" />}
                 />
               )}
               {film.bad_for && (
                 <CharacteristicCard 
                   title="Weaknesses"
                   content={film.bad_for}
-                  icon={<ThumbsDown className="w-5 h-5 text-white" />}
-                  iconBgColor="bg-red-500/80"
+                  icon={<ThumbsDown className="w-5 h-5 text-brand-amber-start" />}
                 />
               )}
               {film.usage_notes && (
                 <CharacteristicCard 
                   title="Best For"
                   content={film.usage_notes}
-                  icon={<Sun className="w-5 h-5 text-white" />}
-                  iconBgColor="bg-yellow-500/80"
+                  icon={<Sun className="w-5 h-5 text-brand-amber-start" />}
                 />
               )}
             </div>
