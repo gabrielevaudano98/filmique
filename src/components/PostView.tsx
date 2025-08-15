@@ -1,21 +1,35 @@
 import React, { useState, useRef } from 'react';
-import { Heart, MessageCircle, Clock, Camera, UserPlus, Check, Send, Shield, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Heart, MessageCircle, Shield, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useAppContext, Post } from '../context/AppContext';
 import { formatDistanceToNow } from '../utils/time';
 import Image from './Image';
+import { showInfoToast } from '../utils/toasts';
 
 interface PostViewProps {
   post: Post;
 }
 
 const PostView: React.FC<PostViewProps> = ({ post }) => {
-  const { profile, handleLike, handleFollow, addComment, deleteComment } = useAppContext();
+  const { profile, handleLike, addComment, deleteComment, setCurrentView, setSelectedAlbum } = useAppContext();
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const photoContainerRef = useRef<HTMLDivElement>(null);
 
   if (!profile) return null;
+
+  const album = post.albums;
+  const isFromPrivateAlbum = album && album.type !== 'public';
+
+  const handleAlbumClick = () => {
+    if (!album) return;
+    if (album.user_id !== profile?.id && album.type !== 'public') {
+      showInfoToast("This album is private and cannot be viewed.");
+    } else {
+      setSelectedAlbum(album);
+      setCurrentView('albumDetail');
+    }
+  };
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,23 +74,27 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
           <Image src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-10 h-10 rounded-full bg-gray-700 border-2 border-gray-600" loading="lazy" decoding="async" />
           <div>
             <h3 className="font-bold text-white">{post.profiles.username}</h3>
-            <p className="text-gray-400 text-xs">{post.rolls.film_type}</p>
+            <div className="flex items-center space-x-2">
+              <p className="text-gray-400 text-xs">{post.rolls.film_type}</p>
+              {album && (
+                <>
+                  <span className="text-gray-600 text-xs">&bull;</span>
+                  <button onClick={handleAlbumClick} className="text-gray-400 text-xs hover:underline">
+                    {album.title}
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
-        {post.user_id !== profile.id && (
-          <button
-            onClick={() => handleFollow(post.user_id, post.isFollowed)}
-            className={`px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center space-x-2 ${
-              post.isFollowed
-                ? 'bg-gray-700 text-white'
-                : 'bg-amber-500 text-gray-900 hover:bg-amber-600'
-            }`}
-          >
-            {post.isFollowed ? <Check className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-            <span>{post.isFollowed ? 'Following' : 'Follow'}</span>
-          </button>
-        )}
       </div>
+
+      {isFromPrivateAlbum && (
+        <div className="px-4 pb-2 text-yellow-200 text-xs flex items-center space-x-2">
+          <Shield className="w-4 h-4 flex-shrink-0" />
+          <span>This post is from a {album.type} album. Only this post is public.</span>
+        </div>
+      )}
 
       {/* Photo Carousel */}
       {post.rolls.photos && post.rolls.photos.length > 0 && (

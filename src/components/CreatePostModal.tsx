@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, ArrowLeft, Send, Check, BookCopy, PlusCircle } from 'lucide-react';
+import { X, ArrowLeft, Send, Check, PlusCircle } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../context/AppContext';
 import CreateAlbumModal from './CreateAlbumModal';
@@ -11,7 +11,7 @@ interface CreatePostModalProps {
 }
 
 const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRolls }) => {
-  const { createPost, albums } = useAppContext();
+  const { createPost, albums, refetchAlbums } = useAppContext();
   const [step, setStep] = useState<'select_roll' | 'write_caption'>('select_roll');
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
   const [caption, setCaption] = useState('');
@@ -28,11 +28,15 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
 
   const handleSelectRoll = (roll: Roll) => {
     setSelectedRoll(roll);
+    if (roll.album_id) {
+      setSelectedAlbumId(roll.album_id);
+    }
     setStep('write_caption');
   };
 
   const handleBack = () => {
     setSelectedRoll(null);
+    setSelectedAlbumId(null);
     setStep('select_roll');
   };
 
@@ -158,7 +162,10 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
           )}
         </div>
       </div>
-      {showCreateAlbumModal && <CreateAlbumModal onClose={() => setShowCreateAlbumModal(false)} />}
+      {showCreateAlbumModal && <CreateAlbumModal onClose={() => {
+        setShowCreateAlbumModal(false);
+        refetchAlbums();
+      }} />}
     </>
   );
 };

@@ -17,6 +17,7 @@ export const useRollsAndPhotos = (
   const [rollToName, setRollToName] = useState<Roll | null>(null);
   const [rollToConfirm, setRollToConfirm] = useState<Roll | null>(null);
   const [isSavingPhoto, setIsSavingPhoto] = useState(false);
+  const [developedRollForWizard, setDevelopedRollForWizard] = useState<Roll | null>(null);
 
   const refetchRolls = useCallback(async () => {
     if (!profile) return;
@@ -167,6 +168,7 @@ export const useRollsAndPhotos = (
       const { data: updatedRoll } = await api.updateRoll(roll.id, { developed_at: new Date().toISOString() });
       if (updatedRoll) {
         setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
+        setDevelopedRollForWizard(updatedRoll);
       }
       showSuccessToast('Roll developed successfully!');
     } catch (error: any) {
@@ -262,5 +264,7 @@ export const useRollsAndPhotos = (
     sendToDarkroom,
     putOnShelf,
     developShelvedRoll,
+    developedRollForWizard,
+    setDevelopedRollForWizard,
   };
 };

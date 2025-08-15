@@ -16,13 +16,15 @@ import TopBar from './components/TopBar';
 import BottomNavBar from './components/BottomNavBar';
 import UncategorizedRollsView from './components/UncategorizedRollsView';
 import RollCompletionWizard from './components/RollCompletionWizard';
+import PostDevelopmentWizard from './components/PostDevelopmentWizard';
 import { Roll } from './types';
 
 function App() {
   const { 
     session, profile, isLoading, currentView, authStep, 
     rollToConfirm, setRollToConfirm, 
-    sendToDarkroom, putOnShelf
+    sendToDarkroom, putOnShelf,
+    developedRollForWizard, setDevelopedRollForWizard
   } = useAppContext();
 
   const renderCurrentView = () => {
@@ -73,7 +75,7 @@ function App() {
     return <OnboardingView />;
   }
   
-  const wizard = rollToConfirm && (
+  const completionWizard = rollToConfirm && (
     <RollCompletionWizard
       roll={rollToConfirm}
       onSendToDarkroom={handleWizardSendToDarkroom}
@@ -81,10 +83,18 @@ function App() {
     />
   );
 
+  const postDevelopmentWizard = developedRollForWizard && (
+    <PostDevelopmentWizard
+      roll={developedRollForWizard}
+      onClose={() => setDevelopedRollForWizard(null)}
+    />
+  );
+
   if (currentView === 'camera') {
     return (
       <>
-        {wizard}
+        {completionWizard}
+        {postDevelopmentWizard}
         <CameraView />
       </>
     );
@@ -93,7 +103,8 @@ function App() {
   return (
     <div className="bg-transparent text-white">
       <TopBar />
-      {wizard}
+      {completionWizard}
+      {postDevelopmentWizard}
       <main className="min-h-screen w-full pb-28">
         <div className="max-w-6xl mx-auto w-full h-full px-4 py-4">
           {renderCurrentView()}
