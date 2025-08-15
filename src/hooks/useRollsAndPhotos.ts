@@ -55,7 +55,7 @@ export const useRollsAndPhotos = (
     }
   }, [profile, refetchRolls, completedRolls]);
 
-  const startNewRoll = useCallback(async (film: FilmStock) => {
+  const startNewRoll = useCallback(async (film: FilmStock, aspectRatio: string) => {
     if (!profile) return;
     if (profile.credits < film.price) {
       showErrorToast('Not enough credits to buy this film.');
@@ -73,7 +73,7 @@ export const useRollsAndPhotos = (
         await api.deleteRollById(activeRoll.id);
       }
 
-      const { data, error } = await api.createNewRoll(profile.id, film.name, film.capacity);
+      const { data, error } = await api.createNewRoll(profile.id, film.name, film.capacity, aspectRatio);
       if (error) {
         throw error;
       }

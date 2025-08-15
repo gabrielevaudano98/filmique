@@ -1,7 +1,7 @@
 import { supabase } from '../integrations/supabase/client';
 import { extractStoragePathFromPublicUrl } from '../utils/storage';
 import { applyFilter } from '../utils/imageProcessor';
-import { Roll, Photo, FilmStock, UserProfile } from '../types';
+import { Roll, Photo, FilmStock, UserProfile, Album } from '../types';
 import { getCache, setCache, invalidateCache } from '../utils/cache';
 
 export const POST_SELECT_QUERY = '*, cover_photo_url, profiles!posts_user_id_fkey(username, avatar_url, level, id), rolls!posts_roll_id_fkey(title, film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))';
@@ -39,7 +39,7 @@ export const searchUsers = (query: string) => supabase.from('profiles').select('
 // Film Stocks
 export const fetchFilmStocks = async () => {
   const cacheKey = 'filmStocks';
-  const cached = getCache<FilmStock[]>(cacheKey, 60 * 60 * 1000); // 1 hour TTL
+  const cached = getCache<FilmStock[]>(60 * 60 * 1000); // 1 hour TTL
   if (cached) return { data: cached, error: null };
 
   const { data, error } = await supabase.from('film_stocks').select('*');
@@ -63,8 +63,8 @@ export const deleteRollById = async (rollId: string) => {
   if (!result.error && roll) invalidateCache([`rolls-${roll.user_id}`, `albums-${roll.user_id}`, 'feed']);
   return result;
 };
-export const createNewRoll = async (userId: string, filmType: string, capacity: number) => {
-  const result = await supabase.from('rolls').insert({ user_id: userId, film_type: filmType, capacity }).select().single();
+export const createNewRoll = async (userId: string, filmType: string, capacity: number, aspectRatio: string) => {
+  const result = await supabase.from('rolls').insert({ user_id: userId, film_type: filmType, capacity, aspect_ratio: aspectRatio }).select().single();
   if (!result.error) invalidateCache(`rolls-${userId}`);
   return result;
 };

@@ -1,0 +1,2 @@
+ALTER TABLE public.rolls
+ADD COLUMN aspect_ratio TEXT NOT NULL DEFAULT '3:2';

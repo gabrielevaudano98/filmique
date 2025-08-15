@@ -72,6 +72,7 @@ export interface Roll {
   title?: string | null;
   album_id?: string | null;
   albums?: { title: string } | null;
+  aspect_ratio: string;
 }
 
 export interface Comment {
@@ -167,7 +168,7 @@ export interface AppContextType {
   userBadges: UserBadge[];
   recentStories: Map<string, { user: UserProfile, posts: Post[] }>;
   filmStocks: FilmStock[];
-  startNewRoll: (film: FilmStock) => Promise<void>;
+  startNewRoll: (film: FilmStock, aspectRatio: string) => Promise<void>;
   takePhoto: (imageBlob: Blob, metadata: any) => Promise<void>;
   isSavingPhoto: boolean;
   setFeed: React.Dispatch<React.SetStateAction<Post[]>>;

@@ -4,7 +4,7 @@ import { useAppContext } from '../context/AppContext';
 import { FilmStock } from '../types';
 
 interface FilmSelectionModalProps {
-  onStartRoll: (film: FilmStock) => void;
+  onStartRoll: (film: FilmStock, aspectRatio: string) => void;
   onClose: () => void;
 }
 
@@ -34,6 +34,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
   const [searchTerm, setSearchTerm] = useState('');
   const [groupBy, setGroupBy] = useState<'type' | 'brand'>('type');
   const [sortOrder, setSortOrder] = useState<'name' | 'price'>('name');
+  const [aspectRatio, setAspectRatio] = useState('3:2');
 
   const firstUnlockedFilm = useMemo(() => 
     filmStocks.find(f => f.unlocked) || filmStocks[0]
@@ -64,7 +65,7 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
 
   const handleStartRoll = () => {
     if (selectedFilm && canAfford && selectedFilm.unlocked) {
-      onStartRoll(selectedFilm);
+      onStartRoll(selectedFilm, aspectRatio);
       onClose();
     }
   };
@@ -83,8 +84,8 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
               <X className="w-5 h-5" />
             </button>
           </div>
-          <div className="px-4 pb-4 grid grid-cols-3 gap-3">
-            <div className="relative col-span-3">
+          <div className="px-4 pb-4 space-y-3">
+            <div className="relative">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input
                 type="text"
@@ -94,11 +95,15 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
                 className="w-full bg-gray-800 border border-gray-700 rounded-lg pl-11 pr-4 py-2.5 text-white focus:ring-amber-500 focus:border-amber-500"
               />
             </div>
-            <div className="col-span-2">
-              <SegmentedControl options={[{value: 'type', label: 'Category'}, {value: 'brand', label: 'Brand'}]} value={groupBy} onChange={setGroupBy} />
-            </div>
-            <div>
-              <SegmentedControl options={[{value: 'name', label: 'A-Z'}, {value: 'price', label: '$'}]} value={sortOrder} onChange={setSortOrder} />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-400 font-semibold mb-1 block px-1">Group By</label>
+                <SegmentedControl options={[{value: 'type', label: 'Category'}, {value: 'brand', label: 'Brand'}]} value={groupBy} onChange={setGroupBy} />
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 font-semibold mb-1 block px-1">Sort By</label>
+                <SegmentedControl options={[{value: 'name', label: 'A-Z'}, {value: 'price', label: '$'}]} value={sortOrder} onChange={setSortOrder} />
+              </div>
             </div>
           </div>
         </div>
@@ -155,7 +160,19 @@ const FilmSelectionModal: React.FC<FilmSelectionModalProps> = ({ onStartRoll, on
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900/80 backdrop-blur-lg">
+        <div className="p-4 border-t border-gray-700/50 flex-shrink-0 bg-gray-900/80 backdrop-blur-lg space-y-4">
+          <div>
+            <label className="text-sm text-gray-300 font-semibold mb-2 block px-1">Aspect Ratio</label>
+            <SegmentedControl 
+              options={[
+                { value: '3:2', label: '3:2' },
+                { value: '4:3', label: '4:3' },
+                { value: '1:1', label: '1:1' },
+              ]} 
+              value={aspectRatio} 
+              onChange={setAspectRatio} 
+            />
+          </div>
           <button
             onClick={handleStartRoll}
             disabled={!selectedFilm || !canAfford || !selectedFilm.unlocked}

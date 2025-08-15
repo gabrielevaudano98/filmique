@@ -53,20 +53,24 @@ const CameraView: React.FC = () => {
   const [isShutterAnimating, setIsShutterAnimating] = useState(false);
 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setAspectRatioClass('aspect-[2/3]');
-        setTargetAspectRatio(2 / 3);
-      } else {
-        setAspectRatioClass('aspect-[3/2]');
+    if (activeRoll) {
+        const ratio = activeRoll.aspect_ratio || '3:2';
+        const [w, h] = ratio.split(':').map(Number);
+        if (w && h) {
+            setTargetAspectRatio(w / h);
+            const ratioMap: { [key: string]: string } = {
+                '3:2': 'aspect-[3/2]',
+                '4:3': 'aspect-[4/3]',
+                '1:1': 'aspect-[1/1]',
+            };
+            setAspectRatioClass(ratioMap[ratio] || 'aspect-[3/2]');
+        }
+    } else {
+        // Default when no roll is loaded
         setTargetAspectRatio(3 / 2);
-      }
-    };
-
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+        setAspectRatioClass('aspect-[3/2]');
+    }
+  }, [activeRoll]);
 
   useEffect(() => {
     const native = Capacitor.isNativePlatform();
