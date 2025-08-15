@@ -21,4 +21,4 @@ const BadgeIcon: React.FC<BadgeIconProps> = ({ name, className }) => {
   return <Icon className={className} />;
 };
 
-export default React.memo(BadgeIcon);
+export default BadgeIcon;

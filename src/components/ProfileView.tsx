@@ -6,8 +6,6 @@ import PostDetailModal from './PostDetailModal';
 import { useDebounce } from '../hooks/useDebounce';
 import PostView from './PostView';
 import AvatarRing from './AvatarRing';
-import LazyImage from './LazyImage';
-import { getTransformedUrl } from '../utils/image';
 
 const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ value, label }) => (
   <div className="text-center">
@@ -15,7 +13,6 @@ const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ va
     <p className="text-sm text-gray-400">{label}</p>
   </div>
 );
-const MemoizedHighlightStat = React.memo(HighlightStat);
 
 const ProfileView: React.FC = () => {
   const { profile, feed, followersCount, followingCount, userBadges, updateProfileDetails, setCurrentView, refreshProfile, fetchProfilePageData } = useAppContext();
@@ -83,9 +80,9 @@ const ProfileView: React.FC = () => {
               <AvatarRing src={profile.avatar_url} size={80} onClick={() => avatarInputRef.current?.click()} />
             </div>
             <div className="flex-1 flex justify-around ml-4">
-              <MemoizedHighlightStat value={posts.length} label="Posts" />
-              <MemoizedHighlightStat value={followersCount} label="Followers" />
-              <MemoizedHighlightStat value={followingCount} label="Following" />
+              <HighlightStat value={posts.length} label="Posts" />
+              <HighlightStat value={followersCount} label="Followers" />
+              <HighlightStat value={followingCount} label="Following" />
             </div>
           </div>
           <div className="mt-4">
@@ -141,11 +138,12 @@ const ProfileView: React.FC = () => {
                 <div className="grid grid-cols-3 gap-0.5">
                   {posts.map(post => (
                     <div key={post.id} className="aspect-square bg-neutral-800 group cursor-pointer" onClick={() => setSelectedPost(post)}>
-                      <LazyImage
-                        src={getTransformedUrl(post.cover_photo_url || post.rolls.photos[0]?.thumbnail_url, { width: 400, quality: 75 })}
+                      <img
+                        src={post.cover_photo_url || post.rolls.photos[0]?.thumbnail_url}
                         alt="Post thumbnail"
-                        containerClassName="w-full h-full"
                         className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
+                        loading="lazy"
+                        decoding="async"
                       />
                     </div>
                   ))}

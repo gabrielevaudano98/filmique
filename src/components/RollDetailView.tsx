@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { ArrowLeft, Download, Trash2, Image as ImageIcon } from 'lucide-react';
+import toast from 'react-hot-toast';
 import PhotoDetailModal from './PhotoDetailModal';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import { Photo } from '../context/AppContext';
 import PhotoInfoModal from './PhotoInfoModal';
-import LazyImage from './LazyImage';
-import { getTransformedUrl } from '../utils/image';
 
 const RollDetailView: React.FC = () => {
   const { selectedRoll, setCurrentView, setSelectedRoll, downloadRoll, deleteRoll } = useAppContext();
@@ -69,11 +68,12 @@ const RollDetailView: React.FC = () => {
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1 sm:gap-2">
           {selectedRoll.photos.map(photo => (
             <div key={photo.id} className="aspect-square bg-gray-800 rounded-lg overflow-hidden group cursor-pointer" onClick={() => setPhotoToView(photo)}>
-              <LazyImage 
-                src={`${getTransformedUrl(photo.thumbnail_url, { width: 400, quality: 75 })}${cacheBuster}`} 
+              <img 
+                src={`${photo.thumbnail_url}${cacheBuster}`} 
                 alt="User Photo" 
-                containerClassName="w-full h-full"
                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
+                loading="lazy"
+                decoding="async"
               />
             </div>
           ))}

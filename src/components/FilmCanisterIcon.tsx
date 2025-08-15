@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 
 interface FilmCanisterIconProps {
   filmType: string;
@@ -6,36 +6,9 @@ interface FilmCanisterIconProps {
   imageUrl?: string | null;
 }
 
-const SUPABASE_STORAGE_BASE_URL = 'https://ewziosmlinxqywlvegee.supabase.co/storage/v1/object/public/film_stocks/';
-
 const FilmCanisterIcon: React.FC<FilmCanisterIconProps> = ({ filmType, className, imageUrl }) => {
-  const [hasError, setHasError] = useState(false);
-
-  const fullImageUrl = useMemo(() => {
-    if (!imageUrl) return null;
-    // If it's already a full URL, use it directly
-    if (imageUrl.startsWith('http')) {
-      return imageUrl;
-    }
-    // Otherwise, construct the URL, removing any leading slashes to prevent errors
-    return `${SUPABASE_STORAGE_BASE_URL}${imageUrl.replace(/^\//, '')}`;
-  }, [imageUrl]);
-
-  const handleError = () => {
-    console.warn(`Failed to load film canister image: ${fullImageUrl}`);
-    setHasError(true);
-  };
-
-  if (fullImageUrl && !hasError) {
-    return (
-      <img
-        src={fullImageUrl}
-        alt={`${filmType} canister`}
-        className={`${className} object-contain bg-transparent`}
-        onError={handleError}
-        loading="lazy"
-      />
-    );
+  if (imageUrl) {
+    return <img src={imageUrl} alt={`${filmType} canister`} className={`${className} object-contain bg-transparent`} />;
   }
 
   const filmBrand = filmType.split(' ')[0] || 'Filmique';

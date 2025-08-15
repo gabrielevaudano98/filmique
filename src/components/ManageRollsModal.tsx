@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { X, Film, CheckSquare, Square } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { Roll, Album } from '../types';
+import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
 
 interface ManageRollsModalProps {

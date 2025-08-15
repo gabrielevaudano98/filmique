@@ -4,8 +4,8 @@ import { applyFilter } from '../utils/imageProcessor';
 import { Roll, Photo, FilmStock, UserProfile, Album } from '../types';
 import { getCache, setCache, invalidateCache } from '../utils/cache';
 
-export const POST_SELECT_QUERY = 'id,user_id,roll_id,caption,created_at,cover_photo_url,profiles!posts_user_id_fkey(id,username,avatar_url),rolls!posts_roll_id_fkey(id,title,film_type,developed_at,photos(id,url,thumbnail_url)),likes(user_id),comments(id,content,created_at,user_id,profiles(username,avatar_url))';
-const NOTIFICATION_SELECT_QUERY = '*, actors:profiles!notifications_actor_id_fkey(username, avatar_url), posts!notifications_entity_id_fkey(rolls!posts_roll_id_fkey(photos(thumbnail_url)))';
+export const POST_SELECT_QUERY = '*, cover_photo_url, profiles!posts_user_id_fkey(username, avatar_url, level, id), rolls!posts_roll_id_fkey(title, film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url))';
+const NOTIFICATION_SELECT_QUERY = '*, actors:profiles!notifications_actor_id_fkey(username, avatar_url), posts(rolls(photos(thumbnail_url)))';
 
 // Auth
 export const getSession = () => supabase.auth.getSession();
@@ -38,8 +38,8 @@ export const searchUsers = (query: string) => supabase.from('profiles').select('
 
 // Film Stocks
 export const fetchFilmStocks = async () => {
-  const cacheKey = 'filmStocks-v3'; // Bust the cache by using a new key
-  const cached = getCache<FilmStock[]>(cacheKey, 60 * 60 * 1000); // 1 hour TTL
+  const cacheKey = 'filmStocks';
+  const cached = getCache<FilmStock[]>(60 * 60 * 1000); // 1 hour TTL
   if (cached) return { data: cached, error: null };
 
   const { data, error } = await supabase.from('film_stocks').select('*');
@@ -53,7 +53,7 @@ export const fetchAllRolls = async (userId: string) => {
   const cached = getCache<Roll[]>(cacheKey);
   if (cached) return { data: cached, error: null };
 
-  const { data, error } = await supabase.from('rolls').select('*, photos(id,url,thumbnail_url,metadata), albums(title)').eq('user_id', userId).order('created_at', { ascending: false });
+  const { data, error } = await supabase.from('rolls').select('*, photos(*), albums(title)').eq('user_id', userId).order('created_at', { ascending: false });
   if (data) setCache(cacheKey, data);
   return { data, error };
 };
@@ -69,7 +69,7 @@ export const createNewRoll = async (userId: string, filmType: string, capacity: 
   return result;
 };
 export const updateRoll = async (rollId: string, data: any) => {
-  const result = await supabase.from('rolls').update(data).eq('id', rollId).select('*, photos(id,url,thumbnail_url,metadata), albums(title)').single();
+  const result = await supabase.from('rolls').update(data).eq('id', rollId).select('*, photos(*), albums(title)').single();
   if (!result.error && result.data) invalidateCache([`rolls-${result.data.user_id}`, `albums-${result.data.user_id}`]);
   return result;
 };
@@ -154,11 +154,11 @@ export const fetchAlbums = async (userId: string) => {
   const cached = getCache<Album[]>(cacheKey);
   if (cached) return { data: cached, error: null };
 
-  const { data, error } = await supabase.from('albums').select('*, rolls(*, photos(id,url,thumbnail_url,metadata))').eq('user_id', userId);
+  const { data, error } = await supabase.from('albums').select('*, rolls(*, photos(*))').eq('user_id', userId);
   if (data) setCache(cacheKey, data);
   return { data, error };
 };
-export const fetchAlbumDetails = (albumId: string) => supabase.from('albums').select('*, rolls(*, photos(id,url,thumbnail_url,metadata))').eq('id', albumId).single();
+export const fetchAlbumDetails = (albumId: string) => supabase.from('albums').select('*, rolls(*, photos(*))').eq('id', albumId).single();
 export const createAlbum = async (userId: string, title: string) => {
   const result = await supabase.from('albums').insert({ user_id: userId, title }).select().single();
   if (!result.error) invalidateCache(`albums-${userId}`);

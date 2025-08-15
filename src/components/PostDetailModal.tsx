@@ -1,6 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
-import { Post } from '../types';
+import { Post } from '../context/AppContext';
 import PostView from './PostView';
 
 interface PostDetailModalProps {

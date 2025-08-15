@@ -1,6 +1,6 @@
 import React from 'react';
 import { X, Download, Info } from 'lucide-react';
-import { Photo } from '../types';
+import { Photo } from '../context/AppContext';
 import { useAppContext } from '../context/AppContext';
 
 interface PhotoDetailModalProps {

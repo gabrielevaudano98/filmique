@@ -1,4 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { CameraView as NativeCameraView } from 'capacitor-camera-view';
 import { RefreshCw, Film, Lock, Camera, ArrowLeft, Loader } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
@@ -11,13 +13,6 @@ type ProControl = 'iso' | 'shutterSpeed' | 'focus';
 const formatShutterSpeed = (seconds: number): string => {
   if (seconds >= 1) return `${seconds}"`;
   return `1/${Math.round(1 / seconds)}`;
-};
-
-// Helper to generate a range of numbers for sliders
-const generateNumericOptions = (min: number, max: number, steps: number): number[] => {
-  if (min >= max) return [min];
-  const step = (max - min) / (steps - 1);
-  return Array.from({ length: steps }, (_, i) => min + i * step);
 };
 
 const CameraView: React.FC = () => {
@@ -36,6 +31,7 @@ const CameraView: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  const [isNative, setIsNative] = useState(false);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [cameras, setCameras] = useState<MediaDeviceInfo[]>([]);
   const [activeCameraId, setActiveCameraId] = useState<string | null>(null);
@@ -77,55 +73,82 @@ const CameraView: React.FC = () => {
   }, [activeRoll]);
 
   useEffect(() => {
+    const native = Capacitor.isNativePlatform();
+    setIsNative(native);
+  }, []);
+
+  // This hook now manages the entire lifecycle of the camera stream
+  useEffect(() => {
     let isMounted = true;
     let activeStream: MediaStream | null = null;
 
     const startCamera = async () => {
-      try {
-        const constraints: MediaStreamConstraints = {
-          video: { deviceId: activeCameraId ? { exact: activeCameraId } : undefined },
-        };
-        const newStream = await navigator.mediaDevices.getUserMedia(constraints);
-        if (!isMounted) {
-          newStream.getTracks().forEach(track => track.stop());
-          return;
-        }
-        
-        activeStream = newStream;
-        setHasPermission(true);
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = newStream;
-        }
-
-        const videoTrack = newStream.getVideoTracks()[0];
-        const settings = videoTrack.getSettings();
-        setIsFrontCamera(settings.facingMode === 'user');
-
-        const trackCapabilities = videoTrack.getCapabilities();
-        setCapabilities(trackCapabilities);
-
-        if (trackCapabilities.zoom?.max && trackCapabilities.zoom.max > 1) {
-          const { min, max } = trackCapabilities.zoom;
-          const levels = [min, min + (max - min) * 0.25, min + (max - min) * 0.5, min + (max - min) * 0.75, max].map(z => parseFloat(z.toFixed(1)));
-          setZoomLevels(levels);
-          setZoom(min);
-        } else {
-          setZoomLevels([1]);
-          setZoom(1);
-        }
-
-        if (cameras.length === 0) {
-          const devices = await navigator.mediaDevices.enumerateDevices();
-          const videoDevices = devices.filter(d => d.kind === 'videoinput');
-          setCameras(videoDevices);
-          if (!activeCameraId && videoDevices.length > 0) {
-            setActiveCameraId(videoDevices[0].deviceId);
+      if (isNative) {
+        try {
+          const permissions = await NativeCameraView.checkPermissions();
+          if (permissions.camera !== 'granted') {
+            const request = await NativeCameraView.requestPermissions();
+            if (request.camera !== 'granted') {
+              if (isMounted) setHasPermission(false);
+              return;
+            }
           }
+          if (isMounted) {
+            setHasPermission(true);
+            await NativeCameraView.start({});
+            document.body.classList.add('camera-running');
+          }
+        } catch (e) {
+          console.error(e);
+          if (isMounted) setHasPermission(false);
         }
-      } catch (err) {
-        console.error(err);
-        if (isMounted) setHasPermission(false);
+      } else {
+        try {
+          const constraints: MediaStreamConstraints = {
+            video: { deviceId: activeCameraId ? { exact: activeCameraId } : undefined },
+          };
+          const newStream = await navigator.mediaDevices.getUserMedia(constraints);
+          if (!isMounted) {
+            newStream.getTracks().forEach(track => track.stop());
+            return;
+          }
+          
+          activeStream = newStream;
+          setHasPermission(true);
+
+          if (videoRef.current) {
+            videoRef.current.srcObject = newStream;
+          }
+
+          const videoTrack = newStream.getVideoTracks()[0];
+          const settings = videoTrack.getSettings();
+          setIsFrontCamera(settings.facingMode === 'user');
+
+          const trackCapabilities = videoTrack.getCapabilities();
+          setCapabilities(trackCapabilities);
+
+          if (trackCapabilities.zoom?.max && trackCapabilities.zoom.max > 1) {
+            const { min, max } = trackCapabilities.zoom;
+            const levels = [min, min + (max - min) * 0.25, min + (max - min) * 0.5, min + (max - min) * 0.75, max].map(z => parseFloat(z.toFixed(1)));
+            setZoomLevels(levels);
+            setZoom(min);
+          } else {
+            setZoomLevels([1]);
+            setZoom(1);
+          }
+
+          if (cameras.length === 0) {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter(d => d.kind === 'videoinput');
+            setCameras(videoDevices);
+            if (!activeCameraId && videoDevices.length > 0) {
+              setActiveCameraId(videoDevices[0].deviceId);
+            }
+          }
+        } catch (err) {
+          console.error(err);
+          if (isMounted) setHasPermission(false);
+        }
       }
     };
 
@@ -133,22 +156,29 @@ const CameraView: React.FC = () => {
 
     return () => {
       isMounted = false;
-      if (activeStream) {
+      if (isNative) {
+        document.body.classList.remove('camera-running');
+        NativeCameraView.stop();
+      } else if (activeStream) {
         activeStream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [activeCameraId]);
+  }, [isNative, activeCameraId]);
 
   const switchCamera = () => {
-    if (cameras.length > 1) {
-      const currentIndex = cameras.findIndex(c => c.deviceId === activeCameraId);
-      const nextIndex = (currentIndex + 1) % cameras.length;
-      setActiveCameraId(cameras[nextIndex].deviceId);
+    if (isNative) {
+      NativeCameraView.flipCamera();
+    } else {
+      if (cameras.length > 1) {
+        const currentIndex = cameras.findIndex(c => c.deviceId === activeCameraId);
+        const nextIndex = (currentIndex + 1) % cameras.length;
+        setActiveCameraId(cameras[nextIndex].deviceId);
+      }
     }
   };
 
   const cycleZoom = () => {
-    if (zoomLevels.length <= 1 || !videoRef.current?.srcObject) return;
+    if (isNative || zoomLevels.length <= 1 || !videoRef.current?.srcObject) return;
     
     const currentIndex = zoomLevels.indexOf(zoom);
     const nextIndex = (currentIndex + 1) % zoomLevels.length;
@@ -172,46 +202,56 @@ const CameraView: React.FC = () => {
 
     let imageBlob: Blob | null = null;
 
-    if (!videoRef.current || !canvasRef.current) return;
-    
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    const videoWidth = video.videoWidth;
-    const videoHeight = video.videoHeight;
-    const videoAspectRatio = videoWidth / videoHeight;
-
-    let sWidth, sHeight, sx, sy;
-
-    if (videoAspectRatio > targetAspectRatio) {
-      sHeight = videoHeight;
-      sWidth = videoHeight * targetAspectRatio;
-      sx = (videoWidth - sWidth) / 2;
-      sy = 0;
-    } else {
-      sWidth = videoWidth;
-      sHeight = videoWidth / targetAspectRatio;
-      sx = 0;
-      sy = (videoHeight - sHeight) / 2;
-    }
-
-    canvas.width = sWidth;
-    canvas.height = sHeight;
-
-    const context = canvas.getContext('2d');
-    if (context) {
-      if (isFrontCamera) {
-        context.translate(canvas.width, 0);
-        context.scale(-1, 1);
+    if (isNative) {
+      try {
+        const result = await NativeCameraView.capture({ quality: 90 });
+        const base64Response = await fetch(`data:image/jpeg;base64,${result.photo}`);
+        imageBlob = await base64Response.blob();
+      } catch (e) {
+        console.error(e);
       }
-      context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-    }
+    } else {
+      if (!videoRef.current || !canvasRef.current) return;
+      
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const videoWidth = video.videoWidth;
+      const videoHeight = video.videoHeight;
+      const videoAspectRatio = videoWidth / videoHeight;
 
-    imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+      let sWidth, sHeight, sx, sy;
+
+      if (videoAspectRatio > targetAspectRatio) {
+        sHeight = videoHeight;
+        sWidth = videoHeight * targetAspectRatio;
+        sx = (videoWidth - sWidth) / 2;
+        sy = 0;
+      } else {
+        sWidth = videoWidth;
+        sHeight = videoWidth / targetAspectRatio;
+        sx = 0;
+        sy = (videoHeight - sHeight) / 2;
+      }
+
+      canvas.width = sWidth;
+      canvas.height = sHeight;
+
+      const context = canvas.getContext('2d');
+      if (context) {
+        if (isFrontCamera) {
+          context.translate(canvas.width, 0);
+          context.scale(-1, 1);
+        }
+        context.drawImage(video, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+      }
+
+      imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+    }
 
     if (imageBlob) {
       const metadata = {
-        iso: cameraMode === 'pro' ? manualSettings.iso : 400,
-        shutterSpeed: cameraMode === 'pro' ? formatShutterSpeed(manualSettings.shutterSpeed) : '1/125',
+        iso: cameraMode === 'pro' && !isNative ? manualSettings.iso : 400,
+        shutterSpeed: cameraMode === 'pro' && !isNative ? formatShutterSpeed(manualSettings.shutterSpeed) : '1/125',
         zoom: `${zoom}x`,
       };
       await takePhoto(imageBlob, metadata);
@@ -224,6 +264,15 @@ const CameraView: React.FC = () => {
     capabilities?.focusDistance && { id: 'focus', label: 'F', value: `${manualSettings.focus}m` },
   ].filter(Boolean) as { id: ProControl; label: string; value: string | number }[];
 
+  const generateNumericOptions = (min: number, max: number, steps: number) => {
+    const options = [];
+    const step = (max - min) / (steps - 1);
+    for (let i = 0; i < steps; i++) {
+      options.push(min + i * step);
+    }
+    return options;
+  };
+
   if (hasPermission === null) {
     return <div className="h-screen flex items-center justify-center bg-black text-white">Initializing Camera...</div>;
   }
@@ -232,7 +281,7 @@ const CameraView: React.FC = () => {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden text-white camera-modal bg-black">
+    <div className={`h-screen flex flex-col overflow-hidden text-white camera-modal ${isNative ? 'bg-transparent' : 'bg-black'}`}>
       <header className="w-full bg-black text-white px-4 flex items-center justify-between relative z-40 h-16 py-3 pt-safe flex-shrink-0">
         <button
           onClick={() => setCurrentView('rolls')}
@@ -250,13 +299,15 @@ const CameraView: React.FC = () => {
       <canvas ref={canvasRef} className="hidden"></canvas>
       
       <div className="flex-1 flex items-center justify-center relative overflow-hidden">
-        <div className={`w-full h-full max-w-full max-h-full ${aspectRatioClass} relative bg-black overflow-hidden flex items-center justify-center`}>
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
-          />
+        <div className={`w-full h-full max-w-full max-h-full ${aspectRatioClass} relative ${isNative ? 'bg-transparent' : 'bg-black'} overflow-hidden flex items-center justify-center`}>
+          {!isNative && (
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
+            />
+          )}
           <FocalPlaneShutter 
             isAnimating={isShutterAnimating} 
             onAnimationEnd={() => setIsShutterAnimating(false)} 
@@ -266,7 +317,7 @@ const CameraView: React.FC = () => {
 
       <div className="bg-gray-900 pb-safe select-none flex-shrink-0 flex flex-col justify-center h-[30vh] min-h-[240px] max-h-[300px]">
         <div className="flex flex-col items-center justify-center">
-          {cameraMode === 'pro' && (
+          {cameraMode === 'pro' && !isNative && (
             <div className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2">
               <div className="flex items-center justify-center space-x-6">
                 {proControls.map(c => (
@@ -303,7 +354,7 @@ const CameraView: React.FC = () => {
               <div className="flex flex-col items-center gap-2">
                 <div className="flex items-center justify-center space-x-6 font-sans text-base">
                   <button onClick={() => setCameraMode('simple')} className={cameraMode === 'simple' ? 'text-amber-400 font-bold' : 'text-white'}>PHOTO</button>
-                  <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-amber-400 font-bold' : 'text-white'}>PRO</button>
+                  {!isNative && <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-amber-400 font-bold' : 'text-white'}>PRO</button>}
                 </div>
                 <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
                   <button onClick={handleTakePhoto} disabled={activeRoll?.is_completed || isSavingPhoto} aria-label="Take Photo" className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200">
@@ -321,10 +372,10 @@ const CameraView: React.FC = () => {
 
             {/* Right: Zoom & Switch */}
             <div className="flex-1 flex justify-end items-center space-x-2">
-              <button onClick={cycleZoom} disabled={zoomLevels.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 text-white flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
-                {`${zoom.toFixed(1)}x`}
+              <button onClick={cycleZoom} disabled={isNative || zoomLevels.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 text-white flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
+                {!isNative && `${zoom.toFixed(1)}x`}
               </button>
-              <button onClick={switchCamera} disabled={cameras.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
+              <button onClick={switchCamera} disabled={!isNative && cameras.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
                 <RefreshCw className="w-6 h-6 text-white" />
               </button>
             </div>
