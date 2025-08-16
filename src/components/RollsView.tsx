@@ -141,10 +141,10 @@ const RollsView: React.FC = () => {
             <h1 className="text-3xl font-bold text-white">Darkroom</h1>
             <button
               onClick={() => setActiveSection('shelf')}
-              className="flex items-center justify-center w-11 h-11 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl text-white hover:bg-neutral-700/80 transition-colors"
+              className="flex items-center justify-center w-11 h-11 bg-gradient-to-r from-brand-amber-start to-brand-amber-end rounded-xl text-white hover:opacity-90 transition-colors shadow-lg shadow-brand-amber-start/20"
               aria-label="View Shelf"
             >
-              <Library className="w-5 h-5 text-gray-300" />
+              <Library className="w-5 h-5 text-white" />
             </button>
           </>
         )}
