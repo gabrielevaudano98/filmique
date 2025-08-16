@@ -22,7 +22,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
   const [showFilmModal, setShowFilmModal] = useState(false);
   const [headerAction, setHeaderAction] = useState<{ icon: React.ElementType, action: () => void } | null>(null);
-  const [rollsViewSection, setRollsViewSection] = useState<'darkroom' | 'rolls'>('rolls');
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -80,13 +79,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     developShelvedRoll: rollsAndPhotos.developShelvedRoll,
     headerAction,
     setHeaderAction,
-    rollsViewSection,
-    setRollsViewSection,
     isTopBarVisible,
     setIsTopBarVisible,
     searchTerm,
     setSearchTerm,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, rollsViewSection, isTopBarVisible, searchTerm]);
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };

@@ -20,7 +20,6 @@ import PostDevelopmentWizard from './components/PostDevelopmentWizard';
 import RollsSettingsView from './components/RollsSettingsView';
 import LibraryView from './components/LibraryView';
 import { Roll } from './types';
-import PrintsView from './components/PrintsView';
 
 function App() {
   const { 
@@ -43,7 +42,6 @@ function App() {
       case 'notifications': return <NotificationsView />;
       case 'uncategorizedRolls': return <UncategorizedRollsView />;
       case 'rollsSettings': return <RollsSettingsView />;
-      case 'prints': return <PrintsView />;
       default: return <CommunityView />;
     }
   };

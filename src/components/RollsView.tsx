@@ -1,22 +1,15 @@
-import React, { useMemo } from 'react';
-import { useSwipeable } from 'react-swipeable';
+import React, { useMemo, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
 import RollCard from './RollCard';
-import { Clock, Film, Archive, Library, Printer } from 'lucide-react';
+import { Film, Archive } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
-import HeaderActionButton from './HeaderActionButton';
-
-const DarkroomEmptyState = () => (
-  <div className="text-center py-24 text-neutral-500">
-    <Clock className="w-16 h-16 mx-auto mb-4" />
-    <h3 className="text-xl font-bold text-white">Darkroom is Empty</h3>
-    <p className="mt-2">When you finish a roll, it will appear here to be developed.</p>
-  </div>
-);
+import SegmentedControl from './SegmentedControl';
+import PrintsView from './PrintsView';
+import DarkroomEmptyState from './DarkroomEmptyState';
 
 const RollsEmptyState = () => (
     <div className="text-center py-24 text-neutral-500">
@@ -38,21 +31,10 @@ const RollsView: React.FC = () => {
   const { 
     developingRolls, completedRolls,
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
-    rollsViewSection, setRollsViewSection,
     searchTerm, setSearchTerm,
-    setCurrentView
   } = useAppContext();
 
-  const handlers = useSwipeable({
-    onSwipedLeft: () => {
-      if (rollsViewSection === 'rolls') setRollsViewSection('darkroom');
-    },
-    onSwipedRight: () => {
-      if (rollsViewSection === 'darkroom') setRollsViewSection('rolls');
-    },
-    preventScrollOnSwipe: true,
-    trackMouse: true,
-  });
+  const [activeSection, setActiveSection] = useState<'rolls' | 'darkroom' | 'prints'>('rolls');
 
   const { shelfRolls, archivedRolls } = useMemo(() => {
     const developed = completedRolls.filter(r => isRollDeveloped(r));
@@ -126,31 +108,25 @@ const RollsView: React.FC = () => {
   const groupEntries = Object.entries(groupedRolls);
 
   return (
-    <div {...handlers} className="flex flex-col w-full">
-      <header className="sticky top-[64px] z-30 bg-neutral-900/80 backdrop-blur-lg -mx-4 px-4 pt-4 pb-4 border-b border-neutral-700/50">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-white">
-            {rollsViewSection === 'rolls' ? 'Rolls' : 'Darkroom'}
-          </h1>
-          <div className="flex items-center gap-2">
-            <HeaderActionButton
-              icon={Printer}
-              onClick={() => setCurrentView('prints')}
-              aria-label="View Prints"
-            />
-            <HeaderActionButton
-              icon={Clock}
-              onClick={() => setRollsViewSection(rollsViewSection === 'darkroom' ? 'rolls' : 'darkroom')}
-              isActive={rollsViewSection === 'darkroom'}
-              aria-label="Toggle Darkroom View"
-            />
-          </div>
-        </div>
+    <div className="flex flex-col w-full">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-white">Library</h1>
+      </div>
+      <header className="sticky top-[64px] z-30 bg-neutral-900/95 -mx-4 px-4 py-3 border-b border-neutral-700/50">
+        <SegmentedControl
+          options={[
+            { label: 'Rolls', value: 'rolls' },
+            { label: 'Darkroom', value: 'darkroom' },
+            { label: 'Prints', value: 'prints' },
+          ]}
+          value={activeSection}
+          onChange={(val) => setActiveSection(val as any)}
+        />
       </header>
 
-      <div className="relative flex-1">
-        {rollsViewSection === 'darkroom' && (
-          <div key="darkroom" className="animate-slide-in-from-left p-4">
+      <div className="relative flex-1 mt-6">
+        {activeSection === 'darkroom' && (
+          <div key="darkroom" className="animate-slide-in-from-left">
             {developingRolls.length > 0 ? (
               <div className="space-y-3">
                 {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
@@ -159,23 +135,22 @@ const RollsView: React.FC = () => {
           </div>
         )}
 
-        {rollsViewSection === 'rolls' && (
+        {activeSection === 'rolls' && (
           <div key="rolls" className="animate-slide-in-from-right">
-            <div className="sticky top-[132px] z-30 flex justify-end pointer-events-none -mx-4 px-4 h-14 items-center">
+            <div className="sticky top-[122px] z-20 flex justify-end pointer-events-none -mx-4 px-4 h-12 items-center">
               <div className="pointer-events-auto flex items-center gap-2">
                 <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
                 <RollsControls />
               </div>
             </div>
-            
-            <div className="space-y-6 -mt-14 px-4 pb-4">
+            <div className="space-y-6 -mt-12">
               {processedRolls.length > 0 ? (
                 groupEntries.map(([groupName, rolls]) => (
                   <div key={groupName}>
-                    <h3 className="sticky top-[132px] z-20 py-3 -mx-4 px-4 text-lg font-bold text-white mb-3 bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
+                    <h3 className="sticky top-[170px] z-10 py-2 -mx-4 px-4 text-lg font-bold text-white mb-3 bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50">
                       {groupName}
                     </h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                       {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
                     </div>
                   </div>
@@ -184,6 +159,12 @@ const RollsView: React.FC = () => {
                 rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
               )}
             </div>
+          </div>
+        )}
+
+        {activeSection === 'prints' && (
+          <div key="prints" className="animate-fade-in">
+            <PrintsView />
           </div>
         )}
       </div>
