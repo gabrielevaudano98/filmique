@@ -1,22 +1,31 @@
 import React from 'react';
 
 interface SegmentedControlProps {
-  options: { label?: string; value: string; icon: React.ElementType }[];
+  options: { 
+    label?: string; 
+    value: string; 
+    icon: React.ElementType;
+    colors: { from: string; to: string; shadow: string; };
+  }[];
   value: string;
   onChange: (value: string) => void;
 }
 
 const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onChange }) => {
   const activeIndex = options.findIndex(opt => opt.value === value);
+  const activeOption = options[activeIndex];
+
+  const gradientClass = activeOption ? `bg-gradient-to-r ${activeOption.colors.from} ${activeOption.colors.to}` : '';
+  const shadowClass = activeOption ? `shadow-lg ${activeOption.colors.shadow}` : '';
 
   return (
     <div 
-      className="relative grid w-full p-1 bg-neutral-900/70 backdrop-blur-lg border border-white/10 rounded-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" 
+      className="relative grid w-full p-1 bg-black/30 backdrop-blur-xl border border-white/10 rounded-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" 
       style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}
     >
       {/* Sliding Pill Background */}
       <div
-        className="absolute top-1 bottom-1 h-auto rounded-lg bg-gradient-to-r from-brand-amber-start to-brand-amber-end shadow-lg shadow-brand-amber-start/40 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] transition-all duration-300 ease-spring-soft"
+        className={`absolute top-1 bottom-1 h-auto rounded-lg ${gradientClass} ${shadowClass} shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)] transition-all duration-500 ease-[cubic-bezier(0.2,1,0.35,1)]`}
         style={{
           gridColumn: `${activeIndex + 1}`,
         }}
@@ -31,11 +40,11 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            className={`relative z-10 flex-1 text-sm font-bold text-center transition-all duration-300 rounded-lg flex items-center justify-center
+            className={`relative z-10 flex-1 text-sm font-bold text-center transition-colors duration-300 rounded-lg flex items-center justify-center
               ${hasLabel ? 'py-3 gap-2' : 'p-2.5'}
               ${isActive
                 ? 'text-white'
-                : 'text-gray-400 hover:text-white'
+                : 'text-gray-300 hover:text-white'
               }
             `}
           >

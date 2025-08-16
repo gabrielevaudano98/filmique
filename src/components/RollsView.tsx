@@ -108,9 +108,9 @@ const RollsView: React.FC = () => {
   const groupEntries = Object.entries(groupedRolls);
 
   const sectionOptions = [
-    { value: 'rolls', icon: Library },
-    { value: 'darkroom', icon: Clock },
-    { value: 'prints', icon: Printer },
+    { value: 'rolls', icon: Library, colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' } },
+    { value: 'darkroom', icon: Clock, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' } },
+    { value: 'prints', icon: Printer, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' } },
   ];
 
   return (
