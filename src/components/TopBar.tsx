@@ -3,13 +3,21 @@ import { useAppContext } from '../context/AppContext';
 import NotificationsBell from './NotificationsBell';
 
 const TopBar: React.FC = () => {
-  const { notifications, setCurrentView } = useAppContext();
+  const { notifications, setCurrentView, headerAction } = useAppContext();
   const unreadCount = notifications.filter(n => !n.is_read).length;
+
+  const BackButton = headerAction ? headerAction.icon : null;
 
   return (
     <header className="sticky top-0 z-40 bg-neutral-900/80 backdrop-blur-lg border-b border-neutral-700/50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="flex items-center justify-between h-16 px-4">
-        <div className="w-10"></div> {/* Spacer */}
+        <div className="w-10">
+          {headerAction && BackButton && (
+            <button onClick={headerAction.action} className="p-2 text-gray-300 hover:text-white transition-colors -ml-2">
+              <BackButton className="w-5 h-5" />
+            </button>
+          )}
+        </div>
         <h1 className="text-lg font-bold text-white">
           Filmique
         </h1>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
@@ -36,10 +36,26 @@ const ArchivedEmptyState = () => (
 const RollsView: React.FC = () => {
   const { 
     developingRolls, completedRolls,
-    rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode
+    rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
+    setHeaderAction
   } = useAppContext();
   const [activeSection, setActiveSection] = useState<'darkroom' | 'shelf'>('darkroom');
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    if (activeSection === 'shelf') {
+      setHeaderAction({
+        icon: ArrowLeft,
+        action: () => setActiveSection('darkroom'),
+      });
+    } else {
+      setHeaderAction(null);
+    }
+
+    return () => {
+      setHeaderAction(null);
+    };
+  }, [activeSection, setHeaderAction]);
 
   const handlers = useSwipeable({
     onSwipedRight: () => {
@@ -127,9 +143,6 @@ const RollsView: React.FC = () => {
       <div className="flex items-center justify-between">
         {activeSection === 'shelf' ? (
           <>
-            <button onClick={() => setActiveSection('darkroom')} className="p-2 text-gray-400 hover:text-white transition-colors -ml-2">
-              <ArrowLeft className="w-5 h-5" />
-            </button>
             <h1 className="text-3xl font-bold text-white">Shelf</h1>
             <div className="flex items-center gap-2">
               <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />

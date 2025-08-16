@@ -1,4 +1,5 @@
 import { Session } from '@supabase/supabase-js';
+import React from 'react';
 
 export interface Grain { amt: number; size?: number; rough?: number; chroma?: number; }
 export interface Vignette { ev: number; radius?: number; softness?: number; }
@@ -235,4 +236,6 @@ export interface AppContextType {
   setRollsSelectedFilm: (film: string) => void;
   rollsViewMode: 'active' | 'archived';
   setRollsViewMode: (mode: 'active' | 'archived') => void;
+  headerAction: { icon: React.ElementType, action: () => void } | null;
+  setHeaderAction: (action: { icon: React.ElementType, action: () => void } | null) => void;
 }
