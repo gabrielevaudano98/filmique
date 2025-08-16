@@ -3,17 +3,17 @@ import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
 import RollCard from './RollCard';
-import { Clock, Film, Archive, ChevronDown } from 'lucide-react';
+import { Clock, Film, Archive, Printer } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
 import StickyGroupHeader from './StickyGroupHeader';
 
 const DarkroomEmptyState = () => (
-  <div className="text-center py-12 text-neutral-500">
-    <Clock className="w-12 h-12 mx-auto mb-4" />
-    <h3 className="text-lg font-bold text-white">Darkroom is Empty</h3>
-    <p className="mt-1 text-sm">Finish a roll in the camera to start developing.</p>
+  <div className="text-center py-24 text-neutral-500">
+    <Clock className="w-16 h-16 mx-auto mb-4" />
+    <h3 className="text-xl font-bold text-white">Darkroom is Empty</h3>
+    <p className="mt-2">Finish a roll in the camera to start developing.</p>
   </div>
 );
 
@@ -33,29 +33,36 @@ const ArchivedEmptyState = () => (
   </div>
 );
 
+const PrintsEmptyState = () => (
+  <div className="text-center py-24 text-neutral-500">
+    <Printer className="w-16 h-16 mx-auto mb-4" />
+    <h3 className="text-xl font-bold text-white">Prints Coming Soon</h3>
+    <p className="mt-2">A place to order and manage physical prints of your photos.</p>
+  </div>
+);
+
+const SectionButton: React.FC<{
+  icon: React.ElementType;
+  isActive: boolean;
+  onClick: () => void;
+}> = ({ icon: Icon, isActive, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`p-3 rounded-lg transition-colors ${
+      isActive ? 'bg-neutral-700 text-white' : 'text-gray-400 hover:bg-neutral-700/50'
+    }`}
+  >
+    <Icon className="w-5 h-5" />
+  </button>
+);
+
 const StudioView: React.FC = () => {
   const { 
     developingRolls, completedRolls,
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
+    studioSection, setStudioSection,
     searchTerm, setSearchTerm
   } = useAppContext();
-
-  const [isDarkroomOpen, setIsDarkroomOpen] = useState(true);
-  const [isShelfHeaderSticky, setIsShelfHeaderSticky] = useState(false);
-  const shelfHeaderRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsShelfHeaderSticky(!entry.isIntersecting && entry.boundingClientRect.top < 64);
-      },
-      { threshold: 0, rootMargin: "-65px 0px 0px 0px" }
-    );
-
-    const currentRef = shelfHeaderRef.current;
-    if (currentRef) observer.observe(currentRef);
-    return () => { if (currentRef) observer.unobserve(currentRef); };
-  }, []);
 
   const { shelfRolls, archivedRolls } = useMemo(() => {
     const developed = completedRolls.filter(r => isRollDeveloped(r));
@@ -130,66 +137,58 @@ const StudioView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full">
-      <h1 className="text-3xl font-bold text-white mb-6">Studio</h1>
-
-      {/* Darkroom Section */}
-      <div className="mb-8">
-        <button
-          onClick={() => setIsDarkroomOpen(!isDarkroomOpen)}
-          className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-neutral-800/50 transition-colors"
-        >
-          <h2 className="text-2xl font-bold text-white">Darkroom</h2>
-          <ChevronDown className={`w-6 h-6 text-gray-400 transition-transform ${isDarkroomOpen ? 'rotate-180' : ''}`} />
-        </button>
-        {isDarkroomOpen && (
-          <div className="mt-4 animate-fade-in">
-            {developingRolls.length > 0 ? (
-              <div className="space-y-3">
-                {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
-              </div>
-            ) : <DarkroomEmptyState />}
-          </div>
-        )}
-      </div>
-
-      {/* Sticky Shelf Header */}
-      <div className={`sticky top-[64px] z-30 bg-neutral-900/80 backdrop-blur-lg -mx-4 px-4 py-4 border-b border-neutral-700/50 transition-opacity duration-300 ${isShelfHeaderSticky ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">Shelf</h1>
-          <div className="flex items-center gap-2">
-            <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-            <RollsControls />
-          </div>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-white">Studio</h1>
+        <div className="flex items-center p-1 bg-neutral-800 rounded-xl space-x-1">
+          <SectionButton icon={Clock} isActive={studioSection === 'darkroom'} onClick={() => setStudioSection('darkroom')} />
+          <SectionButton icon={Film} isActive={studioSection === 'rolls'} onClick={() => setStudioSection('rolls')} />
+          <SectionButton icon={Printer} isActive={studioSection === 'prints'} onClick={() => setStudioSection('prints')} />
         </div>
       </div>
 
-      {/* Shelf Section */}
-      <div className="space-y-6">
-        <div ref={shelfHeaderRef} className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">Shelf</h1>
-          <div className="flex items-center gap-2">
-            <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-            <RollsControls />
-          </div>
-        </div>
-
-        {processedRolls.length > 0 ? (
-          groupEntries.map(([groupName, rolls]) => (
-            <div key={groupName}>
-              {rollsGroupBy !== 'none' && (
-                <StickyGroupHeader>
-                  {groupName}
-                </StickyGroupHeader>
-              )}
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
-              </div>
+      {studioSection === 'darkroom' && (
+        <div key="darkroom" className="animate-fade-in">
+          {developingRolls.length > 0 ? (
+            <div className="space-y-3">
+              {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
             </div>
-          ))
-        ) : (
-          rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <ShelfEmptyState />
-        )}
-      </div>
+          ) : <DarkroomEmptyState />}
+        </div>
+      )}
+
+      {studioSection === 'rolls' && (
+        <div key="rolls" className="animate-fade-in">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-white">Shelf</h2>
+            <div className="flex items-center gap-2">
+              <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+              <RollsControls />
+            </div>
+          </div>
+          {processedRolls.length > 0 ? (
+            groupEntries.map(([groupName, rolls]) => (
+              <div key={groupName}>
+                {rollsGroupBy !== 'none' && (
+                  <StickyGroupHeader>
+                    {groupName}
+                  </StickyGroupHeader>
+                )}
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                  {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
+                </div>
+              </div>
+            ))
+          ) : (
+            rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <ShelfEmptyState />
+          )}
+        </div>
+      )}
+
+      {studioSection === 'prints' && (
+        <div key="prints" className="animate-fade-in">
+          <PrintsEmptyState />
+        </div>
+      )}
     </div>
   );
 };

@@ -238,6 +238,8 @@ export interface AppContextType {
   setRollsViewMode: (mode: 'active' | 'archived') => void;
   headerAction: { icon: React.ElementType, action: () => void } | null;
   setHeaderAction: (action: { icon: React.ElementType, action: () => void } | null) => void;
+  studioSection: 'darkroom' | 'rolls' | 'prints';
+  setStudioSection: (section: 'darkroom' | 'rolls' | 'prints') => void;
   isTopBarVisible: boolean;
   setIsTopBarVisible: (visible: boolean) => void;
 }
