@@ -238,8 +238,6 @@ export interface AppContextType {
   setRollsViewMode: (mode: 'active' | 'archived') => void;
   headerAction: { icon: React.ElementType, action: () => void } | null;
   setHeaderAction: (action: { icon: React.ElementType, action: () => void } | null) => void;
-  rollsViewSection: 'darkroom' | 'shelf';
-  setRollsViewSection: (section: 'darkroom' | 'shelf') => void;
   isTopBarVisible: boolean;
   setIsTopBarVisible: (visible: boolean) => void;
 }

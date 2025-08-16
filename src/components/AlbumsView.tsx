@@ -2,24 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Album } from '../types';
 import AlbumCard from './AlbumCard';
-import { Plus, Library as LibraryIcon, ArrowLeft } from 'lucide-react';
+import { Plus, Library as LibraryIcon } from 'lucide-react';
 import CreateAlbumModal from './CreateAlbumModal';
 
 const AlbumsView: React.FC = () => {
-  const { albums, setSelectedAlbum, setCurrentView, refetchAlbums, setHeaderAction } = useAppContext();
+  const { albums, setSelectedAlbum, setCurrentView, refetchAlbums } = useAppContext();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     refetchAlbums();
   }, [refetchAlbums]);
-
-  useEffect(() => {
-    setHeaderAction({
-      icon: ArrowLeft,
-      action: () => setCurrentView('library'),
-    });
-    return () => setHeaderAction(null);
-  }, [setHeaderAction, setCurrentView]);
 
   const handleSelectAlbum = (album: Album) => {
     setSelectedAlbum(album);

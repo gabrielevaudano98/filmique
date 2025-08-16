@@ -19,8 +19,7 @@ const RollDetailView: React.FC = () => {
     archiveRoll, 
     updateRollTags,
     setHeaderAction,
-    setIsTopBarVisible,
-    setRollsViewSection
+    setIsTopBarVisible
   } = useAppContext();
   
   const [photoToView, setPhotoToView] = useState<Photo | null>(null);
@@ -33,9 +32,8 @@ const RollDetailView: React.FC = () => {
 
   const handleBack = useCallback(() => {
     setSelectedRoll(null);
-    setRollsViewSection('shelf');
-    setCurrentView('rolls');
-  }, [setSelectedRoll, setRollsViewSection, setCurrentView]);
+    setCurrentView('studio');
+  }, [setSelectedRoll, setCurrentView]);
 
   useEffect(() => {
     setHeaderAction({ icon: ArrowLeft, action: handleBack });
@@ -73,7 +71,7 @@ const RollDetailView: React.FC = () => {
   }, [debouncedTags, selectedRoll, updateRollTags]);
 
   if (!selectedRoll) {
-    setCurrentView('rolls');
+    setCurrentView('studio');
     return null;
   }
 

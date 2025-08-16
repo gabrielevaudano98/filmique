@@ -1,6 +1,6 @@
 import React from 'react';
 import CameraView from './components/CameraView';
-import RollsView from './components/RollsView';
+import StudioView from './components/StudioView';
 import CommunityView from './components/CommunityView';
 import ChallengesView from './components/ChallengesView';
 import ProfileView from './components/ProfileView';
@@ -18,7 +18,6 @@ import UncategorizedRollsView from './components/UncategorizedRollsView';
 import RollCompletionWizard from './components/RollCompletionWizard';
 import PostDevelopmentWizard from './components/PostDevelopmentWizard';
 import RollsSettingsView from './components/RollsSettingsView';
-import LibraryView from './components/LibraryView';
 import AlbumsView from './components/AlbumsView';
 import { Roll } from './types';
 
@@ -32,8 +31,7 @@ function App() {
 
   const renderCurrentView = () => {
     switch (currentView) {
-      case 'rolls': return <RollsView />;
-      case 'library': return <LibraryView />;
+      case 'studio': return <StudioView />;
       case 'albums': return <AlbumsView />;
       case 'community': return <CommunityView />;
       case 'challenges': return <ChallengesView />;
