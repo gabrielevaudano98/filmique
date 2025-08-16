@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
@@ -23,12 +23,13 @@ const SettingsRow: React.FC<{
 }> = ({ label, isSelected, onClick }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center justify-between p-4 text-left transition-colors min-h-[56px] ${
-      isSelected ? 'bg-neutral-700/50' : 'hover:bg-neutral-700/30'
+    className={`w-full flex items-center justify-between p-4 text-left transition-all duration-200 border-l-2 ${
+      isSelected
+        ? 'border-brand-amber-start bg-brand-amber-start/10'
+        : 'border-transparent hover:bg-neutral-700/50'
     }`}
   >
     <span className={`font-medium ${isSelected ? 'text-brand-amber-start' : 'text-white'}`}>{label}</span>
-    {isSelected && <Check className="w-5 h-5 text-brand-amber-start" />}
   </button>
 );
 
@@ -53,7 +54,7 @@ const RollsSettingsView: React.FC = () => {
   ];
 
   const groupOptions = [
-    { key: 'month', label: 'Month' },
+    { key: 'date', label: 'Date' },
     { key: 'film_type', label: 'Film Type' },
     { key: 'tag', label: 'Tag' },
     { key: 'none', label: 'None' },

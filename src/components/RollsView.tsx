@@ -72,20 +72,22 @@ const RollsView: React.FC = () => {
   }, [shelfRolls, searchTerm, rollsSelectedFilm, rollsSortOrder]);
 
   const groupedRolls = useMemo(() => {
-    if (rollsGroupBy === 'month') {
-      const byMonth = processedRolls.reduce((acc, roll) => {
+    if (rollsGroupBy === 'date') {
+      const byDay = processedRolls.reduce((acc, roll) => {
         if (!roll.developed_at) return acc;
-        const date = new Date(roll.developed_at);
-        const key = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+        const key = new Date(roll.developed_at).toISOString().split('T')[0];
         if (!acc[key]) acc[key] = [];
         acc[key].push(roll);
         return acc;
       }, {} as Record<string, Roll[]>);
       
-      const sortedKeys = Object.keys(byMonth).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+      const sortedKeys = Object.keys(byDay).sort((a, b) => b.localeCompare(a));
+      
       const sortedGroups: Record<string, Roll[]> = {};
       for (const key of sortedKeys) {
-        sortedGroups[key] = byMonth[key];
+        const date = new Date(key + 'T00:00:00');
+        const displayKey = date.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
+        sortedGroups[displayKey] = byDay[key];
       }
       return sortedGroups;
     }
@@ -104,9 +106,7 @@ const RollsView: React.FC = () => {
     }, {} as Record<string, Roll[]>);
   }, [processedRolls, rollsGroupBy]);
 
-  const groupEntries = rollsGroupBy === 'month' 
-    ? Object.entries(groupedRolls) 
-    : Object.entries(groupedRolls).sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
+  const groupEntries = Object.entries(groupedRolls);
 
   return (
     <div className="flex flex-col w-full space-y-6">
