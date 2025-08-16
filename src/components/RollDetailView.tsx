@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ArrowLeft, Download, Trash2, Archive, ArchiveRestore, Tag } from 'lucide-react';
+import { ArrowLeft, Download, Trash2, Archive, ArchiveRestore, Tag, Film } from 'lucide-react';
 import PhotoDetailModal from './PhotoDetailModal';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import { Photo } from '../context/AppContext';
 import PhotoInfoModal from './PhotoInfoModal';
-import Image from './Image';
 import TagInput from './TagInput';
 import { useDebounce } from '../hooks/useDebounce';
+import NegativePhoto from './NegativePhoto';
 
 const RollDetailView: React.FC = () => {
   const { 
@@ -45,7 +45,7 @@ const RollDetailView: React.FC = () => {
       setHeaderAction(null);
       setIsTopBarVisible(true);
     };
-  }, [setHeaderAction, setIsTopBarVisible]);
+  }, [setHeaderAction, setIsTopBarVisible, handleBack]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -81,8 +81,6 @@ const RollDetailView: React.FC = () => {
     ? new Date(selectedRoll.developed_at)
     : new Date(new Date(selectedRoll.completed_at!).getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  const cacheBuster = selectedRoll.developed_at ? `?t=${new Date(selectedRoll.developed_at).getTime()}` : '';
-
   const actionButtons = (
     <>
       <button onClick={() => downloadRoll(selectedRoll)} className="p-2 text-gray-300 hover:text-white transition-colors rounded-full"><Download className="w-5 h-5" /></button>
@@ -117,9 +115,9 @@ const RollDetailView: React.FC = () => {
           <p className="text-gray-400">Developed on {developedDate.toLocaleDateString()}</p>
         </div>
 
-        <div className="p-4">
+        <div className="p-4 space-y-8">
           {/* Info & Tags Section */}
-          <div className="mb-8 p-4 bg-neutral-800/50 rounded-xl border border-neutral-700/50">
+          <div className="p-4 bg-neutral-800/50 rounded-xl border border-neutral-700/50">
             <div className="flex justify-between items-center mb-3">
               <div>
                 <p className="font-bold text-white">{selectedRoll.film_type}</p>
@@ -134,23 +132,41 @@ const RollDetailView: React.FC = () => {
             <TagInput tags={tags} onTagsChange={setTags} />
           </div>
 
-          {/* Film Strip */}
-          <div className="film-strip-bg max-w-md mx-auto">
-            <div className="space-y-2">
-              {selectedRoll.photos?.map((photo, index) => (
-                <div key={photo.id} className="w-full aspect-square bg-black p-1" onClick={() => setPhotoToView(photo)}>
-                  <Image 
-                    src={`${photo.url}${cacheBuster}`} 
-                    alt={`Photo ${index + 1}`} 
-                    className="w-full h-full object-cover"
-                  />
+          {/* Negatives Strip */}
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2"><Film className="w-6 h-6 text-brand-amber-start" /> Negatives</h2>
+            <div className="overflow-x-auto no-scrollbar -mx-4 px-4">
+              <div className="inline-flex flex-col py-2 bg-black/50 rounded-lg">
+                {/* Top Sprockets */}
+                <div className="flex px-2">
+                  {Array.from({ length: 15 }).map((_, i) => (
+                    <div key={i} className="w-16 h-4 m-1 bg-neutral-700 rounded-sm" />
+                  ))}
                 </div>
-              ))}
+                {/* Photos */}
+                <div className="flex space-x-2 p-2">
+                  {selectedRoll.photos?.map((photo) => (
+                    <button key={photo.id} onClick={() => setPhotoToView(photo)} className="w-40 h-40 flex-shrink-0 rounded-md overflow-hidden group bg-neutral-900">
+                      <NegativePhoto
+                        src={photo.thumbnail_url}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </button>
+                  ))}
+                </div>
+                {/* Bottom Sprockets */}
+                <div className="flex px-2">
+                  {Array.from({ length: 15 }).map((_, i) => (
+                    <div key={i} className="w-16 h-4 m-1 bg-neutral-700 rounded-sm" />
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Modals */}
       {photoToView && (
         <PhotoDetailModal 
           photo={photoToView} 

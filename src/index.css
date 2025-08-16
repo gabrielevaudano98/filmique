@@ -269,36 +269,6 @@
   animation: slide-in-right 0.3s cubic-bezier(0.2, 1, 0.35, 1) forwards;
 }
 
-/* Film Strip Effect */
-.film-strip-bg {
-  position: relative;
-  padding-left: 28px;
-  padding-right: 28px;
-}
-.film-strip-bg::before,
-.film-strip-bg::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 20px;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent,
-    transparent 8px,
-    #111 8px,
-    #111 16px,
-    transparent 16px
-  );
-  background-size: 100% 24px;
-}
-.film-strip-bg::before {
-  left: 0;
-}
-.film-strip-bg::after {
-  right: 0;
-}
-
 /* Slide-in/out animations for view transitions */
 @keyframes slide-in-from-right {
   from { transform: translateX(20px); opacity: 0; }
