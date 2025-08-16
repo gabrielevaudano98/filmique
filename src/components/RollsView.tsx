@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
@@ -39,17 +39,52 @@ const RollsView: React.FC = () => {
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode
   } = useAppContext();
   const [activeSection, setActiveSection] = useState<'darkroom' | 'shelf'>('darkroom');
-  const [searchTerm, setSearchTerm] = useState('');
-
+  const [offsetX, setOffsetX] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
   const handlers = useSwipeable({
-    onSwipedRight: () => {
-      if (activeSection === 'shelf') {
+    onSwiping: (event) => {
+      const viewWidth = containerRef.current?.offsetWidth || 0;
+      if (!viewWidth) return;
+
+      if (
+        (activeSection === 'darkroom' && event.deltaX > 0) ||
+        (activeSection === 'shelf' && event.deltaX < 0)
+      ) {
+        return;
+      }
+      setIsSwiping(true);
+      const baseOffset = activeSection === 'shelf' ? -viewWidth : 0;
+      setOffsetX(baseOffset + event.deltaX);
+    },
+    onSwiped: (event) => {
+      setIsSwiping(false);
+      const viewWidth = containerRef.current?.offsetWidth || 0;
+      if (!viewWidth) return;
+      
+      const threshold = viewWidth / 4;
+
+      if (activeSection === 'darkroom' && event.deltaX < -threshold) {
+        setActiveSection('shelf');
+      } else if (activeSection === 'shelf' && event.deltaX > threshold) {
         setActiveSection('darkroom');
+      } else {
+        const targetOffset = activeSection === 'shelf' ? -viewWidth : 0;
+        setOffsetX(targetOffset);
       }
     },
     preventScrollOnSwipe: true,
     trackMouse: true,
   });
+
+  useEffect(() => {
+    if (!isSwiping) {
+      const viewWidth = containerRef.current?.offsetWidth || 0;
+      const targetOffset = activeSection === 'shelf' ? -viewWidth : 0;
+      setOffsetX(targetOffset);
+    }
+  }, [activeSection, isSwiping]);
 
   const { shelfRolls, archivedRolls } = useMemo(() => {
     const developed = completedRolls.filter(r => isRollDeveloped(r));
@@ -123,8 +158,8 @@ const RollsView: React.FC = () => {
   const groupEntries = Object.entries(groupedRolls);
 
   return (
-    <div {...handlers} className="flex flex-col w-full space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col w-full h-full">
+      <div className="flex items-center justify-between mb-6 flex-shrink-0">
         {activeSection === 'shelf' ? (
           <>
             <button onClick={() => setActiveSection('darkroom')} className="p-2 text-gray-400 hover:text-white transition-colors -ml-2">
@@ -150,33 +185,41 @@ const RollsView: React.FC = () => {
         )}
       </div>
 
-      <div className="relative flex-1">
-        {activeSection === 'darkroom' && (
-          <div key="darkroom" className="animate-slide-in-from-left">
+      <div ref={containerRef} className="flex-1 relative overflow-hidden">
+        <div
+          {...handlers}
+          className="flex h-full absolute top-0 left-0"
+          style={{
+            width: '200%',
+            transform: `translateX(${offsetX}px)`,
+            transition: isSwiping ? 'none' : 'transform 300ms ease-out',
+          }}
+        >
+          <div className="w-1/2 h-full overflow-y-auto no-scrollbar pr-2">
             {developingRolls.length > 0 ? (
               <div className="space-y-3">
                 {developingRolls.map(roll => <RollListItem key={roll.id} roll={roll} onDelete={() => {}} onAssignAlbum={() => {}} isDeveloping={true} />)}
               </div>
             ) : <DarkroomEmptyState />}
           </div>
-        )}
 
-        {activeSection === 'shelf' && (
-          <div key="shelf" className="animate-slide-in-from-right space-y-6">
-            {processedRolls.length > 0 ? (
-              groupEntries.map(([groupName, rolls]) => (
-                <div key={groupName}>
-                  {rollsGroupBy !== 'none' && <h3 className="text-lg font-bold text-white mb-3">{groupName}</h3>}
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                    {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
+          <div className="w-1/2 h-full overflow-y-auto no-scrollbar pl-2">
+            <div className="space-y-6">
+              {processedRolls.length > 0 ? (
+                groupEntries.map(([groupName, rolls]) => (
+                  <div key={groupName}>
+                    {rollsGroupBy !== 'none' && <h3 className="text-lg font-bold text-white mb-3">{groupName}</h3>}
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                      {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
+                    </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <ShelfEmptyState />
-            )}
+                ))
+              ) : (
+                rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <ShelfEmptyState />
+              )}
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
