@@ -2,10 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
-import SegmentedControl from './SegmentedControl';
 import RollListItem from './RollListItem';
 import RollCard from './RollCard';
-import { Clock, Film, Archive, ArrowLeft, LayoutGrid } from 'lucide-react';
+import { Clock, Film, Archive, ArrowLeft, Library } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 
@@ -29,16 +28,16 @@ const ArchivedEmptyState = () => (
   <div className="text-center py-24 text-neutral-500">
     <Archive className="w-16 h-16 mx-auto mb-4" />
     <h3 className="text-xl font-bold text-white">No Archived Rolls</h3>
-    <p className="mt-2">Archive rolls from their detail page to store them here.</p>
+    <p className="mt-2">You can archive rolls from their detail page to store them here.</p>
   </div>
 );
 
 const RollsView: React.FC = () => {
   const { 
-    developingRolls, completedRolls, deleteRoll, removeRollFromAlbum,
-    rollsSortOrder, rollsGroupBy, rollsSelectedFilm
+    developingRolls, completedRolls,
+    rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode
   } = useAppContext();
-  const [activeSection, setActiveSection] = useState<'shelf' | 'darkroom' | 'archived'>('darkroom');
+  const [activeSection, setActiveSection] = useState<'darkroom' | 'shelf'>('darkroom');
   const [searchTerm, setSearchTerm] = useState('');
 
   const { shelfRolls, archivedRolls } = useMemo(() => {
@@ -50,7 +49,8 @@ const RollsView: React.FC = () => {
   }, [completedRolls]);
 
   const processedRolls = useMemo(() => {
-    let rolls = [...shelfRolls];
+    let rolls = rollsViewMode === 'active' ? [...shelfRolls] : [...archivedRolls];
+
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
       rolls = rolls.filter(r => 
@@ -61,21 +61,24 @@ const RollsView: React.FC = () => {
     if (rollsSelectedFilm !== 'all') rolls = rolls.filter(r => r.film_type === rollsSelectedFilm);
     
     rolls.sort((a, b) => {
+      const dateA = a.developed_at || a.completed_at || a.created_at;
+      const dateB = b.developed_at || b.completed_at || b.created_at;
       switch (rollsSortOrder) {
-        case 'oldest': return new Date(a.developed_at!).getTime() - new Date(b.developed_at!).getTime();
+        case 'oldest': return new Date(dateA).getTime() - new Date(dateB).getTime();
         case 'title_asc': return (a.title || '').localeCompare(b.title || '');
         case 'title_desc': return (b.title || '').localeCompare(a.title || '');
-        case 'newest': default: return new Date(b.developed_at!).getTime() - new Date(a.developed_at!).getTime();
+        case 'newest': default: return new Date(dateB).getTime() - new Date(dateA).getTime();
       }
     });
     return rolls;
-  }, [shelfRolls, searchTerm, rollsSelectedFilm, rollsSortOrder]);
+  }, [shelfRolls, archivedRolls, searchTerm, rollsSelectedFilm, rollsSortOrder, rollsViewMode]);
 
   const groupedRolls = useMemo(() => {
     if (rollsGroupBy === 'date') {
       const byDay = processedRolls.reduce((acc, roll) => {
-        if (!roll.developed_at) return acc;
-        const key = new Date(roll.developed_at).toISOString().split('T')[0];
+        const dateKey = roll.developed_at || roll.completed_at;
+        if (!dateKey) return acc;
+        const key = new Date(dateKey).toISOString().split('T')[0];
         if (!acc[key]) acc[key] = [];
         acc[key].push(roll);
         return acc;
@@ -113,41 +116,28 @@ const RollsView: React.FC = () => {
       <div className="flex items-center justify-between">
         {activeSection === 'shelf' ? (
           <>
-            <button onClick={() => setActiveSection('darkroom')} className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors p-2 -ml-2">
+            <button onClick={() => setActiveSection('darkroom')} className="p-2 text-gray-400 hover:text-white transition-colors -ml-2">
               <ArrowLeft className="w-5 h-5" />
             </button>
             <h1 className="text-3xl font-bold text-white">Shelf</h1>
+            <div className="flex items-center gap-2">
+              <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+              <RollsControls />
+            </div>
           </>
         ) : (
-          <h1 className="text-3xl font-bold text-white">My Rolls</h1>
-        )}
-        
-        {activeSection === 'shelf' ? (
-          <div className="flex items-center gap-2">
-            <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-            <RollsControls />
-          </div>
-        ) : (
-          <button
-            onClick={() => setActiveSection('shelf')}
-            className="flex items-center justify-center w-11 h-11 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl text-white hover:bg-neutral-700/80 transition-colors"
-            aria-label="View Shelf"
-          >
-            <LayoutGrid className="w-5 h-5 text-gray-300" />
-          </button>
+          <>
+            <h1 className="text-3xl font-bold text-white">Darkroom</h1>
+            <button
+              onClick={() => setActiveSection('shelf')}
+              className="flex items-center justify-center w-11 h-11 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl text-white hover:bg-neutral-700/80 transition-colors"
+              aria-label="View Shelf"
+            >
+              <Library className="w-5 h-5 text-gray-300" />
+            </button>
+          </>
         )}
       </div>
-
-      {activeSection !== 'shelf' && (
-        <SegmentedControl
-          options={[
-            { label: `Darkroom (${developingRolls.length})`, value: 'darkroom' },
-            { label: 'Archived', value: 'archived' },
-          ]}
-          value={activeSection}
-          onChange={(value) => setActiveSection(value as 'darkroom' | 'archived')}
-        />
-      )}
 
       <div key={activeSection} className="animate-fade-in">
         {activeSection === 'darkroom' && (
@@ -169,16 +159,10 @@ const RollsView: React.FC = () => {
                   </div>
                 </div>
               ))
-            ) : <ShelfEmptyState />}
+            ) : (
+              rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <ShelfEmptyState />
+            )}
           </div>
-        )}
-
-        {activeSection === 'archived' && (
-          archivedRolls.length > 0 ? (
-            <div className="space-y-3">
-              {archivedRolls.map(roll => <RollListItem key={roll.id} roll={roll} onDelete={deleteRoll} onAssignAlbum={removeRollFromAlbum} assignActionIcon="remove" />)}
-            </div>
-          ) : <ArchivedEmptyState />
         )}
       </div>
     </div>

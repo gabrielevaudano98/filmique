@@ -36,6 +36,7 @@ const RollsSettingsView: React.FC = () => {
     rollsSortOrder, setRollsSortOrder,
     rollsGroupBy, setRollsGroupBy,
     rollsSelectedFilm, setRollsSelectedFilm,
+    rollsViewMode, setRollsViewMode,
   } = useAppContext();
 
   const handlers = useSwipeable({
@@ -72,6 +73,19 @@ const RollsSettingsView: React.FC = () => {
         <div className="w-6 h-6"></div>
       </div>
       <div className="p-4 sm:p-6 overflow-y-auto no-scrollbar flex-1">
+        <SettingsGroup title="Status">
+          <SettingsRow
+            label="Active"
+            isSelected={rollsViewMode === 'active'}
+            onClick={() => setRollsViewMode('active')}
+          />
+          <SettingsRow
+            label="Archived"
+            isSelected={rollsViewMode === 'archived'}
+            onClick={() => setRollsViewMode('archived')}
+          />
+        </SettingsGroup>
+
         <SettingsGroup title="Sort by">
           {sortOptions.map(opt => (
             <SettingsRow

@@ -232,4 +232,6 @@ export interface AppContextType {
   setRollsGroupBy: (group: string) => void;
   rollsSelectedFilm: string;
   setRollsSelectedFilm: (film: string) => void;
+  rollsViewMode: 'active' | 'archived';
+  setRollsViewMode: (mode: 'active' | 'archived') => void;
 }
