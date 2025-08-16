@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Album } from '../types';
 import AlbumCard from './AlbumCard';
-import { Plus, Library as LibraryIcon } from 'lucide-react';
+import { Plus, Library as LibraryIcon, Clock } from 'lucide-react';
 import CreateAlbumModal from './CreateAlbumModal';
 
 const LibraryView: React.FC = () => {
-  const { albums, setSelectedAlbum, setCurrentView, refetchAlbums } = useAppContext();
+  const { albums, setSelectedAlbum, setCurrentView, refetchAlbums, setRollsViewSection } = useAppContext();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
@@ -18,11 +18,25 @@ const LibraryView: React.FC = () => {
     setCurrentView('albumDetail');
   };
 
+  const handleGoToDarkroom = () => {
+    setCurrentView('rolls');
+    setRollsViewSection('darkroom');
+  };
+
   return (
     <>
       <div className="flex flex-col w-full">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-white">Library</h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-3xl font-bold text-white">Library</h1>
+            <button 
+              onClick={handleGoToDarkroom} 
+              className="flex items-center gap-2 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-full px-4 py-2 text-sm font-bold text-white hover:bg-neutral-700/80 transition-colors shadow-soft"
+            >
+              <Clock className="w-4 h-4 text-cyan-400" />
+              <span>Darkroom</span>
+            </button>
+          </div>
           <button
             onClick={() => setShowCreateModal(true)}
             className="bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white font-bold p-3 rounded-full shadow-lg shadow-brand-amber-start/20 hover:opacity-90 transition-all"
