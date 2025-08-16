@@ -5,44 +5,45 @@ interface SegmentedControlProps {
     label: string; 
     value: string; 
     icon: React.ElementType;
-    colors: { from: string; to: string; shadow: string; };
   }[];
   value: string;
   onChange: (value: string) => void;
 }
 
 const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onChange }) => {
+  const activeIndex = options.findIndex(opt => opt.value === value);
+
   return (
-    <div className="flex items-center justify-center p-1.5 bg-black/30 backdrop-blur-xl border border-white/10 rounded-full shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] space-x-1.5">
-      {options.map((opt) => {
+    <div 
+      className="relative grid w-full p-1 bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-full shadow-inner gap-1"
+      style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}
+    >
+      {/* Sliding Pill Background */}
+      <div
+        className="h-full rounded-full bg-neutral-700 shadow-md transition-all duration-300 ease-spring-soft"
+        style={{
+          gridColumn: `${activeIndex + 1}`,
+        }}
+      />
+      
+      {options.map((opt, index) => {
         const Icon = opt.icon;
         const isActive = value === opt.value;
-        const gradientClass = `bg-gradient-to-br ${opt.colors.from} ${opt.colors.to}`;
-        const shadowClass = `shadow-lg ${opt.colors.shadow}`;
 
         return (
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            className={`relative z-10 rounded-full flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.2,1,0.35,1)] overflow-hidden
+            className={`relative z-10 flex-1 py-2.5 text-sm font-bold text-center transition-colors duration-300 rounded-full flex items-center justify-center gap-2
               ${isActive
-                ? `${gradientClass} ${shadowClass} w-36 h-14 shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)]`
-                : 'w-14 h-14 bg-transparent text-gray-400 hover:text-white'
+                ? 'text-white'
+                : 'text-gray-400 hover:text-white'
               }
             `}
+            style={{ gridRow: 1, gridColumn: index + 1 }}
           >
-            <div className="flex items-center justify-center px-4">
-              <Icon className={`w-6 h-6 flex-shrink-0 transition-colors duration-300 ${isActive ? 'text-white' : ''}`} />
-              <div 
-                className={`transition-all duration-300 ease-in-out overflow-hidden ${isActive ? 'max-w-xs' : 'max-w-0'}`}
-              >
-                <span 
-                  className={`font-bold text-sm text-white whitespace-nowrap transition-opacity duration-200 ml-2 ${isActive ? 'opacity-100' : 'opacity-0'}`}
-                >
-                  {opt.label}
-                </span>
-              </div>
-            </div>
+            <Icon className="w-5 h-5" />
+            <span>{opt.label}</span>
           </button>
         );
       })}
