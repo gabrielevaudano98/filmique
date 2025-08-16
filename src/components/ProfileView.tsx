@@ -3,7 +3,6 @@ import { Settings, Edit, Loader, CheckCircle, Image as ImageIcon, Award, LayoutG
 import { useAppContext } from '../context/AppContext';
 import { useDebounce } from '../hooks/useDebounce';
 import AvatarRing from './AvatarRing';
-import AlbumCard from './AlbumCard';
 import BadgeIcon from './BadgeIcon';
 import XPBar from './XPBar';
 import SnapshotCard from './SnapshotCard';
@@ -26,7 +25,6 @@ const TabButton: React.FC<{ icon: React.ElementType; isActive: boolean; onClick:
 const ProfileView: React.FC = () => {
   const { 
     profile, 
-    albums,
     userBadges,
     followersCount, 
     followingCount, 
@@ -34,12 +32,10 @@ const ProfileView: React.FC = () => {
     setCurrentView, 
     refreshProfile, 
     fetchProfilePageData,
-    setSelectedAlbum,
-    refetchAlbums,
     userPosts
   } = useAppContext();
   
-  const [activeTab, setActiveTab] = useState('albums');
+  const [activeTab, setActiveTab] = useState('snapshots');
   const [bioText, setBioText] = useState(profile?.bio || '');
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [isSavingBio, setIsSavingBio] = useState(false);
@@ -51,8 +47,7 @@ const ProfileView: React.FC = () => {
 
   useEffect(() => {
     fetchProfilePageData();
-    refetchAlbums();
-  }, [fetchProfilePageData, refetchAlbums]);
+  }, [fetchProfilePageData]);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -79,8 +74,6 @@ const ProfileView: React.FC = () => {
   if (!profile) {
     return <div className="text-white p-6">Loading profile...</div>;
   }
-
-  const photoCount = albums.reduce((sum, album) => sum + (album.photoCount || 0), 0);
 
   return (
     <div className="flex-1 flex flex-col bg-transparent text-white">
@@ -138,35 +131,12 @@ const ProfileView: React.FC = () => {
       {/* Tabs Section */}
       <div className="mt-6 sticky top-0 bg-warm-900 z-10">
         <div className="flex border-b border-neutral-700">
-          <TabButton icon={LayoutGrid} isActive={activeTab === 'albums'} onClick={() => setActiveTab('albums')} />
           <TabButton icon={ImageIcon} isActive={activeTab === 'snapshots'} onClick={() => setActiveTab('snapshots')} />
           <TabButton icon={Award} isActive={activeTab === 'badges'} onClick={() => setActiveTab('badges')} />
         </div>
       </div>
       
       <div className="mt-1 p-1">
-        {activeTab === 'albums' && (
-          albums.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {albums.map(album => (
-                <AlbumCard 
-                  key={album.id} 
-                  album={album} 
-                  onClick={() => {
-                    setSelectedAlbum(album);
-                    setCurrentView('albumDetail');
-                  }} 
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center text-gray-500 py-16">
-              <ImageIcon className="w-12 h-12 mx-auto mb-4" />
-              <p>No albums created yet.</p>
-            </div>
-          )
-        )}
-
         {activeTab === 'snapshots' && (
           userPosts.length > 0 ? (
             <div className="grid grid-cols-3 gap-1">

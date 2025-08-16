@@ -1,6 +1,6 @@
 import React from 'react';
 import CameraView from './components/CameraView';
-import RollsView from './components/RollsView';
+import LibraryView from './components/LibraryView';
 import CommunityView from './components/CommunityView';
 import ChallengesView from './components/ChallengesView';
 import ProfileView from './components/ProfileView';
@@ -15,22 +15,21 @@ import NotificationsView from './components/NotificationsView';
 import TopBar from './components/TopBar';
 import BottomNavBar from './components/BottomNavBar';
 import UncategorizedRollsView from './components/UncategorizedRollsView';
-import RollCompletionWizard from './components/RollCompletionWizard';
+import DevelopmentWizard from './components/DevelopmentWizard';
 import PostDevelopmentWizard from './components/PostDevelopmentWizard';
-import RollsSettingsView from './components/RollsSettingsView';
 import { Roll } from './types';
 
 function App() {
   const { 
     session, profile, isLoading, currentView, authStep, 
     rollToConfirm, setRollToConfirm, 
-    sendToDarkroom, putOnShelf,
+    startDevelopment,
     developedRollForWizard, setDevelopedRollForWizard
   } = useAppContext();
 
   const renderCurrentView = () => {
     switch (currentView) {
-      case 'rolls': return <RollsView />;
+      case 'library': return <LibraryView />;
       case 'community': return <CommunityView />;
       case 'challenges': return <ChallengesView />;
       case 'profile': return <ProfileView />;
@@ -39,18 +38,12 @@ function App() {
       case 'albumDetail': return <AlbumDetailView />;
       case 'notifications': return <NotificationsView />;
       case 'uncategorizedRolls': return <UncategorizedRollsView />;
-      case 'rollsSettings': return <RollsSettingsView />;
       default: return <CommunityView />;
     }
   };
 
-  const handleWizardSendToDarkroom = (roll: Roll, title: string) => {
-    sendToDarkroom(roll, title);
-    setRollToConfirm(null);
-  };
-
-  const handleWizardPutOnShelf = (roll: Roll, title: string) => {
-    putOnShelf(roll, title);
+  const handleWizardStartDevelopment = (roll: Roll, title: string, isPrinted: boolean) => {
+    startDevelopment(roll, title, isPrinted);
     setRollToConfirm(null);
   };
 
@@ -77,11 +70,10 @@ function App() {
     return <OnboardingView />;
   }
   
-  const completionWizard = rollToConfirm && (
-    <RollCompletionWizard
+  const developmentWizard = rollToConfirm && (
+    <DevelopmentWizard
       roll={rollToConfirm}
-      onSendToDarkroom={handleWizardSendToDarkroom}
-      onPutOnShelf={handleWizardPutOnShelf}
+      onStartDevelopment={handleWizardStartDevelopment}
     />
   );
 
@@ -95,7 +87,7 @@ function App() {
   if (currentView === 'camera') {
     return (
       <>
-        {completionWizard}
+        {developmentWizard}
         {postDevelopmentWizard}
         <CameraView />
       </>
@@ -105,7 +97,7 @@ function App() {
   return (
     <div className="bg-transparent text-white">
       <TopBar />
-      {completionWizard}
+      {developmentWizard}
       {postDevelopmentWizard}
       <main className="min-h-screen w-full pb-28">
         <div className="max-w-6xl mx-auto w-full h-full px-4 py-4">

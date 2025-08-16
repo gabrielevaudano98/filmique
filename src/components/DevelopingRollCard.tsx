@@ -6,8 +6,6 @@ import NegativePhoto from './NegativePhoto';
 import FilmCanisterIcon from './FilmCanisterIcon';
 import { formatDuration } from '../utils/time';
 
-const DEVELOPMENT_TIME_MS = 36 * 60 * 60 * 1000;
-
 const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll }) => {
   const { filmStocks, developRoll } = useAppContext();
   const [timeRemaining, setTimeRemaining] = useState(0);
@@ -15,6 +13,10 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll }) => {
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const canisterRef = useRef<HTMLDivElement>(null);
+
+  const DEVELOPMENT_TIME_MS = roll.is_printed
+    ? 7 * 24 * 60 * 60 * 1000 // 7 days
+    : 3 * 24 * 60 * 60 * 1000; // 3 days
 
   useEffect(() => {
     if (!roll.completed_at) return;
@@ -33,7 +35,7 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll }) => {
     const interval = setInterval(calculateProgress, 1000 * 60); // Update every minute
 
     return () => clearInterval(interval);
-  }, [roll.completed_at]);
+  }, [roll.completed_at, DEVELOPMENT_TIME_MS]);
 
   const handleParallaxScroll = (event: React.UIEvent<HTMLDivElement>) => {
     if (canisterRef.current) {
@@ -75,7 +77,7 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll }) => {
       <div className="p-4">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h4 className="font-bold text-white truncate">{roll.film_type}</h4>
+            <h4 className="font-bold text-white truncate">{roll.title}</h4>
             <p className="text-sm text-gray-400">{roll.shots_used} photos</p>
           </div>
           {isReadyToDevelop ? (

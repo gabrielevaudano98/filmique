@@ -18,12 +18,12 @@ export const useAppContext = () => {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // UI State
-  const [currentView, setCurrentView] = useState<string>('rolls');
+  const [currentView, setCurrentView] = useState<string>('library');
   const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
   const [showFilmModal, setShowFilmModal] = useState(false);
   const [headerAction, setHeaderAction] = useState<{ icon: React.ElementType, action: () => void } | null>(null);
-  const [rollsViewSection, setRollsViewSection] = useState<'darkroom' | 'shelf'>('darkroom');
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Data State
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
@@ -76,14 +76,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCameraMode,
     showFilmModal,
     setShowFilmModal,
-    developShelvedRoll: rollsAndPhotos.developShelvedRoll,
     headerAction,
     setHeaderAction,
-    rollsViewSection,
-    setRollsViewSection,
     isTopBarVisible,
     setIsTopBarVisible,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, rollsViewSection, isTopBarVisible]);
+    searchTerm,
+    setSearchTerm,
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };
