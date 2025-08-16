@@ -3,29 +3,32 @@ import { ArrowLeft, Check } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
-  <div className="mb-8">
-    <h3 className="px-2 pb-3 text-base font-semibold text-gray-400 tracking-wide">{title}</h3>
-    <div className="flex flex-wrap gap-3">
-      {children}
+  <div className="mb-6">
+    <h3 className="px-4 pb-2 text-sm font-semibold text-gray-400 uppercase tracking-wider">{title}</h3>
+    <div className="bg-neutral-800 rounded-xl overflow-hidden border border-neutral-700/50">
+      {React.Children.map(children, (child, index) => (
+        <React.Fragment>
+          {child}
+          {index < React.Children.count(children) - 1 && <div className="pl-4"><div className="h-px bg-neutral-700/50"></div></div>}
+        </React.Fragment>
+      ))}
     </div>
   </div>
 );
 
-const SettingsPill: React.FC<{
+const SettingsRow: React.FC<{
   label: string;
   isSelected: boolean;
   onClick: () => void;
 }> = ({ label, isSelected, onClick }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex-shrink-0 whitespace-nowrap flex items-center gap-2
-      ${isSelected
-        ? 'bg-white text-black shadow-lg'
-        : 'bg-neutral-800/60 text-gray-300 hover:bg-neutral-700/50 border border-neutral-700/50'
-      }`}
+    className={`w-full flex items-center justify-between p-4 text-left transition-colors min-h-[56px] ${
+      isSelected ? 'bg-neutral-700/50' : 'hover:bg-neutral-700/30'
+    }`}
   >
-    {label}
-    {isSelected && <Check className="w-4 h-4" />}
+    <span className={`font-medium ${isSelected ? 'text-brand-amber-start' : 'text-white'}`}>{label}</span>
+    {isSelected && <Check className="w-5 h-5 text-brand-amber-start" />}
   </button>
 );
 
@@ -68,7 +71,7 @@ const RollsSettingsView: React.FC = () => {
       <div className="p-4 sm:p-6 overflow-y-auto no-scrollbar">
         <SettingsGroup title="Sort by">
           {sortOptions.map(opt => (
-            <SettingsPill
+            <SettingsRow
               key={opt.key}
               label={opt.label}
               isSelected={rollsSortOrder === opt.key}
@@ -79,7 +82,7 @@ const RollsSettingsView: React.FC = () => {
 
         <SettingsGroup title="Group by">
           {groupOptions.map(opt => (
-            <SettingsPill
+            <SettingsRow
               key={opt.key}
               label={opt.label}
               isSelected={rollsGroupBy === opt.key}
@@ -89,13 +92,13 @@ const RollsSettingsView: React.FC = () => {
         </SettingsGroup>
 
         <SettingsGroup title="Filter by Film">
-          <SettingsPill
+          <SettingsRow
             label="All Film Types"
             isSelected={rollsSelectedFilm === 'all'}
             onClick={() => setRollsSelectedFilm('all')}
           />
           {filmTypes.map(film => (
-            <SettingsPill
+            <SettingsRow
               key={film}
               label={film}
               isSelected={rollsSelectedFilm === film}
