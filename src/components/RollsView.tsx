@@ -183,7 +183,7 @@ const RollsView: React.FC = () => {
               groupEntries.map(([groupName, rolls]) => (
                 <div key={groupName}>
                   {rollsGroupBy !== 'none' && (
-                    <h3 className="sticky top-[140px] z-20 bg-neutral-900 py-2 -mx-4 px-4 text-lg font-bold text-white mb-3 border-y border-neutral-800">
+                    <h3 className="sticky top-[140px] z-20 bg-neutral-900/80 backdrop-blur-lg py-2 -mx-4 px-4 text-lg font-bold text-white mb-3 border-y border-neutral-700/50">
                       {groupName}
                     </h3>
                   )}
