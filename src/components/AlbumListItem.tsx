@@ -5,11 +5,19 @@ import { Folder, ChevronRight } from 'lucide-react';
 interface AlbumListItemProps {
   album: Album;
   onClick: () => void;
+  isOver?: boolean;
+  isDragging?: boolean;
 }
 
-const AlbumListItem: React.FC<AlbumListItemProps> = ({ album, onClick }) => {
+const AlbumListItem: React.FC<AlbumListItemProps> = ({ album, onClick, isOver, isDragging }) => {
   return (
-    <button onClick={onClick} className="w-full flex items-center p-4 bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 hover:bg-neutral-700/50 rounded-xl transition-colors">
+    <button 
+      onClick={onClick} 
+      className={`w-full flex items-center p-4 bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-xl transition-all duration-200
+        ${isOver ? 'bg-amber-500/20 ring-2 ring-amber-500' : ''}
+        ${isDragging ? 'opacity-30' : 'hover:bg-neutral-700/50'}
+      `}
+    >
       <Folder className="w-6 h-6 text-amber-400 mr-4 flex-shrink-0" />
       <div className="flex-1 text-left overflow-hidden">
         <p className="text-white font-semibold truncate">{album.title}</p>

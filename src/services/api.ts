@@ -171,6 +171,11 @@ export const createAlbum = async (userId: string, title: string, type: 'private'
   if (!result.error) invalidateCache(`albums-${userId}`);
   return result;
 };
+export const updateAlbum = async (albumId: string, userId: string, data: { parent_album_id?: string | null }) => {
+  const result = await supabase.from('albums').update(data).eq('id', albumId);
+  if (!result.error) invalidateCache(`albums-${userId}`);
+  return result;
+};
 export const updateRollsAlbum = async (rollIds: string[], albumId: string | null) => {
   const { data: rolls } = await supabase.from('rolls').select('user_id').in('id', rollIds).limit(1);
   const result = await supabase.from('rolls').update({ album_id: albumId }).in('id', rollIds).select();

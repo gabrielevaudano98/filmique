@@ -6,13 +6,19 @@ import Image from './Image';
 interface RollOrganizerItemProps {
   roll: Roll;
   onClick: () => void;
+  isDragging?: boolean;
 }
 
-const RollOrganizerItem: React.FC<RollOrganizerItemProps> = ({ roll, onClick }) => {
+const RollOrganizerItem: React.FC<RollOrganizerItemProps> = ({ roll, onClick, isDragging }) => {
   const coverPhoto = roll.photos?.[0];
 
   return (
-    <button onClick={onClick} className="w-full flex items-center p-4 bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 hover:bg-neutral-700/50 rounded-xl transition-colors">
+    <button 
+      onClick={onClick} 
+      className={`w-full flex items-center p-4 bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-xl transition-all duration-200
+        ${isDragging ? 'opacity-30' : 'hover:bg-neutral-700/50'}
+      `}
+    >
       <Image 
         src={coverPhoto?.thumbnail_url}
         alt={roll.title || 'Roll cover'}

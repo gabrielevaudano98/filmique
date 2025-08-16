@@ -56,6 +56,16 @@ export const useAlbums = (profile: UserProfile | null) => {
     }
   }, [refetchAlbums, selectedAlbum, selectAlbum]);
 
+  const moveAlbum = useCallback(async (albumId: string, newParentId: string | null) => {
+    if (!profile) return;
+    setAlbums(prev => prev.map(a => a.id === albumId ? { ...a, parent_album_id: newParentId } : a));
+    const { error } = await api.updateAlbum(albumId, profile.id, { parent_album_id: newParentId });
+    if (error) {
+      showErrorToast('Failed to move album.');
+      refetchAlbums();
+    }
+  }, [profile, refetchAlbums]);
+
   return {
     albums,
     selectedAlbum,
@@ -65,5 +75,6 @@ export const useAlbums = (profile: UserProfile | null) => {
     addRollsToAlbum,
     removeRollFromAlbum,
     refetchAlbums,
+    moveAlbum,
   };
 };
