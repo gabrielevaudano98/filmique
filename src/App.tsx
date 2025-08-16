@@ -20,7 +20,6 @@ import PostDevelopmentWizard from './components/PostDevelopmentWizard';
 import RollsSettingsView from './components/RollsSettingsView';
 import LibraryView from './components/LibraryView';
 import { Roll } from './types';
-import RollsSubNavBar from './components/RollsSubNavBar';
 
 function App() {
   const { 
@@ -105,8 +104,6 @@ function App() {
     );
   }
 
-  const navBar = currentView === 'rolls' ? <RollsSubNavBar /> : <BottomNavBar />;
-
   return (
     <div className="bg-transparent text-white">
       <TopBar />
@@ -117,7 +114,7 @@ function App() {
           {renderCurrentView()}
         </div>
       </main>
-      {navBar}
+      <BottomNavBar />
     </div>
   );
 }

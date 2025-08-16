@@ -35,7 +35,7 @@ const NavItem: React.FC<{
 };
 
 const BottomNavBar: React.FC = () => {
-  const { currentView, setCurrentView, setRollsViewSection } = useAppContext();
+  const { currentView, setCurrentView } = useAppContext();
 
   const navItems = [
     { view: 'rolls', label: 'Rolls', icon: Film },
@@ -45,13 +45,6 @@ const BottomNavBar: React.FC = () => {
 
   const leftItems = navItems.slice(0, 1);
   const rightItems = navItems.slice(1, 3);
-
-  const handleNavItemClick = (view: string) => {
-    if (view === 'rolls') {
-      setRollsViewSection('darkroom');
-    }
-    setCurrentView(view);
-  };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-28 flex justify-center z-50 pointer-events-none pb-safe">
@@ -67,7 +60,7 @@ const BottomNavBar: React.FC = () => {
                 key={item.view}
                 {...item}
                 isActive={currentView === item.view}
-                onClick={() => handleNavItemClick(item.view)}
+                onClick={() => setCurrentView(item.view)}
               />
             ))}
           </div>
@@ -92,7 +85,7 @@ const BottomNavBar: React.FC = () => {
                 key={item.view}
                 {...item}
                 isActive={currentView === item.view}
-                onClick={() => handleNavItemClick(item.view)}
+                onClick={() => setCurrentView(item.view)}
               />
             ))}
           </div>
