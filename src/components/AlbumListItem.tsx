@@ -9,7 +9,7 @@ interface AlbumListItemProps {
 
 const AlbumListItem: React.FC<AlbumListItemProps> = ({ album, onClick }) => {
   return (
-    <button onClick={onClick} className="w-full flex items-center p-4 bg-neutral-800 hover:bg-neutral-700/50 rounded-xl transition-colors">
+    <button onClick={onClick} className="w-full flex items-center p-4 bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 hover:bg-neutral-700/50 rounded-xl transition-colors">
       <Folder className="w-6 h-6 text-amber-400 mr-4 flex-shrink-0" />
       <div className="flex-1 text-left overflow-hidden">
         <p className="text-white font-semibold truncate">{album.title}</p>

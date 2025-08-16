@@ -1,60 +1,70 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Album, Roll } from '../types';
-import { Folder, ArrowLeft, PlusCircle, Film } from 'lucide-react';
+import { Folder, PlusCircle } from 'lucide-react';
 import AlbumListItem from './AlbumListItem';
-import TimelineRollCard from './TimelineRollCard';
+import RollOrganizerItem from './RollOrganizerItem';
 import CreateAlbumModal from './CreateAlbumModal';
 
 const RollsOrganizerView: React.FC = () => {
-  const { albums, completedRolls } = useAppContext();
-  const [currentAlbumId, setCurrentAlbumId] = useState<string | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState<{ id: string | null; title: string }[]>([]);
+  const { albums, completedRolls, setCurrentView, setSelectedRoll } = useAppContext();
+  const [breadcrumbs, setBreadcrumbs] = useState<Album[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
 
-  const { childAlbums, rollsInCurrentAlbum, uncategorizedRolls } = useMemo(() => {
+  const currentAlbumId = breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].id : null;
+  const currentAlbum = currentAlbumId ? albums.find(a => a.id === currentAlbumId) : null;
+
+  const items = useMemo(() => {
     const childAlbums = albums.filter(a => a.parent_album_id === currentAlbumId);
-    const rollsInCurrentAlbum = completedRolls.filter(r => r.album_id === currentAlbumId && !r.is_archived);
-    const uncategorizedRolls = currentAlbumId === null 
-      ? completedRolls.filter(r => !r.album_id && !r.is_archived) 
-      : [];
-    return { childAlbums, rollsInCurrentAlbum, uncategorizedRolls };
+    const rollsInAlbum = completedRolls.filter(r => r.album_id === currentAlbumId && !r.is_archived);
+    
+    const combinedItems: (Album | Roll)[] = [...childAlbums, ...rollsInAlbum];
+    
+    combinedItems.sort((a, b) => {
+      const isAlbumA = 'parent_album_id' in a;
+      const isAlbumB = 'parent_album_id' in b;
+      if (isAlbumA && !isAlbumB) return -1; // Albums first
+      if (!isAlbumA && isAlbumB) return 1;  // Rolls after
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
+    return combinedItems;
   }, [albums, completedRolls, currentAlbumId]);
 
   const navigateToAlbum = (album: Album) => {
-    setBreadcrumbs([...breadcrumbs, { id: currentAlbumId, title: currentAlbumId ? albums.find(a => a.id === currentAlbumId)?.title || 'Organizer' : 'Organizer' }]);
-    setCurrentAlbumId(album.id);
+    setBreadcrumbs([...breadcrumbs, album]);
   };
 
-  const navigateBack = () => {
-    const prev = breadcrumbs.pop();
-    if (prev) {
-      setCurrentAlbumId(prev.id);
-      setBreadcrumbs([...breadcrumbs]);
-    }
+  const navigateToCrumb = (index: number) => {
+    setBreadcrumbs(breadcrumbs.slice(0, index + 1));
   };
 
   const navigateToRoot = () => {
-    setCurrentAlbumId(null);
     setBreadcrumbs([]);
   };
 
-  const currentAlbum = albums.find(a => a.id === currentAlbumId);
+  const handleRollClick = (roll: Roll) => {
+    setSelectedRoll(roll);
+    setCurrentView('rollDetail');
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center text-sm text-gray-400">
-          {currentAlbumId && (
-            <>
-              <button onClick={navigateToRoot} className="hover:text-white">Organizer</button>
+          <button onClick={navigateToRoot} className="hover:text-white">Organizer</button>
+          {breadcrumbs.map((crumb, index) => (
+            <React.Fragment key={crumb.id}>
               <span className="mx-2">/</span>
-            </>
-          )}
-          {breadcrumbs.length > 1 && <span>... /</span>}
-          {breadcrumbs.length > 0 && (
-            <button onClick={navigateBack} className="hover:text-white">{breadcrumbs[breadcrumbs.length - 1].title}</button>
-          )}
+              <button 
+                onClick={() => navigateToCrumb(index)} 
+                className="hover:text-white truncate max-w-24"
+                title={crumb.title}
+              >
+                {crumb.title}
+              </button>
+            </React.Fragment>
+          ))}
         </div>
         <button onClick={() => setShowCreateModal(true)} className="flex items-center space-x-2 text-amber-400 font-semibold text-sm p-2 hover:bg-amber-500/10 rounded-lg">
           <PlusCircle className="w-4 h-4" />
@@ -64,37 +74,17 @@ const RollsOrganizerView: React.FC = () => {
 
       <h2 className="text-2xl font-bold text-white">{currentAlbum?.title || 'Organizer'}</h2>
 
-      {childAlbums.length > 0 && (
+      {items.length > 0 ? (
         <div className="space-y-2">
-          {childAlbums.map(album => (
-            <AlbumListItem key={album.id} album={album} onClick={() => navigateToAlbum(album)} />
-          ))}
+          {items.map(item => {
+            if ('shots_used' in item) { // It's a Roll
+              return <RollOrganizerItem key={`roll-${item.id}`} roll={item} onClick={() => handleRollClick(item)} />;
+            } else { // It's an Album
+              return <AlbumListItem key={`album-${item.id}`} album={item} onClick={() => navigateToAlbum(item)} />;
+            }
+          })}
         </div>
-      )}
-
-      {rollsInCurrentAlbum.length > 0 && (
-        <div>
-          <h3 className="text-lg font-semibold text-white mt-6 mb-3">Rolls in this Album</h3>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-            {rollsInCurrentAlbum.map(roll => (
-              <TimelineRollCard key={roll.id} roll={roll} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {uncategorizedRolls.length > 0 && (
-        <div>
-          <h3 className="text-lg font-semibold text-white mt-6 mb-3">Uncategorized Rolls</h3>
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-            {uncategorizedRolls.map(roll => (
-              <TimelineRollCard key={roll.id} roll={roll} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {childAlbums.length === 0 && rollsInCurrentAlbum.length === 0 && uncategorizedRolls.length === 0 && (
+      ) : (
         <div className="text-center py-16 text-gray-500">
           <Folder className="w-12 h-12 mx-auto mb-4" />
           <p>This album is empty.</p>
