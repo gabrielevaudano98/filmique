@@ -34,6 +34,7 @@ const RollsSettingsView: React.FC = () => {
     setCurrentView,
     completedRolls,
     rollsSortOrder, setRollsSortOrder,
+    rollsGroupBy, setRollsGroupBy,
     rollsSelectedFilm, setRollsSelectedFilm,
     rollsViewMode, setRollsViewMode,
   } = useAppContext();
@@ -53,6 +54,13 @@ const RollsSettingsView: React.FC = () => {
     { key: 'oldest', label: 'Oldest First' },
     { key: 'title_asc', label: 'Title (A-Z)' },
     { key: 'title_desc', label: 'Title (Z-A)' },
+  ];
+
+  const groupOptions = [
+    { key: 'date', label: 'Date' },
+    { key: 'film_type', label: 'Film Type' },
+    { key: 'tag', label: 'Tag' },
+    { key: 'none', label: 'None' },
   ];
 
   return (
@@ -85,6 +93,17 @@ const RollsSettingsView: React.FC = () => {
               label={opt.label}
               isSelected={rollsSortOrder === opt.key}
               onClick={() => setRollsSortOrder(opt.key)}
+            />
+          ))}
+        </SettingsGroup>
+
+        <SettingsGroup title="Group by">
+          {groupOptions.map(opt => (
+            <SettingsRow
+              key={opt.key}
+              label={opt.label}
+              isSelected={rollsGroupBy === opt.key}
+              onClick={() => setRollsGroupBy(opt.key)}
             />
           ))}
         </SettingsGroup>
