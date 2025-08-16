@@ -242,6 +242,4 @@ export interface AppContextType {
   setRollsViewSection: (section: 'darkroom' | 'shelf') => void;
   isTopBarVisible: boolean;
   setIsTopBarVisible: (visible: boolean) => void;
-  navMenu: 'main' | 'darkroom';
-  setNavMenu: (menu: 'main' | 'darkroom') => void;
 }
