@@ -132,18 +132,22 @@ const RollsView: React.FC = () => {
             {rollsViewSection === 'rolls' ? 'Rolls' : 'Darkroom'}
           </h1>
           {rollsViewSection === 'rolls' ? (
-            <button
-              onClick={() => setRollsViewSection('darkroom')}
-              className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-neutral-800"
-              aria-label="View Darkroom"
-            >
-              <Clock className="w-5 h-5" />
-              <span>Darkroom</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+              <RollsControls />
+              <button
+                onClick={() => setRollsViewSection('darkroom')}
+                className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors px-4 py-2.5 rounded-xl bg-neutral-800/60 backdrop-blur-lg border border-white/10 hover:bg-neutral-700/80"
+                aria-label="View Darkroom"
+              >
+                <Clock className="w-5 h-5" />
+                <span>Darkroom</span>
+              </button>
+            </div>
           ) : (
             <button
               onClick={() => setRollsViewSection('rolls')}
-              className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-neutral-800"
+              className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors px-4 py-2.5 rounded-xl bg-neutral-800/60 backdrop-blur-lg border border-white/10 hover:bg-neutral-700/80"
               aria-label="View Rolls"
             >
               <Library className="w-5 h-5" />
@@ -151,12 +155,6 @@ const RollsView: React.FC = () => {
             </button>
           )}
         </div>
-        {rollsViewSection === 'rolls' && (
-          <div className="flex items-center justify-between mt-4">
-            <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-            <RollsControls />
-          </div>
-        )}
       </header>
 
       <div className="relative flex-1">
@@ -186,7 +184,7 @@ const RollsView: React.FC = () => {
                 </div>
               ))
             ) : (
-              rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
+              rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <ArchivedEmptyState />
             )}
           </div>
         )}
