@@ -20,12 +20,12 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
 
   return (
     <div 
-      className="relative grid w-full p-1 bg-black/30 backdrop-blur-xl border border-white/10 rounded-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" 
+      className="relative grid w-full p-1.5 bg-black/30 backdrop-blur-xl border border-white/10 rounded-lg shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] gap-1.5" 
       style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}
     >
       {/* Sliding Pill Background */}
       <div
-        className={`absolute top-1 bottom-1 h-auto rounded-lg ${gradientClass} ${shadowClass} shadow-[inset_0_1px_1px_rgba(255,255,255,0.25)] transition-all duration-500 ease-[cubic-bezier(0.2,1,0.35,1)]`}
+        className={`absolute top-1.5 bottom-1.5 h-auto rounded-md ${gradientClass} ${shadowClass} shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] border border-white/20 transition-all duration-500 ease-[cubic-bezier(0.2,1,0.35,1)]`}
         style={{
           gridColumn: `${activeIndex + 1}`,
         }}
@@ -40,11 +40,12 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            className={`relative z-10 flex-1 text-sm font-bold text-center transition-colors duration-300 rounded-lg flex items-center justify-center
+            className={`relative z-10 flex-1 text-sm font-bold text-center transition-all duration-300 rounded-md flex items-center justify-center
               ${hasLabel ? 'py-3 gap-2' : 'p-2.5'}
               ${isActive
                 ? 'text-white'
-                : 'text-gray-300 hover:text-white'
+                // Inactive state with its own background and inset shadow
+                : 'text-gray-300 hover:text-white bg-black/30 shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)] hover:bg-white/10'
               }
             `}
           >
