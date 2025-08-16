@@ -18,6 +18,7 @@ import UncategorizedRollsView from './components/UncategorizedRollsView';
 import RollCompletionWizard from './components/RollCompletionWizard';
 import PostDevelopmentWizard from './components/PostDevelopmentWizard';
 import RollsSettingsView from './components/RollsSettingsView';
+import LibraryView from './components/LibraryView';
 import { Roll } from './types';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
   const renderCurrentView = () => {
     switch (currentView) {
       case 'rolls': return <RollsView />;
+      case 'library': return <LibraryView />;
       case 'community': return <CommunityView />;
       case 'challenges': return <ChallengesView />;
       case 'profile': return <ProfileView />;
