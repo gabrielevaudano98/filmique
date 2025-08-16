@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
@@ -37,16 +37,15 @@ const RollsView: React.FC = () => {
   const { 
     developingRolls, completedRolls,
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
-    setHeaderAction
+    setHeaderAction, rollsViewSection, setRollsViewSection,
+    searchTerm, setSearchTerm
   } = useAppContext();
-  const [activeSection, setActiveSection] = useState<'darkroom' | 'shelf'>('darkroom');
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    if (activeSection === 'shelf') {
+    if (rollsViewSection === 'shelf') {
       setHeaderAction({
         icon: ArrowLeft,
-        action: () => setActiveSection('darkroom'),
+        action: () => setRollsViewSection('darkroom'),
       });
     } else {
       setHeaderAction(null);
@@ -55,12 +54,12 @@ const RollsView: React.FC = () => {
     return () => {
       setHeaderAction(null);
     };
-  }, [activeSection, setHeaderAction]);
+  }, [rollsViewSection, setHeaderAction, setRollsViewSection]);
 
   const handlers = useSwipeable({
     onSwipedRight: () => {
-      if (activeSection === 'shelf') {
-        setActiveSection('darkroom');
+      if (rollsViewSection === 'shelf') {
+        setRollsViewSection('darkroom');
       }
     },
     preventScrollOnSwipe: true,
@@ -140,11 +139,11 @@ const RollsView: React.FC = () => {
 
   return (
     <div {...handlers} className="flex flex-col w-full">
-      <div className={`flex items-center justify-between ${activeSection === 'shelf' 
+      <div className={`flex items-center justify-between ${rollsViewSection === 'shelf' 
         ? 'sticky top-16 z-30 bg-neutral-900/80 backdrop-blur-lg -mx-4 px-4 py-4 border-b border-neutral-700/50' 
         : 'mb-6'
       }`}>
-        {activeSection === 'shelf' ? (
+        {rollsViewSection === 'shelf' ? (
           <>
             <h1 className="text-3xl font-bold text-white">Shelf</h1>
             <div className="flex items-center gap-2">
@@ -156,7 +155,7 @@ const RollsView: React.FC = () => {
           <>
             <h1 className="text-3xl font-bold text-white">Darkroom</h1>
             <button
-              onClick={() => setActiveSection('shelf')}
+              onClick={() => setRollsViewSection('shelf')}
               className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-neutral-800"
               aria-label="View Shelf"
             >
@@ -167,8 +166,8 @@ const RollsView: React.FC = () => {
         )}
       </div>
 
-      <div className={`relative flex-1 ${activeSection === 'shelf' ? 'mt-6' : ''}`}>
-        {activeSection === 'darkroom' && (
+      <div className={`relative flex-1 ${rollsViewSection === 'shelf' ? 'mt-6' : ''}`}>
+        {rollsViewSection === 'darkroom' && (
           <div key="darkroom" className="animate-slide-in-from-left">
             {developingRolls.length > 0 ? (
               <div className="space-y-3">
@@ -178,7 +177,7 @@ const RollsView: React.FC = () => {
           </div>
         )}
 
-        {activeSection === 'shelf' && (
+        {rollsViewSection === 'shelf' && (
           <div key="shelf" className="animate-slide-in-from-right space-y-6">
             {processedRolls.length > 0 ? (
               groupEntries.map(([groupName, rolls]) => (
