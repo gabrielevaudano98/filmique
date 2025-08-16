@@ -153,9 +153,20 @@ const RollsView: React.FC = () => {
         </div>
       </header>
 
-      <div className="relative flex-1 mt-6">
+      {rollsViewSection === 'rolls' && (
+        <div className="sticky top-[132px] z-20 bg-neutral-900 -mx-4 px-4 py-2 border-b border-neutral-700/50">
+          <div className="flex justify-end items-center">
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+              <RollsControls />
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="relative flex-1">
         {rollsViewSection === 'darkroom' && (
-          <div key="darkroom" className="animate-slide-in-from-left">
+          <div key="darkroom" className="animate-slide-in-from-left mt-6">
             {developingRolls.length > 0 ? (
               <div className="space-y-3">
                 {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
@@ -165,20 +176,13 @@ const RollsView: React.FC = () => {
         )}
 
         {rollsViewSection === 'rolls' && (
-          <div key="rolls" className="animate-slide-in-from-right space-y-6">
+          <div key="rolls" className="animate-slide-in-from-right space-y-6 mt-6">
             {processedRolls.length > 0 ? (
-              groupEntries.map(([groupName, rolls], index) => (
+              groupEntries.map(([groupName, rolls]) => (
                 <div key={groupName}>
                   <StickyGroupHeader>
                     <div className="flex justify-between items-center w-full">
                       <span>{groupName}</span>
-                      {/* Controls are only rendered for the first group header, but will stick with it */}
-                      {index === 0 && (
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-                          <RollsControls />
-                        </div>
-                      )}
                     </div>
                   </StickyGroupHeader>
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
