@@ -193,6 +193,19 @@ export const useRollsAndPhotos = (
     return true;
   }, [profile, selectedRoll]);
 
+  const updateRollTags = useCallback(async (rollId: string, tags: string[]) => {
+    if (!profile) return false;
+    const { error } = await api.updateRoll(rollId, { tags });
+    if (error) {
+      showErrorToast('Failed to update tags.');
+      return false;
+    }
+    setCompletedRolls(prev => prev.map(r => r.id === rollId ? { ...r, tags } : r));
+    if (selectedRoll?.id === rollId) setSelectedRoll(prev => prev ? { ...prev, tags } : null);
+    showSuccessToast('Tags updated!');
+    return true;
+  }, [profile, selectedRoll]);
+
   const deleteRoll = useCallback(async (rollId: string) => {
     if (!profile) return;
     const toastId = showLoadingToast('Deleting roll...');
@@ -275,6 +288,7 @@ export const useRollsAndPhotos = (
     takePhoto,
     developRoll,
     updateRollTitle,
+    updateRollTags,
     deleteRoll,
     downloadPhoto,
     downloadRoll,

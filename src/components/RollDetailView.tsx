@@ -1,18 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ArrowLeft, Download, Trash2, Image as ImageIcon, Archive, ArchiveRestore } from 'lucide-react';
+import { ArrowLeft, Download, Trash2, Image as ImageIcon, Archive, ArchiveRestore, Tag } from 'lucide-react';
 import toast from 'react-hot-toast';
 import PhotoDetailModal from './PhotoDetailModal';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import { Photo } from '../context/AppContext';
 import PhotoInfoModal from './PhotoInfoModal';
 import Image from './Image';
+import TagInput from './TagInput';
+import { useDebounce } from '../hooks/useDebounce';
 
 const RollDetailView: React.FC = () => {
-  const { selectedRoll, setCurrentView, setSelectedRoll, downloadRoll, deleteRoll, archiveRoll } = useAppContext();
+  const { selectedRoll, setCurrentView, setSelectedRoll, downloadRoll, deleteRoll, archiveRoll, updateRollTags } = useAppContext();
   const [photoToView, setPhotoToView] = useState<Photo | null>(null);
   const [photoToShowInfo, setPhotoToShowInfo] = useState<Photo | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [tags, setTags] = useState<string[]>(selectedRoll?.tags || []);
+  const debouncedTags = useDebounce(tags, 1000);
+
+  useEffect(() => {
+    if (selectedRoll && JSON.stringify(debouncedTags) !== JSON.stringify(selectedRoll.tags || [])) {
+      updateRollTags(selectedRoll.id, debouncedTags);
+    }
+  }, [debouncedTags, selectedRoll, updateRollTags]);
 
   if (!selectedRoll) {
     setCurrentView('rolls');
@@ -72,6 +82,12 @@ const RollDetailView: React.FC = () => {
         <p className="text-gray-400 mt-1">
           {selectedRoll.shots_used} photos • Developed on {developedDate.toLocaleDateString()}
         </p>
+      </div>
+
+      {/* Tag Management */}
+      <div className="mb-8 p-4 bg-neutral-800/50 rounded-xl">
+        <h3 className="text-lg font-semibold text-brand-amber-start mb-3 flex items-center gap-2"><Tag className="w-5 h-5" /> Tags</h3>
+        <TagInput tags={tags} onTagsChange={setTags} />
       </div>
 
       {/* Photo Grid */}

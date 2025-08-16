@@ -78,6 +78,7 @@ export interface Roll {
   albums?: { title: string } | null;
   aspect_ratio: string;
   is_archived: boolean;
+  tags?: string[] | null;
 }
 
 export interface Comment {
@@ -200,6 +201,7 @@ export interface AppContextType {
   refetchAlbums: () => Promise<void>;
   refetchRolls: () => Promise<void>;
   updateRollTitle: (rollId: string, title: string) => Promise<boolean>;
+  updateRollTags: (rollId: string, tags: string[]) => Promise<boolean>;
   handleLike: (postId: string, postOwnerId: string, isLiked?: boolean) => Promise<void>;
   handleFollow: (userId: string, isFollowed?: boolean) => Promise<void>;
   createPost: (rollId: string, caption: string, coverPhotoUrl: string | null, albumId: string | null) => Promise<void>;

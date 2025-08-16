@@ -1,11 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Check, Film as FilmIcon, ArrowUp, ArrowDown, ArrowDownAZ, ArrowUpZA, Filter, ArrowUpDown } from 'lucide-react';
+import { Search, Check, Film as FilmIcon, ArrowUp, ArrowDown, ArrowDownAZ, ArrowUpZA, Filter, ArrowUpDown, LayoutGrid, Tag } from 'lucide-react';
 
 interface RollsControlsProps {
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   sortOrder: string;
   setSortOrder: (order: string) => void;
+  groupBy: string;
+  setGroupBy: (group: string) => void;
   filmTypes: string[];
   selectedFilm: string;
   setSelectedFilm: (film: string) => void;
@@ -33,17 +35,22 @@ const RollsControls: React.FC<RollsControlsProps> = ({
   setSearchTerm,
   sortOrder,
   setSortOrder,
+  groupBy,
+  setGroupBy,
   filmTypes,
   selectedFilm,
   setSelectedFilm,
 }) => {
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isGroupOpen, setIsGroupOpen] = useState(false);
   const sortRef = useRef<HTMLDivElement>(null);
   const filterRef = useRef<HTMLDivElement>(null);
+  const groupRef = useRef<HTMLDivElement>(null);
 
   useOnClickOutside(sortRef, () => setIsSortOpen(false));
   useOnClickOutside(filterRef, () => setIsFilterOpen(false));
+  useOnClickOutside(groupRef, () => setIsGroupOpen(false));
 
   const sortOptions = [
     { key: 'newest', label: 'Newest First', icon: <ArrowDown className="w-4 h-4 text-gray-400" /> },
@@ -52,8 +59,14 @@ const RollsControls: React.FC<RollsControlsProps> = ({
     { key: 'title_desc', label: 'Title (Z-A)', icon: <ArrowUpZA className="w-4 h-4 text-gray-400" /> },
   ];
 
+  const groupOptions = [
+    { key: 'none', label: 'None', icon: <LayoutGrid className="w-4 h-4 text-gray-400" /> },
+    { key: 'film_type', label: 'Film Type', icon: <FilmIcon className="w-4 h-4 text-gray-400" /> },
+    { key: 'tag', label: 'Tag', icon: <Tag className="w-4 h-4 text-gray-400" /> },
+  ];
+
   return (
-    <div className="flex flex-row gap-3 mb-6">
+    <div className="flex flex-col md:flex-row gap-3 mb-6">
       <div className="relative flex-grow">
         <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" />
         <input
@@ -107,6 +120,27 @@ const RollsControls: React.FC<RollsControlsProps> = ({
                 <button key={opt.key} onClick={() => { setSortOrder(opt.key); setIsSortOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700 rounded-md">
                   <span className="flex items-center gap-2">{opt.icon} {opt.label}</span>
                   {sortOrder === opt.key && <Check className="w-4 h-4 text-brand-amber-start" />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="relative" ref={groupRef}>
+          <button 
+            onClick={() => setIsGroupOpen(!isGroupOpen)} 
+            className="flex items-center justify-center w-12 h-12 bg-neutral-800 border border-neutral-700 rounded-lg text-white hover:bg-neutral-700 transition-colors"
+            aria-label="Group rolls"
+          >
+            <LayoutGrid className="w-5 h-5 text-gray-400" />
+          </button>
+          {isGroupOpen && (
+            <div className="absolute top-full right-0 mt-2 w-56 bg-neutral-800 border border-neutral-700 rounded-lg shadow-2xl z-10 p-2">
+              <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Group by</div>
+              {groupOptions.map(opt => (
+                <button key={opt.key} onClick={() => { setGroupBy(opt.key); setIsGroupOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700 rounded-md">
+                  <span className="flex items-center gap-2">{opt.icon} {opt.label}</span>
+                  {groupBy === opt.key && <Check className="w-4 h-4 text-brand-amber-start" />}
                 </button>
               ))}
             </div>

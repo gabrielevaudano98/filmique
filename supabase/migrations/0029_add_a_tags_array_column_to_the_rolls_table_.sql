@@ -1,0 +1,1 @@
+ALTER TABLE public.rolls ADD COLUMN tags text[] DEFAULT ARRAY[]::text[];
