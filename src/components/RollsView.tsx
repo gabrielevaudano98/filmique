@@ -164,29 +164,25 @@ const RollsView: React.FC = () => {
         )}
 
         {rollsViewSection === 'rolls' && (
-          <div key="rolls" className="animate-slide-in-from-right mt-6">
-            <div className="sticky top-[132px] z-30 flex justify-end pointer-events-none -mx-4 px-4 h-12">
-              <div className="pointer-events-auto flex items-center gap-2">
-                <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-                <RollsControls />
-              </div>
-            </div>
-            <div className="space-y-6 -mt-12">
-              {processedRolls.length > 0 ? (
-                groupEntries.map(([groupName, rolls]) => (
-                  <div key={groupName}>
-                    <h3 className="sticky top-[132px] z-20 py-2 -mx-4 px-4 text-lg font-bold text-white mb-3 bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
-                      {groupName}
-                    </h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                      {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
+          <div key="rolls" className="animate-slide-in-from-right mt-6 space-y-6">
+            {processedRolls.length > 0 ? (
+              groupEntries.map(([groupName, rolls]) => (
+                <div key={groupName}>
+                  <h3 className="sticky top-[132px] z-20 py-2 -mx-4 px-4 text-lg font-bold text-white mb-3 bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 flex justify-between items-center">
+                    <span className="truncate pr-4">{groupName}</span>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+                      <RollsControls />
                     </div>
+                  </h3>
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                    {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
                   </div>
-                ))
-              ) : (
-                rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
-              )}
-            </div>
+                </div>
+              ))
+            ) : (
+              rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
+            )}
           </div>
         )}
       </div>
