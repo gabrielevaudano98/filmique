@@ -129,7 +129,8 @@ const RollsView: React.FC = () => {
 
       <div className="relative flex-1 mt-6">
         {activeSection === 'darkroom' && (
-          <div key="darkroom" className="animate-slide-in-from-left">
+          <div key="darkroom" className="animate-slide-in-from-left space-y-6">
+            <h2 className="text-2xl font-bold text-white">In the Darkroom</h2>
             {developingRolls.length > 0 ? (
               <div className="space-y-3">
                 {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
@@ -140,17 +141,18 @@ const RollsView: React.FC = () => {
 
         {activeSection === 'rolls' && (
           <div key="rolls" className="animate-slide-in-from-right">
-            <div className="sticky top-[128px] z-20 flex justify-end pointer-events-none -mx-4 px-4 h-14 items-center">
+            <div className="sticky top-[128px] z-20 flex justify-end pointer-events-none -mx-4 px-4 h-14 items-center bg-neutral-900/95 backdrop-blur-lg border-b border-neutral-700/50">
               <div className="pointer-events-auto flex items-center gap-2">
                 <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
                 <RollsControls />
               </div>
             </div>
-            <div className="space-y-6 -mt-14">
+            
+            <div className="space-y-6 pt-4">
               {processedRolls.length > 0 ? (
                 groupEntries.map(([groupName, rolls]) => (
                   <div key={groupName}>
-                    <h3 className="sticky top-[128px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
+                    <h3 className="sticky top-[184px] z-10 py-2 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50">
                       {groupName}
                     </h3>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
