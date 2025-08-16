@@ -15,7 +15,7 @@ const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ children }) => {
         const isStuck = entry.intersectionRatio < 1;
         setIsSticky(isStuck);
       },
-      { threshold: [1], rootMargin: "-140px 0px 0px 0px" } // Matches the `top-[140px]` style
+      { threshold: [1], rootMargin: "-193px 0px 0px 0px" } // Matches the `top-[192px]` style
     );
 
     const currentRef = ref.current;
@@ -33,7 +33,7 @@ const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ children }) => {
   return (
     <h3
       ref={ref}
-      className={`sticky top-[140px] z-20 py-2 -mx-4 px-4 text-lg font-bold text-white mb-3 border-y transition-colors duration-300
+      className={`sticky top-[192px] z-20 py-2 -mx-4 px-4 text-lg font-bold text-white mb-3 border-y transition-colors duration-300
         ${isSticky 
           ? 'bg-neutral-900/20 backdrop-blur-lg border-neutral-700/50' 
           : 'bg-transparent border-transparent'

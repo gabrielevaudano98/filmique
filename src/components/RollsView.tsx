@@ -126,14 +126,12 @@ const RollsView: React.FC = () => {
 
   return (
     <div {...handlers} className="flex flex-col w-full">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-white">
-          {rollsViewSection === 'rolls' ? 'Rolls' : 'Darkroom'}
-        </h1>
-        {rollsViewSection === 'rolls' ? (
-          <div className="flex items-center gap-2">
-            <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-            <RollsControls />
+      <header className="sticky top-[64px] z-30 bg-neutral-900/80 backdrop-blur-lg -mx-4 px-4 pt-4 pb-4 border-b border-neutral-700/50 mb-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-white">
+            {rollsViewSection === 'rolls' ? 'Rolls' : 'Darkroom'}
+          </h1>
+          {rollsViewSection === 'rolls' ? (
             <button
               onClick={() => setRollsViewSection('darkroom')}
               className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-neutral-800"
@@ -142,18 +140,24 @@ const RollsView: React.FC = () => {
               <Clock className="w-5 h-5" />
               <span>Darkroom</span>
             </button>
+          ) : (
+            <button
+              onClick={() => setRollsViewSection('rolls')}
+              className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-neutral-800"
+              aria-label="View Rolls"
+            >
+              <Library className="w-5 h-5" />
+              <span>Rolls</span>
+            </button>
+          )}
+        </div>
+        {rollsViewSection === 'rolls' && (
+          <div className="flex items-center justify-between mt-4">
+            <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+            <RollsControls />
           </div>
-        ) : (
-          <button
-            onClick={() => setRollsViewSection('rolls')}
-            className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-neutral-800"
-            aria-label="View Rolls"
-          >
-            <Library className="w-5 h-5" />
-            <span>Rolls</span>
-          </button>
         )}
-      </div>
+      </header>
 
       <div className="relative flex-1">
         {rollsViewSection === 'darkroom' && (
