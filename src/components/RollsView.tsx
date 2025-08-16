@@ -8,7 +8,6 @@ import { Clock, Film, Archive, Library } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
-import StickyGroupHeader from './StickyGroupHeader';
 
 const DarkroomEmptyState = () => (
   <div className="text-center py-24 text-neutral-500">
@@ -153,17 +152,6 @@ const RollsView: React.FC = () => {
         </div>
       </header>
 
-      {rollsViewSection === 'rolls' && (
-        <div className="sticky top-[132px] z-20 bg-neutral-900 -mx-4 px-4 py-2 border-b border-neutral-700/50">
-          <div className="flex justify-end items-center">
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-              <RollsControls />
-            </div>
-          </div>
-        </div>
-      )}
-
       <div className="relative flex-1">
         {rollsViewSection === 'darkroom' && (
           <div key="darkroom" className="animate-slide-in-from-left mt-6">
@@ -176,23 +164,29 @@ const RollsView: React.FC = () => {
         )}
 
         {rollsViewSection === 'rolls' && (
-          <div key="rolls" className="animate-slide-in-from-right space-y-6 mt-6">
-            {processedRolls.length > 0 ? (
-              groupEntries.map(([groupName, rolls]) => (
-                <div key={groupName}>
-                  <StickyGroupHeader>
-                    <div className="flex justify-between items-center w-full">
-                      <span>{groupName}</span>
+          <div key="rolls" className="animate-slide-in-from-right mt-6">
+            <div className="sticky top-[132px] z-30 flex justify-end pointer-events-none -mx-4 px-4 h-12">
+              <div className="pointer-events-auto flex items-center gap-2">
+                <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+                <RollsControls />
+              </div>
+            </div>
+            <div className="space-y-6 -mt-12">
+              {processedRolls.length > 0 ? (
+                groupEntries.map(([groupName, rolls]) => (
+                  <div key={groupName}>
+                    <h3 className="sticky top-[132px] z-20 py-2 -mx-4 px-4 text-lg font-bold text-white mb-3 bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
+                      {groupName}
+                    </h3>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                      {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
                     </div>
-                  </StickyGroupHeader>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
-                    {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
                   </div>
-                </div>
-              ))
-            ) : (
-              rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
-            )}
+                ))
+              ) : (
+                rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
+              )}
+            </div>
           </div>
         )}
       </div>
