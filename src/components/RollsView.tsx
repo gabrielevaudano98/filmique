@@ -39,6 +39,7 @@ const RollsView: React.FC = () => {
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode
   } = useAppContext();
   const [activeSection, setActiveSection] = useState<'darkroom' | 'shelf'>('darkroom');
+  const [searchTerm, setSearchTerm] = useState('');
   const [offsetX, setOffsetX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
