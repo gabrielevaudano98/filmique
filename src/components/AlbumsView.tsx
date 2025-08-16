@@ -1,0 +1,67 @@
+import React, { useState, useEffect } from 'react';
+import { useAppContext } from '../context/AppContext';
+import { Album } from '../types';
+import AlbumCard from './AlbumCard';
+import { Plus, Library as LibraryIcon, ArrowLeft } from 'lucide-react';
+import CreateAlbumModal from './CreateAlbumModal';
+
+const AlbumsView: React.FC = () => {
+  const { albums, setSelectedAlbum, setCurrentView, refetchAlbums, setHeaderAction } = useAppContext();
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
+  useEffect(() => {
+    refetchAlbums();
+  }, [refetchAlbums]);
+
+  useEffect(() => {
+    setHeaderAction({
+      icon: ArrowLeft,
+      action: () => setCurrentView('library'),
+    });
+    return () => setHeaderAction(null);
+  }, [setHeaderAction, setCurrentView]);
+
+  const handleSelectAlbum = (album: Album) => {
+    setSelectedAlbum(album);
+    setCurrentView('albumDetail');
+  };
+
+  return (
+    <>
+      <div className="flex flex-col w-full">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-white">Albums</h1>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 text-sm font-semibold text-brand-amber-start hover:text-brand-amber-mid transition-colors"
+            aria-label="Create New Album"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Album</span>
+          </button>
+        </div>
+
+        {albums.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {albums.map(album => (
+              <AlbumCard 
+                key={album.id} 
+                album={album} 
+                onClick={() => handleSelectAlbum(album)} 
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 text-neutral-500">
+            <LibraryIcon className="w-16 h-16 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-white">No Albums Yet</h3>
+            <p className="mt-2">Create your first album to organize your rolls.</p>
+          </div>
+        )}
+      </div>
+      {showCreateModal && <CreateAlbumModal onClose={() => setShowCreateModal(false)} />}
+    </>
+  );
+};
+
+export default AlbumsView;

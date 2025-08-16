@@ -19,6 +19,7 @@ import RollCompletionWizard from './components/RollCompletionWizard';
 import PostDevelopmentWizard from './components/PostDevelopmentWizard';
 import RollsSettingsView from './components/RollsSettingsView';
 import LibraryView from './components/LibraryView';
+import AlbumsView from './components/AlbumsView';
 import { Roll } from './types';
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
     switch (currentView) {
       case 'rolls': return <RollsView />;
       case 'library': return <LibraryView />;
+      case 'albums': return <AlbumsView />;
       case 'community': return <CommunityView />;
       case 'challenges': return <ChallengesView />;
       case 'profile': return <ProfileView />;
