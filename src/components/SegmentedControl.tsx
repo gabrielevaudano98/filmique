@@ -16,7 +16,7 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
     >
       {/* Sliding Pill Background */}
       <div
-        className="absolute top-1 bottom-1 h-auto rounded-lg bg-gradient-to-r from-brand-amber-start to-brand-amber-end shadow-lg shadow-brand-amber-start/20 transition-all duration-300 ease-spring-soft"
+        className="absolute top-1 bottom-1 h-auto rounded-lg bg-gradient-to-r from-brand-amber-start to-brand-amber-end shadow-lg shadow-brand-amber-start/40 shadow-[inset_0_1px_1px_rgba(255,255,255,0.2)] transition-all duration-300 ease-spring-soft"
         style={{
           gridColumn: `${activeIndex + 1}`,
         }}
@@ -31,15 +31,15 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            className={`relative z-10 flex-1 text-sm font-bold text-center transition-colors duration-300 rounded-lg flex items-center justify-center
+            className={`relative z-10 flex-1 text-sm font-bold text-center transition-all duration-300 rounded-lg flex items-center justify-center
               ${hasLabel ? 'py-3 gap-2' : 'p-2.5'}
               ${isActive
                 ? 'text-black'
-                : 'text-gray-300 hover:text-white'
+                : 'text-gray-500 hover:text-gray-200'
               }
             `}
           >
-            {Icon && <Icon className="w-5 h-5" />}
+            {Icon && <Icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : ''}`} />}
             {hasLabel && <span>{opt.label}</span>}
           </button>
         );
