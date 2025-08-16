@@ -24,6 +24,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [headerAction, setHeaderAction] = useState<{ icon: React.ElementType, action: () => void } | null>(null);
   const [rollsViewSection, setRollsViewSection] = useState<'studio' | 'shelf'>('studio');
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
+  const [librarySection, setLibrarySection] = useState<'rolls' | 'albums'>('rolls');
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Data State
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
@@ -83,7 +85,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRollsViewSection,
     isTopBarVisible,
     setIsTopBarVisible,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, rollsViewSection, isTopBarVisible]);
+    librarySection,
+    setLibrarySection,
+    searchTerm,
+    setSearchTerm,
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, rollsViewSection, isTopBarVisible, librarySection, searchTerm]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };

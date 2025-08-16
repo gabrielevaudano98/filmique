@@ -35,12 +35,30 @@ const NavItem: React.FC<{
 };
 
 const BottomNavBar: React.FC = () => {
-  const { currentView, setCurrentView } = useAppContext();
+  const { currentView, setCurrentView, librarySection, setLibrarySection } = useAppContext();
 
   const navItems = [
-    { view: 'rolls', label: 'Rolls', icon: Film },
-    { view: 'library', label: 'Library', icon: Library },
-    { view: 'community', label: 'Community', icon: Users },
+    { 
+      id: 'rolls', 
+      label: 'Rolls', 
+      icon: Film, 
+      isActive: currentView === 'library' && librarySection === 'rolls',
+      action: () => { setCurrentView('library'); setLibrarySection('rolls'); }
+    },
+    { 
+      id: 'albums', 
+      label: 'Albums', 
+      icon: Library, 
+      isActive: currentView === 'library' && librarySection === 'albums',
+      action: () => { setCurrentView('library'); setLibrarySection('albums'); }
+    },
+    { 
+      id: 'community', 
+      label: 'Community', 
+      icon: Users, 
+      isActive: currentView === 'community',
+      action: () => setCurrentView('community')
+    },
   ];
 
   const leftItems = navItems.slice(0, 1);
@@ -57,10 +75,12 @@ const BottomNavBar: React.FC = () => {
           <div className="flex items-center gap-2">
             {leftItems.map((item) => (
               <NavItem
-                key={item.view}
-                {...item}
-                isActive={currentView === item.view}
-                onClick={() => setCurrentView(item.view)}
+                key={item.id}
+                view={item.id}
+                label={item.label}
+                icon={item.icon}
+                isActive={item.isActive}
+                onClick={item.action}
               />
             ))}
           </div>
@@ -82,10 +102,12 @@ const BottomNavBar: React.FC = () => {
           <div className="flex items-center gap-2">
             {rightItems.map((item) => (
               <NavItem
-                key={item.view}
-                {...item}
-                isActive={currentView === item.view}
-                onClick={() => setCurrentView(item.view)}
+                key={item.id}
+                view={item.id}
+                label={item.label}
+                icon={item.icon}
+                isActive={item.isActive}
+                onClick={item.action}
               />
             ))}
           </div>

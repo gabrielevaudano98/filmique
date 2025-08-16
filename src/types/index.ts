@@ -242,4 +242,8 @@ export interface AppContextType {
   setRollsViewSection: (section: 'studio' | 'shelf') => void;
   isTopBarVisible: boolean;
   setIsTopBarVisible: (visible: boolean) => void;
+  librarySection: 'rolls' | 'albums';
+  setLibrarySection: (section: 'rolls' | 'albums') => void;
+  searchTerm: string;
+  setSearchTerm: (term: string) => void;
 }
