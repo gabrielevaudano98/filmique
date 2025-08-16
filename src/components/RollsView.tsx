@@ -7,7 +7,6 @@ import { Film, Archive, Clock, Printer, Library } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
-import SegmentedControl from './SegmentedControl';
 import PrintsView from './PrintsView';
 import DarkroomEmptyState from './DarkroomEmptyState';
 
@@ -116,18 +115,28 @@ const RollsView: React.FC = () => {
   return (
     <div className="flex flex-col w-full">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-white">Library</h1>
+        <h1 className="text-3xl font-bold text-white">Studio</h1>
+        <div className="flex items-center space-x-1 p-1 bg-neutral-800/60 rounded-xl border border-white/10">
+          {sectionOptions.map(opt => {
+            const Icon = opt.icon;
+            const isActive = activeSection === opt.value;
+            return (
+              <button
+                key={opt.value}
+                onClick={() => setActiveSection(opt.value as any)}
+                className={`p-2.5 rounded-lg transition-colors ${
+                  isActive ? 'bg-brand-amber-start text-black' : 'text-gray-400 hover:text-white'
+                }`}
+                aria-label={opt.label}
+              >
+                <Icon className="w-5 h-5" />
+              </button>
+            );
+          })}
+        </div>
       </div>
-      
-      <header className="sticky top-[64px] z-30 bg-neutral-900/95 -mx-4 px-4 py-3 border-b border-neutral-700/50 h-16 flex items-center">
-        <SegmentedControl
-          options={sectionOptions}
-          value={activeSection}
-          onChange={(val) => setActiveSection(val as any)}
-        />
-      </header>
 
-      <div className="relative flex-1 mt-6">
+      <div className="relative flex-1">
         {activeSection === 'darkroom' && (
           <div key="darkroom" className="animate-slide-in-from-left">
             {developingRolls.length > 0 ? (
@@ -140,7 +149,7 @@ const RollsView: React.FC = () => {
 
         {activeSection === 'rolls' && (
           <div key="rolls" className="animate-slide-in-from-right">
-            <div className="sticky top-[128px] z-20 flex justify-end pointer-events-none -mx-4 px-4 h-14 items-center">
+            <div className="sticky top-[64px] z-20 flex justify-end pointer-events-none -mx-4 px-4 h-14 items-center">
               <div className="pointer-events-auto flex items-center gap-2">
                 <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
                 <RollsControls />
@@ -150,7 +159,7 @@ const RollsView: React.FC = () => {
               {processedRolls.length > 0 ? (
                 groupEntries.map(([groupName, rolls]) => (
                   <div key={groupName}>
-                    <h3 className="sticky top-[128px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
+                    <h3 className="sticky top-[64px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
                       {groupName}
                     </h3>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
