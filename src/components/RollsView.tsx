@@ -9,6 +9,7 @@ import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
 import StickyGroupHeader from './StickyGroupHeader';
+import SegmentedControl from './SegmentedControl';
 
 const DarkroomEmptyState = () => (
   <div className="text-center py-24 text-neutral-500">
@@ -37,7 +38,7 @@ const ArchivedEmptyState = () => (
 const RollsView: React.FC = () => {
   const { 
     developingRolls, completedRolls,
-    rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
+    rollsSortOrder, rollsGroupBy, setRollsGroupBy, rollsSelectedFilm, rollsViewMode,
     rollsViewSection, setRollsViewSection,
     searchTerm, setSearchTerm
   } = useAppContext();
@@ -86,6 +87,13 @@ const RollsView: React.FC = () => {
     return rolls;
   }, [shelfRolls, archivedRolls, searchTerm, rollsSelectedFilm, rollsSortOrder, rollsViewMode]);
 
+  const groupOptions = [
+    { value: 'date', label: 'Date' },
+    { value: 'film_type', label: 'Film Type' },
+    { value: 'tag', label: 'Tag' },
+    { value: 'none', label: 'None' },
+  ];
+
   const groupedRolls = useMemo(() => {
     if (rollsGroupBy === 'date') {
       const byDay = processedRolls.reduce((acc, roll) => {
@@ -126,24 +134,20 @@ const RollsView: React.FC = () => {
 
   return (
     <div {...handlers} className="flex flex-col w-full">
-      <header className="sticky top-[64px] z-30 bg-neutral-900/80 backdrop-blur-lg -mx-4 px-4 pt-4 pb-4 border-b border-neutral-700/50 mb-6">
+      <header className="sticky top-[64px] z-30 bg-neutral-900/80 backdrop-blur-lg -mx-4 px-4 pt-4 pb-4 border-b border-neutral-700/50">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold text-white">
             {rollsViewSection === 'rolls' ? 'Rolls' : 'Darkroom'}
           </h1>
           {rollsViewSection === 'rolls' ? (
-            <div className="flex items-center gap-2">
-              <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-              <RollsControls />
-              <button
-                onClick={() => setRollsViewSection('darkroom')}
-                className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors px-4 py-2.5 rounded-xl bg-neutral-800/60 backdrop-blur-lg border border-white/10 hover:bg-neutral-700/80"
-                aria-label="View Darkroom"
-              >
-                <Clock className="w-5 h-5" />
-                <span>Darkroom</span>
-              </button>
-            </div>
+            <button
+              onClick={() => setRollsViewSection('darkroom')}
+              className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors px-4 py-2.5 rounded-xl bg-neutral-800/60 backdrop-blur-lg border border-white/10 hover:bg-neutral-700/80"
+              aria-label="View Darkroom"
+            >
+              <Clock className="w-5 h-5" />
+              <span>Darkroom</span>
+            </button>
           ) : (
             <button
               onClick={() => setRollsViewSection('rolls')}
@@ -155,9 +159,24 @@ const RollsView: React.FC = () => {
             </button>
           )}
         </div>
+        {rollsViewSection === 'rolls' && (
+          <div className="flex items-center justify-between gap-4 mt-4">
+            <div className="flex-grow">
+              <SegmentedControl 
+                options={groupOptions} 
+                value={rollsGroupBy} 
+                onChange={setRollsGroupBy} 
+              />
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+              <RollsControls />
+            </div>
+          </div>
+        )}
       </header>
 
-      <div className="relative flex-1">
+      <div className="relative flex-1 mt-6">
         {rollsViewSection === 'darkroom' && (
           <div key="darkroom" className="animate-slide-in-from-left">
             {developingRolls.length > 0 ? (
@@ -184,7 +203,7 @@ const RollsView: React.FC = () => {
                 </div>
               ))
             ) : (
-              rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <ArchivedEmptyState />
+              rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
             )}
           </div>
         )}
