@@ -19,3 +19,10 @@ export function formatDistanceToNow(dateString: string): string {
     day: 'numeric',
   });
 }
+
+export function formatDuration(ms: number): string {
+  if (ms < 0) ms = 0;
+  const hours = Math.floor(ms / (1000 * 60 * 60));
+  const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
+  return `${hours}h ${minutes}m remaining`;
+}

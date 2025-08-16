@@ -3,11 +3,11 @@ import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
-import RollListItem from './RollListItem';
 import RollCard from './RollCard';
 import { Clock, Film, Archive, ArrowLeft, Library } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
+import DevelopingRollCard from './DevelopingRollCard';
 
 const DarkroomEmptyState = () => (
   <div className="text-center py-24 text-neutral-500">
@@ -171,7 +171,7 @@ const RollsView: React.FC = () => {
           <div key="darkroom" className="animate-slide-in-from-left">
             {developingRolls.length > 0 ? (
               <div className="space-y-3">
-                {developingRolls.map(roll => <RollListItem key={roll.id} roll={roll} onDelete={() => {}} onAssignAlbum={() => {}} isDeveloping={true} />)}
+                {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
               </div>
             ) : <DarkroomEmptyState />}
           </div>
