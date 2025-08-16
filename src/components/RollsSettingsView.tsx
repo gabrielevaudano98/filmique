@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSwipeable } from 'react-swipeable';
 import { ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
@@ -42,6 +43,12 @@ const RollsSettingsView: React.FC = () => {
     rollsSelectedFilm, setRollsSelectedFilm,
   } = useAppContext();
 
+  const handlers = useSwipeable({
+    onSwipedRight: () => setCurrentView('rolls'),
+    preventScrollOnSwipe: true,
+    trackMouse: true,
+  });
+
   const filmTypes = React.useMemo(() =>
     [...new Set(completedRolls.filter(r => r.is_completed && r.developed_at).map(r => r.film_type))],
   [completedRolls]);
@@ -61,15 +68,15 @@ const RollsSettingsView: React.FC = () => {
   ];
 
   return (
-    <div className="flex-1 flex flex-col bg-transparent text-white">
-      <div className="flex items-center p-4 border-b border-neutral-800">
+    <div {...handlers} className="flex-1 flex flex-col bg-transparent text-white h-full">
+      <div className="flex items-center p-4 border-b border-neutral-800 flex-shrink-0">
         <button onClick={() => setCurrentView('rolls')} className="p-2 text-gray-400 hover:text-white rounded-full">
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-xl font-bold text-white mx-auto">Display Options</h1>
         <div className="w-6 h-6"></div>
       </div>
-      <div className="p-4 sm:p-6 overflow-y-auto no-scrollbar">
+      <div className="p-4 sm:p-6 overflow-y-auto no-scrollbar flex-1">
         <SettingsGroup title="Sort by">
           {sortOptions.map(opt => (
             <SettingsRow
