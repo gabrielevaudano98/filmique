@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
@@ -39,6 +40,16 @@ const RollsView: React.FC = () => {
   } = useAppContext();
   const [activeSection, setActiveSection] = useState<'darkroom' | 'shelf'>('darkroom');
   const [searchTerm, setSearchTerm] = useState('');
+
+  const handlers = useSwipeable({
+    onSwipedRight: () => {
+      if (activeSection === 'shelf') {
+        setActiveSection('darkroom');
+      }
+    },
+    preventScrollOnSwipe: true,
+    trackMouse: true,
+  });
 
   const { shelfRolls, archivedRolls } = useMemo(() => {
     const developed = completedRolls.filter(r => isRollDeveloped(r));
@@ -112,7 +123,7 @@ const RollsView: React.FC = () => {
   const groupEntries = Object.entries(groupedRolls);
 
   return (
-    <div className="flex flex-col w-full space-y-6">
+    <div {...handlers} className="flex flex-col w-full space-y-6">
       <div className="flex items-center justify-between">
         {activeSection === 'shelf' ? (
           <>
@@ -139,17 +150,19 @@ const RollsView: React.FC = () => {
         )}
       </div>
 
-      <div key={activeSection} className="animate-fade-in">
+      <div className="relative flex-1">
         {activeSection === 'darkroom' && (
-          developingRolls.length > 0 ? (
-            <div className="space-y-3">
-              {developingRolls.map(roll => <RollListItem key={roll.id} roll={roll} onDelete={() => {}} onAssignAlbum={() => {}} isDeveloping={true} />)}
-            </div>
-          ) : <DarkroomEmptyState />
+          <div key="darkroom" className="animate-slide-in-from-left">
+            {developingRolls.length > 0 ? (
+              <div className="space-y-3">
+                {developingRolls.map(roll => <RollListItem key={roll.id} roll={roll} onDelete={() => {}} onAssignAlbum={() => {}} isDeveloping={true} />)}
+              </div>
+            ) : <DarkroomEmptyState />}
+          </div>
         )}
 
         {activeSection === 'shelf' && (
-          <div className="space-y-6">
+          <div key="shelf" className="animate-slide-in-from-right space-y-6">
             {processedRolls.length > 0 ? (
               groupEntries.map(([groupName, rolls]) => (
                 <div key={groupName}>

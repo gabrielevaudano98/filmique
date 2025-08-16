@@ -298,3 +298,16 @@
 .film-strip-bg::after {
   right: 0;
 }
+
+/* Slide-in/out animations for view transitions */
+@keyframes slide-in-from-right {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slide-in-from-left {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-slide-in-from-right { animation: slide-in-from-right 350ms ease-out forwards; }
+.animate-slide-in-from-left { animation: slide-in-from-left 350ms ease-out forwards; }
