@@ -2,7 +2,7 @@ import React from 'react';
 
 interface SegmentedControlProps {
   options: { 
-    label?: string; 
+    label: string; 
     value: string; 
     icon: React.ElementType;
     colors: { from: string; to: string; shadow: string; };
@@ -13,7 +13,7 @@ interface SegmentedControlProps {
 
 const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onChange }) => {
   return (
-    <div className="flex items-center justify-center gap-4">
+    <div className="flex items-center justify-center p-1.5 bg-black/30 backdrop-blur-xl border border-white/10 rounded-full shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] space-x-1.5">
       {options.map((opt) => {
         const Icon = opt.icon;
         const isActive = value === opt.value;
@@ -24,14 +24,25 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            className={`relative z-10 w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 ease-spring-soft
+            className={`relative z-10 rounded-full flex items-center justify-center transition-all duration-500 ease-[cubic-bezier(0.2,1,0.35,1)] overflow-hidden
               ${isActive
-                ? `${gradientClass} ${shadowClass} scale-110 shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)] border-2 border-white/50`
-                : 'bg-black/30 backdrop-blur-lg border border-white/10 shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)] hover:bg-white/10'
+                ? `${gradientClass} ${shadowClass} w-36 h-14 shadow-[inset_0_1px_2px_rgba(255,255,255,0.3)]`
+                : 'w-14 h-14 bg-transparent text-gray-400 hover:text-white'
               }
             `}
           >
-            <Icon className={`w-7 h-7 transition-colors duration-300 ${isActive ? 'text-white' : 'text-gray-400'}`} />
+            <div className="flex items-center justify-center px-4">
+              <Icon className={`w-6 h-6 flex-shrink-0 transition-colors duration-300 ${isActive ? 'text-white' : ''}`} />
+              <div 
+                className={`transition-all duration-300 ease-in-out overflow-hidden ${isActive ? 'max-w-xs' : 'max-w-0'}`}
+              >
+                <span 
+                  className={`font-bold text-sm text-white whitespace-nowrap transition-opacity duration-200 ml-2 ${isActive ? 'opacity-100' : 'opacity-0'}`}
+                >
+                  {opt.label}
+                </span>
+              </div>
+            </div>
           </button>
         );
       })}
