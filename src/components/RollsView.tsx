@@ -5,7 +5,7 @@ import { isRollDeveloped } from '../utils/rollUtils';
 import SegmentedControl from './SegmentedControl';
 import RollListItem from './RollListItem';
 import RollCard from './RollCard';
-import { Clock, Film, Tag, Archive } from 'lucide-react';
+import { Clock, Film, Archive, ArrowLeft, LayoutGrid } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 
@@ -38,7 +38,7 @@ const RollsView: React.FC = () => {
     developingRolls, completedRolls, deleteRoll, removeRollFromAlbum,
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm
   } = useAppContext();
-  const [activeSection, setActiveSection] = useState<'shelf' | 'darkroom' | 'archived'>('shelf');
+  const [activeSection, setActiveSection] = useState<'shelf' | 'darkroom' | 'archived'>('darkroom');
   const [searchTerm, setSearchTerm] = useState('');
 
   const { shelfRolls, archivedRolls } = useMemo(() => {
@@ -111,24 +111,43 @@ const RollsView: React.FC = () => {
   return (
     <div className="flex flex-col w-full space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">My Rolls</h1>
-        {activeSection === 'shelf' && (
+        {activeSection === 'shelf' ? (
+          <>
+            <button onClick={() => setActiveSection('darkroom')} className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors p-2 -ml-2">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-3xl font-bold text-white">Shelf</h1>
+          </>
+        ) : (
+          <h1 className="text-3xl font-bold text-white">My Rolls</h1>
+        )}
+        
+        {activeSection === 'shelf' ? (
           <div className="flex items-center gap-2">
             <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
             <RollsControls />
           </div>
+        ) : (
+          <button
+            onClick={() => setActiveSection('shelf')}
+            className="flex items-center justify-center w-11 h-11 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl text-white hover:bg-neutral-700/80 transition-colors"
+            aria-label="View Shelf"
+          >
+            <LayoutGrid className="w-5 h-5 text-gray-300" />
+          </button>
         )}
       </div>
 
-      <SegmentedControl
-        options={[
-          { label: 'Shelf', value: 'shelf' },
-          { label: `Darkroom (${developingRolls.length})`, value: 'darkroom' },
-          { label: 'Archived', value: 'archived' },
-        ]}
-        value={activeSection}
-        onChange={(value) => setActiveSection(value as 'shelf' | 'darkroom' | 'archived')}
-      />
+      {activeSection !== 'shelf' && (
+        <SegmentedControl
+          options={[
+            { label: `Darkroom (${developingRolls.length})`, value: 'darkroom' },
+            { label: 'Archived', value: 'archived' },
+          ]}
+          value={activeSection}
+          onChange={(value) => setActiveSection(value as 'darkroom' | 'archived')}
+        />
+      )}
 
       <div key={activeSection} className="animate-fade-in">
         {activeSection === 'darkroom' && (
