@@ -20,6 +20,7 @@ const RollDetailView: React.FC = () => {
     updateRollTags,
     setHeaderAction,
     setIsTopBarVisible,
+    setRollsViewSection
   } = useAppContext();
   
   const [photoToView, setPhotoToView] = useState<Photo | null>(null);
@@ -32,8 +33,9 @@ const RollDetailView: React.FC = () => {
 
   const handleBack = useCallback(() => {
     setSelectedRoll(null);
+    setRollsViewSection('shelf');
     setCurrentView('rolls');
-  }, [setSelectedRoll, setCurrentView]);
+  }, [setSelectedRoll, setRollsViewSection, setCurrentView]);
 
   useEffect(() => {
     setHeaderAction({ icon: ArrowLeft, action: handleBack });
