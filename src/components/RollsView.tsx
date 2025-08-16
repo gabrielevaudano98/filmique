@@ -49,10 +49,6 @@ const RollsView: React.FC = () => {
     };
   }, [completedRolls]);
 
-  const filmTypes = useMemo(() => 
-    [...new Set(shelfRolls.map(r => r.film_type))],
-  [shelfRolls]);
-
   const processedRolls = useMemo(() => {
     let rolls = [...shelfRolls];
     if (searchTerm) {
@@ -126,7 +122,7 @@ const RollsView: React.FC = () => {
               Object.entries(groupedRolls).sort(([keyA], [keyB]) => keyA.localeCompare(keyB)).map(([groupName, rolls]) => (
                 <div key={groupName}>
                   {rollsGroupBy !== 'none' && <h3 className="text-lg font-bold text-white mb-3">{groupName}</h3>}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                     {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
                   </div>
                 </div>

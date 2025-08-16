@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ArrowLeft, Download, Trash2, Image as ImageIcon, Archive, ArchiveRestore, Tag } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { ArrowLeft, Download, Trash2, Archive, ArchiveRestore, Tag } from 'lucide-react';
 import PhotoDetailModal from './PhotoDetailModal';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import { Photo } from '../context/AppContext';
@@ -34,22 +33,6 @@ const RollDetailView: React.FC = () => {
     setCurrentView('rolls');
   };
 
-  const handleDownloadRoll = () => {
-    downloadRoll(selectedRoll);
-  };
-
-  const handleDeleteRoll = () => {
-    deleteRoll(selectedRoll.id);
-    setShowDeleteConfirm(false);
-  };
-
-  const handleArchive = () => {
-    if (selectedRoll) {
-      archiveRoll(selectedRoll.id, !selectedRoll.is_archived);
-      handleBack();
-    }
-  };
-
   const developedDate = selectedRoll.developed_at 
     ? new Date(selectedRoll.developed_at)
     : new Date(new Date(selectedRoll.completed_at!).getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -57,75 +40,68 @@ const RollDetailView: React.FC = () => {
   const cacheBuster = selectedRoll.developed_at ? `?t=${new Date(selectedRoll.developed_at).getTime()}` : '';
 
   return (
-    <div className="flex flex-col w-full">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <button onClick={handleBack} className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors p-2 -ml-2">
-          <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Rolls</span>
-        </button>
-        <div className="flex items-center space-x-2">
-          <button onClick={handleDownloadRoll} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold p-2 rounded-lg transition-colors">
-            <Download className="w-5 h-5" />
+    <div className="w-full h-full flex flex-col">
+      {/* Sticky Header */}
+      <header className="sticky top-0 z-40 bg-neutral-900/80 backdrop-blur-lg border-b border-neutral-700/50 flex-shrink-0" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="flex items-center justify-between h-16 px-4">
+          <button onClick={handleBack} className="flex items-center space-x-2 text-gray-300 hover:text-white transition-colors p-2 -ml-2">
+            <ArrowLeft className="w-5 h-5" />
           </button>
-          <button onClick={handleArchive} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold p-2 rounded-lg transition-colors">
-            {selectedRoll.is_archived ? <ArchiveRestore className="w-5 h-5" /> : <Archive className="w-5 h-5" />}
-          </button>
-          <button onClick={() => setShowDeleteConfirm(true)} className="bg-red-900/70 hover:bg-red-800/80 text-white font-semibold p-2 rounded-lg transition-colors">
-            <Trash2 className="w-5 h-5" />
-          </button>
+          <h1 className="text-lg font-bold text-white truncate">{selectedRoll.title || selectedRoll.film_type}</h1>
+          <div className="flex items-center space-x-2">
+            <button onClick={() => downloadRoll(selectedRoll)} className="p-2 text-gray-300 hover:text-white transition-colors rounded-full"><Download className="w-5 h-5" /></button>
+            <button onClick={() => archiveRoll(selectedRoll.id, !selectedRoll.is_archived)} className="p-2 text-gray-300 hover:text-white transition-colors rounded-full">
+              {selectedRoll.is_archived ? <ArchiveRestore className="w-5 h-5" /> : <Archive className="w-5 h-5" />}
+            </button>
+            <button onClick={() => setShowDeleteConfirm(true)} className="p-2 text-red-500 hover:text-red-400 transition-colors rounded-full"><Trash2 className="w-5 h-5" /></button>
+          </div>
         </div>
-      </div>
-      
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-white">{selectedRoll.title || selectedRoll.film_type}</h2>
-        <p className="text-gray-400 mt-1">
-          {selectedRoll.shots_used} photos • Developed on {developedDate.toLocaleDateString()}
-        </p>
-      </div>
+      </header>
 
-      {/* Tag Management */}
-      <div className="mb-8 p-4 bg-neutral-800/50 rounded-xl">
-        <h3 className="text-lg font-semibold text-brand-amber-start mb-3 flex items-center gap-2"><Tag className="w-5 h-5" /> Tags</h3>
-        <TagInput tags={tags} onTagsChange={setTags} />
-      </div>
-
-      {/* Photo Grid */}
-      {selectedRoll.photos && selectedRoll.photos.length > 0 ? (
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-1 sm:gap-2">
-          {selectedRoll.photos.map(photo => (
-            <div key={photo.id} className="aspect-square bg-gray-800 rounded-lg overflow-hidden group cursor-pointer" onClick={() => setPhotoToView(photo)}>
-              <Image 
-                src={`${photo.thumbnail_url}${cacheBuster}`} 
-                alt="User Photo" 
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" 
-                loading="lazy"
-                decoding="async"
-              />
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto no-scrollbar">
+        <div className="p-4">
+          {/* Info & Tags Section */}
+          <div className="mb-8 p-4 bg-neutral-800/50 rounded-xl border border-neutral-700/50">
+            <div className="flex justify-between items-center mb-3">
+              <div>
+                <p className="font-bold text-white">{selectedRoll.film_type}</p>
+                <p className="text-xs text-gray-400">Developed on {developedDate.toLocaleDateString()}</p>
+              </div>
+              <div className="text-right">
+                <p className="font-bold text-white">{selectedRoll.shots_used}</p>
+                <p className="text-xs text-gray-400">Photos</p>
+              </div>
             </div>
-          ))}
+            <div className="h-px bg-neutral-700/50 my-4"></div>
+            <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2"><Tag className="w-4 h-4" /> Tags</h3>
+            <TagInput tags={tags} onTagsChange={setTags} />
+          </div>
+
+          {/* Film Strip */}
+          <div className="film-strip-bg max-w-md mx-auto">
+            <div className="space-y-2">
+              {selectedRoll.photos?.map((photo, index) => (
+                <div key={photo.id} className="w-full aspect-square bg-black p-1" onClick={() => setPhotoToView(photo)}>
+                  <Image 
+                    src={`${photo.url}${cacheBuster}`} 
+                    alt={`Photo ${index + 1}`} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      ) : (
-        <div className="text-center py-16 px-4 col-span-full bg-gray-800/50 rounded-lg">
-          <ImageIcon className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-          <h3 className="text-2xl font-semibold mb-2 text-white">No Photos Found</h3>
-          <p className="text-gray-400 mb-6 max-w-md mx-auto">
-            It looks like there was an issue loading the photos for this roll.
-          </p>
-        </div>
-      )}
+      </div>
 
       {photoToView && (
         <PhotoDetailModal 
           photo={photoToView} 
           onClose={() => setPhotoToView(null)}
-          onShowInfo={() => {
-            setPhotoToShowInfo(photoToView);
-            setPhotoToView(null);
-          }}
+          onShowInfo={() => { setPhotoToShowInfo(photoToView); setPhotoToView(null); }}
         />
       )}
-
       {photoToShowInfo && (
         <PhotoInfoModal 
           photo={photoToShowInfo} 
@@ -133,14 +109,13 @@ const RollDetailView: React.FC = () => {
           onClose={() => setPhotoToShowInfo(null)} 
         />
       )}
-      
       {showDeleteConfirm && (
         <ConfirmDeleteModal
           isOpen={showDeleteConfirm}
           onClose={() => setShowDeleteConfirm(false)}
-          onConfirm={handleDeleteRoll}
+          onConfirm={() => { deleteRoll(selectedRoll.id); setShowDeleteConfirm(false); handleBack(); }}
           title="Delete Roll"
-          message={`Are you sure you want to permanently delete "${selectedRoll.title || selectedRoll.film_type}"? All ${selectedRoll.shots_used} photos and related posts will be lost forever.`}
+          message={`Are you sure you want to permanently delete "${selectedRoll.title || selectedRoll.film_type}"? All photos and related posts will be lost forever.`}
           confirmText="Delete"
         />
       )}
