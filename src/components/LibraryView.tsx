@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Album } from '../types';
 import AlbumCard from './AlbumCard';
-import { Plus, Library as LibraryIcon, Clock, Film } from 'lucide-react';
+import { Plus, Library as LibraryIcon, Clock, Film, Printer } from 'lucide-react';
 import CreateAlbumModal from './CreateAlbumModal';
+import { showInfoToast } from '../utils/toasts';
 
 const LibraryView: React.FC = () => {
   const { albums, setSelectedAlbum, setCurrentView, refetchAlbums, setRollsViewSection } = useAppContext();
@@ -28,6 +29,10 @@ const LibraryView: React.FC = () => {
     setRollsViewSection('shelf');
   };
 
+  const handlePrintsClick = () => {
+    showInfoToast('Prints are coming soon!');
+  };
+
   return (
     <>
       <div className="flex flex-col w-full">
@@ -35,31 +40,43 @@ const LibraryView: React.FC = () => {
           <h1 className="text-3xl font-bold text-white">Library</h1>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <button 
-            onClick={handleGoToDarkroom} 
-            className="p-4 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-2xl flex items-center gap-3 text-left hover:bg-neutral-700/80 transition-colors shadow-soft"
-          >
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-cyan-500/20">
-              <Clock className="w-6 h-6 text-cyan-400" />
-            </div>
-            <div>
-              <p className="font-bold text-white">Darkroom</p>
-              <p className="text-xs text-neutral-400">Develop rolls</p>
-            </div>
-          </button>
-          <button 
-            onClick={handleGoToShelf} 
-            className="p-4 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-2xl flex items-center gap-3 text-left hover:bg-neutral-700/80 transition-colors shadow-soft"
-          >
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-amber-500/20">
-              <Film className="w-6 h-6 text-amber-400" />
-            </div>
-            <div>
-              <p className="font-bold text-white">Shelf</p>
-              <p className="text-xs text-neutral-400">View developed</p>
-            </div>
-          </button>
+        {/* Main Navigation Group */}
+        <div className="mb-10">
+          <div className="bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-2xl overflow-hidden shadow-soft">
+            <button onClick={handleGoToDarkroom} className="w-full flex items-center p-4 text-left hover:bg-neutral-700/50 transition-colors">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-cyan-500/20 mr-4">
+                <Clock className="w-6 h-6 text-cyan-400" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-white">Darkroom</p>
+                <p className="text-sm text-neutral-400">Develop your completed rolls</p>
+              </div>
+            </button>
+            
+            <div className="h-px bg-neutral-700/50 ml-18"></div>
+
+            <button onClick={handleGoToShelf} className="w-full flex items-center p-4 text-left hover:bg-neutral-700/50 transition-colors">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-amber-500/20 mr-4">
+                <Film className="w-6 h-6 text-amber-400" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-white">Shelf</p>
+                <p className="text-sm text-neutral-400">View all your developed rolls</p>
+              </div>
+            </button>
+
+            <div className="h-px bg-neutral-700/50 ml-18"></div>
+
+            <button onClick={handlePrintsClick} className="w-full flex items-center p-4 text-left hover:bg-neutral-700/50 transition-colors">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-indigo-500/20 mr-4">
+                <Printer className="w-6 h-6 text-indigo-400" />
+              </div>
+              <div className="flex-1">
+                <p className="font-bold text-white">Prints</p>
+                <p className="text-sm text-neutral-400">Order prints of your photos</p>
+              </div>
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center justify-between mb-4">
