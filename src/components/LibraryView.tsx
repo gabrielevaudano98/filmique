@@ -5,7 +5,7 @@ import AlbumCard from './AlbumCard';
 import { Plus, Library as LibraryIcon } from 'lucide-react';
 import CreateAlbumModal from './CreateAlbumModal';
 
-const AlbumsView: React.FC = () => {
+const LibraryView: React.FC = () => {
   const { albums, setSelectedAlbum, setCurrentView, refetchAlbums } = useAppContext();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -22,14 +22,13 @@ const AlbumsView: React.FC = () => {
     <>
       <div className="flex flex-col w-full">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-white">Albums</h1>
+          <h1 className="text-3xl font-bold text-white">Library</h1>
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 text-sm font-semibold text-brand-amber-start hover:text-brand-amber-mid transition-colors"
+            className="bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white font-bold p-3 rounded-full shadow-lg shadow-brand-amber-start/20 hover:opacity-90 transition-all"
             aria-label="Create New Album"
           >
-            <Plus className="w-4 h-4" />
-            <span>New Album</span>
+            <Plus className="w-6 h-6" />
           </button>
         </div>
 
@@ -44,10 +43,10 @@ const AlbumsView: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="text-center py-16 text-neutral-500">
+          <div className="text-center py-24 text-neutral-500">
             <LibraryIcon className="w-16 h-16 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-white">No Albums Yet</h3>
-            <p className="mt-2">Create your first album to organize your rolls.</p>
+            <h3 className="text-xl font-bold text-white">Your Library is Empty</h3>
+            <p className="mt-2">Create albums to organize your developed rolls.</p>
           </div>
         )}
       </div>
@@ -56,4 +55,4 @@ const AlbumsView: React.FC = () => {
   );
 };
 
-export default AlbumsView;
+export default LibraryView;
