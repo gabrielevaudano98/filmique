@@ -9,6 +9,7 @@ import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
 import PrintsView from './PrintsView';
 import DarkroomEmptyState from './DarkroomEmptyState';
+import SegmentedControl from './SegmentedControl';
 
 const RollsEmptyState = () => (
     <div className="text-center py-24 text-neutral-500">
@@ -107,32 +108,21 @@ const RollsView: React.FC = () => {
   const groupEntries = Object.entries(groupedRolls);
 
   const sectionOptions = [
-    { label: 'Rolls', value: 'rolls', icon: Library },
-    { label: 'Darkroom', value: 'darkroom', icon: Clock },
-    { label: 'Prints', value: 'prints', icon: Printer },
+    { value: 'rolls', icon: Library },
+    { value: 'darkroom', icon: Clock },
+    { value: 'prints', icon: Printer },
   ];
 
   return (
     <div className="flex flex-col w-full">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-white">Studio</h1>
-        <div className="flex items-center space-x-1 p-1 bg-neutral-800/60 rounded-xl border border-white/10">
-          {sectionOptions.map(opt => {
-            const Icon = opt.icon;
-            const isActive = activeSection === opt.value;
-            return (
-              <button
-                key={opt.value}
-                onClick={() => setActiveSection(opt.value as any)}
-                className={`p-2.5 rounded-lg transition-colors ${
-                  isActive ? 'bg-brand-amber-start text-black' : 'text-gray-400 hover:text-white'
-                }`}
-                aria-label={opt.label}
-              >
-                <Icon className="w-5 h-5" />
-              </button>
-            );
-          })}
+        <div className="w-auto">
+          <SegmentedControl
+            options={sectionOptions}
+            value={activeSection}
+            onChange={(val) => setActiveSection(val as any)}
+          />
         </div>
       </div>
 
