@@ -11,12 +11,12 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
 
   return (
     <div 
-      className="relative grid w-full p-1 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl" 
+      className="relative grid w-full p-1 bg-neutral-900/70 backdrop-blur-lg border border-neutral-800 rounded-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)]" 
       style={{ gridTemplateColumns: `repeat(${options.length}, 1fr)` }}
     >
       {/* Sliding Pill Background */}
       <div
-        className="absolute top-1 bottom-1 h-auto rounded-lg bg-neutral-700 shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] transition-all duration-300 ease-spring-soft"
+        className="absolute top-1 bottom-1 h-auto rounded-lg bg-gradient-to-r from-brand-amber-start to-brand-amber-end shadow-lg shadow-brand-amber-start/20 transition-all duration-300 ease-spring-soft"
         style={{
           gridColumn: `${activeIndex + 1}`,
         }}
@@ -34,8 +34,8 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
             className={`relative z-10 flex-1 text-sm font-bold text-center transition-colors duration-300 rounded-lg flex items-center justify-center
               ${hasLabel ? 'py-3 gap-2' : 'p-2.5'}
               ${isActive
-                ? 'text-brand-amber-start'
-                : 'text-gray-400 hover:text-white'
+                ? 'text-black'
+                : 'text-gray-300 hover:text-white'
               }
             `}
           >
