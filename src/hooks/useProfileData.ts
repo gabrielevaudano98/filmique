@@ -40,9 +40,17 @@ export const useProfileData = (profile: UserProfile | null) => {
     setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
   }, [profile, notifications]);
 
-  const updateProfileDetails = useCallback(async (details: { bio?: string; avatarFile?: File }) => {
+  const updateProfileDetails = useCallback(async (details: { 
+    bio?: string; 
+    avatarFile?: File;
+    is_geolocation_enabled?: boolean;
+  }) => {
     if (!profile) return;
-    const updatePayload: { bio?: string; avatar_url?: string } = {};
+    const updatePayload: { 
+      bio?: string; 
+      avatar_url?: string;
+      is_geolocation_enabled?: boolean;
+    } = {};
     
     if (details.avatarFile) {
       const toastId = showLoadingToast('Uploading new avatar...');
@@ -61,6 +69,9 @@ export const useProfileData = (profile: UserProfile | null) => {
     }
 
     if (typeof details.bio !== 'undefined') updatePayload.bio = details.bio;
+    if (typeof details.is_geolocation_enabled !== 'undefined') {
+      updatePayload.is_geolocation_enabled = details.is_geolocation_enabled;
+    }
 
     if (Object.keys(updatePayload).length > 0) {
       const { error } = await api.updateProfile(profile.id, updatePayload);

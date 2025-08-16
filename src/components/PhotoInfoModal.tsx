@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, Film, Camera, Clock, ZoomIn } from 'lucide-react';
+import { X, Film, Camera, Clock, ZoomIn, MapPin } from 'lucide-react';
 import { Photo, Roll } from '../types';
 import Histogram from './Histogram';
 
@@ -23,6 +23,8 @@ const PhotoInfoModal: React.FC<PhotoInfoModalProps> = ({ photo, roll, onClose })
   const developedDate = roll.developed_at 
     ? new Date(roll.developed_at).toLocaleDateString()
     : 'N/A';
+  
+  const geolocation = photo.metadata?.geolocation;
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-end z-[70]" onClick={onClose}>
@@ -60,6 +62,24 @@ const PhotoInfoModal: React.FC<PhotoInfoModalProps> = ({ photo, roll, onClose })
                 <InfoRow label="Shutter" value={photo.metadata.shutterSpeed} icon={<Camera className="w-5 h-5" />} />
                 <InfoRow label="Zoom" value={photo.metadata.zoom} icon={<ZoomIn className="w-5 h-5" />} />
               </div>
+            </div>
+          )}
+
+          {geolocation && (
+            <div>
+              <h3 className="text-lg font-semibold text-brand-amber-start mb-4">Location</h3>
+              <a 
+                href={`https://www.openstreetmap.org/?mlat=${geolocation.latitude}&mlon=${geolocation.longitude}#map=16/${geolocation.latitude}/${geolocation.longitude}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center text-sm p-2 rounded-lg hover:bg-neutral-700/50 transition-colors -ml-2"
+              >
+                <div className="w-8 h-8 flex items-center justify-center text-gray-400"><MapPin className="w-5 h-5" /></div>
+                <div className="ml-2">
+                  <p className="font-semibold text-white">{`${geolocation.latitude.toFixed(4)}, ${geolocation.longitude.toFixed(4)}`}</p>
+                  <p className="text-gray-500 text-xs">View on map</p>
+                </div>
+              </a>
             </div>
           )}
         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { CameraView as NativeCameraView } from 'capacitor-camera-view';
-import { RefreshCw, Film, Lock, Camera, ArrowLeft, Loader } from 'lucide-react';
+import { RefreshCw, Film, Lock, Camera, ArrowLeft, Loader, MapPin } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
 import RangeSelector from './RangeSelector';
@@ -26,6 +26,7 @@ const CameraView: React.FC = () => {
     takePhoto,
     setCurrentView,
     isSavingPhoto,
+    profile,
   } = useAppContext();
 
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -192,6 +193,27 @@ const CameraView: React.FC = () => {
     }
   };
 
+  const getCurrentLocation = (): Promise<{ latitude: number; longitude: number } | null> => {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) {
+        resolve(null);
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          });
+        },
+        () => {
+          resolve(null); // Error or permission denied
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    });
+  };
+
   const handleTakePhoto = async () => {
     if (!activeRoll || activeRoll.is_completed) {
       setShowFilmModal(true);
@@ -248,11 +270,17 @@ const CameraView: React.FC = () => {
       imageBlob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
     }
 
+    let geolocation = null;
+    if (profile?.is_geolocation_enabled) {
+      geolocation = await getCurrentLocation();
+    }
+
     if (imageBlob) {
       const metadata = {
         iso: cameraMode === 'pro' && !isNative ? manualSettings.iso : 400,
         shutterSpeed: cameraMode === 'pro' && !isNative ? formatShutterSpeed(manualSettings.shutterSpeed) : '1/125',
         zoom: `${zoom}x`,
+        geolocation,
       };
       await takePhoto(imageBlob, metadata);
     }
@@ -342,9 +370,14 @@ const CameraView: React.FC = () => {
                 <Film className="w-7 h-7 text-amber-400 flex-shrink-0" />
                 <div>
                   <span className="block text-gray-400 text-xs font-bold uppercase tracking-wider">Loaded Film</span>
-                  <span className="block text-white font-recoleta text-lg leading-tight -mt-1">
-                    {activeRoll ? activeRoll.film_type : 'None'}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="block text-white font-recoleta text-lg leading-tight">
+                      {activeRoll ? activeRoll.film_type : 'None'}
+                    </span>
+                    {profile?.is_geolocation_enabled && (
+                      <MapPin className="w-4 h-4 text-green-400" title="Geolocation is enabled" />
+                    )}
+                  </div>
                 </div>
               </button>
             </div>

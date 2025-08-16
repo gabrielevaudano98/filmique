@@ -1,10 +1,11 @@
 import React from 'react';
 import {
-  UserCircle, Star, Bell, Camera as CameraIcon, ShieldCheck, HelpCircle, Info, ChevronRight, LogOut, Trash2, ArrowLeft
+  UserCircle, Star, Bell, Camera as CameraIcon, ShieldCheck, HelpCircle, Info, ChevronRight, LogOut, Trash2, ArrowLeft, MapPin
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { supabase } from '../integrations/supabase/client';
 import toast from 'react-hot-toast';
+import SettingsToggleRow from './SettingsToggleRow';
 
 const SettingsRow: React.FC<{
   icon: React.ReactNode;
@@ -40,7 +41,7 @@ const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({
 );
 
 const SettingsView: React.FC = () => {
-  const { profile, setCurrentView } = useAppContext();
+  const { profile, setCurrentView, updateProfileDetails, refreshProfile } = useAppContext();
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -57,6 +58,11 @@ const SettingsView: React.FC = () => {
 
   const handleAccountDeletion = () => {
     toast.error('Account deletion is a critical action and has not been implemented yet.');
+  };
+
+  const handleGeolocationToggle = async (enabled: boolean) => {
+    await updateProfileDetails({ is_geolocation_enabled: enabled });
+    await refreshProfile();
   };
 
   return (
@@ -99,10 +105,21 @@ const SettingsView: React.FC = () => {
             title="Camera Preferences"
             onClick={handleComingSoon}
           />
+        </SettingsGroup>
+
+        <SettingsGroup title="Privacy & Security">
+          <SettingsToggleRow
+            icon={<MapPin className="w-5 h-5 text-white" />}
+            color="bg-green-500"
+            title="Enable Geotagging"
+            subtitle="Save location data with your photos"
+            checked={profile?.is_geolocation_enabled || false}
+            onChange={handleGeolocationToggle}
+          />
           <SettingsRow
             icon={<ShieldCheck className="w-5 h-5 text-white" />}
             color="bg-accent-violet"
-            title="Privacy & Security"
+            title="Privacy Policy"
             onClick={handleComingSoon}
           />
         </SettingsGroup>

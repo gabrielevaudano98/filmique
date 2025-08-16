@@ -50,6 +50,7 @@ export interface UserProfile {
   last_name: string | null;
   has_completed_onboarding: boolean;
   bio: string | null;
+  is_geolocation_enabled: boolean;
 }
 
 export interface Photo {
@@ -217,7 +218,7 @@ export interface AppContextType {
   markNotificationsAsRead: () => Promise<void>;
   followersCount: number;
   followingCount: number;
-  updateProfileDetails: (details: { bio?: string; avatarFile?: File }) => Promise<void>;
+  updateProfileDetails: (details: { bio?: string; avatarFile?: File; is_geolocation_enabled?: boolean; }) => Promise<void>;
   userPosts: Post[];
   sendToDarkroom: (roll: Roll, title: string) => Promise<void>;
   putOnShelf: (roll: Roll, title: string) => Promise<void>;
