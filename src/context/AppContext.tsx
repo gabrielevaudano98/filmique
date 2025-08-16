@@ -24,6 +24,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [headerAction, setHeaderAction] = useState<{ icon: React.ElementType, action: () => void } | null>(null);
   const [rollsViewSection, setRollsViewSection] = useState<'darkroom' | 'shelf'>('darkroom');
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
+  const [navMenu, setNavMenu] = useState<'main' | 'darkroom'>('main');
 
   // Data State
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
@@ -35,6 +36,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const social = useSocial(auth.profile);
   const albumsData = useAlbums(auth.profile);
   const rollsSettings = useRollsSettings();
+
+  useEffect(() => {
+    if (!auth.session) {
+      setNavMenu('main');
+    }
+  }, [auth.session]);
 
   useEffect(() => {
     const getFilmStocks = async () => {
@@ -83,7 +90,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setRollsViewSection,
     isTopBarVisible,
     setIsTopBarVisible,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, rollsViewSection, isTopBarVisible]);
+    navMenu,
+    setNavMenu,
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, rollsViewSection, isTopBarVisible, navMenu]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };
