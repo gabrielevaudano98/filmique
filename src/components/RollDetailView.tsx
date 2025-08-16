@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { ArrowLeft, Download, Trash2, Archive, ArchiveRestore, Tag, Film } from 'lucide-react';
 import PhotoDetailModal from './PhotoDetailModal';
@@ -31,11 +31,11 @@ const RollDetailView: React.FC = () => {
   const [isSticky, setIsSticky] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     setSelectedRoll(null);
     setRollsViewSection('shelf');
     setCurrentView('rolls');
-  };
+  }, [setSelectedRoll, setRollsViewSection, setCurrentView]);
 
   useEffect(() => {
     setHeaderAction({ icon: ArrowLeft, action: handleBack });
