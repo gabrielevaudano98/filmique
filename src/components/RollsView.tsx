@@ -1,24 +1,24 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
 import RollCard from './RollCard';
-import { Clock, Film, Archive, ArrowLeft, Library } from 'lucide-react';
+import { Clock, Film, Archive, Library } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
 import StickyGroupHeader from './StickyGroupHeader';
 
-const StudioEmptyState = () => (
+const DarkroomEmptyState = () => (
   <div className="text-center py-24 text-neutral-500">
     <Clock className="w-16 h-16 mx-auto mb-4" />
-    <h3 className="text-xl font-bold text-white">Studio is Empty</h3>
+    <h3 className="text-xl font-bold text-white">Darkroom is Empty</h3>
     <p className="mt-2">When you finish a roll, it will appear here to be developed.</p>
   </div>
 );
 
-const ShelfEmptyState = () => (
+const RollsEmptyState = () => (
     <div className="text-center py-24 text-neutral-500">
       <Film className="w-16 h-16 mx-auto mb-4" />
       <h3 className="text-xl font-bold text-white">Your Shelf is Empty</h3>
@@ -38,30 +38,16 @@ const RollsView: React.FC = () => {
   const { 
     developingRolls, completedRolls,
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
-    setHeaderAction, rollsViewSection, setRollsViewSection,
+    rollsViewSection, setRollsViewSection,
     searchTerm, setSearchTerm
   } = useAppContext();
 
-  useEffect(() => {
-    if (rollsViewSection === 'shelf') {
-      setHeaderAction({
-        icon: ArrowLeft,
-        action: () => setRollsViewSection('studio'),
-      });
-    } else {
-      setHeaderAction(null);
-    }
-
-    return () => {
-      setHeaderAction(null);
-    };
-  }, [rollsViewSection, setHeaderAction, setRollsViewSection]);
-
   const handlers = useSwipeable({
+    onSwipedLeft: () => {
+      if (rollsViewSection === 'rolls') setRollsViewSection('darkroom');
+    },
     onSwipedRight: () => {
-      if (rollsViewSection === 'shelf') {
-        setRollsViewSection('studio');
-      }
+      if (rollsViewSection === 'darkroom') setRollsViewSection('rolls');
     },
     preventScrollOnSwipe: true,
     trackMouse: true,
@@ -140,46 +126,48 @@ const RollsView: React.FC = () => {
 
   return (
     <div {...handlers} className="flex flex-col w-full">
-      <div className={`flex items-center justify-between ${rollsViewSection === 'shelf' 
-        ? 'sticky top-16 z-30 bg-neutral-900/80 backdrop-blur-lg -mx-4 px-4 py-4 border-b border-neutral-700/50' 
-        : 'mb-6'
-      }`}>
-        {rollsViewSection === 'shelf' ? (
-          <>
-            <h1 className="text-3xl font-bold text-white">Shelf</h1>
-            <div className="flex items-center gap-2">
-              <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-              <RollsControls />
-            </div>
-          </>
-        ) : (
-          <>
-            <h1 className="text-3xl font-bold text-white">Studio</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold text-white">
+          {rollsViewSection === 'rolls' ? 'Rolls' : 'Darkroom'}
+        </h1>
+        {rollsViewSection === 'rolls' ? (
+          <div className="flex items-center gap-2">
+            <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+            <RollsControls />
             <button
-              onClick={() => setRollsViewSection('shelf')}
+              onClick={() => setRollsViewSection('darkroom')}
               className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-neutral-800"
-              aria-label="View Shelf"
+              aria-label="View Darkroom"
             >
-              <Library className="w-5 h-5" />
-              <span>Shelf</span>
+              <Clock className="w-5 h-5" />
+              <span>Darkroom</span>
             </button>
-          </>
+          </div>
+        ) : (
+          <button
+            onClick={() => setRollsViewSection('rolls')}
+            className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-neutral-800"
+            aria-label="View Rolls"
+          >
+            <Library className="w-5 h-5" />
+            <span>Rolls</span>
+          </button>
         )}
       </div>
 
-      <div className={`relative flex-1 ${rollsViewSection === 'shelf' ? 'mt-6' : ''}`}>
-        {rollsViewSection === 'studio' && (
-          <div key="studio" className="animate-slide-in-from-left">
+      <div className="relative flex-1">
+        {rollsViewSection === 'darkroom' && (
+          <div key="darkroom" className="animate-slide-in-from-left">
             {developingRolls.length > 0 ? (
               <div className="space-y-3">
                 {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
               </div>
-            ) : <StudioEmptyState />}
+            ) : <DarkroomEmptyState />}
           </div>
         )}
 
-        {rollsViewSection === 'shelf' && (
-          <div key="shelf" className="animate-slide-in-from-right space-y-6">
+        {rollsViewSection === 'rolls' && (
+          <div key="rolls" className="animate-slide-in-from-right space-y-6">
             {processedRolls.length > 0 ? (
               groupEntries.map(([groupName, rolls]) => (
                 <div key={groupName}>
@@ -194,7 +182,7 @@ const RollsView: React.FC = () => {
                 </div>
               ))
             ) : (
-              rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <ShelfEmptyState />
+              rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
             )}
           </div>
         )}

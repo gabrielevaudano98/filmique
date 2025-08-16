@@ -33,7 +33,7 @@ const RollDetailView: React.FC = () => {
 
   const handleBack = useCallback(() => {
     setSelectedRoll(null);
-    setRollsViewSection('shelf');
+    setRollsViewSection('rolls');
     setCurrentView('rolls');
   }, [setSelectedRoll, setRollsViewSection, setCurrentView]);
 
