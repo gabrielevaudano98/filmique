@@ -2,14 +2,14 @@ import React from 'react';
 import { Album } from '../types';
 import { Folder, ChevronRight } from 'lucide-react';
 
-interface AlbumListItemProps {
+interface BoxListItemProps {
   album: Album;
   onClick: () => void;
   isOver?: boolean;
   isDragging?: boolean;
 }
 
-const AlbumListItem: React.FC<AlbumListItemProps> = ({ album, onClick, isOver, isDragging }) => {
+const BoxListItem: React.FC<BoxListItemProps> = ({ album, onClick, isOver, isDragging }) => {
   return (
     <button 
       onClick={onClick} 
@@ -28,4 +28,4 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({ album, onClick, isOver, i
   );
 };
 
-export default AlbumListItem;
+export default BoxListItem;

@@ -3,7 +3,7 @@ import { BookPlus, X, Lock, Link2, Globe } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { Album } from '../types';
 
-interface CreateAlbumModalProps {
+interface CreateBoxModalProps {
   onClose: () => void;
   parentAlbumId?: string | null;
 }
@@ -27,7 +27,7 @@ const VisibilityOption: React.FC<{
   </button>
 );
 
-const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbumId: initialParentId = null }) => {
+const CreateBoxModal: React.FC<CreateBoxModalProps> = ({ onClose, parentAlbumId: initialParentId = null }) => {
   const { createAlbum, albums } = useAppContext();
   const [title, setTitle] = useState('');
   const [visibility, setVisibility] = useState<'private' | 'unlisted' | 'public'>('private');
@@ -62,7 +62,7 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
     <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white">Create New Album</h2>
+          <h2 className="text-xl font-bold text-white">Create New Box</h2>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full">
             <X className="w-5 h-5" />
           </button>
@@ -70,7 +70,7 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="album-title" className="text-sm font-semibold text-gray-300 mb-2 block">Album Title</label>
+              <label htmlFor="album-title" className="text-sm font-semibold text-gray-300 mb-2 block">Box Title</label>
               <input
                 id="album-title"
                 type="text"
@@ -82,7 +82,7 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
               />
             </div>
             <div>
-              <label htmlFor="parent-album" className="text-sm font-semibold text-gray-300 mb-2 block">Location (Container)</label>
+              <label htmlFor="parent-album" className="text-sm font-semibold text-gray-300 mb-2 block">Location (Parent Box)</label>
               <select
                 id="parent-album"
                 value={parentAlbumId || ''}
@@ -116,7 +116,7 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
               className="px-4 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center space-x-2"
             >
               <BookPlus className="w-4 h-4" />
-              <span>{isLoading ? 'Creating...' : 'Create Album'}</span>
+              <span>{isLoading ? 'Creating...' : 'Create Box'}</span>
             </button>
           </div>
         </form>
@@ -125,4 +125,4 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
   );
 };
 
-export default CreateAlbumModal;
+export default CreateBoxModal;

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Roll } from '../types';
 import { ChevronRight } from 'lucide-react';
-import Image from './Image';
+import FilmCanisterIcon from './FilmCanisterIcon';
+import { useAppContext } from '../context/AppContext';
 
 interface RollOrganizerItemProps {
   roll: Roll;
@@ -10,19 +11,20 @@ interface RollOrganizerItemProps {
 }
 
 const RollOrganizerItem: React.FC<RollOrganizerItemProps> = ({ roll, onClick, isDragging }) => {
-  const coverPhoto = roll.photos?.[0];
+  const { filmStocks } = useAppContext();
+  const filmStock = filmStocks.find(fs => fs.name === roll.film_type);
 
   return (
     <button 
       onClick={onClick} 
-      className={`w-full flex items-center p-4 bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-xl transition-all duration-200
+      className={`w-full flex items-center p-3 bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-xl transition-all duration-200
         ${isDragging ? 'opacity-30' : 'hover:bg-neutral-700/50'}
       `}
     >
-      <Image 
-        src={coverPhoto?.thumbnail_url}
-        alt={roll.title || 'Roll cover'}
-        className="w-10 h-10 rounded-lg object-cover bg-neutral-700 mr-4 flex-shrink-0"
+      <FilmCanisterIcon 
+        filmType={roll.film_type}
+        imageUrl={filmStock?.roll_image_url}
+        className="h-12 w-auto mr-4 flex-shrink-0"
       />
       <div className="flex-1 text-left overflow-hidden">
         <p className="text-white font-semibold truncate">{roll.title}</p>
