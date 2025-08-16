@@ -20,23 +20,20 @@ const RollCard: React.FC<RollCardProps> = ({ roll }) => {
   return (
     <button 
       onClick={handleClick}
-      className="w-full aspect-square flex flex-col items-center justify-end text-center p-3 bg-neutral-800/50 border border-neutral-700/50 rounded-xl group hover:border-brand-amber-start/50 transition-all duration-300 shadow-soft relative overflow-hidden"
+      className="w-full aspect-square flex flex-col items-center justify-center text-center p-4 bg-gradient-to-b from-white/5 to-black/20 border border-white/10 backdrop-blur-md rounded-xl group hover:border-brand-amber-start/50 transition-all duration-300 shadow-soft"
     >
-      {/* Top highlight */}
-      <div className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/10 to-transparent opacity-50 group-hover:opacity-100 transition-opacity" />
-      
-      <div className="flex-1 flex items-center justify-center w-full z-10">
+      <div className="flex-1 flex items-center justify-center w-full">
         <FilmCanisterIcon 
           filmType={roll.film_type}
           imageUrl={filmStock?.roll_image_url}
-          className="h-full max-h-28 w-auto drop-shadow-lg transition-transform duration-300 group-hover:scale-105"
+          className="h-full max-h-32 w-auto drop-shadow-lg transition-transform duration-300 group-hover:scale-105"
         />
       </div>
-      <div className="mt-2 flex-shrink-0 w-full z-10">
+      <div className="mt-3 flex-shrink-0 w-full">
         <p className="font-bold text-white text-sm truncate" title={roll.title || 'Untitled Roll'}>
           {roll.title || 'Untitled Roll'}
         </p>
-        <div className="flex items-center justify-center space-x-1 text-xs text-gray-400 mt-0.5">
+        <div className="flex items-center justify-center space-x-1 text-xs text-gray-400 mt-1">
           <ImageIcon className="w-3 h-3" />
           <span>{roll.shots_used} photos</span>
         </div>
