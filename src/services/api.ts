@@ -96,6 +96,13 @@ export const developRollPhotos = async (roll: Roll, filmStocks: FilmStock[]) => 
   }));
 };
 
+export const archiveRoll = async (rollId: string, isArchived: boolean) => {
+    const { data: roll } = await supabase.from('rolls').select('user_id').eq('id', rollId).single();
+    const result = await supabase.from('rolls').update({ is_archived: isArchived }).eq('id', rollId);
+    if (!result.error && roll) invalidateCache(`rolls-${roll.user_id}`);
+    return result;
+};
+
 // Social (Feed, Posts, Likes, Comments, Follows)
 export const fetchFollowedIds = (userId: string) => supabase.from('followers').select('following_id').eq('follower_id', userId);
 export const fetchFeedPosts = async () => {
@@ -159,8 +166,8 @@ export const fetchAlbums = async (userId: string) => {
   return { data, error };
 };
 export const fetchAlbumDetails = (albumId: string) => supabase.from('albums').select('*, rolls(*, photos(*))').eq('id', albumId).single();
-export const createAlbum = async (userId: string, title: string, type: 'private' | 'unlisted' | 'public') => {
-  const result = await supabase.from('albums').insert({ user_id: userId, title, type }).select().single();
+export const createAlbum = async (userId: string, title: string, type: 'private' | 'unlisted' | 'public', parentAlbumId?: string | null) => {
+  const result = await supabase.from('albums').insert({ user_id: userId, title, type, parent_album_id: parentAlbumId }).select().single();
   if (!result.error) invalidateCache(`albums-${userId}`);
   return result;
 };

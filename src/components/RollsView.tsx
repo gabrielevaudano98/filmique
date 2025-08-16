@@ -1,27 +1,12 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
 import SegmentedControl from './SegmentedControl';
 import RollListItem from './RollListItem';
-import RollsControls from './RollsControls';
-import RollOnShelf from './RollOnShelf';
-import ConfirmDeleteModal from './ConfirmDeleteModal';
-import AssignAlbumModal from './AssignAlbumModal';
 import { Clock } from 'lucide-react';
-
-// Group rolls by month and year for the shelf view
-const groupRollsByMonth = (rolls: Roll[]) => {
-  return rolls.reduce((acc, roll) => {
-    const date = new Date(roll.developed_at!);
-    const key = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-    if (!acc[key]) {
-      acc[key] = [];
-    }
-    acc[key].push(roll);
-    return acc;
-  }, {} as Record<string, Roll[]>);
-};
+import RollsTimelineView from './RollsTimelineView';
+import RollsOrganizerView from './RollsOrganizerView';
 
 const DarkroomEmptyState = () => (
   <div className="text-center py-24 text-neutral-500">
@@ -32,64 +17,9 @@ const DarkroomEmptyState = () => (
 );
 
 const RollsView: React.FC = () => {
-  const { completedRolls, refetchRolls, deleteRoll } = useAppContext();
+  const { developingRolls } = useAppContext();
   const [activeSection, setActiveSection] = useState<'shelf' | 'darkroom'>('shelf');
-  
-  // State for modals
-  const [rollToDelete, setRollToDelete] = useState<Roll | null>(null);
-  const [rollToAssign, setRollToAssign] = useState<Roll | null>(null);
-
-  // State for filtering and sorting
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState('newest');
-  const [selectedFilm, setSelectedFilm] = useState('all');
-
-  useEffect(() => {
-    refetchRolls();
-  }, [refetchRolls]);
-
-  const { developingRolls, developedRolls } = useMemo(() => {
-    const allCompleted = completedRolls || [];
-    const developing = allCompleted.filter(r => r.is_completed && r.completed_at && !isRollDeveloped(r));
-    const developed = allCompleted.filter(r => isRollDeveloped(r));
-    return { 
-      developingRolls: developing.sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime()), 
-      developedRolls: developed
-    };
-  }, [completedRolls]);
-
-  const filmTypes = useMemo(() => {
-    const types = new Set(developedRolls.map(r => r.film_type));
-    return Array.from(types);
-  }, [developedRolls]);
-
-  const filteredAndSortedRolls = useMemo(() => {
-    let rolls = developedRolls;
-
-    if (searchTerm) {
-      rolls = rolls.filter(r => r.title?.toLowerCase().includes(searchTerm.toLowerCase()));
-    }
-    if (selectedFilm !== 'all') {
-      rolls = rolls.filter(r => r.film_type === selectedFilm);
-    }
-
-    rolls.sort((a, b) => {
-      switch (sortOrder) {
-        case 'oldest': return new Date(a.developed_at!).getTime() - new Date(b.developed_at!).getTime();
-        case 'title_asc': return (a.title || '').localeCompare(b.title || '');
-        case 'title_desc': return (b.title || '').localeCompare(a.title || '');
-        case 'newest':
-        default:
-          return new Date(b.developed_at!).getTime() - new Date(a.developed_at!).getTime();
-      }
-    });
-    return rolls;
-  }, [developedRolls, searchTerm, sortOrder, selectedFilm]);
-
-  const groupedRolls = useMemo(() => groupRollsByMonth(filteredAndSortedRolls), [filteredAndSortedRolls]);
-  const sortedGroupKeys = useMemo(() => {
-    return Object.keys(groupedRolls).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-  }, [groupedRolls]);
+  const [shelfView, setShelfView] = useState<'timeline' | 'organizer'>('timeline');
 
   return (
     <div className="flex flex-col w-full space-y-6">
@@ -112,8 +42,8 @@ const RollsView: React.FC = () => {
                   <RollListItem
                     key={roll.id}
                     roll={roll}
-                    onDelete={() => {}} // Cannot delete from darkroom
-                    onAssignAlbum={() => {}} // Cannot assign from darkroom
+                    onDelete={() => {}}
+                    onAssignAlbum={() => {}}
                     isDeveloping={true}
                   />
                 ))}
@@ -126,53 +56,18 @@ const RollsView: React.FC = () => {
 
         {activeSection === 'shelf' && (
           <div className="space-y-6">
-            <RollsControls
-              searchTerm={searchTerm}
-              setSearchTerm={setSearchTerm}
-              sortOrder={sortOrder}
-              setSortOrder={setSortOrder}
-              filmTypes={filmTypes}
-              selectedFilm={selectedFilm}
-              setSelectedFilm={setSelectedFilm}
+            <SegmentedControl
+              options={[
+                { label: 'Timeline', value: 'timeline' },
+                { label: 'Organizer', value: 'organizer' },
+              ]}
+              value={shelfView}
+              onChange={(value) => setShelfView(value as 'timeline' | 'organizer')}
             />
-            {sortedGroupKeys.map(month => (
-              <div key={month}>
-                <h3 className="text-sm font-bold uppercase text-neutral-400 tracking-wider px-2 mb-3">{month}</h3>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-4 gap-y-8">
-                  {groupedRolls[month].map(roll => (
-                    <RollOnShelf key={roll.id} roll={roll} />
-                  ))}
-                </div>
-              </div>
-            ))}
-            {filteredAndSortedRolls.length === 0 && (
-              <div className="text-center py-16 text-gray-500">
-                <p>No developed rolls found.</p>
-              </div>
-            )}
+            {shelfView === 'timeline' ? <RollsTimelineView /> : <RollsOrganizerView />}
           </div>
         )}
       </div>
-      
-      {rollToDelete && (
-        <ConfirmDeleteModal
-          isOpen={!!rollToDelete}
-          onClose={() => setRollToDelete(null)}
-          onConfirm={() => {
-            if (rollToDelete) deleteRoll(rollToDelete.id);
-            setRollToDelete(null);
-          }}
-          title="Delete Roll"
-          message={`Are you sure you want to permanently delete "${rollToDelete.title || rollToDelete.film_type}"? This cannot be undone.`}
-          confirmText="Delete"
-        />
-      )}
-      {rollToAssign && (
-        <AssignAlbumModal
-          roll={rollToAssign}
-          onClose={() => setRollToAssign(null)}
-        />
-      )}
     </div>
   );
 };

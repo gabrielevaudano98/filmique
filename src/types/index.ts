@@ -77,6 +77,7 @@ export interface Roll {
   album_id?: string | null;
   albums?: { title: string } | null;
   aspect_ratio: string;
+  is_archived: boolean;
 }
 
 export interface Comment {
@@ -114,6 +115,8 @@ export interface Album {
   rolls?: Roll[];
   photoCount?: number;
   rollCount?: number;
+  parent_album_id: string | null;
+  children?: Album[];
 }
 
 export interface Challenge {
@@ -166,6 +169,7 @@ export interface AppContextType {
   setShowFilmModal: (show: boolean) => void;
   activeRoll: Roll | null;
   completedRolls: Roll[];
+  developingRolls: Roll[];
   feed: Post[];
   albums: Album[];
   challenges: Challenge[];
@@ -190,7 +194,7 @@ export interface AppContextType {
   selectedAlbum: Album | null;
   setSelectedAlbum: (a: Album | null) => void;
   selectAlbum: (albumId: string) => Promise<void>;
-  createAlbum: (title: string, type: 'private' | 'unlisted' | 'public') => Promise<void>;
+  createAlbum: (title: string, type: 'private' | 'unlisted' | 'public', parentAlbumId?: string | null) => Promise<void>;
   addRollsToAlbum: (albumId: string, rollIds: string[]) => Promise<void>;
   removeRollFromAlbum: (rollId: string) => Promise<void>;
   refetchAlbums: () => Promise<void>;
@@ -219,4 +223,5 @@ export interface AppContextType {
   fetchFeed: () => Promise<void>;
   fetchRecentStories: () => Promise<void>;
   fetchProfilePageData: () => Promise<void>;
+  archiveRoll: (rollId: string, archive: boolean) => Promise<void>;
 }

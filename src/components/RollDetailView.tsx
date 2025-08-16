@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ArrowLeft, Download, Trash2, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Download, Trash2, Image as ImageIcon, Archive, ArchiveRestore } from 'lucide-react';
 import toast from 'react-hot-toast';
 import PhotoDetailModal from './PhotoDetailModal';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
@@ -9,7 +9,7 @@ import PhotoInfoModal from './PhotoInfoModal';
 import Image from './Image';
 
 const RollDetailView: React.FC = () => {
-  const { selectedRoll, setCurrentView, setSelectedRoll, downloadRoll, deleteRoll } = useAppContext();
+  const { selectedRoll, setCurrentView, setSelectedRoll, downloadRoll, deleteRoll, archiveRoll } = useAppContext();
   const [photoToView, setPhotoToView] = useState<Photo | null>(null);
   const [photoToShowInfo, setPhotoToShowInfo] = useState<Photo | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -33,6 +33,13 @@ const RollDetailView: React.FC = () => {
     setShowDeleteConfirm(false);
   };
 
+  const handleArchive = () => {
+    if (selectedRoll) {
+      archiveRoll(selectedRoll.id, !selectedRoll.is_archived);
+      handleBack();
+    }
+  };
+
   const developedDate = selectedRoll.developed_at 
     ? new Date(selectedRoll.developed_at)
     : new Date(new Date(selectedRoll.completed_at!).getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -50,6 +57,9 @@ const RollDetailView: React.FC = () => {
         <div className="flex items-center space-x-2">
           <button onClick={handleDownloadRoll} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold p-2 rounded-lg transition-colors">
             <Download className="w-5 h-5" />
+          </button>
+          <button onClick={handleArchive} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold p-2 rounded-lg transition-colors">
+            {selectedRoll.is_archived ? <ArchiveRestore className="w-5 h-5" /> : <Archive className="w-5 h-5" />}
           </button>
           <button onClick={() => setShowDeleteConfirm(true)} className="bg-red-900/70 hover:bg-red-800/80 text-white font-semibold p-2 rounded-lg transition-colors">
             <Trash2 className="w-5 h-5" />

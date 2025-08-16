@@ -45,8 +45,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [auth.session]);
 
-  const createAlbumWithRefresh: AppContextType['createAlbum'] = async (title, type) => {
-    await albumsData.createAlbum(title, type);
+  const createAlbumWithRefresh: AppContextType['createAlbum'] = async (title, type, parentAlbumId) => {
+    await albumsData.createAlbum(title, type, parentAlbumId);
     await albumsData.refetchAlbums();
   };
 

@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { BookPlus, X, Lock, Link2, Globe } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { Album } from '../types';
 
 interface CreateAlbumModalProps {
   onClose: () => void;
+  parentAlbumId?: string | null;
 }
 
 const VisibilityOption: React.FC<{
@@ -25,17 +27,33 @@ const VisibilityOption: React.FC<{
   </button>
 );
 
-const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose }) => {
-  const { createAlbum } = useAppContext();
+const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbumId: initialParentId = null }) => {
+  const { createAlbum, albums } = useAppContext();
   const [title, setTitle] = useState('');
   const [visibility, setVisibility] = useState<'private' | 'unlisted' | 'public'>('private');
+  const [parentAlbumId, setParentAlbumId] = useState<string | null>(initialParentId);
   const [isLoading, setIsLoading] = useState(false);
+
+  const albumOptions = useMemo(() => {
+    const options: { value: string; label: string; depth: number }[] = [];
+    const buildOptions = (parentId: string | null, depth: number) => {
+      if (depth >= 3) return; // Max 3 levels of nesting
+      albums
+        .filter(album => album.parent_album_id === parentId)
+        .forEach(album => {
+          options.push({ value: album.id, label: album.title, depth });
+          buildOptions(album.id, depth + 1);
+        });
+    };
+    buildOptions(null, 0);
+    return options;
+  }, [albums]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
     setIsLoading(true);
-    await createAlbum(title, visibility);
+    await createAlbum(title, visibility, parentAlbumId);
     setIsLoading(false);
     onClose();
   };
@@ -62,6 +80,22 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose }) => {
                 className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-amber-500 focus:border-amber-500"
                 required
               />
+            </div>
+            <div>
+              <label htmlFor="parent-album" className="text-sm font-semibold text-gray-300 mb-2 block">Location (Container)</label>
+              <select
+                id="parent-album"
+                value={parentAlbumId || ''}
+                onChange={(e) => setParentAlbumId(e.target.value || null)}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-amber-500 focus:border-amber-500"
+              >
+                <option value="">Root Level</option>
+                {albumOptions.map(opt => (
+                  <option key={opt.value} value={opt.value}>
+                    {'--'.repeat(opt.depth)} {opt.label}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="text-sm font-semibold text-gray-300 mb-2 block">Visibility</label>

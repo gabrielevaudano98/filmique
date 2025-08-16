@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import * as api from '../services/api';
 import { UserProfile, Roll, Photo, FilmStock } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast, showWarningToast } from '../utils/toasts';
 import { filenameFromUrl } from '../utils/storage';
+import { isRollDeveloped } from '../utils/rollUtils';
 
 export const useRollsAndPhotos = (
   profile: UserProfile | null, 
@@ -50,11 +51,16 @@ export const useRollsAndPhotos = (
   }, [profile]);
 
   useEffect(() => {
-    // Find active roll from already fetched completed rolls on initial load
-    if (profile && completedRolls.length === 0) {
+    if (profile) {
       refetchRolls();
     }
-  }, [profile, refetchRolls, completedRolls]);
+  }, [profile, refetchRolls]);
+
+  const developingRolls = useMemo(() => {
+    return completedRolls
+      .filter(r => r.is_completed && r.completed_at && !isRollDeveloped(r))
+      .sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime());
+  }, [completedRolls]);
 
   const startNewRoll = useCallback(async (film: FilmStock, aspectRatio: string) => {
     if (!profile) return;
@@ -243,9 +249,21 @@ export const useRollsAndPhotos = (
     }
   }, []);
 
+  const archiveRoll = useCallback(async (rollId: string, archive: boolean) => {
+    if (!profile) return;
+    const { error } = await api.archiveRoll(rollId, archive);
+    if (error) {
+      showErrorToast(`Failed to ${archive ? 'archive' : 'unarchive'} roll.`);
+    } else {
+      showSuccessToast(`Roll ${archive ? 'archived' : 'unarchived'}.`);
+      refetchRolls();
+    }
+  }, [profile, refetchRolls]);
+
   return {
     activeRoll,
     completedRolls,
+    developingRolls,
     selectedRoll,
     setSelectedRoll,
     rollToName,
@@ -266,5 +284,6 @@ export const useRollsAndPhotos = (
     developShelvedRoll,
     developedRollForWizard,
     setDevelopedRollForWizard,
+    archiveRoll,
   };
 };
