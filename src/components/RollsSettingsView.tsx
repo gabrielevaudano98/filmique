@@ -6,13 +6,8 @@ import { useAppContext } from '../context/AppContext';
 const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div className="mb-6">
     <h3 className="px-4 pb-2 text-sm font-semibold text-gray-400 uppercase tracking-wider">{title}</h3>
-    <div className="bg-neutral-800 rounded-xl overflow-hidden border border-neutral-700/50">
-      {React.Children.map(children, (child, index) => (
-        <React.Fragment>
-          {child}
-          {index < React.Children.count(children) - 1 && <div className="pl-4"><div className="h-px bg-neutral-700/50"></div></div>}
-        </React.Fragment>
-      ))}
+    <div className="bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-xl p-2 space-y-1">
+      {children}
     </div>
   </div>
 );
@@ -24,7 +19,7 @@ const SettingsRow: React.FC<{
 }> = ({ label, isSelected, onClick }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center justify-between p-4 text-left transition-all duration-200 border-l-2 ${
+    className={`w-full flex items-center justify-between p-3 text-left transition-all duration-200 border rounded-lg ${
       isSelected
         ? 'border-brand-amber-start bg-brand-amber-start/10'
         : 'border-transparent hover:bg-neutral-700/50'
