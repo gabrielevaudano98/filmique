@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Check, Film as FilmIcon, ArrowUp, ArrowDown, ArrowDownAZ, ArrowUpZA, Filter, ArrowUpDown, LayoutGrid, Tag } from 'lucide-react';
+import { Check, Film as FilmIcon, ArrowUp, ArrowDown, ArrowDownAZ, ArrowUpZA, LayoutGrid, Tag, SlidersHorizontal } from 'lucide-react';
 
 interface RollsControlsProps {
   sortOrder: string;
@@ -37,16 +37,9 @@ const RollsControls: React.FC<RollsControlsProps> = ({
   selectedFilm,
   setSelectedFilm,
 }) => {
-  const [isSortOpen, setIsSortOpen] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [isGroupOpen, setIsGroupOpen] = useState(false);
-  const sortRef = useRef<HTMLDivElement>(null);
-  const filterRef = useRef<HTMLDivElement>(null);
-  const groupRef = useRef<HTMLDivElement>(null);
-
-  useOnClickOutside(sortRef, () => setIsSortOpen(false));
-  useOnClickOutside(filterRef, () => setIsFilterOpen(false));
-  useOnClickOutside(groupRef, () => setIsGroupOpen(false));
+  const [isOpen, setIsOpen] = useState(false);
+  const controlsRef = useRef<HTMLDivElement>(null);
+  useOnClickOutside(controlsRef, () => setIsOpen(false));
 
   const sortOptions = [
     { key: 'newest', label: 'Newest First', icon: <ArrowDown className="w-4 h-4 text-gray-400" /> },
@@ -62,74 +55,50 @@ const RollsControls: React.FC<RollsControlsProps> = ({
   ];
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="relative" ref={filterRef}>
-        <button 
-          onClick={() => setIsFilterOpen(!isFilterOpen)} 
-          className="flex items-center justify-center w-11 h-11 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl text-white hover:bg-neutral-700/80 transition-colors"
-          aria-label="Filter rolls"
-        >
-          <Filter className="w-5 h-5 text-gray-300" />
-        </button>
-        {isFilterOpen && (
-          <div className="absolute top-full right-0 mt-2 w-56 bg-neutral-800/80 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl z-10 p-2">
-            <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Filter by Film</div>
-            <button onClick={() => { setSelectedFilm('all'); setIsFilterOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700/50 rounded-md">
-              <span className="flex items-center gap-2"><FilmIcon className="w-4 h-4" /> All Film Types</span>
-              {selectedFilm === 'all' && <Check className="w-4 h-4 text-brand-amber-start" />}
+    <div className="relative" ref={controlsRef}>
+      <button 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="flex items-center justify-center w-11 h-11 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl text-white hover:bg-neutral-700/80 transition-colors"
+        aria-label="Display options"
+      >
+        <SlidersHorizontal className="w-5 h-5 text-gray-300" />
+      </button>
+      {isOpen && (
+        <div className="absolute top-full right-0 mt-2 w-64 bg-neutral-800/80 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl z-10 p-2">
+          {/* Sort Section */}
+          <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Sort by</div>
+          {sortOptions.map(opt => (
+            <button key={opt.key} onClick={() => { setSortOrder(opt.key); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700/50 rounded-md">
+              <span className="flex items-center gap-2">{opt.icon} {opt.label}</span>
+              {sortOrder === opt.key && <Check className="w-4 h-4 text-brand-amber-start" />}
             </button>
-            <div className="h-px bg-white/10 my-1"></div>
-            {filmTypes.map(film => (
-              <button key={film} onClick={() => { setSelectedFilm(film); setIsFilterOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700/50 rounded-md">
-                <span className="flex items-center gap-2"><FilmIcon className="w-4 h-4" /> {film}</span>
-                {selectedFilm === film && <Check className="w-4 h-4 text-brand-amber-start" />}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+          ))}
+          <div className="h-px bg-white/10 my-1"></div>
 
-      <div className="relative" ref={sortRef}>
-        <button 
-          onClick={() => setIsSortOpen(!isSortOpen)} 
-          className="flex items-center justify-center w-11 h-11 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl text-white hover:bg-neutral-700/80 transition-colors"
-          aria-label="Sort rolls"
-        >
-          <ArrowUpDown className="w-5 h-5 text-gray-300" />
-        </button>
-        {isSortOpen && (
-          <div className="absolute top-full right-0 mt-2 w-56 bg-neutral-800/80 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl z-10 p-2">
-            <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Sort by</div>
-            {sortOptions.map(opt => (
-              <button key={opt.key} onClick={() => { setSortOrder(opt.key); setIsSortOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700/50 rounded-md">
-                <span className="flex items-center gap-2">{opt.icon} {opt.label}</span>
-                {sortOrder === opt.key && <Check className="w-4 h-4 text-brand-amber-start" />}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+          {/* Group Section */}
+          <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Group by</div>
+          {groupOptions.map(opt => (
+            <button key={opt.key} onClick={() => { setGroupBy(opt.key); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700/50 rounded-md">
+              <span className="flex items-center gap-2">{opt.icon} {opt.label}</span>
+              {groupBy === opt.key && <Check className="w-4 h-4 text-brand-amber-start" />}
+            </button>
+          ))}
+          <div className="h-px bg-white/10 my-1"></div>
 
-      <div className="relative" ref={groupRef}>
-        <button 
-          onClick={() => setIsGroupOpen(!isGroupOpen)} 
-          className="flex items-center justify-center w-11 h-11 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl text-white hover:bg-neutral-700/80 transition-colors"
-          aria-label="Group rolls"
-        >
-          <LayoutGrid className="w-5 h-5 text-gray-300" />
-        </button>
-        {isGroupOpen && (
-          <div className="absolute top-full right-0 mt-2 w-56 bg-neutral-800/80 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl z-10 p-2">
-            <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Group by</div>
-            {groupOptions.map(opt => (
-              <button key={opt.key} onClick={() => { setGroupBy(opt.key); setIsGroupOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700/50 rounded-md">
-                <span className="flex items-center gap-2">{opt.icon} {opt.label}</span>
-                {groupBy === opt.key && <Check className="w-4 h-4 text-brand-amber-start" />}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+          {/* Filter Section */}
+          <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Filter by Film</div>
+          <button onClick={() => { setSelectedFilm('all'); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700/50 rounded-md">
+            <span className="flex items-center gap-2"><FilmIcon className="w-4 h-4" /> All Film Types</span>
+            {selectedFilm === 'all' && <Check className="w-4 h-4 text-brand-amber-start" />}
+          </button>
+          {filmTypes.map(film => (
+            <button key={film} onClick={() => { setSelectedFilm(film); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700/50 rounded-md">
+              <span className="flex items-center gap-2"><FilmIcon className="w-4 h-4" /> {film}</span>
+              {selectedFilm === film && <Check className="w-4 h-4 text-brand-amber-start" />}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
