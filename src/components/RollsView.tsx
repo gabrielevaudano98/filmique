@@ -9,7 +9,6 @@ import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
 import StickyGroupHeader from './StickyGroupHeader';
-import SegmentedControl from './SegmentedControl';
 
 const DarkroomEmptyState = () => (
   <div className="text-center py-24 text-neutral-500">
@@ -38,7 +37,7 @@ const ArchivedEmptyState = () => (
 const RollsView: React.FC = () => {
   const { 
     developingRolls, completedRolls,
-    rollsSortOrder, rollsGroupBy, setRollsGroupBy, rollsSelectedFilm, rollsViewMode,
+    rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
     rollsViewSection, setRollsViewSection,
     searchTerm, setSearchTerm
   } = useAppContext();
@@ -86,13 +85,6 @@ const RollsView: React.FC = () => {
     });
     return rolls;
   }, [shelfRolls, archivedRolls, searchTerm, rollsSelectedFilm, rollsSortOrder, rollsViewMode]);
-
-  const groupOptions = [
-    { value: 'date', label: 'Date' },
-    { value: 'film_type', label: 'Film Type' },
-    { value: 'tag', label: 'Tag' },
-    { value: 'none', label: 'None' },
-  ];
 
   const groupedRolls = useMemo(() => {
     if (rollsGroupBy === 'date') {
@@ -159,21 +151,6 @@ const RollsView: React.FC = () => {
             </button>
           )}
         </div>
-        {rollsViewSection === 'rolls' && (
-          <div className="flex items-center justify-between gap-4 mt-4">
-            <div className="flex-grow">
-              <SegmentedControl 
-                options={groupOptions} 
-                value={rollsGroupBy} 
-                onChange={setRollsGroupBy} 
-              />
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-              <RollsControls />
-            </div>
-          </div>
-        )}
       </header>
 
       <div className="relative flex-1 mt-6">
@@ -190,13 +167,20 @@ const RollsView: React.FC = () => {
         {rollsViewSection === 'rolls' && (
           <div key="rolls" className="animate-slide-in-from-right space-y-6">
             {processedRolls.length > 0 ? (
-              groupEntries.map(([groupName, rolls]) => (
+              groupEntries.map(([groupName, rolls], index) => (
                 <div key={groupName}>
-                  {rollsGroupBy !== 'none' && (
-                    <StickyGroupHeader>
-                      {groupName}
-                    </StickyGroupHeader>
-                  )}
+                  <StickyGroupHeader>
+                    <div className="flex justify-between items-center w-full">
+                      <span>{groupName}</span>
+                      {/* Controls are only rendered for the first group header, but will stick with it */}
+                      {index === 0 && (
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+                          <RollsControls />
+                        </div>
+                      )}
+                    </div>
+                  </StickyGroupHeader>
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                     {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
                   </div>

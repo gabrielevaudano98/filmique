@@ -2,6 +2,7 @@ import React from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { ArrowLeft } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import SegmentedControl from './SegmentedControl';
 
 const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div className="mb-6">
@@ -34,6 +35,7 @@ const RollsSettingsView: React.FC = () => {
     setCurrentView,
     completedRolls,
     rollsSortOrder, setRollsSortOrder,
+    rollsGroupBy, setRollsGroupBy,
     rollsSelectedFilm, setRollsSelectedFilm,
     rollsViewMode, setRollsViewMode,
   } = useAppContext();
@@ -53,6 +55,13 @@ const RollsSettingsView: React.FC = () => {
     { key: 'oldest', label: 'Oldest First' },
     { key: 'title_asc', label: 'Title (A-Z)' },
     { key: 'title_desc', label: 'Title (Z-A)' },
+  ];
+
+  const groupOptions = [
+    { value: 'date', label: 'Date' },
+    { value: 'film_type', label: 'Film Type' },
+    { value: 'tag', label: 'Tag' },
+    { value: 'none', label: 'None' },
   ];
 
   return (
@@ -76,6 +85,16 @@ const RollsSettingsView: React.FC = () => {
             isSelected={rollsViewMode === 'archived'}
             onClick={() => setRollsViewMode('archived')}
           />
+        </SettingsGroup>
+
+        <SettingsGroup title="Group by">
+          <div className="p-2">
+            <SegmentedControl 
+              options={groupOptions} 
+              value={rollsGroupBy} 
+              onChange={setRollsGroupBy} 
+            />
+          </div>
         </SettingsGroup>
 
         <SettingsGroup title="Sort by">
