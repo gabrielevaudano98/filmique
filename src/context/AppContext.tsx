@@ -5,6 +5,7 @@ import { useProfileData } from '../hooks/useProfileData';
 import { useRollsAndPhotos } from '../hooks/useRollsAndPhotos';
 import { useSocial } from '../hooks/useSocial';
 import { useAlbums } from '../hooks/useAlbums';
+import { useRollsSettings } from '../hooks/useRollsSettings';
 import * as api from '../services/api';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -30,6 +31,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const rollsAndPhotos = useRollsAndPhotos(auth.profile, filmStocks, auth.refreshProfile);
   const social = useSocial(auth.profile);
   const albumsData = useAlbums(auth.profile);
+  const rollsSettings = useRollsSettings();
 
   useEffect(() => {
     const getFilmStocks = async () => {
@@ -61,6 +63,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ...rollsAndPhotos,
     ...social,
     ...albumsData,
+    ...rollsSettings,
     createAlbum: createAlbumWithRefresh,
     createPost: createPostWithRefresh,
     filmStocks,
@@ -71,7 +74,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     showFilmModal,
     setShowFilmModal,
     developShelvedRoll: rollsAndPhotos.developShelvedRoll,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, filmStocks, currentView, cameraMode, showFilmModal]);
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };

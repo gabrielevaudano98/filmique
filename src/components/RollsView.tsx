@@ -34,13 +34,12 @@ const ArchivedEmptyState = () => (
 );
 
 const RollsView: React.FC = () => {
-  const { developingRolls, completedRolls, deleteRoll, removeRollFromAlbum } = useAppContext();
+  const { 
+    developingRolls, completedRolls, deleteRoll, removeRollFromAlbum,
+    rollsSortOrder, rollsGroupBy, rollsSelectedFilm
+  } = useAppContext();
   const [activeSection, setActiveSection] = useState<'shelf' | 'darkroom' | 'archived'>('shelf');
-  
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState('newest');
-  const [groupBy, setGroupBy] = useState('none');
-  const [selectedFilm, setSelectedFilm] = useState('all');
 
   const { shelfRolls, archivedRolls } = useMemo(() => {
     const developed = completedRolls.filter(r => isRollDeveloped(r));
@@ -63,10 +62,10 @@ const RollsView: React.FC = () => {
         r.tags?.some(tag => tag.toLowerCase().includes(lowerSearch))
       );
     }
-    if (selectedFilm !== 'all') rolls = rolls.filter(r => r.film_type === selectedFilm);
+    if (rollsSelectedFilm !== 'all') rolls = rolls.filter(r => r.film_type === rollsSelectedFilm);
     
     rolls.sort((a, b) => {
-      switch (sortOrder) {
+      switch (rollsSortOrder) {
         case 'oldest': return new Date(a.developed_at!).getTime() - new Date(b.developed_at!).getTime();
         case 'title_asc': return (a.title || '').localeCompare(b.title || '');
         case 'title_desc': return (b.title || '').localeCompare(a.title || '');
@@ -74,21 +73,21 @@ const RollsView: React.FC = () => {
       }
     });
     return rolls;
-  }, [shelfRolls, searchTerm, selectedFilm, sortOrder]);
+  }, [shelfRolls, searchTerm, rollsSelectedFilm, rollsSortOrder]);
 
   const groupedRolls = useMemo(() => {
-    if (groupBy === 'none') return { 'All Rolls': processedRolls };
+    if (rollsGroupBy === 'none') return { 'All Rolls': processedRolls };
     return processedRolls.reduce((acc, roll) => {
       let keys: string[] = [];
-      if (groupBy === 'film_type') keys = [roll.film_type];
-      else if (groupBy === 'tag') keys = roll.tags?.length ? roll.tags : ['Untagged'];
+      if (rollsGroupBy === 'film_type') keys = [roll.film_type];
+      else if (rollsGroupBy === 'tag') keys = roll.tags?.length ? roll.tags : ['Untagged'];
       keys.forEach(key => {
         if (!acc[key]) acc[key] = [];
         acc[key].push(roll);
       });
       return acc;
     }, {} as Record<string, Roll[]>);
-  }, [processedRolls, groupBy]);
+  }, [processedRolls, rollsGroupBy]);
 
   return (
     <div className="flex flex-col w-full space-y-6">
@@ -97,11 +96,7 @@ const RollsView: React.FC = () => {
         {activeSection === 'shelf' && (
           <div className="flex items-center gap-2">
             <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-            <RollsControls 
-              sortOrder={sortOrder} setSortOrder={setSortOrder}
-              groupBy={groupBy} setGroupBy={setGroupBy}
-              filmTypes={filmTypes} selectedFilm={selectedFilm} setSelectedFilm={setSelectedFilm}
-            />
+            <RollsControls />
           </div>
         )}
       </div>
@@ -130,7 +125,7 @@ const RollsView: React.FC = () => {
             {processedRolls.length > 0 ? (
               Object.entries(groupedRolls).sort(([keyA], [keyB]) => keyA.localeCompare(keyB)).map(([groupName, rolls]) => (
                 <div key={groupName}>
-                  {groupBy !== 'none' && <h3 className="text-lg font-bold text-white mb-3">{groupName}</h3>}
+                  {rollsGroupBy !== 'none' && <h3 className="text-lg font-bold text-white mb-3">{groupName}</h3>}
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                     {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
                   </div>

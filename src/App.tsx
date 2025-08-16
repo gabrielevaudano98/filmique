@@ -17,6 +17,7 @@ import BottomNavBar from './components/BottomNavBar';
 import UncategorizedRollsView from './components/UncategorizedRollsView';
 import RollCompletionWizard from './components/RollCompletionWizard';
 import PostDevelopmentWizard from './components/PostDevelopmentWizard';
+import RollsSettingsView from './components/RollsSettingsView';
 import { Roll } from './types';
 
 function App() {
@@ -38,6 +39,7 @@ function App() {
       case 'albumDetail': return <AlbumDetailView />;
       case 'notifications': return <NotificationsView />;
       case 'uncategorizedRolls': return <UncategorizedRollsView />;
+      case 'rollsSettings': return <RollsSettingsView />;
       default: return <CommunityView />;
     }
   };

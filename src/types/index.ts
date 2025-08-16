@@ -226,4 +226,10 @@ export interface AppContextType {
   fetchRecentStories: () => Promise<void>;
   fetchProfilePageData: () => Promise<void>;
   archiveRoll: (rollId: string, archive: boolean) => Promise<void>;
+  rollsSortOrder: string;
+  setRollsSortOrder: (order: string) => void;
+  rollsGroupBy: string;
+  setRollsGroupBy: (group: string) => void;
+  rollsSelectedFilm: string;
+  setRollsSelectedFilm: (film: string) => void;
 }
