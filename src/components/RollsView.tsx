@@ -58,10 +58,11 @@ const RollsView: React.FC = () => {
   }, [rollsViewSection, setHeaderAction, setRollsViewSection]);
 
   const handlers = useSwipeable({
+    onSwipedLeft: () => {
+      if (rollsViewSection === 'darkroom') setRollsViewSection('shelf');
+    },
     onSwipedRight: () => {
-      if (rollsViewSection === 'shelf') {
-        setRollsViewSection('darkroom');
-      }
+      if (rollsViewSection === 'shelf') setRollsViewSection('darkroom');
     },
     preventScrollOnSwipe: true,
     trackMouse: true,
