@@ -221,7 +221,7 @@ export interface AppContextType {
   followingCount: number;
   updateProfileDetails: (details: { bio?: string; avatarFile?: File; is_geolocation_enabled?: boolean; }) => Promise<void>;
   userPosts: Post[];
-  sendToStudio: (roll: Roll, title: string) => Promise<void>;
+  sendToDarkroom: (roll: Roll, title: string) => Promise<void>;
   putOnShelf: (roll: Roll, title: string) => Promise<void>;
   developShelvedRoll: (rollId: string) => Promise<void>;
   fetchFeed: () => Promise<void>;
@@ -238,8 +238,8 @@ export interface AppContextType {
   setRollsViewMode: (mode: 'active' | 'archived') => void;
   headerAction: { icon: React.ElementType, action: () => void } | null;
   setHeaderAction: (action: { icon: React.ElementType, action: () => void } | null) => void;
-  rollsViewSection: 'studio' | 'shelf';
-  setRollsViewSection: (section: 'studio' | 'shelf') => void;
+  rollsViewSection: 'darkroom' | 'shelf';
+  setRollsViewSection: (section: 'darkroom' | 'shelf') => void;
   isTopBarVisible: boolean;
   setIsTopBarVisible: (visible: boolean) => void;
 }

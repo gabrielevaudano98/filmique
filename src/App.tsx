@@ -25,7 +25,7 @@ function App() {
   const { 
     session, profile, isLoading, currentView, authStep, 
     rollToConfirm, setRollToConfirm, 
-    sendToStudio, putOnShelf,
+    sendToDarkroom, putOnShelf,
     developedRollForWizard, setDevelopedRollForWizard
   } = useAppContext();
 
@@ -46,8 +46,8 @@ function App() {
     }
   };
 
-  const handleWizardSendToStudio = (roll: Roll, title: string) => {
-    sendToStudio(roll, title);
+  const handleWizardSendToDarkroom = (roll: Roll, title: string) => {
+    sendToDarkroom(roll, title);
     setRollToConfirm(null);
   };
 
@@ -82,7 +82,7 @@ function App() {
   const completionWizard = rollToConfirm && (
     <RollCompletionWizard
       roll={rollToConfirm}
-      onSendToStudio={handleWizardSendToStudio}
+      onSendToDarkroom={handleWizardSendToDarkroom}
       onPutOnShelf={handleWizardPutOnShelf}
     />
   );
