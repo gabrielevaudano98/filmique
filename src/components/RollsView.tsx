@@ -139,8 +139,11 @@ const RollsView: React.FC = () => {
   const groupEntries = Object.entries(groupedRolls);
 
   return (
-    <div {...handlers} className="flex flex-col w-full space-y-6">
-      <div className="flex items-center justify-between">
+    <div {...handlers} className="flex flex-col w-full">
+      <div className={`flex items-center justify-between ${activeSection === 'shelf' 
+        ? 'sticky top-16 z-30 bg-neutral-900/80 backdrop-blur-lg -mx-4 px-4 py-4 border-b border-neutral-700/50' 
+        : 'mb-6'
+      }`}>
         {activeSection === 'shelf' ? (
           <>
             <h1 className="text-3xl font-bold text-white">Shelf</h1>
@@ -164,7 +167,7 @@ const RollsView: React.FC = () => {
         )}
       </div>
 
-      <div className="relative flex-1">
+      <div className={`relative flex-1 ${activeSection === 'shelf' ? 'mt-6' : ''}`}>
         {activeSection === 'darkroom' && (
           <div key="darkroom" className="animate-slide-in-from-left">
             {developingRolls.length > 0 ? (
@@ -180,7 +183,11 @@ const RollsView: React.FC = () => {
             {processedRolls.length > 0 ? (
               groupEntries.map(([groupName, rolls]) => (
                 <div key={groupName}>
-                  {rollsGroupBy !== 'none' && <h3 className="text-lg font-bold text-white mb-3">{groupName}</h3>}
+                  {rollsGroupBy !== 'none' && (
+                    <h3 className="sticky top-[140px] z-20 bg-neutral-900 py-2 -mx-4 px-4 text-lg font-bold text-white mb-3 border-y border-neutral-800">
+                      {groupName}
+                    </h3>
+                  )}
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                     {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
                   </div>
