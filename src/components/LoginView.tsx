@@ -23,7 +23,7 @@ const LoginView: React.FC = () => {
             <Film className="w-10 h-10 text-brand-amber-start" />
           </div>
           <h1 className="text-5xl md:text-6xl font-bold text-white">
-            Filmique
+            Filmique.
           </h1>
           <p className="text-warm-300 mt-4 text-lg max-w-xs mx-auto">
             Shoot, develop, and share digital photos with the timeless soul of film.
