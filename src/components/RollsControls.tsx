@@ -1,9 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Search, Check, Film as FilmIcon, ArrowUp, ArrowDown, ArrowDownAZ, ArrowUpZA, Filter, ArrowUpDown, LayoutGrid, Tag } from 'lucide-react';
+import { Check, Film as FilmIcon, ArrowUp, ArrowDown, ArrowDownAZ, ArrowUpZA, Filter, ArrowUpDown, LayoutGrid, Tag } from 'lucide-react';
 
 interface RollsControlsProps {
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
   sortOrder: string;
   setSortOrder: (order: string) => void;
   groupBy: string;
@@ -31,8 +29,6 @@ const useOnClickOutside = (ref: React.RefObject<HTMLDivElement>, handler: () => 
 };
 
 const RollsControls: React.FC<RollsControlsProps> = ({
-  searchTerm,
-  setSearchTerm,
   sortOrder,
   setSortOrder,
   groupBy,
@@ -66,86 +62,73 @@ const RollsControls: React.FC<RollsControlsProps> = ({
   ];
 
   return (
-    <div className="flex flex-col md:flex-row gap-3 mb-6">
-      <div className="relative flex-grow">
-        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" />
-        <input
-          type="text"
-          placeholder="Search rolls by title..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full bg-neutral-800 border border-neutral-700 rounded-lg pl-11 pr-4 py-2.5 text-white focus:ring-2 focus:ring-brand-amber-start focus:border-brand-amber-start transition-colors h-12"
-        />
+    <div className="flex items-center gap-2">
+      <div className="relative" ref={filterRef}>
+        <button 
+          onClick={() => setIsFilterOpen(!isFilterOpen)} 
+          className="flex items-center justify-center w-11 h-11 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl text-white hover:bg-neutral-700/80 transition-colors"
+          aria-label="Filter rolls"
+        >
+          <Filter className="w-5 h-5 text-gray-300" />
+        </button>
+        {isFilterOpen && (
+          <div className="absolute top-full right-0 mt-2 w-56 bg-neutral-800/80 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl z-10 p-2">
+            <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Filter by Film</div>
+            <button onClick={() => { setSelectedFilm('all'); setIsFilterOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700/50 rounded-md">
+              <span className="flex items-center gap-2"><FilmIcon className="w-4 h-4" /> All Film Types</span>
+              {selectedFilm === 'all' && <Check className="w-4 h-4 text-brand-amber-start" />}
+            </button>
+            <div className="h-px bg-white/10 my-1"></div>
+            {filmTypes.map(film => (
+              <button key={film} onClick={() => { setSelectedFilm(film); setIsFilterOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700/50 rounded-md">
+                <span className="flex items-center gap-2"><FilmIcon className="w-4 h-4" /> {film}</span>
+                {selectedFilm === film && <Check className="w-4 h-4 text-brand-amber-start" />}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="relative" ref={filterRef}>
-          <button 
-            onClick={() => setIsFilterOpen(!isFilterOpen)} 
-            className="flex items-center justify-center w-12 h-12 bg-neutral-800 border border-neutral-700 rounded-lg text-white hover:bg-neutral-700 transition-colors"
-            aria-label="Filter rolls"
-          >
-            <Filter className="w-5 h-5 text-gray-400" />
-          </button>
-          {isFilterOpen && (
-            <div className="absolute top-full right-0 mt-2 w-56 bg-neutral-800 border border-neutral-700 rounded-lg shadow-2xl z-10 p-2">
-              <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Filter by Film</div>
-              <button onClick={() => { setSelectedFilm('all'); setIsFilterOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700 rounded-md">
-                <span className="flex items-center gap-2"><FilmIcon className="w-4 h-4" /> All Film Types</span>
-                {selectedFilm === 'all' && <Check className="w-4 h-4 text-brand-amber-start" />}
+      <div className="relative" ref={sortRef}>
+        <button 
+          onClick={() => setIsSortOpen(!isSortOpen)} 
+          className="flex items-center justify-center w-11 h-11 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl text-white hover:bg-neutral-700/80 transition-colors"
+          aria-label="Sort rolls"
+        >
+          <ArrowUpDown className="w-5 h-5 text-gray-300" />
+        </button>
+        {isSortOpen && (
+          <div className="absolute top-full right-0 mt-2 w-56 bg-neutral-800/80 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl z-10 p-2">
+            <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Sort by</div>
+            {sortOptions.map(opt => (
+              <button key={opt.key} onClick={() => { setSortOrder(opt.key); setIsSortOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700/50 rounded-md">
+                <span className="flex items-center gap-2">{opt.icon} {opt.label}</span>
+                {sortOrder === opt.key && <Check className="w-4 h-4 text-brand-amber-start" />}
               </button>
-              <div className="h-px bg-neutral-700 my-1"></div>
-              {filmTypes.map(film => (
-                <button key={film} onClick={() => { setSelectedFilm(film); setIsFilterOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700 rounded-md">
-                  <span className="flex items-center gap-2"><FilmIcon className="w-4 h-4" /> {film}</span>
-                  {selectedFilm === film && <Check className="w-4 h-4 text-brand-amber-start" />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        )}
+      </div>
 
-        <div className="relative" ref={sortRef}>
-          <button 
-            onClick={() => setIsSortOpen(!isSortOpen)} 
-            className="flex items-center justify-center w-12 h-12 bg-neutral-800 border border-neutral-700 rounded-lg text-white hover:bg-neutral-700 transition-colors"
-            aria-label="Sort rolls"
-          >
-            <ArrowUpDown className="w-5 h-5 text-gray-400" />
-          </button>
-          {isSortOpen && (
-            <div className="absolute top-full right-0 mt-2 w-56 bg-neutral-800 border border-neutral-700 rounded-lg shadow-2xl z-10 p-2">
-              <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Sort by</div>
-              {sortOptions.map(opt => (
-                <button key={opt.key} onClick={() => { setSortOrder(opt.key); setIsSortOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700 rounded-md">
-                  <span className="flex items-center gap-2">{opt.icon} {opt.label}</span>
-                  {sortOrder === opt.key && <Check className="w-4 h-4 text-brand-amber-start" />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="relative" ref={groupRef}>
-          <button 
-            onClick={() => setIsGroupOpen(!isGroupOpen)} 
-            className="flex items-center justify-center w-12 h-12 bg-neutral-800 border border-neutral-700 rounded-lg text-white hover:bg-neutral-700 transition-colors"
-            aria-label="Group rolls"
-          >
-            <LayoutGrid className="w-5 h-5 text-gray-400" />
-          </button>
-          {isGroupOpen && (
-            <div className="absolute top-full right-0 mt-2 w-56 bg-neutral-800 border border-neutral-700 rounded-lg shadow-2xl z-10 p-2">
-              <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Group by</div>
-              {groupOptions.map(opt => (
-                <button key={opt.key} onClick={() => { setGroupBy(opt.key); setIsGroupOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700 rounded-md">
-                  <span className="flex items-center gap-2">{opt.icon} {opt.label}</span>
-                  {groupBy === opt.key && <Check className="w-4 h-4 text-brand-amber-start" />}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+      <div className="relative" ref={groupRef}>
+        <button 
+          onClick={() => setIsGroupOpen(!isGroupOpen)} 
+          className="flex items-center justify-center w-11 h-11 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl text-white hover:bg-neutral-700/80 transition-colors"
+          aria-label="Group rolls"
+        >
+          <LayoutGrid className="w-5 h-5 text-gray-300" />
+        </button>
+        {isGroupOpen && (
+          <div className="absolute top-full right-0 mt-2 w-56 bg-neutral-800/80 backdrop-blur-lg border border-white/10 rounded-lg shadow-2xl z-10 p-2">
+            <div className="px-3 py-2 text-xs font-semibold text-gray-400 uppercase">Group by</div>
+            {groupOptions.map(opt => (
+              <button key={opt.key} onClick={() => { setGroupBy(opt.key); setIsGroupOpen(false); }} className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-200 hover:bg-neutral-700/50 rounded-md">
+                <span className="flex items-center gap-2">{opt.icon} {opt.label}</span>
+                {groupBy === opt.key && <Check className="w-4 h-4 text-brand-amber-start" />}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

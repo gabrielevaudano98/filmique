@@ -20,7 +20,7 @@ const RollCard: React.FC<RollCardProps> = ({ roll }) => {
   return (
     <button 
       onClick={handleClick}
-      className="w-full aspect-[4/5] flex flex-col items-center justify-center text-center p-4 bg-neutral-800/50 rounded-xl border border-neutral-700/50 group hover:bg-neutral-700/50 hover:border-brand-amber-start/50 transition-all duration-300"
+      className="w-full aspect-[4/5] flex flex-col items-center justify-center text-center p-4 bg-gradient-to-b from-white/5 to-black/20 border border-white/10 backdrop-blur-md rounded-xl group hover:border-brand-amber-start/50 transition-all duration-300 shadow-soft"
     >
       <div className="flex-1 flex items-center justify-center w-full">
         <FilmCanisterIcon 

@@ -8,7 +8,7 @@ interface SegmentedControlProps {
 
 const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onChange }) => {
   return (
-    <div className="flex w-full p-1 bg-neutral-900/70 border border-neutral-800 rounded-xl">
+    <div className="flex w-full p-1 bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl">
       {options.map(opt => (
         <button
           key={opt.value}

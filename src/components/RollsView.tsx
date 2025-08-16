@@ -5,7 +5,7 @@ import { isRollDeveloped } from '../utils/rollUtils';
 import SegmentedControl from './SegmentedControl';
 import RollListItem from './RollListItem';
 import RollCard from './RollCard';
-import { Clock, Film, Tag, Archive } from 'lucide-react';
+import { Clock, Film, Tag, Archive, Search } from 'lucide-react';
 import RollsControls from './RollsControls';
 
 const DarkroomEmptyState = () => (
@@ -55,7 +55,13 @@ const RollsView: React.FC = () => {
 
   const processedRolls = useMemo(() => {
     let rolls = [...shelfRolls];
-    if (searchTerm) rolls = rolls.filter(r => r.title?.toLowerCase().includes(searchTerm.toLowerCase()));
+    if (searchTerm) {
+      const lowerSearch = searchTerm.toLowerCase();
+      rolls = rolls.filter(r => 
+        r.title?.toLowerCase().includes(lowerSearch) || 
+        r.tags?.some(tag => tag.toLowerCase().includes(lowerSearch))
+      );
+    }
     if (selectedFilm !== 'all') rolls = rolls.filter(r => r.film_type === selectedFilm);
     
     rolls.sort((a, b) => {
@@ -85,7 +91,30 @@ const RollsView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full space-y-6">
-      <h1 className="text-3xl font-bold text-white">My Rolls</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-white">My Rolls</h1>
+        {activeSection === 'shelf' && (
+          <RollsControls 
+            sortOrder={sortOrder} setSortOrder={setSortOrder}
+            groupBy={groupBy} setGroupBy={setGroupBy}
+            filmTypes={filmTypes} selectedFilm={selectedFilm} setSelectedFilm={setSelectedFilm}
+          />
+        )}
+      </div>
+
+      {activeSection === 'shelf' && (
+        <div className="relative">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search rolls by title or tag..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white placeholder-gray-400 focus:ring-2 focus:ring-brand-amber-start focus:border-transparent transition-colors"
+          />
+        </div>
+      )}
+
       <SegmentedControl
         options={[
           { label: 'Shelf', value: 'shelf' },
@@ -107,12 +136,6 @@ const RollsView: React.FC = () => {
 
         {activeSection === 'shelf' && (
           <div className="space-y-6">
-            <RollsControls 
-              searchTerm={searchTerm} setSearchTerm={setSearchTerm}
-              sortOrder={sortOrder} setSortOrder={setSortOrder}
-              groupBy={groupBy} setGroupBy={setGroupBy}
-              filmTypes={filmTypes} selectedFilm={selectedFilm} setSelectedFilm={setSelectedFilm}
-            />
             {processedRolls.length > 0 ? (
               Object.entries(groupedRolls).sort(([keyA], [keyB]) => keyA.localeCompare(keyB)).map(([groupName, rolls]) => (
                 <div key={groupName}>
