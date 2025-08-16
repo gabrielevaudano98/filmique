@@ -130,17 +130,17 @@ export const useRollsAndPhotos = (
     }
   }, [profile, activeRoll, isSavingPhoto]);
 
-  const sendToDarkroom = async (roll: Roll, title: string) => {
+  const sendToStudio = async (roll: Roll, title: string) => {
     const completedAt = new Date().toISOString();
     const updatedRoll = { ...roll, title, completed_at: completedAt };
     setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
 
     const { error } = await api.updateRoll(roll.id, { title, completed_at: completedAt });
     if (error) {
-      showErrorToast('Failed to send roll to darkroom.');
+      showErrorToast('Failed to send roll to the studio.');
       setCompletedRolls(prev => prev.map(r => r.id === roll.id ? roll : r));
     } else {
-      showSuccessToast("Roll sent to the darkroom!");
+      showSuccessToast("Roll sent to the studio!");
     }
   };
 
@@ -159,9 +159,9 @@ export const useRollsAndPhotos = (
 
   const developShelvedRoll = async (rollId: string) => {
       const { error } = await api.updateRoll(rollId, { completed_at: new Date().toISOString() });
-      if (error) { showErrorToast('Could not send to darkroom.'); }
+      if (error) { showErrorToast('Could not send to the studio.'); }
       else {
-        showSuccessToast("Roll sent to the darkroom!");
+        showSuccessToast("Roll sent to the studio!");
         refetchRolls();
       }
   };
@@ -293,7 +293,7 @@ export const useRollsAndPhotos = (
     downloadPhoto,
     downloadRoll,
     refetchRolls,
-    sendToDarkroom,
+    sendToStudio,
     putOnShelf,
     developShelvedRoll,
     developedRollForWizard,

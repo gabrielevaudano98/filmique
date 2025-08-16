@@ -4,19 +4,19 @@ import { Roll } from '../types';
 
 interface RollCompletionWizardProps {
   roll: Roll;
-  onSendToDarkroom: (roll: Roll, title: string) => void;
+  onSendToStudio: (roll: Roll, title: string) => void;
   onPutOnShelf: (roll: Roll, title: string) => void;
 }
 
-const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onSendToDarkroom, onPutOnShelf }) => {
+const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onSendToStudio, onPutOnShelf }) => {
   const [title, setTitle] = useState('');
-  const [isLoading, setIsLoading] = useState<'darkroom' | 'shelf' | null>(null);
+  const [isLoading, setIsLoading] = useState<'studio' | 'shelf' | null>(null);
 
-  const handleAction = (action: 'darkroom' | 'shelf') => {
+  const handleAction = (action: 'studio' | 'shelf') => {
     if (!title.trim()) return;
     setIsLoading(action);
-    if (action === 'darkroom') {
-      onSendToDarkroom(roll, title.trim());
+    if (action === 'studio') {
+      onSendToStudio(roll, title.trim());
     } else {
       onPutOnShelf(roll, title.trim());
     }
@@ -31,7 +31,7 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onSen
             Give this roll a unique name for your shelf. You can change it later.
           </p>
           
-          <form onSubmit={(e) => { e.preventDefault(); handleAction('darkroom'); }}>
+          <form onSubmit={(e) => { e.preventDefault(); handleAction('studio'); }}>
             <div className="relative">
               <Edit className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
               <input 
@@ -62,7 +62,7 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onSen
                 className="flex-1 flex justify-center items-center space-x-2 py-3 px-4 rounded-xl shadow-lg shadow-brand-amber-start/20 text-base font-bold text-white bg-gradient-to-r from-brand-amber-start to-brand-amber-end hover:opacity-90 transition-all disabled:opacity-50"
               >
                 <Clock className="w-5 h-5" />
-                <span>{isLoading === 'darkroom' ? 'Sending...' : 'Send to Darkroom'}</span>
+                <span>{isLoading === 'studio' ? 'Sending...' : 'Send to Studio'}</span>
               </button>
             </div>
           </form>
