@@ -15,6 +15,7 @@ export const useRollsAndPhotos = (
   const [activeRoll, setActiveRoll] = useState<Roll | null>(null);
   const [completedRolls, setCompletedRolls] = useState<Roll[]>([]);
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
+  const [rollToName, setRollToName] = useState<Roll | null>(null);
   const [rollToConfirm, setRollToConfirm] = useState<Roll | null>(null);
   const [isSavingPhoto, setIsSavingPhoto] = useState(false);
   const [developedRollForWizard, setDevelopedRollForWizard] = useState<Roll | null>(null);
@@ -24,8 +25,26 @@ export const useRollsAndPhotos = (
     const { data: fetchedRolls, error } = await api.fetchAllRolls(profile.id);
     if (error || !fetchedRolls) return;
 
-    const active = fetchedRolls.find(r => !r.is_completed) || null;
-    const completed = fetchedRolls.filter(r => r.is_completed);
+    const untitledCompletedRolls = fetchedRolls.filter(r => r.is_completed && !r.title);
+    let finalRolls = fetchedRolls;
+
+    if (untitledCompletedRolls.length > 0) {
+        const updates = untitledCompletedRolls.map(roll => {
+            const date = new Date(roll.created_at);
+            const formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+            const shortId = roll.id.substring(0, 8);
+            const defaultTitle = `Untitled ${formattedDate} - ${shortId}`;
+            return api.updateRoll(roll.id, { title: defaultTitle }).then(response => response.data);
+        });
+
+        const updatedRollsData = (await Promise.all(updates)).filter(Boolean) as Roll[];
+        const updatedRollsMap = new Map(updatedRollsData.map(r => [r.id, r]));
+        
+        finalRolls = fetchedRolls.map(r => updatedRollsMap.get(r.id) || r);
+    }
+
+    const active = finalRolls.find(r => !r.is_completed) || null;
+    const completed = finalRolls.filter(r => r.is_completed);
     setActiveRoll(active);
     setCompletedRolls(completed);
     
@@ -111,18 +130,40 @@ export const useRollsAndPhotos = (
     }
   }, [profile, activeRoll, isSavingPhoto]);
 
-  const startDevelopment = async (roll: Roll, title: string, isPrinted: boolean) => {
+  const sendToDarkroom = async (roll: Roll, title: string) => {
     const completedAt = new Date().toISOString();
-    const updatedRoll = { ...roll, title, completed_at: completedAt, is_printed: isPrinted };
+    const updatedRoll = { ...roll, title, completed_at: completedAt };
     setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
 
-    const { error } = await api.updateRoll(roll.id, { title, completed_at: completedAt, is_printed: isPrinted });
+    const { error } = await api.updateRoll(roll.id, { title, completed_at: completedAt });
     if (error) {
       showErrorToast('Failed to send roll to darkroom.');
-      setCompletedRolls(prev => prev.map(r => r.id === roll.id ? roll : r)); // Revert on error
+      setCompletedRolls(prev => prev.map(r => r.id === roll.id ? roll : r));
     } else {
       showSuccessToast("Roll sent to the darkroom!");
     }
+  };
+
+  const putOnShelf = async (roll: Roll, title: string) => {
+    const updatedRoll = { ...roll, title };
+    setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
+
+    const { error } = await api.updateRoll(roll.id, { title });
+    if (error) {
+      showErrorToast('Failed to place roll on shelf.');
+      setCompletedRolls(prev => prev.map(r => r.id === roll.id ? roll : r));
+    } else {
+      showSuccessToast("Roll placed on your shelf.");
+    }
+  };
+
+  const developShelvedRoll = async (rollId: string) => {
+      const { error } = await api.updateRoll(rollId, { completed_at: new Date().toISOString() });
+      if (error) { showErrorToast('Could not send to darkroom.'); }
+      else {
+        showSuccessToast("Roll sent to the darkroom!");
+        refetchRolls();
+      }
   };
 
   const developRoll = useCallback(async (roll: Roll) => {
@@ -238,6 +279,8 @@ export const useRollsAndPhotos = (
     developingRolls,
     selectedRoll,
     setSelectedRoll,
+    rollToName,
+    setRollToName,
     rollToConfirm,
     setRollToConfirm,
     isSavingPhoto,
@@ -250,7 +293,9 @@ export const useRollsAndPhotos = (
     downloadPhoto,
     downloadRoll,
     refetchRolls,
-    startDevelopment,
+    sendToDarkroom,
+    putOnShelf,
+    developShelvedRoll,
     developedRollForWizard,
     setDevelopedRollForWizard,
     archiveRoll,

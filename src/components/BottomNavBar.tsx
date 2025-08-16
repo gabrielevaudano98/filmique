@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, Users, Library } from 'lucide-react';
+import { Camera, Film, Users } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const NavItem: React.FC<{
@@ -38,8 +38,8 @@ const BottomNavBar: React.FC = () => {
   const { currentView, setCurrentView } = useAppContext();
 
   const navItems = [
+    { view: 'rolls', label: 'Rolls', icon: Film },
     { view: 'community', label: 'Community', icon: Users },
-    { view: 'library', label: 'Library', icon: Library },
   ];
 
   const leftItems = navItems.slice(0, 1);

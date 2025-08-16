@@ -81,7 +81,6 @@ export interface Roll {
   aspect_ratio: string;
   is_archived: boolean;
   tags?: string[] | null;
-  is_printed: boolean;
 }
 
 export interface Comment {
@@ -222,9 +221,9 @@ export interface AppContextType {
   followingCount: number;
   updateProfileDetails: (details: { bio?: string; avatarFile?: File; is_geolocation_enabled?: boolean; }) => Promise<void>;
   userPosts: Post[];
-  startDevelopment: (roll: Roll, title: string, isPrinted: boolean) => Promise<void>;
-  developedRollForWizard: Roll | null;
-  setDevelopedRollForWizard: (roll: Roll | null) => void;
+  sendToDarkroom: (roll: Roll, title: string) => Promise<void>;
+  putOnShelf: (roll: Roll, title: string) => Promise<void>;
+  developShelvedRoll: (rollId: string) => Promise<void>;
   fetchFeed: () => Promise<void>;
   fetchRecentStories: () => Promise<void>;
   fetchProfilePageData: () => Promise<void>;
@@ -239,8 +238,8 @@ export interface AppContextType {
   setRollsViewMode: (mode: 'active' | 'archived') => void;
   headerAction: { icon: React.ElementType, action: () => void } | null;
   setHeaderAction: (action: { icon: React.ElementType, action: () => void } | null) => void;
+  rollsViewSection: 'darkroom' | 'shelf';
+  setRollsViewSection: (section: 'darkroom' | 'shelf') => void;
   isTopBarVisible: boolean;
   setIsTopBarVisible: (visible: boolean) => void;
-  searchTerm: string;
-  setSearchTerm: (term: string) => void;
 }
