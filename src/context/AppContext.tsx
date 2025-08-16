@@ -22,7 +22,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
   const [showFilmModal, setShowFilmModal] = useState(false);
   const [headerAction, setHeaderAction] = useState<{ icon: React.ElementType, action: () => void } | null>(null);
-  const [rollsViewSection, setRollsViewSection] = useState<'darkroom' | 'shelf'>('darkroom');
+  const [rollsViewSection, setRollsViewSection] = useState<'studio' | 'shelf'>('studio');
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
 
   // Data State

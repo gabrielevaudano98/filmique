@@ -10,10 +10,10 @@ import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
 import StickyGroupHeader from './StickyGroupHeader';
 
-const DarkroomEmptyState = () => (
+const StudioEmptyState = () => (
   <div className="text-center py-24 text-neutral-500">
     <Clock className="w-16 h-16 mx-auto mb-4" />
-    <h3 className="text-xl font-bold text-white">Darkroom is Empty</h3>
+    <h3 className="text-xl font-bold text-white">Studio is Empty</h3>
     <p className="mt-2">When you finish a roll, it will appear here to be developed.</p>
   </div>
 );
@@ -46,7 +46,7 @@ const RollsView: React.FC = () => {
     if (rollsViewSection === 'shelf') {
       setHeaderAction({
         icon: ArrowLeft,
-        action: () => setRollsViewSection('darkroom'),
+        action: () => setRollsViewSection('studio'),
       });
     } else {
       setHeaderAction(null);
@@ -60,7 +60,7 @@ const RollsView: React.FC = () => {
   const handlers = useSwipeable({
     onSwipedRight: () => {
       if (rollsViewSection === 'shelf') {
-        setRollsViewSection('darkroom');
+        setRollsViewSection('studio');
       }
     },
     preventScrollOnSwipe: true,
@@ -154,7 +154,7 @@ const RollsView: React.FC = () => {
           </>
         ) : (
           <>
-            <h1 className="text-3xl font-bold text-white">Darkroom</h1>
+            <h1 className="text-3xl font-bold text-white">Studio</h1>
             <button
               onClick={() => setRollsViewSection('shelf')}
               className="flex items-center gap-2 text-gray-300 hover:text-white font-semibold transition-colors px-4 py-2 rounded-lg hover:bg-neutral-800"
@@ -168,13 +168,13 @@ const RollsView: React.FC = () => {
       </div>
 
       <div className={`relative flex-1 ${rollsViewSection === 'shelf' ? 'mt-6' : ''}`}>
-        {rollsViewSection === 'darkroom' && (
-          <div key="darkroom" className="animate-slide-in-from-left">
+        {rollsViewSection === 'studio' && (
+          <div key="studio" className="animate-slide-in-from-left">
             {developingRolls.length > 0 ? (
               <div className="space-y-3">
                 {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
               </div>
-            ) : <DarkroomEmptyState />}
+            ) : <StudioEmptyState />}
           </div>
         )}
 
