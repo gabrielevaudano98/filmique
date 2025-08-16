@@ -33,6 +33,9 @@ const NavItem: React.FC<{
       >
         {label}
       </span>
+      {isActive && !isAccent && (
+        <div className="absolute bottom-1 w-1.5 h-1.5 bg-brand-amber-start rounded-full transition-all duration-300 ease-spring-soft"></div>
+      )}
     </button>
   );
 };
@@ -40,7 +43,8 @@ const NavItem: React.FC<{
 const AppNavBar: React.FC = () => {
   const { currentView, setCurrentView, rollsViewSection, setRollsViewSection } = useAppContext();
 
-  const isRollsFamilyView = ['rolls', 'library', 'rollDetail', 'rollsSettings', 'albumDetail', 'uncategorizedRolls'].includes(currentView);
+  // Corrected logic: Sub-nav only shows for rolls-related views.
+  const isRollsFamilyView = ['rolls', 'rollDetail', 'rollsSettings'].includes(currentView);
 
   const handleNavItemClick = (view: string) => {
     if (view === 'rolls') {
