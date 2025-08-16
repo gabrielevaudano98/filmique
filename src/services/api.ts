@@ -186,7 +186,7 @@ export const updateRollsAlbum = async (rollIds: string[], albumId: string | null
 };
 
 // Notifications
-export const fetchNotifications = (userId: string) => supabase.from('notifications').select('*, actors:profiles!notifications_actor_id_fkey(username, avatar_url), posts(rolls(photos(thumbnail_url)))').eq('user_id', userId).order('created_at', { ascending: false }).limit(30);
+export const fetchNotifications = (userId: string) => supabase.from('notifications').select('*, actors:profiles(username, avatar_url), posts(rolls(photos(thumbnail_url)))').eq('user_id', userId).order('created_at', { ascending: false }).limit(30);
 export const markNotificationsRead = (ids: string[]) => supabase.from('notifications').update({ is_read: true }).in('id', ids);
 
 // Edge Functions
