@@ -34,7 +34,7 @@ const ArchivedEmptyState = () => (
   </div>
 );
 
-const StudioView: React.FC = () => {
+const RollsView: React.FC = () => {
   const { 
     developingRolls, completedRolls,
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
@@ -203,4 +203,4 @@ const StudioView: React.FC = () => {
   );
 };
 
-export default StudioView;
+export default RollsView;

@@ -1,6 +1,6 @@
 import React from 'react';
 import CameraView from './components/CameraView';
-import StudioView from './components/Studio';
+import RollsView from './components/RollsView';
 import CommunityView from './components/CommunityView';
 import ChallengesView from './components/ChallengesView';
 import ProfileView from './components/ProfileView';
@@ -31,7 +31,7 @@ function App() {
 
   const renderCurrentView = () => {
     switch (currentView) {
-      case 'rolls': return <StudioView />;
+      case 'rolls': return <RollsView />;
       case 'library': return <LibraryView />;
       case 'community': return <CommunityView />;
       case 'challenges': return <ChallengesView />;

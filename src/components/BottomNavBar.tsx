@@ -38,7 +38,7 @@ const BottomNavBar: React.FC = () => {
   const { currentView, setCurrentView } = useAppContext();
 
   const navItems = [
-    { view: 'rolls', label: 'Studio', icon: Film },
+    { view: 'rolls', label: 'Rolls', icon: Film },
     { view: 'library', label: 'Library', icon: Library },
     { view: 'community', label: 'Community', icon: Users },
   ];
