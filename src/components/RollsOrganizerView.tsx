@@ -4,7 +4,8 @@ import { Album, Roll } from '../types';
 import { Folder, PlusCircle } from 'lucide-react';
 import BoxListItem from './BoxListItem';
 import RollOrganizerItem from './RollOrganizerItem';
-import CreateBoxModal from './CreateBoxModal';
+import CreateAlbumModal from './CreateAlbumModal';
+import MoveItemModal from './MoveItemModal';
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors, useDraggable, useDroppable } from '@dnd-kit/core';
 
 const Draggable: React.FC<{ id: string; children: React.ReactNode }> = ({ id, children }) => {
@@ -13,15 +14,16 @@ const Draggable: React.FC<{ id: string; children: React.ReactNode }> = ({ id, ch
   return <div ref={setNodeRef} style={style} {...listeners} {...attributes}>{children}</div>;
 };
 
-const DroppableBox: React.FC<{ album: Album; onClick: () => void; children: React.ReactNode }> = ({ album, onClick, children }) => {
+const DroppableBox: React.FC<{ album: Album; onClick: () => void; onMove: () => void; children: React.ReactNode }> = ({ album, onClick, onMove, children }) => {
   const { isOver, setNodeRef } = useDroppable({ id: album.id });
-  return <div ref={setNodeRef}><BoxListItem album={album} onClick={onClick} isOver={isOver} /></div>;
+  return <div ref={setNodeRef}><BoxListItem album={album} onClick={onClick} onMove={onMove} isOver={isOver} /></div>;
 };
 
 const RollsOrganizerView: React.FC = () => {
   const { albums, completedRolls, setCurrentView, setSelectedRoll, addRollsToAlbum, moveAlbum } = useAppContext();
   const [breadcrumbs, setBreadcrumbs] = useState<Album[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [itemToMove, setItemToMove] = useState<Album | Roll | null>(null);
   const [activeDragItem, setActiveDragItem] = useState<Album | Roll | null>(null);
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }));
@@ -94,9 +96,9 @@ const RollsOrganizerView: React.FC = () => {
             {items.map(item => {
               const isDragging = activeDragItem?.id === item.id;
               if ('shots_used' in item) { // It's a Roll
-                return <Draggable key={item.id} id={item.id}><RollOrganizerItem roll={item} onClick={() => handleRollClick(item)} isDragging={isDragging} /></Draggable>;
+                return <Draggable key={item.id} id={item.id}><RollOrganizerItem roll={item} onClick={() => handleRollClick(item)} onMove={() => setItemToMove(item)} isDragging={isDragging} /></Draggable>;
               } else { // It's an Album
-                return <Draggable key={item.id} id={item.id}><DroppableBox album={item} onClick={() => navigateToAlbum(item)}><div /></DroppableBox></Draggable>;
+                return <Draggable key={item.id} id={item.id}><DroppableBox album={item} onClick={() => navigateToAlbum(item)} onMove={() => setItemToMove(item)}><div /></DroppableBox></Draggable>;
               }
             })}
           </div>
@@ -110,19 +112,20 @@ const RollsOrganizerView: React.FC = () => {
             <div className="space-y-2">
               {uncategorizedRolls.map(roll => {
                 const isDragging = activeDragItem?.id === roll.id;
-                return <Draggable key={roll.id} id={roll.id}><RollOrganizerItem roll={roll} onClick={() => handleRollClick(roll)} isDragging={isDragging} /></Draggable>;
+                return <Draggable key={roll.id} id={roll.id}><RollOrganizerItem roll={roll} onClick={() => handleRollClick(roll)} onMove={() => setItemToMove(roll)} isDragging={isDragging} /></Draggable>;
               })}
             </div>
           </div>
         )}
 
-        {showCreateModal && <CreateBoxModal onClose={() => setShowCreateModal(false)} parentAlbumId={currentAlbumId} />}
+        {showCreateModal && <CreateAlbumModal onClose={() => setShowCreateModal(false)} parentAlbumId={currentAlbumId} itemType="Box" />}
+        {itemToMove && <MoveItemModal itemToMove={itemToMove} onClose={() => setItemToMove(null)} />}
       </div>
       <DragOverlay dropAnimation={null}>
         {activeDragItem ? (
           'shots_used' in activeDragItem ? 
-            <RollOrganizerItem roll={activeDragItem} onClick={() => {}} /> : 
-            <BoxListItem album={activeDragItem} onClick={() => {}} />
+            <RollOrganizerItem roll={activeDragItem} onClick={() => {}} onMove={() => {}} /> : 
+            <BoxListItem album={activeDragItem} onClick={() => {}} onMove={() => {}} />
         ) : null}
       </DragOverlay>
     </DndContext>
