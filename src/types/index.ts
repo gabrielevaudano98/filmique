@@ -242,4 +242,6 @@ export interface AppContextType {
   setIsTopBarVisible: (visible: boolean) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
+  rollsViewSection: 'rolls' | 'darkroom';
+  setRollsViewSection: (section: 'rolls' | 'darkroom') => void;
 }

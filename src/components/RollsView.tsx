@@ -3,13 +3,16 @@ import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
 import RollCard from './RollCard';
-import { Film, Archive } from 'lucide-react';
+import { Film, Archive, Clock, Printer, Library } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
 import SegmentedControl from './SegmentedControl';
 import PrintsView from './PrintsView';
 import DarkroomEmptyState from './DarkroomEmptyState';
+
+const ROLLS_HEADER_HEIGHT = 64; // h-16
+const ROLLS_CONTROLS_HEIGHT = 48; // h-12
 
 const RollsEmptyState = () => (
     <div className="text-center py-24 text-neutral-500">
@@ -107,18 +110,21 @@ const RollsView: React.FC = () => {
 
   const groupEntries = Object.entries(groupedRolls);
 
+  const sectionOptions = [
+    { label: 'Rolls', value: 'rolls', icon: Library },
+    { label: 'Darkroom', value: 'darkroom', icon: Clock },
+    { label: 'Prints', value: 'prints', icon: Printer },
+  ];
+
   return (
     <div className="flex flex-col w-full">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-white">Library</h1>
       </div>
-      <header className="sticky top-[64px] z-30 bg-neutral-900/95 -mx-4 px-4 py-3 border-b border-neutral-700/50">
+      
+      <header className="sticky top-[64px] z-30 bg-neutral-900/95 -mx-4 px-4 py-3 border-b border-neutral-700/50 h-16 flex items-center">
         <SegmentedControl
-          options={[
-            { label: 'Rolls', value: 'rolls' },
-            { label: 'Darkroom', value: 'darkroom' },
-            { label: 'Prints', value: 'prints' },
-          ]}
+          options={sectionOptions}
           value={activeSection}
           onChange={(val) => setActiveSection(val as any)}
         />
@@ -137,7 +143,7 @@ const RollsView: React.FC = () => {
 
         {activeSection === 'rolls' && (
           <div key="rolls" className="animate-slide-in-from-right">
-            <div className="sticky top-[122px] z-20 flex justify-end pointer-events-none -mx-4 px-4 h-12 items-center">
+            <div className={`sticky z-20 flex justify-end pointer-events-none -mx-4 px-4 h-12 items-center`} style={{top: `${64 + ROLLS_HEADER_HEIGHT}px`}}>
               <div className="pointer-events-auto flex items-center gap-2">
                 <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
                 <RollsControls />
@@ -147,7 +153,7 @@ const RollsView: React.FC = () => {
               {processedRolls.length > 0 ? (
                 groupEntries.map(([groupName, rolls]) => (
                   <div key={groupName}>
-                    <h3 className="sticky top-[170px] z-10 py-2 -mx-4 px-4 text-lg font-bold text-white mb-3 bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50">
+                    <h3 className={`sticky z-10 py-2 -mx-4 px-4 text-lg font-bold text-white mb-3 bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50`} style={{top: `${64 + ROLLS_HEADER_HEIGHT + ROLLS_CONTROLS_HEIGHT}px`}}>
                       {groupName}
                     </h3>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
