@@ -72,7 +72,26 @@ const RollsView: React.FC = () => {
   }, [shelfRolls, searchTerm, rollsSelectedFilm, rollsSortOrder]);
 
   const groupedRolls = useMemo(() => {
+    if (rollsGroupBy === 'month') {
+      const byMonth = processedRolls.reduce((acc, roll) => {
+        if (!roll.developed_at) return acc;
+        const date = new Date(roll.developed_at);
+        const key = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(roll);
+        return acc;
+      }, {} as Record<string, Roll[]>);
+      
+      const sortedKeys = Object.keys(byMonth).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+      const sortedGroups: Record<string, Roll[]> = {};
+      for (const key of sortedKeys) {
+        sortedGroups[key] = byMonth[key];
+      }
+      return sortedGroups;
+    }
+
     if (rollsGroupBy === 'none') return { 'All Rolls': processedRolls };
+
     return processedRolls.reduce((acc, roll) => {
       let keys: string[] = [];
       if (rollsGroupBy === 'film_type') keys = [roll.film_type];
@@ -84,6 +103,10 @@ const RollsView: React.FC = () => {
       return acc;
     }, {} as Record<string, Roll[]>);
   }, [processedRolls, rollsGroupBy]);
+
+  const groupEntries = rollsGroupBy === 'month' 
+    ? Object.entries(groupedRolls) 
+    : Object.entries(groupedRolls).sort(([keyA], [keyB]) => keyA.localeCompare(keyB));
 
   return (
     <div className="flex flex-col w-full space-y-6">
@@ -119,7 +142,7 @@ const RollsView: React.FC = () => {
         {activeSection === 'shelf' && (
           <div className="space-y-6">
             {processedRolls.length > 0 ? (
-              Object.entries(groupedRolls).sort(([keyA], [keyB]) => keyA.localeCompare(keyB)).map(([groupName, rolls]) => (
+              groupEntries.map(([groupName, rolls]) => (
                 <div key={groupName}>
                   {rollsGroupBy !== 'none' && <h3 className="text-lg font-bold text-white mb-3">{groupName}</h3>}
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
