@@ -4,8 +4,10 @@ import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
 import RollCard from './RollCard';
 import { Clock, Film, Archive } from 'lucide-react';
+import RollsControls from './RollsControls';
+import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
-import StudioHeader from './StudioHeader';
+import StickyGroupHeader from './StickyGroupHeader';
 
 const DarkroomEmptyState = () => (
   <div className="text-center py-12 text-neutral-500">
@@ -31,11 +33,11 @@ const ArchivedEmptyState = () => (
   </div>
 );
 
-const RollsView: React.FC = () => {
+const StudioView: React.FC = () => {
   const { 
     developingRolls, completedRolls,
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
-    searchTerm
+    searchTerm, setSearchTerm
   } = useAppContext();
 
   const { shelfRolls, archivedRolls } = useMemo(() => {
@@ -111,8 +113,6 @@ const RollsView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full">
-      <StudioHeader />
-      
       {/* Darkroom Section */}
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-white mb-4">Darkroom</h2>
@@ -125,7 +125,13 @@ const RollsView: React.FC = () => {
 
       {/* Shelf Section */}
       <div>
-        <h2 className="text-2xl font-bold text-white mb-4">Developed Rolls</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold text-white">Rolls</h2>
+          <div className="flex items-center gap-2">
+            <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+            <RollsControls />
+          </div>
+        </div>
         <div className="space-y-6">
           {processedRolls.length > 0 ? (
             groupEntries.map(([groupName, rolls]) => (
@@ -149,4 +155,4 @@ const RollsView: React.FC = () => {
   );
 };
 
-export default RollsView;
+export default StudioView;

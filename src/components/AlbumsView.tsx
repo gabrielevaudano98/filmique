@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Album } from '../types';
 import AlbumCard from './AlbumCard';
-import { Library as LibraryIcon } from 'lucide-react';
+import { Plus, Library as LibraryIcon } from 'lucide-react';
 import CreateAlbumModal from './CreateAlbumModal';
-import StudioHeader from './StudioHeader';
 
 const AlbumsView: React.FC = () => {
   const { albums, setSelectedAlbum, setCurrentView, refetchAlbums } = useAppContext();
@@ -22,7 +21,17 @@ const AlbumsView: React.FC = () => {
   return (
     <>
       <div className="flex flex-col w-full">
-        <StudioHeader onNewAlbumClick={() => setShowCreateModal(true)} />
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold text-white">Albums</h1>
+          <button
+            onClick={() => setShowCreateModal(true)}
+            className="flex items-center gap-2 text-sm font-semibold text-brand-amber-start hover:text-brand-amber-mid transition-colors"
+            aria-label="Create New Album"
+          >
+            <Plus className="w-4 h-4" />
+            <span>New Album</span>
+          </button>
+        </div>
 
         {albums.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">

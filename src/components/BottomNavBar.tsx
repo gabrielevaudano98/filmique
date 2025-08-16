@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, Users, Film, User } from 'lucide-react';
+import { Camera, Users, Library as LibraryIcon, Film } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 const NavItem: React.FC<{
@@ -39,12 +39,12 @@ const BottomNavBar: React.FC = () => {
 
   const navItems = [
     { view: 'studio', label: 'Studio', icon: Film },
+    { view: 'albums', label: 'Albums', icon: LibraryIcon },
     { view: 'community', label: 'Community', icon: Users },
-    { view: 'profile', label: 'Profile', icon: User },
   ];
 
-  const leftItems = navItems.slice(0, 1);
-  const rightItems = navItems.slice(1);
+  const leftItems = navItems.slice(0, 2);
+  const rightItems = navItems.slice(2);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-28 flex justify-center z-50 pointer-events-none pb-safe">
@@ -59,7 +59,7 @@ const BottomNavBar: React.FC = () => {
               <NavItem
                 key={item.view}
                 {...item}
-                isActive={currentView === item.view || currentView === 'albums'}
+                isActive={currentView === item.view}
                 onClick={() => setCurrentView(item.view)}
               />
             ))}
