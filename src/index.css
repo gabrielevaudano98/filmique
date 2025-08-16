@@ -31,6 +31,7 @@
   --motion-short: 180ms;
   --motion-medium: 320ms;
   --motion-long: 520ms;
+  --spring-soft: cubic-bezier(0.2, 1, 0.35, 1);
 }
 
 /* existing base overrides */
@@ -236,8 +237,25 @@
 }
 
 .animate-modal-enter {
-  animation: modal-enter 0.3s cubic-bezier(0.2, 1, 0.35, 1) forwards;
+  animation: modal-enter 0.3s var(--spring-soft) forwards;
 }
+
+/* Nav Item Animation */
+@keyframes nav-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-nav-item-in {
+  animation: nav-item-in 400ms var(--spring-soft) backwards;
+}
+
 
 /* Unread Notification Glow */
 @keyframes glow {
@@ -266,7 +284,7 @@
 }
 
 .animate-slide-in-right {
-  animation: slide-in-right 0.3s cubic-bezier(0.2, 1, 0.35, 1) forwards;
+  animation: slide-in-right 0.3s var(--spring-soft) forwards;
 }
 
 /* Slide-in/out animations for view transitions */
