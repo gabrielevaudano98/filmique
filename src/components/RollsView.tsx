@@ -8,6 +8,7 @@ import { Clock, Film, Archive, ArrowLeft, Library } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
+import StickyGroupHeader from './StickyGroupHeader';
 
 const DarkroomEmptyState = () => (
   <div className="text-center py-24 text-neutral-500">
@@ -183,9 +184,9 @@ const RollsView: React.FC = () => {
               groupEntries.map(([groupName, rolls]) => (
                 <div key={groupName}>
                   {rollsGroupBy !== 'none' && (
-                    <h3 className="sticky top-[140px] z-20 bg-neutral-900/50 backdrop-blur-lg py-2 -mx-4 px-4 text-lg font-bold text-white mb-3 border-y border-neutral-700/50">
+                    <StickyGroupHeader>
                       {groupName}
-                    </h3>
+                    </StickyGroupHeader>
                   )}
                   <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
                     {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
