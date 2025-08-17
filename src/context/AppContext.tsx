@@ -10,6 +10,8 @@ import * as api from '../services/api';
 import { Library, Clock, Printer } from 'lucide-react';
 import { Network } from '@capacitor/network';
 import { showInfoToast, showSuccessToast } from '../utils/toasts';
+import { dbService } from '../services/database';
+import { syncService } from '../services/sync';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -31,6 +33,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isStudioHeaderSticky, setIsStudioHeaderSticky] = useState(false);
   const [isRollsSettingsOpen, setIsRollsSettingsOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  const [isDbInitialized, setIsDbInitialized] = useState(false);
 
   // Data State
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
@@ -41,6 +44,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     { value: 'prints', icon: Printer, description: 'Order prints of your photos.', colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' } },
   ];
 
+  // Initialize DB
+  useEffect(() => {
+    dbService.initializeDatabase().then(() => setIsDbInitialized(true));
+  }, []);
+
   // Modular Hooks
   const auth = useAuth();
   const profileData = useProfileData(auth.profile);
@@ -49,45 +57,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const albumsData = useAlbums(auth.profile);
   const rollsSettings = useRollsSettings();
 
+  // Network and Sync Logic
   useEffect(() => {
     const initializeNetworkListener = async () => {
       const status = await Network.getStatus();
       setIsOnline(status.connected);
+      if (status.connected) {
+        syncService.runSync().then(() => rollsAndPhotos.refetchRolls());
+      }
 
       Network.addListener('networkStatusChange', (status) => {
         setIsOnline(currentIsOnline => {
-          // Only show a toast if the network status has actually changed
-          if (status.connected !== currentIsOnline) {
-            if (status.connected) {
-              showSuccessToast("You're back online!");
-            } else {
-              showInfoToast("You've gone offline. Some features may be unavailable.");
-            }
+          if (status.connected && !currentIsOnline) {
+            showSuccessToast("You're back online! Syncing changes.");
+            syncService.runSync().then(() => rollsAndPhotos.refetchRolls());
+          } else if (!status.connected && currentIsOnline) {
+            showInfoToast("You've gone offline. Changes will be saved locally.");
           }
           return status.connected;
         });
       });
     };
 
-    initializeNetworkListener();
+    if (isDbInitialized && auth.session) {
+      initializeNetworkListener();
+    }
 
     return () => {
       Network.removeAllListeners();
     };
-  }, []);
+  }, [isDbInitialized, auth.session, rollsAndPhotos.refetchRolls]);
 
   useEffect(() => {
     const getFilmStocks = async () => {
       const { data, error } = await api.fetchFilmStocks();
-      if (error) {
-        console.error("Failed to fetch film stocks:", error);
-      } else {
-        setFilmStocks(data as FilmStock[]);
-      }
+      if (error) console.error("Failed to fetch film stocks:", error);
+      else setFilmStocks(data as FilmStock[]);
     };
-    if (auth.session) {
-      getFilmStocks();
-    }
+    if (auth.session) getFilmStocks();
   }, [auth.session]);
 
   const createAlbumWithRefresh: AppContextType['createAlbum'] = async (title, type, parentAlbumId) => {
@@ -132,6 +139,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsRollsSettingsOpen,
     isOnline,
   }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, isRollsSettingsOpen, isOnline]);
+
+  if (!isDbInitialized) {
+    return <div>Initializing...</div>;
+  }
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };
