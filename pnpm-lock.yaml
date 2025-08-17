@@ -53,6 +53,12 @@ importers:
       capacitor-camera-view:
         specifier: ^1.2.0
         version: 1.2.0(@capacitor/core@7.4.2)
+      dexie:
+        specifier: ^4.0.11
+        version: 4.0.11
+      dexie-react-hooks:
+        specifier: ^1.1.7
+        version: 1.1.7(@types/react@18.3.23)(dexie@4.0.11)(react@18.3.1)
       file-saver:
         specifier: ^2.0.5
         version: 2.0.5
@@ -972,6 +978,16 @@ packages:
   define-lazy-prop@2.0.0:
     resolution: {integrity: sha512-Ds09qNh8yw3khSjiJjiUInaGX9xlqZDY7JVryGxdxV7NPeuqQfplOpQ66yJFZut3jLa5zOwkXw1g9EI2uKh4Og==}
     engines: {node: '>=8'}
+
+  dexie-react-hooks@1.1.7:
+    resolution: {integrity: sha512-Lwv5W0Hk+uOW3kGnsU9GZoR1er1B7WQ5DSdonoNG+focTNeJbHW6vi6nBoX534VKI3/uwHebYzSw1fwY6a7mTw==}
+    peerDependencies:
+      '@types/react': '>=16'
+      dexie: ^3.2 || ^4.0.1-alpha
+      react: '>=16'
+
+  dexie@4.0.11:
+    resolution: {integrity: sha512-SOKO002EqlvBYYKQSew3iymBoN2EQ4BDw/3yprjh7kAfFzjBYkaMNa/pZvcA7HSWlcKSQb9XhPe3wKyQ0x4A8A==}
 
   didyoumean@1.2.2:
     resolution: {integrity: sha512-gxtyfqMg7GKyhQmb056K7M3xszy/myH8w+B4RT+QXBQsvAOdc3XymqDDPHx1BgPgsdAA5SIifona89YtRATDzw==}
@@ -2753,6 +2769,14 @@ snapshots:
   deep-is@0.1.4: {}
 
   define-lazy-prop@2.0.0: {}
+
+  dexie-react-hooks@1.1.7(@types/react@18.3.23)(dexie@4.0.11)(react@18.3.1):
+    dependencies:
+      '@types/react': 18.3.23
+      dexie: 4.0.11
+      react: 18.3.1
+
+  dexie@4.0.11: {}
 
   didyoumean@1.2.2: {}
 
