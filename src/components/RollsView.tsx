@@ -9,6 +9,7 @@ import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
 import PrintsView from './PrintsView';
 import DarkroomEmptyState from './DarkroomEmptyState';
+import SegmentedControl from './SegmentedControl';
 
 const RollsEmptyState = () => (
     <div className="text-center py-24 text-neutral-500">
@@ -62,7 +63,7 @@ const RollsView: React.FC = () => {
       ([entry]) => {
         setIsStudioHeaderSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
       },
-      { threshold: 0, rootMargin: "-65px 0px 0px 0px" }
+      { threshold: 0, rootMargin: "-80px 0px 0px 0px" } // 80px is h-20
     );
 
     const currentTriggerRef = observerTriggerRef.current;
@@ -145,7 +146,16 @@ const RollsView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full">
-      <div ref={observerTriggerRef} className="h-px w-full"></div>
+      <div ref={observerTriggerRef} className="flex items-center justify-between pt-4 pb-6">
+        <h1 className="text-3xl font-bold text-white">Studio</h1>
+        <div className="w-auto">
+          <SegmentedControl
+            options={studioSectionOptions}
+            value={studioSection}
+            onChange={(val) => setStudioSection(val as any)}
+          />
+        </div>
+      </div>
 
       <div className="relative flex-1">
         <div key={studioSection} className={animationClass}>
@@ -161,7 +171,7 @@ const RollsView: React.FC = () => {
 
           {studioSection === 'rolls' && (
             <div>
-              <div className="sticky top-[64px] z-20 pointer-events-none -mx-4 px-4 h-14">
+              <div className="sticky top-[80px] z-20 pointer-events-none -mx-4 px-4 h-14">
                 <div className="absolute top-0 right-4 h-full pointer-events-auto flex items-center gap-2">
                   <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
                   <RollsControls />
@@ -171,7 +181,7 @@ const RollsView: React.FC = () => {
                 {processedRolls.length > 0 ? (
                   groupEntries.map(([groupName, rolls]) => (
                     <div key={groupName}>
-                      <h3 className="sticky top-[64px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
+                      <h3 className="sticky top-[80px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
                         {groupName}
                       </h3>
                       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
