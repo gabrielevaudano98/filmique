@@ -28,7 +28,7 @@ const PostDevelopmentWizard: React.FC<PostDevelopmentWizardProps> = ({ roll, onC
       await addRollsToAlbum(selectedAlbumId, [roll.id]);
     }
     if (shouldCreatePost && caption.trim()) {
-      const coverPhotoUrl = roll.photos?.[0]?.url || roll.photos?.[0]?.local_path || null;
+      const coverPhotoUrl = roll.photos?.[0]?.url || null;
       await createPost(roll.id, caption.trim(), coverPhotoUrl, selectedAlbumId);
     }
     setIsLoading(false);
@@ -50,7 +50,7 @@ const PostDevelopmentWizard: React.FC<PostDevelopmentWizardProps> = ({ roll, onC
             {/* Photo Preview */}
             <div className="flex space-x-2 overflow-x-auto no-scrollbar pb-2">
               {roll.photos?.slice(0, 5).map(photo => (
-                <Image key={photo.id} src={`${photo.thumbnail_url || photo.local_path}${cacheBuster}`} alt="developed photo" className="w-20 h-20 rounded-md object-cover bg-gray-700 flex-shrink-0" />
+                <Image key={photo.id} src={`${photo.thumbnail_url}${cacheBuster}`} alt="developed photo" className="w-20 h-20 rounded-md object-cover bg-gray-700 flex-shrink-0" />
               ))}
               {roll.photos && roll.photos.length > 5 && (
                 <div className="w-20 h-20 rounded-md bg-gray-700 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">

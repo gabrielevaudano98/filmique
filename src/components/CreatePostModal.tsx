@@ -11,7 +11,7 @@ interface CreatePostModalProps {
 }
 
 const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRolls }) => {
-  const { createPost, albums, refetchAlbums, isOnline } = useAppContext();
+  const { createPost, albums, refetchAlbums } = useAppContext();
   const [step, setStep] = useState<'select_roll' | 'write_caption'>('select_roll');
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
   const [caption, setCaption] = useState('');
@@ -20,12 +20,9 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
   const [selectedAlbumId, setSelectedAlbumId] = useState<string | null>(null);
   const [showCreateAlbumModal, setShowCreateAlbumModal] = useState(false);
 
-  // For now, only synced rolls can be posted.
-  const postableRolls = unpostedRolls;
-
   useEffect(() => {
     if (selectedRoll && selectedRoll.photos && selectedRoll.photos.length > 0) {
-      setSelectedCoverUrl(selectedRoll.photos[0].url || selectedRoll.photos[0].local_path);
+      setSelectedCoverUrl(selectedRoll.photos[0].url);
     }
   }, [selectedRoll]);
 
@@ -44,7 +41,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
   };
 
   const handlePublish = async () => {
-    if (!selectedRoll || !caption.trim() || !isOnline) return;
+    if (!selectedRoll || !caption.trim()) return;
     setIsLoading(true);
     await createPost(selectedRoll.id, caption, selectedCoverUrl, selectedAlbumId);
     setIsLoading(false);
@@ -72,10 +69,10 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
           <div className="overflow-y-auto no-scrollbar p-5">
             {step === 'select_roll' && (
               <div className="space-y-3">
-                {postableRolls.length > 0 ? (
-                  postableRolls.map(roll => {
+                {unpostedRolls.length > 0 ? (
+                  unpostedRolls.map(roll => {
                     const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
-                    const thumbnailUrl = roll.photos?.[0]?.thumbnail_url || roll.photos?.[0]?.local_path || '';
+                    const thumbnailUrl = roll.photos?.[0]?.thumbnail_url || '';
                     return (
                       <button
                         key={roll.id}
@@ -102,15 +99,15 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                   <label className="text-sm font-semibold text-gray-300 mb-2 block">Select Cover Photo</label>
                   <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto rounded-lg p-1 bg-gray-900/50">
                     {selectedRoll.photos?.map(photo => {
-                      const photoSrc = photo.url || photo.local_path;
-                      const isSelected = selectedCoverUrl === photoSrc;
+                      const cacheBuster = selectedRoll.developed_at ? `?t=${new Date(selectedRoll.developed_at).getTime()}` : '';
+                      const isSelected = selectedCoverUrl === photo.url;
                       return (
                         <button 
                           key={photo.id}
-                          onClick={() => setSelectedCoverUrl(photoSrc)}
+                          onClick={() => setSelectedCoverUrl(photo.url)}
                           className={`relative aspect-square w-full rounded-md overflow-hidden border-2 transition-all ${isSelected ? 'border-amber-400' : 'border-transparent'}`}
                         >
-                          <Image src={photoSrc} alt="Photo preview" className="w-full h-full object-cover bg-gray-700" />
+                          <Image src={`${photo.thumbnail_url}${cacheBuster}`} alt="Photo preview" className="w-full h-full object-cover bg-gray-700" />
                           {isSelected && (
                             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                               <Check className="w-6 h-6 text-white" />
@@ -141,7 +138,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                         <option key={album.id} value={album.id}>{album.title}</option>
                       ))}
                     </select>
-                    <button type="button" onClick={() => setShowCreateAlbumModal(true)} className="flex items-center space-x-2 text-amber-400 text-sm font-semibold p-2 hover:bg-amber-500/10 rounded-lg self-start">
+                    <button type="button" onClick={() => setShowCreateAlbumModal(true)} className="flex items-center space-x-2 text-amber-400 text-sm font-semibold p-2 hover:bg-amber-500/10 rounded-lg">
                       <PlusCircle className="w-4 h-4" />
                       <span>Create New Album</span>
                     </button>
@@ -155,11 +152,11 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
             <div className="flex-shrink-0 p-5 border-t border-gray-700">
               <button
                 onClick={handlePublish}
-                disabled={isLoading || !caption.trim() || !isOnline}
+                disabled={isLoading || !caption.trim()}
                 className="w-full py-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 <Send className="w-4 h-4" />
-                <span>{isLoading ? 'Publishing...' : (isOnline ? 'Publish Post' : 'Offline - Cannot Post')}</span>
+                <span>{isLoading ? 'Publishing...' : 'Publish Post'}</span>
               </button>
             </div>
           )}

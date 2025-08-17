@@ -58,9 +58,8 @@ export interface Photo {
   id: string;
   user_id: string;
   roll_id: string;
-  url: string | null; // Can be null for local-only photos
-  thumbnail_url: string | null; // Can be null for local-only photos
-  local_path: string | null; // Path on the device's filesystem
+  url: string;
+  thumbnail_url: string;
   metadata: any;
   created_at: string;
 }
@@ -82,7 +81,6 @@ export interface Roll {
   aspect_ratio: string;
   is_archived: boolean;
   tags?: string[] | null;
-  sync_status: 'local' | 'syncing' | 'synced';
 }
 
 export interface Comment {
@@ -160,14 +158,6 @@ export interface UserBadge {
     description: string;
     icon_name: string;
   };
-}
-
-export interface PendingTransaction {
-  id: number;
-  type: string;
-  payload: any;
-  status: 'pending' | 'failed';
-  created_at: string;
 }
 
 export interface AppContextType {

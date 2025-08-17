@@ -10,11 +10,5 @@ export default defineConfig(async () => {
     optimizeDeps: {
       exclude: ['lucide-react'],
     },
-    server: {
-      fs: {
-        // Allow serving files from one level up to the project root
-        allow: ['..'],
-      },
-    },
   };
 });

@@ -52,7 +52,12 @@ export const fetchFilmStocks = async () => {
 
 // Rolls & Photos
 export const fetchAllRolls = async (userId: string) => {
+  const cacheKey = `rolls-${userId}`;
+  const cached = await getCache<Roll[]>(cacheKey);
+  if (cached) return { data: cached, error: null };
+
   const { data, error } = await supabase.from('rolls').select('*, photos(*), albums(title)').eq('user_id', userId).order('created_at', { ascending: false });
+  if (data) await setCache(cacheKey, data);
   return { data, error };
 };
 export const deleteRollById = async (rollId: string) => {
@@ -61,9 +66,10 @@ export const deleteRollById = async (rollId: string) => {
   if (!result.error && roll) await invalidateCache([`rolls-${roll.user_id}`, `albums-${roll.user_id}`, 'feed']);
   return result;
 };
-export const createRollRecord = async (roll: Roll) => {
-  const { photos, sync_status, ...rollData } = roll;
-  return supabase.from('rolls').insert(rollData);
+export const createNewRoll = async (userId: string, filmType: string, capacity: number, aspectRatio: string) => {
+  const result = await supabase.from('rolls').insert({ user_id: userId, film_type: filmType, capacity, aspect_ratio: aspectRatio }).select().single();
+  if (!result.error) await invalidateCache(`rolls-${userId}`);
+  return result;
 };
 export const updateRoll = async (rollId: string, data: any) => {
   const result = await supabase.from('rolls').update(data).eq('id', rollId).select('*, photos(*), albums(title)').single();
@@ -71,10 +77,7 @@ export const updateRoll = async (rollId: string, data: any) => {
   return result;
 };
 export const uploadPhotoToStorage = (path: string, blob: Blob) => supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg' });
-export const createPhotoRecord = (photo: Photo) => {
-    const { local_path, ...photoData } = photo;
-    return supabase.from('photos').insert(photoData);
-};
+export const createPhotoRecord = (userId: string, rollId: string, url: string, metadata: any) => supabase.from('photos').insert({ user_id: userId, roll_id: rollId, url, thumbnail_url: url, metadata });
 export const deletePhotosFromStorage = (paths: string[]) => supabase.storage.from('photos').remove(paths);
 export const getPhotosForRoll = (rollId: string) => supabase.from('photos').select('url').eq('roll_id', rollId);
 export const deletePhotosForRoll = (rollId: string) => supabase.from('photos').delete().eq('roll_id', rollId);
@@ -84,8 +87,8 @@ export const developRollPhotos = async (roll: Roll, filmStocks: FilmStock[]) => 
   if (!filmStock || !roll.photos) return;
 
   await Promise.all(roll.photos.map(async (photo: Photo) => {
-    const filteredBlob = await applyFilter(photo.url!, filmStock.preset);
-    const path = extractStoragePathFromPublicUrl(photo.url!);
+    const filteredBlob = await applyFilter(photo.url, filmStock.preset);
+    const path = extractStoragePathFromPublicUrl(photo.url);
     if (!path) throw new Error('Could not determine storage path for photo.');
     const { error } = await supabase.storage.from('photos').update(path, filteredBlob, {
       cacheControl: '3600',
