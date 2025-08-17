@@ -6,6 +6,7 @@ interface SegmentedControlProps {
     value: string; 
     icon: React.ElementType;
     colors: { from: string; to: string; shadow: string; };
+    description?: string;
   }[];
   value: string;
   onChange: (value: string) => void;
@@ -56,6 +57,7 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
             key={opt.value}
             onClick={() => onChange(opt.value)}
             className={buttonClasses}
+            aria-label={opt.label || opt.description || opt.value}
           >
             {Icon && <Icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : ''}`} />}
             {hasLabel && <span>{opt.label}</span>}
