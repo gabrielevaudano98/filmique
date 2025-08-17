@@ -30,12 +30,12 @@ const PhotoDetailModal: React.FC<PhotoDetailModalProps> = ({ photo, onClose, onS
     onShowInfo();
   };
 
-  const cacheBuster = `?t=${new Date().getTime()}`;
+  const imageSrc = photo.url || photo.local_path || '';
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-[60] p-4" onClick={onClose}>
       <div className="relative max-w-4xl max-h-[90vh] w-full h-full" onClick={e => e.stopPropagation()}>
-        <Image src={`${photo.url}${cacheBuster}`} alt="Full size view" className="w-full h-full object-contain" />
+        <Image src={imageSrc} alt="Full size view" className="w-full h-full object-contain" />
         <div className="absolute top-4 right-4 flex space-x-2">
           <button onClick={handleShowInfo} className="bg-gray-800/70 hover:bg-gray-700 text-white font-semibold p-3 rounded-full transition-colors">
             <Info className="w-6 h-6" />

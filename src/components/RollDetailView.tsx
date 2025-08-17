@@ -8,6 +8,7 @@ import PhotoInfoModal from './PhotoInfoModal';
 import TagInput from './TagInput';
 import { useDebounce } from '../hooks/useDebounce';
 import NegativePhoto from './NegativePhoto';
+import Image from './Image'; // Import the updated Image component
 
 const RollDetailView: React.FC = () => {
   const { 
@@ -148,7 +149,7 @@ const RollDetailView: React.FC = () => {
                   {selectedRoll.photos?.map((photo) => (
                     <button key={photo.id} onClick={() => setPhotoToView(photo)} className="w-40 h-40 flex-shrink-0 rounded-md overflow-hidden group bg-neutral-900">
                       <NegativePhoto
-                        src={photo.thumbnail_url}
+                        src={photo.url || photo.local_path || ''}
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     </button>

@@ -58,8 +58,9 @@ export interface Photo {
   id: string;
   user_id: string;
   roll_id: string;
-  url: string;
-  thumbnail_url: string;
+  url: string | null; // Can be null for local-only photos
+  thumbnail_url: string | null; // Can be null for local-only photos
+  local_path: string | null; // Path on the device's filesystem
   metadata: any;
   created_at: string;
 }
@@ -81,6 +82,7 @@ export interface Roll {
   aspect_ratio: string;
   is_archived: boolean;
   tags?: string[] | null;
+  sync_status: 'local' | 'syncing' | 'synced';
 }
 
 export interface Comment {
