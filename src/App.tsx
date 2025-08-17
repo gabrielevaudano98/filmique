@@ -24,10 +24,8 @@ import PostDevelopmentWizard from './components/PostDevelopmentWizard';
 import RollsSettingsView from './components/RollsSettingsView';
 import LibraryView from './components/LibraryView';
 import { Roll } from './types';
-import { useDatabase } from './hooks/useDatabase';
 
 function App() {
-  const { isDbInitialized, dbError } = useDatabase();
   const { 
     session, profile, isLoading, currentView, setCurrentView, authStep, 
     rollToConfirm, setRollToConfirm, 
@@ -99,14 +97,6 @@ function App() {
     putOnShelf(roll, title);
     setRollToConfirm(null);
   };
-
-  if (dbError) {
-    return <div className="min-h-screen bg-transparent flex items-center justify-center"><p className="text-red-400">Error: Could not initialize database.</p></div>;
-  }
-
-  if (!isDbInitialized) {
-    return <div className="min-h-screen bg-transparent flex items-center justify-center"><p className="text-white">Initializing local database...</p></div>;
-  }
 
   if (isLoading) {
     return <div className="min-h-screen bg-transparent flex items-center justify-center"><p className="text-white">Loading...</p></div>;
