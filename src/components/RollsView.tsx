@@ -115,7 +115,7 @@ const RollsView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="flex items-center justify-between mb-6 bg-neutral-800 -mx-4 -mt-4 px-4 pt-4 pb-6 border-b border-neutral-700/50">
+      <div className="flex items-center justify-between mb-6 bg-neutral-700 -mx-4 -mt-4 px-4 pt-4 pb-6 border-b border-neutral-800/50">
         <h1 className="text-3xl font-bold text-white">Studio</h1>
         <div className="w-auto">
           <SegmentedControl
