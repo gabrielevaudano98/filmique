@@ -34,7 +34,7 @@ const ExpandableSearch: React.FC<ExpandableSearchProps> = ({ searchTerm, onSearc
   return (
     <div className={`flex items-center justify-end transition-all duration-300 ease-in-out ${isExpanded ? 'w-full max-w-xs' : 'w-11'}`}>
       {isExpanded ? (
-        <div className="relative w-full">
+        <div className="relative w-full animate-slide-in-from-right" style={{ animationDuration: '300ms' }}>
           <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${isLight ? 'text-neutral-500' : 'text-gray-500'}`} />
           <input
             ref={inputRef}

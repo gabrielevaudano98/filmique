@@ -173,8 +173,8 @@ const RollsView: React.FC = () => {
 
           {studioSection === 'rolls' && (
             <div>
-              <div className="sticky top-[64px] z-20 flex justify-end pointer-events-none -mx-4 px-4 h-14 items-center">
-                <div className="pointer-events-auto flex items-center gap-2">
+              <div className="sticky top-[64px] z-20 pointer-events-none -mx-4 px-4 h-14">
+                <div className="absolute top-0 right-4 h-full pointer-events-auto flex items-center gap-2">
                   <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
                   <RollsControls />
                 </div>
