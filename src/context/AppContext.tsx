@@ -10,7 +10,6 @@ import * as api from '../services/api';
 import { Library, Clock, Printer } from 'lucide-react';
 import { Network } from '@capacitor/network';
 import { showInfoToast, showSuccessToast } from '../utils/toasts';
-import { LocalDB } from '../services/local-db';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -51,19 +50,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const rollsSettings = useRollsSettings();
 
   useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        await LocalDB.initialize();
-      } catch (e) {
-        console.error("Failed to initialize local database", e);
-        // In a real app, we might want to show a fatal error to the user here
-      }
-
+    const initializeNetworkListener = async () => {
       const status = await Network.getStatus();
       setIsOnline(status.connected);
 
       Network.addListener('networkStatusChange', (status) => {
         setIsOnline(currentIsOnline => {
+          // Only show a toast if the network status has actually changed
           if (status.connected !== currentIsOnline) {
             if (status.connected) {
               showSuccessToast("You're back online!");
@@ -76,7 +69,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       });
     };
 
-    initializeApp();
+    initializeNetworkListener();
 
     return () => {
       Network.removeAllListeners();
