@@ -3,7 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
 import RollCard from './RollCard';
-import { Film, Archive, Clock, Printer, Library } from 'lucide-react';
+import { Film, Archive } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
@@ -27,6 +27,14 @@ const ArchivedEmptyState = () => (
   </div>
 );
 
+function usePrevious<T>(value: T): T | undefined {
+  const ref = useRef<T>();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
 const RollsView: React.FC = () => {
   const { 
     developingRolls, completedRolls,
@@ -37,6 +45,18 @@ const RollsView: React.FC = () => {
   } = useAppContext();
 
   const headerRef = useRef<HTMLDivElement>(null);
+  const prevSection = usePrevious(studioSection);
+  const sectionOrder = useMemo(() => studioSectionOptions.map(opt => opt.value), [studioSectionOptions]);
+
+  const direction = useMemo(() => {
+    if (!prevSection) return 'right';
+    const prevIndex = sectionOrder.indexOf(prevSection);
+    const currentIndex = sectionOrder.indexOf(studioSection);
+    if (prevIndex === -1 || currentIndex === -1) return 'right';
+    return currentIndex > prevIndex ? 'left' : 'right';
+  }, [studioSection, prevSection, sectionOrder]);
+
+  const animationClass = direction === 'left' ? 'animate-slide-in-from-right' : 'animate-slide-in-from-left';
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -141,49 +161,51 @@ const RollsView: React.FC = () => {
         {activeSectionData && <p className="text-center text-sm text-neutral-400 pt-2 mb-6">{activeSectionData.description}</p>}
       </div>
 
-      <div className="relative flex-1">
-        {studioSection === 'darkroom' && (
-          <div key="darkroom" className="animate-slide-in-from-left">
-            {developingRolls.length > 0 ? (
-              <div className="space-y-3">
-                {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
-              </div>
-            ) : <DarkroomEmptyState />}
-          </div>
-        )}
-
-        {studioSection === 'rolls' && (
-          <div key="rolls" className="animate-slide-in-from-right">
-            <div className="sticky top-[64px] z-20 flex justify-end pointer-events-none -mx-4 px-4 h-14 items-center">
-              <div className="pointer-events-auto flex items-center gap-2">
-                <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-                <RollsControls />
-              </div>
+      <div className="relative flex-1 overflow-hidden">
+        <div key={studioSection} className={animationClass}>
+          {studioSection === 'darkroom' && (
+            <div>
+              {developingRolls.length > 0 ? (
+                <div className="space-y-3">
+                  {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
+                </div>
+              ) : <DarkroomEmptyState />}
             </div>
-            <div className="space-y-6 -mt-14">
-              {processedRolls.length > 0 ? (
-                groupEntries.map(([groupName, rolls]) => (
-                  <div key={groupName}>
-                    <h3 className="sticky top-[64px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
-                      {groupName}
-                    </h3>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
-                      {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
+          )}
+
+          {studioSection === 'rolls' && (
+            <div>
+              <div className="sticky top-[64px] z-20 flex justify-end pointer-events-none -mx-4 px-4 h-14 items-center">
+                <div className="pointer-events-auto flex items-center gap-2">
+                  <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+                  <RollsControls />
+                </div>
+              </div>
+              <div className="space-y-6 -mt-14">
+                {processedRolls.length > 0 ? (
+                  groupEntries.map(([groupName, rolls]) => (
+                    <div key={groupName}>
+                      <h3 className="sticky top-[64px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
+                        {groupName}
+                      </h3>
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
+                        {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
+                      </div>
                     </div>
-                  </div>
-                ))
-              ) : (
-                rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
-              )}
+                  ))
+                ) : (
+                  rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
-        {studioSection === 'prints' && (
-          <div key="prints" className="animate-fade-in">
-            <PrintsView />
-          </div>
-        )}
+          {studioSection === 'prints' && (
+            <div>
+              <PrintsView />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

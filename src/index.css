@@ -271,11 +271,11 @@
 
 /* Slide-in/out animations for view transitions */
 @keyframes slide-in-from-right {
-  from { transform: translateX(20px); opacity: 0; }
+  from { transform: translateX(30px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
 @keyframes slide-in-from-left {
-  from { transform: translateX(-20px); opacity: 0; }
+  from { transform: translateX(-30px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
 

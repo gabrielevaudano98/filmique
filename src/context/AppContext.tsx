@@ -32,9 +32,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
 
   const studioSectionOptions = [
-    { value: 'rolls', label: 'Rolls', icon: Library, description: 'Your collection of developed film.', colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' } },
-    { value: 'darkroom', label: 'Darkroom', icon: Clock, description: 'Develop your completed rolls.', colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' } },
-    { value: 'prints', label: 'Prints', icon: Printer, description: 'Order prints of your photos.', colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' } },
+    { value: 'rolls', icon: Library, description: 'Your collection of developed film.', colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' } },
+    { value: 'darkroom', icon: Clock, description: 'Develop your completed rolls.', colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' } },
+    { value: 'prints', icon: Printer, description: 'Order prints of your photos.', colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' } },
   ];
 
   // Modular Hooks
