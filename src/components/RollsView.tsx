@@ -9,7 +9,6 @@ import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
 import PrintsView from './PrintsView';
 import DarkroomEmptyState from './DarkroomEmptyState';
-import SegmentedControl from './SegmentedControl';
 
 const RollsEmptyState = () => (
     <div className="text-center py-24 text-neutral-500">
@@ -44,7 +43,7 @@ const RollsView: React.FC = () => {
     setIsStudioHeaderSticky,
   } = useAppContext();
 
-  const headerRef = useRef<HTMLDivElement>(null);
+  const observerTriggerRef = useRef<HTMLDivElement>(null);
   const prevSection = usePrevious(studioSection);
   const sectionOrder = useMemo(() => studioSectionOptions.map(opt => opt.value), [studioSectionOptions]);
 
@@ -66,10 +65,10 @@ const RollsView: React.FC = () => {
       { threshold: 0, rootMargin: "-65px 0px 0px 0px" }
     );
 
-    const currentHeaderRef = headerRef.current;
-    if (currentHeaderRef) observer.observe(currentHeaderRef);
+    const currentTriggerRef = observerTriggerRef.current;
+    if (currentTriggerRef) observer.observe(currentTriggerRef);
     return () => {
-      if (currentHeaderRef) observer.unobserve(currentHeaderRef);
+      if (currentTriggerRef) observer.unobserve(currentTriggerRef);
     };
   }, [setIsStudioHeaderSticky]);
 
@@ -146,18 +145,7 @@ const RollsView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full">
-      <div ref={headerRef} className="pb-4">
-        <div className="flex items-center justify-between bg-neutral-100/15 backdrop-blur-lg -mx-4 -mt-4 px-4 pt-4 pb-6 border-b border-white/10">
-          <h1 className="text-3xl font-bold text-white">Studio</h1>
-          <div className="w-auto">
-            <SegmentedControl
-              options={studioSectionOptions}
-              value={studioSection}
-              onChange={(val) => setStudioSection(val as any)}
-            />
-          </div>
-        </div>
-      </div>
+      <div ref={observerTriggerRef} className="h-px w-full"></div>
 
       <div className="relative flex-1">
         <div key={studioSection} className={animationClass}>

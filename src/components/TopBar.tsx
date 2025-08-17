@@ -12,15 +12,14 @@ const TopBar: React.FC = () => {
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const isStudioView = currentView === 'rolls';
-  const isStudioSticky = isStudioView && isStudioHeaderSticky;
 
   const BackButton = headerAction ? headerAction.icon : null;
 
   const headerClasses = `sticky top-0 z-40 transition-all duration-300 backdrop-blur-lg ${
-    isStudioSticky
-      ? 'bg-neutral-100/15 border-b border-white/10'
+    isStudioHeaderSticky
+      ? 'bg-neutral-800/80 border-b border-neutral-700/50'
       : isStudioView
-      ? ''
+      ? 'bg-transparent border-b border-transparent'
       : 'bg-neutral-900/80 border-b border-neutral-700/50'
   } ${!isTopBarVisible ? '-translate-y-full' : 'translate-y-0'}`;
   
@@ -31,12 +30,10 @@ const TopBar: React.FC = () => {
       className={headerClasses}
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
-      <div className="flex items-center justify-between h-16 px-4">
-        {isStudioSticky ? (
+      <div className={`flex items-center justify-between px-4 transition-all duration-300 ${isStudioHeaderSticky ? 'h-16' : isStudioView ? 'h-24' : 'h-20'}`}>
+        {isStudioView ? (
           <>
-            <div className="text-left">
-              <h1 className="text-lg font-bold text-white">Studio</h1>
-            </div>
+            <h1 className={`font-bold text-white transition-all duration-300 ${isStudioHeaderSticky ? 'text-xl' : 'text-3xl'}`}>Studio</h1>
             <div className="w-auto">
               <SegmentedControl
                 options={studioSectionOptions}
@@ -45,7 +42,7 @@ const TopBar: React.FC = () => {
               />
             </div>
           </>
-        ) : !isStudioView ? (
+        ) : (
           <>
             <div className="w-10">
               {headerAction && BackButton && (
@@ -63,7 +60,7 @@ const TopBar: React.FC = () => {
               onClick={() => setCurrentView('notifications')} 
             />
           </>
-        ) : null}
+        )}
       </div>
     </header>
   );
