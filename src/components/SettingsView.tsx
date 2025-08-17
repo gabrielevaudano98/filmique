@@ -155,6 +155,10 @@ const SettingsView: React.FC = () => {
             <span>Delete Account</span>
           </button>
         </div>
+
+        <div className="text-center text-gray-500 text-xs mt-8">
+          Version 0.0.4.69
+        </div>
       </div>
     </div>
   );
