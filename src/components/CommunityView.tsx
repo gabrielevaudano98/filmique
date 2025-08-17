@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Plus, User } from 'lucide-react';
+import { Plus, User, ArrowDown, Loader } from 'lucide-react';
+import { useSwipeable } from 'react-swipeable';
 import { useAppContext, Post } from '../context/AppContext';
 import CreatePostModal from './CreatePostModal';
 import RollPostCard from './RollPostCard';
@@ -26,13 +27,38 @@ const CommunityView: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState('discover');
 
   const [showFullStoryViewer, setShowFullStoryViewer] = useState(false);
-  const [postsForFullStoryViewer, setPostsForFullStoryViewer] = useState<Post[] | null>(null); // New state
+  const [postsForFullStoryViewer, setPostsForFullStoryViewer] = useState<Post[] | null>(null);
   const [initialStoryPostIndex, setInitialStoryPostIndex] = useState(0);
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [pullPosition, setPullPosition] = useState(0);
+  const PULL_THRESHOLD = 80;
 
   useEffect(() => {
     fetchFeed();
     fetchRecentStories();
   }, [fetchFeed, fetchRecentStories]);
+
+  const refreshHandlers = useSwipeable({
+    onSwiping: (event) => {
+      const mainScroller = document.getElementById('root');
+      if (event.dir === 'Down' && mainScroller && mainScroller.scrollTop === 0) {
+        setPullPosition(event.deltaY);
+      }
+    },
+    onSwiped: (event) => {
+      const mainScroller = document.getElementById('root');
+      if (event.dir === 'Down' && mainScroller && mainScroller.scrollTop === 0 && event.deltaY > PULL_THRESHOLD) {
+        setIsRefreshing(true);
+        Promise.all([fetchFeed(), fetchRecentStories()]).finally(() => {
+          setIsRefreshing(false);
+        });
+      }
+      setPullPosition(0);
+    },
+    preventScrollOnSwipe: true,
+    trackMouse: true,
+  });
 
   const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
   
@@ -85,7 +111,14 @@ const CommunityView: React.FC = () => {
   };
 
   return (
-    <div className="w-full text-gray-100 min-h-full">
+    <div {...refreshHandlers} className="w-full text-gray-100 min-h-full">
+      {/* Refresh Indicator */}
+      <div className="absolute top-[-60px] left-0 right-0 flex justify-center items-center transition-transform duration-200" style={{ transform: `translateY(${Math.min(pullPosition, PULL_THRESHOLD * 1.5)}px)` }}>
+        <div className="p-3 bg-neutral-800 rounded-full shadow-lg" style={{ opacity: Math.min(pullPosition / PULL_THRESHOLD, 1), transform: `rotate(${Math.min(pullPosition, PULL_THRESHOLD) * 2}deg)` }}>
+          {isRefreshing ? <Loader className="w-6 h-6 animate-spin text-white" /> : <ArrowDown className="w-6 h-6 text-white" />}
+        </div>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between pt-4 pb-6">
         <h1 className="text-3xl font-bold text-white">Community</h1>

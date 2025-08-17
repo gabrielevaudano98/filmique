@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import { useHaptics } from '../hooks/useHaptics';
 
 interface RangeSelectorProps {
   options: (string | number)[];
@@ -39,6 +40,7 @@ const getLineMarginClass = (opt: string | number): string => {
 
 const RangeSelector: React.FC<RangeSelectorProps> = ({ options, value, onChange, type }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const { selectionChanged } = useHaptics();
 
   // Effect to scroll to the active value when it changes (e.g., by click or initial load)
   useEffect(() => {
@@ -89,6 +91,7 @@ const RangeSelector: React.FC<RangeSelectorProps> = ({ options, value, onChange,
       const originalOption = options.find(opt => opt.toString() === closestOptionValue);
       if (originalOption !== undefined && originalOption !== value) { // Only call onChange if value actually changed
         onChange(originalOption);
+        selectionChanged();
       }
     }
   };

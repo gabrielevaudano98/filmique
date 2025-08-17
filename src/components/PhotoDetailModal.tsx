@@ -1,8 +1,9 @@
 import React from 'react';
-import { X, Download, Info } from 'lucide-react';
+import { X, Download, Info, Share as ShareIcon } from 'lucide-react';
 import { Photo } from '../context/AppContext';
 import { useAppContext } from '../context/AppContext';
 import Image from './Image';
+import { useNativeShare } from '../hooks/useNativeShare';
 
 interface PhotoDetailModalProps {
   photo: Photo;
@@ -12,10 +13,16 @@ interface PhotoDetailModalProps {
 
 const PhotoDetailModal: React.FC<PhotoDetailModalProps> = ({ photo, onClose, onShowInfo }) => {
   const { downloadPhoto } = useAppContext();
+  const { sharePhoto } = useNativeShare();
 
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
     downloadPhoto(photo);
+  };
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    sharePhoto(photo);
   };
 
   const handleShowInfo = (e: React.MouseEvent) => {
@@ -32,6 +39,9 @@ const PhotoDetailModal: React.FC<PhotoDetailModalProps> = ({ photo, onClose, onS
         <div className="absolute top-4 right-4 flex space-x-2">
           <button onClick={handleShowInfo} className="bg-gray-800/70 hover:bg-gray-700 text-white font-semibold p-3 rounded-full transition-colors">
             <Info className="w-6 h-6" />
+          </button>
+          <button onClick={handleShare} className="bg-gray-800/70 hover:bg-gray-700 text-white font-semibold p-3 rounded-full transition-colors">
+            <ShareIcon className="w-6 h-6" />
           </button>
           <button onClick={handleDownload} className="bg-gray-800/70 hover:bg-gray-700 text-white font-semibold p-3 rounded-full transition-colors">
             <Download className="w-6 h-6" />

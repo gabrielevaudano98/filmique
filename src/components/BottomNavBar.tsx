@@ -1,6 +1,8 @@
 import React from 'react';
 import { Camera, Film, Users, Library } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
+import { useHaptics } from '../hooks/useHaptics';
+import { ImpactStyle } from '@capacitor/haptics';
 
 const NavItem: React.FC<{
   view: string;
@@ -9,9 +11,16 @@ const NavItem: React.FC<{
   isActive: boolean;
   onClick: () => void;
 }> = ({ label, icon: Icon, isActive, onClick }) => {
+  const { impact } = useHaptics();
+
+  const handleClick = () => {
+    impact(ImpactStyle.Light);
+    onClick();
+  };
+
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       aria-label={label}
       className="relative flex flex-col items-center justify-center w-16 h-16 transition-colors group"
     >
@@ -36,6 +45,7 @@ const NavItem: React.FC<{
 
 const BottomNavBar: React.FC = () => {
   const { currentView, setCurrentView } = useAppContext();
+  const { impact } = useHaptics();
 
   const navItems = [
     { view: 'rolls', label: 'Rolls', icon: Film },
@@ -45,6 +55,11 @@ const BottomNavBar: React.FC = () => {
 
   const leftItems = navItems.slice(0, 1);
   const rightItems = navItems.slice(1, 3);
+
+  const handleCameraClick = () => {
+    impact(ImpactStyle.Light);
+    setCurrentView('camera');
+  };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-28 flex justify-center z-50 pointer-events-none pb-safe-b">
@@ -68,7 +83,7 @@ const BottomNavBar: React.FC = () => {
           {/* Camera Button */}
           <div className="relative w-24 h-24 flex items-center justify-center mx-1">
             <button
-              onClick={() => setCurrentView('camera')}
+              onClick={handleCameraClick}
               aria-label="Camera"
               className="absolute w-20 h-20 rounded-full bg-gradient-to-br from-brand-amber-start to-brand-amber-end camera-button-glow flex items-center justify-center transition-transform active:scale-95"
             >

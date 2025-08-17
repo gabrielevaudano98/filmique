@@ -6,6 +6,8 @@ import { UserProfile, Roll, Photo, FilmStock } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast, showWarningToast } from '../utils/toasts';
 import { filenameFromUrl } from '../utils/storage';
 import { isRollDeveloped } from '../utils/rollUtils';
+import { useHaptics } from './useHaptics';
+import { ImpactStyle, NotificationType } from '@capacitor/haptics';
 
 export const useRollsAndPhotos = (
   profile: UserProfile | null, 
@@ -19,6 +21,7 @@ export const useRollsAndPhotos = (
   const [rollToConfirm, setRollToConfirm] = useState<Roll | null>(null);
   const [isSavingPhoto, setIsSavingPhoto] = useState(false);
   const [developedRollForWizard, setDevelopedRollForWizard] = useState<Roll | null>(null);
+  const { impact, notification } = useHaptics();
 
   const refetchRolls = useCallback(async () => {
     if (!profile) return;
@@ -102,6 +105,7 @@ export const useRollsAndPhotos = (
       return;
     }
 
+    impact(ImpactStyle.Light);
     setIsSavingPhoto(true);
     const filePath = `${profile.id}/${activeRoll.id}/${Date.now()}.jpeg`;
     try {
@@ -128,7 +132,7 @@ export const useRollsAndPhotos = (
     } finally {
       setIsSavingPhoto(false);
     }
-  }, [profile, activeRoll, isSavingPhoto]);
+  }, [profile, activeRoll, isSavingPhoto, impact]);
 
   const sendToStudio = async (roll: Roll, title: string) => {
     const completedAt = new Date().toISOString();
@@ -177,12 +181,13 @@ export const useRollsAndPhotos = (
         setDevelopedRollForWizard(updatedRoll);
       }
       showSuccessToast('Roll developed successfully!');
+      notification(NotificationType.Success);
     } catch (error: any) {
       showErrorToast(error?.message || 'Failed to develop roll.');
     } finally {
       dismissToast(toastId);
     }
-  }, [profile, filmStocks]);
+  }, [profile, filmStocks, notification]);
 
   const updateRollTitle = useCallback(async (rollId: string, title: string) => {
     if (!profile) return false;
