@@ -1,6 +1,6 @@
 import React from 'react';
 import { Toaster, ToastBar, toast } from 'react-hot-toast';
-import { X, CheckCircle, AlertCircle } from 'lucide-react';
+import { X, CheckCircle, AlertCircle, Loader } from 'lucide-react';
 
 const ToastProvider: React.FC = () => {
   return (
@@ -45,6 +45,9 @@ const ToastProvider: React.FC = () => {
             primary: '#FF6B6B', // accent-coral
             secondary: '#0f1113', // neutral-800
           },
+        },
+        loading: {
+          icon: <Loader className="w-6 h-6 text-gray-400 animate-spin" />,
         },
       }}
     >
