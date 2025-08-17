@@ -5,6 +5,8 @@ import { Clock, Zap } from 'lucide-react';
 import NegativePhoto from './NegativePhoto';
 import FilmCanisterIcon from './FilmCanisterIcon';
 import { formatDuration } from '../utils/time';
+import { getPhotoAsWebViewPath } from '../utils/fileStorage';
+import { LocalPhoto } from '../integrations/db';
 
 const DEVELOPMENT_TIME_MS = 36 * 60 * 60 * 1000;
 
@@ -119,13 +121,17 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll }) => {
             />
           </div>
           {roll.photos && roll.photos.length > 0 ? (
-            roll.photos.map(photo => (
-              <NegativePhoto
-                key={photo.id}
-                src={`${photo.thumbnail_url}`}
-                className="h-24 w-auto rounded-sm object-cover bg-neutral-700 shrink-0"
-              />
-            ))
+            roll.photos.map(photo => {
+              const localPhoto = photo as LocalPhoto;
+              const imageSrc = localPhoto.url ? localPhoto.url : getPhotoAsWebViewPath(localPhoto.local_path!);
+              return (
+                <NegativePhoto
+                  key={photo.id}
+                  src={imageSrc}
+                  className="h-24 w-auto rounded-sm object-cover bg-neutral-700 shrink-0"
+                />
+              );
+            })
           ) : (
             <div className="h-24 flex items-center justify-center text-gray-400 text-sm px-4 shrink-0">
               No photos in this roll.

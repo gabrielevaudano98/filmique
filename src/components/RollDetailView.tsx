@@ -8,6 +8,8 @@ import PhotoInfoModal from './PhotoInfoModal';
 import TagInput from './TagInput';
 import { useDebounce } from '../hooks/useDebounce';
 import NegativePhoto from './NegativePhoto';
+import { getPhotoAsWebViewPath } from '../utils/fileStorage';
+import { LocalPhoto } from '../integrations/db';
 
 const RollDetailView: React.FC = () => {
   const { 
@@ -145,14 +147,18 @@ const RollDetailView: React.FC = () => {
                 </div>
                 {/* Photos */}
                 <div className="flex space-x-2 p-2">
-                  {selectedRoll.photos?.map((photo) => (
-                    <button key={photo.id} onClick={() => setPhotoToView(photo)} className="w-40 h-40 flex-shrink-0 rounded-md overflow-hidden group bg-neutral-900">
-                      <NegativePhoto
-                        src={photo.thumbnail_url}
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </button>
-                  ))}
+                  {selectedRoll.photos?.map((photo) => {
+                    const localPhoto = photo as LocalPhoto;
+                    const imageSrc = localPhoto.url ? localPhoto.url : getPhotoAsWebViewPath(localPhoto.local_path!);
+                    return (
+                      <button key={photo.id} onClick={() => setPhotoToView(photo)} className="w-40 h-40 flex-shrink-0 rounded-md overflow-hidden group bg-neutral-900">
+                        <NegativePhoto
+                          src={imageSrc}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </button>
+                    );
+                  })}
                 </div>
                 {/* Bottom Sprockets */}
                 <div className="flex px-2">

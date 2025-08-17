@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { FilmPreset } from '../types';
 import { applyFilter } from '../utils/imageProcessor';
+import { getPhotoAsBase64 } from '../utils/fileStorage';
 
 type HistogramData = { r: number[], g: number[], b: number[], l: number[] };
 
@@ -30,16 +31,20 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset, precomputedData
 
     const processImage = async () => {
       try {
-        let finalImageUrl = imageUrl;
+        let imageSource = imageUrl;
+        if (imageUrl.startsWith('capacitor://')) {
+          imageSource = await getPhotoAsBase64(imageUrl);
+        }
+
         if (preset) {
-          const blob = await applyFilter(imageUrl, preset);
+          const blob = await applyFilter(imageSource, preset);
           objectUrl = URL.createObjectURL(blob);
-          finalImageUrl = objectUrl;
+          imageSource = objectUrl;
         }
 
         const image = new Image();
         image.crossOrigin = 'Anonymous';
-        image.src = finalImageUrl;
+        image.src = imageSource;
 
         image.onload = () => {
           if (!isMounted) return;
@@ -127,8 +132,6 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset, precomputedData
 
       const { r, g, b, l } = histogramData;
       
-      // Use the peak of the luminance data to scale the graph.
-      // This ensures the histogram uses the full vertical space for better readability.
       const maxVal = Math.max(...l) || 1;
 
       const drawChannel = (data: number[], color: string, lineWidth: number) => {

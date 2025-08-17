@@ -10,6 +10,7 @@ import { isRollDeveloped } from '../utils/rollUtils';
 import { useHaptics } from './useHaptics';
 import { ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { db } from '../integrations/db';
+import { savePhoto, deleteRollDirectory } from '../utils/fileStorage';
 
 export const useRollsAndPhotos = (
   profile: UserProfile | null, 
@@ -28,15 +29,11 @@ export const useRollsAndPhotos = (
     [profile]
   );
 
-  // Refactored to prevent initialization errors during re-renders.
-  const activeRoll = useMemo(() => {
-    if (!allRolls) return null;
-    return allRolls.find(r => !r.is_completed) || null;
-  }, [allRolls]);
-
-  const completedRolls = useMemo(() => {
-    if (!allRolls) return [];
-    return allRolls.filter(r => r.is_completed);
+  const { activeRoll, completedRolls } = useMemo(() => {
+    if (!allRolls) return { activeRoll: null, completedRolls: [] };
+    const active = allRolls.find(r => !r.is_completed) || null;
+    const completed = allRolls.filter(r => r.is_completed);
+    return { activeRoll, completedRolls };
   }, [allRolls]);
 
   // Syncs data from Supabase down to the local Dexie DB.
@@ -45,10 +42,8 @@ export const useRollsAndPhotos = (
     const { data: cloudRolls, error } = await api.fetchAllRolls(profile.id);
     if (error || !cloudRolls) return;
 
-    // Dexie's bulkPut is smart: it inserts new records and updates existing ones.
     await db.rolls.bulkPut(cloudRolls as LocalRoll[]);
     
-    // We also need to sync photos for these rolls
     const allPhotos = cloudRolls.flatMap(roll => roll.photos || []);
     if (allPhotos.length > 0) {
       await db.photos.bulkPut(allPhotos as LocalPhoto[]);
@@ -76,19 +71,15 @@ export const useRollsAndPhotos = (
     
     const toastId = showLoadingToast('Purchasing film...');
     try {
-      // Credit deduction is server-authoritative and must happen online.
       const { error: updateError } = await api.updateProfile(profile.id, { credits: profile.credits - film.price });
       if (updateError) throw updateError;
 
       await refreshProfile();
 
-      // If there's an existing active roll, delete it locally.
-      // Fetch the current active roll directly from the DB to avoid stale closures.
       const userRolls = await db.rolls.where({ user_id: profile.id }).toArray();
       const currentActiveRoll = userRolls.find(r => !r.is_completed);
       if (currentActiveRoll) {
         await db.rolls.delete(currentActiveRoll.id);
-        // TODO: Queue a transaction to delete the old roll from Supabase.
       }
 
       const newRoll: LocalRoll = {
@@ -121,7 +112,6 @@ export const useRollsAndPhotos = (
     setIsSavingPhoto(true);
     
     try {
-      // Fetch the current active roll directly from the DB to ensure we have the latest state
       const currentActiveRoll = await db.rolls.where({ user_id: profile.id, is_completed: false }).first();
 
       if (!currentActiveRoll) {
@@ -136,15 +126,13 @@ export const useRollsAndPhotos = (
         return;
       }
 
-      // TODO: STEP 3 - Save imageBlob to local filesystem and get local_path.
-      // For now, we'll proceed with only the database record.
-      const local_path = `placeholder/${profile.id}/${currentActiveRoll.id}/${Date.now()}.jpeg`;
+      const fileUri = await savePhoto(imageBlob, profile.id, currentActiveRoll.id);
 
       const newPhoto: LocalPhoto = {
         id: crypto.randomUUID(),
         user_id: profile.id,
         roll_id: currentActiveRoll.id,
-        local_path,
+        local_path: fileUri,
         metadata,
         created_at: new Date().toISOString(),
       };
@@ -152,7 +140,6 @@ export const useRollsAndPhotos = (
       const newShotsUsed = currentActiveRoll.shots_used + 1;
       const isCompleted = newShotsUsed >= currentActiveRoll.capacity;
 
-      // Use a Dexie transaction to ensure both operations succeed or fail together.
       await db.transaction('rw', db.photos, db.rolls, async () => {
         await db.photos.add(newPhoto);
         await db.rolls.update(currentActiveRoll.id, { 
@@ -177,19 +164,16 @@ export const useRollsAndPhotos = (
   const sendToStudio = async (roll: Roll, title: string) => {
     const completedAt = new Date().toISOString();
     await db.rolls.update(roll.id, { title, completed_at: completedAt });
-    // TODO: Queue a transaction to update the roll in Supabase.
     showSuccessToast("Roll sent to the studio!");
   };
 
   const putOnShelf = async (roll: Roll, title: string) => {
     await db.rolls.update(roll.id, { title });
-    // TODO: Queue a transaction to update the roll in Supabase.
     showSuccessToast("Roll placed on your shelf.");
   };
 
   const developShelvedRoll = async (rollId: string) => {
     await db.rolls.update(rollId, { completed_at: new Date().toISOString() });
-    // TODO: Queue a transaction to update the roll in Supabase.
     showSuccessToast("Roll sent to the studio!");
   };
 
@@ -197,8 +181,6 @@ export const useRollsAndPhotos = (
     if (!profile) return;
     const toastId = showLoadingToast('Developing your film...');
     try {
-      // TODO: This needs to be refactored for offline.
-      // The image processing should happen locally, then get queued for upload.
       await api.developRollPhotos(roll, filmStocks);
       await db.rolls.update(roll.id, { developed_at: new Date().toISOString() });
       
@@ -216,13 +198,11 @@ export const useRollsAndPhotos = (
 
   const updateRollTitle = useCallback(async (rollId: string, title: string) => {
     await db.rolls.update(rollId, { title });
-    // TODO: Queue transaction
     return true;
   }, []);
 
   const updateRollTags = useCallback(async (rollId: string, tags: string[]) => {
     await db.rolls.update(rollId, { tags });
-    // TODO: Queue transaction
     showSuccessToast('Tags updated!');
     return true;
   }, []);
@@ -231,16 +211,16 @@ export const useRollsAndPhotos = (
     if (!profile) return;
     const toastId = showLoadingToast('Deleting roll...');
     try {
-      // Delete locally first for immediate UI feedback.
       await db.transaction('rw', db.rolls, db.photos, async () => {
         await db.rolls.delete(rollId);
         await db.photos.where('roll_id').equals(rollId).delete();
       });
+      
+      await deleteRollDirectory(profile.id, rollId);
+
       setSelectedRoll(null);
       showSuccessToast('Roll deleted from device.');
 
-      // TODO: Queue a transaction to delete everything from Supabase.
-      // For now, we'll call the API directly.
       await api.deleteRollById(rollId);
 
     } catch (error: any) {
@@ -251,7 +231,6 @@ export const useRollsAndPhotos = (
   }, [profile]);
 
   const downloadPhoto = useCallback(async (photo: Photo) => {
-    // This will need to be updated to read from local file storage first.
     try {
       const response = await fetch(photo.url!);
       saveAs(await response.blob(), filenameFromUrl(photo.url!));
@@ -262,7 +241,6 @@ export const useRollsAndPhotos = (
   }, []);
 
   const downloadRoll = useCallback(async (roll: Roll) => {
-    // This will need to be updated to read from local file storage.
     if (!roll.photos || roll.photos.length === 0) return;
     const toastId = showLoadingToast(`Zipping ${roll.photos.length} photos...`);
     try {
@@ -283,7 +261,6 @@ export const useRollsAndPhotos = (
   const archiveRoll = useCallback(async (rollId: string, archive: boolean) => {
     await db.rolls.update(rollId, { is_archived: archive });
     showSuccessToast(`Roll ${archive ? 'archived' : 'unarchived'}.`);
-    // TODO: Queue transaction
   }, []);
 
   return {

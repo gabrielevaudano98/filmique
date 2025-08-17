@@ -4,6 +4,8 @@ import { useAppContext } from '../context/AppContext';
 import { X, Check, PlusCircle } from 'lucide-react';
 import Image from './Image';
 import CreateAlbumModal from './CreateAlbumModal';
+import { getPhotoAsWebViewPath } from '../utils/fileStorage';
+import { LocalPhoto } from '../integrations/db';
 
 interface PostDevelopmentWizardProps {
   roll: Roll;
@@ -49,9 +51,13 @@ const PostDevelopmentWizard: React.FC<PostDevelopmentWizardProps> = ({ roll, onC
           <div className="overflow-y-auto no-scrollbar p-5 space-y-6">
             {/* Photo Preview */}
             <div className="flex space-x-2 overflow-x-auto no-scrollbar pb-2">
-              {roll.photos?.slice(0, 5).map(photo => (
-                <Image key={photo.id} src={`${photo.thumbnail_url}${cacheBuster}`} alt="developed photo" className="w-20 h-20 rounded-md object-cover bg-gray-700 flex-shrink-0" />
-              ))}
+              {roll.photos?.slice(0, 5).map(photo => {
+                const localPhoto = photo as LocalPhoto;
+                const imageSrc = localPhoto.url ? localPhoto.url : getPhotoAsWebViewPath(localPhoto.local_path!);
+                return (
+                  <Image key={photo.id} src={`${imageSrc}${cacheBuster}`} alt="developed photo" className="w-20 h-20 rounded-md object-cover bg-gray-700 flex-shrink-0" />
+                );
+              })}
               {roll.photos && roll.photos.length > 5 && (
                 <div className="w-20 h-20 rounded-md bg-gray-700 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                   +{roll.photos.length - 5}

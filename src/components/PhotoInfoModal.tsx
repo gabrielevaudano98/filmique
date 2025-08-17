@@ -2,6 +2,8 @@ import React from 'react';
 import { X, Film, Camera, Clock, ZoomIn, MapPin } from 'lucide-react';
 import { Photo, Roll } from '../types';
 import Histogram from './Histogram';
+import { getPhotoAsWebViewPath } from '../utils/fileStorage';
+import { LocalPhoto } from '../integrations/db';
 
 interface PhotoInfoModalProps {
   photo: Photo;
@@ -25,6 +27,8 @@ const PhotoInfoModal: React.FC<PhotoInfoModalProps> = ({ photo, roll, onClose })
     : 'N/A';
   
   const geolocation = photo.metadata?.geolocation;
+  const localPhoto = photo as LocalPhoto;
+  const imageSrc = localPhoto.url ? localPhoto.url : getPhotoAsWebViewPath(localPhoto.local_path!);
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-end z-[70]" onClick={onClose}>
@@ -42,7 +46,7 @@ const PhotoInfoModal: React.FC<PhotoInfoModalProps> = ({ photo, roll, onClose })
         <div className="overflow-y-auto p-6 space-y-8 no-scrollbar">
           <div>
             <h3 className="text-lg font-semibold text-brand-amber-start mb-4">Color Analysis</h3>
-            <Histogram imageUrl={photo.url} />
+            <Histogram imageUrl={imageSrc} />
           </div>
 
           <div>
