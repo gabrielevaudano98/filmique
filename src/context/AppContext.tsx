@@ -55,12 +55,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setIsOnline(status.connected);
 
       Network.addListener('networkStatusChange', (status) => {
-        setIsOnline(status.connected);
-        if (status.connected) {
-          showSuccessToast("You're back online!");
-        } else {
-          showInfoToast("You've gone offline. Some features may be unavailable.");
-        }
+        setIsOnline(currentIsOnline => {
+          // Only show a toast if the network status has actually changed
+          if (status.connected !== currentIsOnline) {
+            if (status.connected) {
+              showSuccessToast("You're back online!");
+            } else {
+              showInfoToast("You've gone offline. Some features may be unavailable.");
+            }
+          }
+          return status.connected;
+        });
       });
     };
 
