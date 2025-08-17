@@ -28,14 +28,6 @@ const ArchivedEmptyState = () => (
   </div>
 );
 
-function usePrevious<T>(value: T): T | undefined {
-  const ref = useRef<T>();
-  useEffect(() => {
-    ref.current = value;
-  });
-  return ref.current;
-}
-
 const RollsView: React.FC = () => {
   const { 
     developingRolls, completedRolls,
@@ -45,19 +37,11 @@ const RollsView: React.FC = () => {
     setIsStudioHeaderSticky,
   } = useAppContext();
 
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isSwiping, setIsSwiping] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
   const observerTriggerRef = useRef<HTMLDivElement>(null);
-  const prevSection = usePrevious(studioSection);
   const sectionOrder = useMemo(() => studioSectionOptions.map(opt => opt.value), [studioSectionOptions]);
-
-  const direction = useMemo(() => {
-    if (!prevSection) return 'right';
-    const prevIndex = sectionOrder.indexOf(prevSection);
-    const currentIndex = sectionOrder.indexOf(studioSection);
-    if (prevIndex === -1 || currentIndex === -1) return 'right';
-    return currentIndex > prevIndex ? 'left' : 'right';
-  }, [studioSection, prevSection, sectionOrder]);
-
-  const animationClass = direction === 'left' ? 'animate-slide-in-from-right' : 'animate-slide-in-from-left';
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -155,11 +139,83 @@ const RollsView: React.FC = () => {
   };
 
   const swipeHandlers = useSwipeable({
-      onSwipedLeft: () => handleSwipe('left'),
-      onSwipedRight: () => handleSwipe('right'),
+      onSwiping: (event) => {
+        if (!containerRef.current) return;
+        const currentIndex = sectionOrder.indexOf(studioSection);
+        if ((currentIndex === 0 && event.dir === 'Right') || (currentIndex === sectionOrder.length - 1 && event.dir === 'Left')) {
+          const resistance = 1 + (Math.abs(event.deltaX) / containerRef.current.offsetWidth) * 2;
+          setSwipeOffset(event.deltaX / resistance);
+          return;
+        }
+        setIsSwiping(true);
+        setSwipeOffset(event.deltaX);
+      },
+      onSwiped: (event) => {
+        setIsSwiping(false);
+        const viewWidth = containerRef.current?.offsetWidth || window.innerWidth;
+        const swipeThreshold = viewWidth / 4;
+        const velocityThreshold = 0.3;
+
+        if (event.dir === 'Left' && (Math.abs(event.deltaX) > swipeThreshold || event.velocity > velocityThreshold)) {
+            handleSwipe('left');
+        } else if (event.dir === 'Right' && (Math.abs(event.deltaX) > swipeThreshold || event.velocity > velocityThreshold)) {
+            handleSwipe('right');
+        }
+        
+        setSwipeOffset(0);
+      },
       preventScrollOnSwipe: true,
       trackMouse: true,
   });
+
+  const renderSectionContent = (section: 'rolls' | 'darkroom' | 'prints') => {
+    switch (section) {
+      case 'darkroom':
+        return developingRolls.length > 0 ? (
+          <div className="space-y-3">
+            {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
+          </div>
+        ) : <DarkroomEmptyState />;
+      
+      case 'rolls':
+        return (
+          <div>
+            <div className="sticky top-[80px] z-20 pointer-events-none -mx-4 px-4 h-14">
+              <div className="absolute top-0 right-4 h-full pointer-events-auto flex items-center gap-2">
+                <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+                <RollsControls />
+              </div>
+            </div>
+            <div className="space-y-6 -mt-14">
+              {processedRolls.length > 0 ? (
+                groupEntries.map(([groupName, rolls]) => (
+                  <div key={groupName}>
+                    <h3 className="sticky top-[80px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-800/60 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
+                      {groupName}
+                    </h3>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
+                      {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
+              )}
+            </div>
+          </div>
+        );
+
+      case 'prints':
+        return <PrintsView />;
+      
+      default:
+        return null;
+    }
+  };
+
+  const currentIndex = sectionOrder.indexOf(studioSection);
+  const containerWidth = containerRef.current?.offsetWidth || 0;
+  const transformX = -currentIndex * containerWidth + swipeOffset;
 
   return (
     <div className="flex flex-col w-full">
@@ -169,55 +225,28 @@ const RollsView: React.FC = () => {
           <SegmentedControl
             options={studioSectionOptions}
             value={studioSection}
-            onChange={(val) => setStudioSection(val as any)}
+            onChange={(val) => {
+              setSwipeOffset(0);
+              setStudioSection(val as any);
+            }}
           />
         </div>
       </div>
 
-      <div {...swipeHandlers} className="relative flex-1">
-        <div key={studioSection} className={animationClass}>
-          {studioSection === 'darkroom' && (
-            <div>
-              {developingRolls.length > 0 ? (
-                <div className="space-y-3">
-                  {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
-                </div>
-              ) : <DarkroomEmptyState />}
+      <div ref={containerRef} {...swipeHandlers} className="relative flex-1 overflow-hidden">
+        <div
+          className="flex h-full"
+          style={{
+            width: `${sectionOrder.length * 100}%`,
+            transform: `translateX(${transformX}px)`,
+            transition: isSwiping ? 'none' : 'transform 0.4s cubic-bezier(0.2, 1, 0.35, 1)',
+          }}
+        >
+          {sectionOrder.map(section => (
+            <div key={section} className="w-full h-full flex-shrink-0" style={{ width: `${100 / sectionOrder.length}%` }}>
+              {renderSectionContent(section as any)}
             </div>
-          )}
-
-          {studioSection === 'rolls' && (
-            <div>
-              <div className="sticky top-[80px] z-20 pointer-events-none -mx-4 px-4 h-14">
-                <div className="absolute top-0 right-4 h-full pointer-events-auto flex items-center gap-2">
-                  <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-                  <RollsControls />
-                </div>
-              </div>
-              <div className="space-y-6 -mt-14">
-                {processedRolls.length > 0 ? (
-                  groupEntries.map(([groupName, rolls]) => (
-                    <div key={groupName}>
-                      <h3 className="sticky top-[80px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-800/60 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
-                        {groupName}
-                      </h3>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
-                        {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
-                )}
-              </div>
-            </div>
-          )}
-
-          {studioSection === 'prints' && (
-            <div>
-              <PrintsView />
-            </div>
-          )}
+          ))}
         </div>
       </div>
     </div>
