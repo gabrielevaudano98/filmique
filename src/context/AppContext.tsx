@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
-import { PushNotifications } from '@capacitor/push-notifications';
 import { AppContextType, FilmStock } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileData } from '../hooks/useProfileData';
@@ -51,50 +50,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const social = useSocial(auth.profile, isOnline);
   const albumsData = useAlbums(auth.profile);
   const rollsSettings = useRollsSettings();
-
-  useEffect(() => {
-    const initializePushNotifications = async () => {
-      if (!Capacitor.isNativePlatform()) return;
-
-      let permStatus = await PushNotifications.checkPermissions();
-
-      if (permStatus.receive === 'prompt') {
-        permStatus = await PushNotifications.requestPermissions();
-      }
-
-      if (permStatus.receive !== 'granted') {
-        console.warn('User denied push notifications permission.');
-        return;
-      }
-
-      await PushNotifications.register();
-    };
-
-    if (auth.session) {
-      initializePushNotifications();
-    }
-
-    PushNotifications.addListener('registration', (token) => {
-      console.info('Push registration success, token:', token.value);
-    });
-
-    PushNotifications.addListener('registrationError', (error) => {
-      console.error('Error on registration:', error);
-    });
-
-    PushNotifications.addListener('pushNotificationReceived', (notification) => {
-      showInfoToast(notification.body || 'You have a new notification!');
-      profileData.fetchNotifications();
-    });
-
-    PushNotifications.addListener('pushNotificationActionPerformed', () => {
-      setCurrentView('notifications');
-    });
-
-    return () => {
-      PushNotifications.removeAllListeners();
-    };
-  }, [auth.session, profileData.fetchNotifications]);
 
   useEffect(() => {
     const initializeNetworkListener = async () => {
