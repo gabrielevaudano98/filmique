@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import NotificationsBell from './NotificationsBell';
+import SegmentedControl from './SegmentedControl';
 
 const TopBar: React.FC = () => {
   const { 
@@ -16,8 +17,10 @@ const TopBar: React.FC = () => {
   const BackButton = headerAction ? headerAction.icon : null;
 
   const headerClasses = `sticky top-0 z-40 transition-all duration-300 backdrop-blur-lg ${
-    isStudioView
-      ? 'bg-neutral-100/15'
+    isStudioSticky
+      ? 'bg-neutral-100/15 border-b border-white/10'
+      : isStudioView
+      ? ''
       : 'bg-neutral-900/80 border-b border-neutral-700/50'
   } ${!isTopBarVisible ? '-translate-y-full' : 'translate-y-0'}`;
   
@@ -34,22 +37,15 @@ const TopBar: React.FC = () => {
             <div className="text-left">
               <h1 className="text-lg font-bold text-white">Studio</h1>
             </div>
-            <div className="flex items-center space-x-3">
-              {studioSectionOptions.map(opt => {
-                const Icon = opt.icon;
-                return (
-                  <button 
-                    key={opt.value} 
-                    onClick={() => setStudioSection(opt.value as any)}
-                    className={`p-3 rounded-full transition-colors ${studioSection === opt.value ? 'bg-white/10 text-white' : 'text-neutral-400 hover:text-white'}`}
-                  >
-                    <Icon className="w-5 h-5" />
-                  </button>
-                );
-              })}
+            <div className="w-auto">
+              <SegmentedControl
+                options={studioSectionOptions}
+                value={studioSection}
+                onChange={(val) => setStudioSection(val as any)}
+              />
             </div>
           </>
-        ) : (
+        ) : !isStudioView ? (
           <>
             <div className="w-10">
               {headerAction && BackButton && (
@@ -67,7 +63,7 @@ const TopBar: React.FC = () => {
               onClick={() => setCurrentView('notifications')} 
             />
           </>
-        )}
+        ) : null}
       </div>
     </header>
   );
