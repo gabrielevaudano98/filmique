@@ -14,16 +14,16 @@ import SegmentedControl from './SegmentedControl';
 const RollsEmptyState = () => (
     <div className="text-center py-24 text-neutral-500">
       <Film className="w-16 h-16 mx-auto mb-4" />
-      <h3 className="text-xl font-bold text-white">Your Shelf is Empty</h3>
-      <p className="mt-2">Developed rolls will appear here, ready to be viewed and organized.</p>
+      <h3 className="text-xl font-bold text-black">Your Shelf is Empty</h3>
+      <p className="mt-2 text-neutral-600">Developed rolls will appear here, ready to be viewed and organized.</p>
     </div>
 );
 
 const ArchivedEmptyState = () => (
   <div className="text-center py-24 text-neutral-500">
     <Archive className="w-16 h-16 mx-auto mb-4" />
-    <h3 className="text-xl font-bold text-white">No Archived Rolls</h3>
-    <p className="mt-2">You can archive rolls from their detail page to store them here.</p>
+    <h3 className="text-xl font-bold text-black">No Archived Rolls</h3>
+    <p className="mt-2 text-neutral-600">You can archive rolls from their detail page to store them here.</p>
   </div>
 );
 
@@ -114,8 +114,8 @@ const RollsView: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col w-full">
-      <div className="flex items-center justify-between mb-6 bg-gradient-to-b from-neutral-50 to-neutral-200 -mx-4 -mt-4 px-4 pt-4 pb-6 border-b border-neutral-300/80">
+    <div className="flex flex-col w-full bg-neutral-100 -mx-4 -mt-4">
+      <div className="flex items-center justify-between mb-6 bg-gradient-to-b from-neutral-50 to-neutral-200/80 backdrop-blur-lg px-4 pt-4 pb-6 border-b border-neutral-300/80">
         <h1 className="text-3xl font-bold text-black">Studio</h1>
         <div className="w-auto">
           <SegmentedControl
@@ -127,7 +127,7 @@ const RollsView: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative flex-1">
+      <div className="relative flex-1 px-4">
         {activeSection === 'darkroom' && (
           <div key="darkroom" className="animate-slide-in-from-left">
             {developingRolls.length > 0 ? (
@@ -150,11 +150,11 @@ const RollsView: React.FC = () => {
               {processedRolls.length > 0 ? (
                 groupEntries.map(([groupName, rolls]) => (
                   <div key={groupName}>
-                    <h3 className="sticky top-[64px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
+                    <h3 className="sticky top-[64px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-black bg-neutral-100/80 backdrop-blur-lg border-y border-neutral-300/50 pr-[150px]">
                       {groupName}
                     </h3>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
-                      {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
+                      {rolls.map(roll => <RollCard key={roll.id} roll={roll} theme="light" />)}
                     </div>
                   </div>
                 ))
