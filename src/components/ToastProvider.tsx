@@ -1,6 +1,6 @@
 import React from 'react';
 import { Toaster, ToastBar, toast } from 'react-hot-toast';
-import { X } from 'lucide-react';
+import { X, CheckCircle, AlertCircle } from 'lucide-react';
 
 const ToastProvider: React.FC = () => {
   return (
@@ -33,12 +33,14 @@ const ToastProvider: React.FC = () => {
           fontSize: '14px',
         },
         success: {
+          icon: <CheckCircle className="w-6 h-6 text-accent-teal" />,
           iconTheme: {
             primary: '#2FD1B0', // accent-teal
             secondary: '#0f1113', // neutral-800
           },
         },
         error: {
+          icon: <AlertCircle className="w-6 h-6 text-accent-coral" />,
           iconTheme: {
             primary: '#FF6B6B', // accent-coral
             secondary: '#0f1113', // neutral-800
