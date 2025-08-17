@@ -5,6 +5,10 @@ import './index.css';
 import { AppProvider } from './context/AppContext';
 import ToastProvider from './components/ToastProvider.tsx';
 import { defineCustomElements as jeepSqlite } from 'jeep-sqlite/loader';
+import jeepSqliteWasm from 'jeep-sqlite/dist/jeep-sqlite/sql-wasm.wasm?url';
+
+// Set the path to the wasm file before initializing
+(window as any).JEET_SQLITE_WASM_PATH = jeepSqliteWasm;
 
 // Initialize jeep-sqlite for web platform
 jeepSqlite(window);
