@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { App as CapacitorApp } from '@capacitor/app';
 import CameraView from './components/CameraView';
 import RollsView from './components/RollsView';
 import CommunityView from './components/CommunityView';
@@ -23,12 +25,77 @@ import { Roll } from './types';
 
 function App() {
   const { 
-    session, profile, isLoading, currentView, authStep, 
+    session, profile, isLoading, currentView, setCurrentView, authStep, 
     rollToConfirm, setRollToConfirm, 
     sendToStudio, putOnShelf,
     developedRollForWizard, setDevelopedRollForWizard,
-    isRollsSettingsOpen
+    isRollsSettingsOpen, setIsRollsSettingsOpen,
+    setSelectedRoll, setSelectedAlbum
   } = useAppContext();
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const handleBackButton = () => {
+      // Priority: Close modals first, then navigate back through views.
+      if (isRollsSettingsOpen) {
+        setIsRollsSettingsOpen(false);
+        return;
+      }
+      if (developedRollForWizard) {
+        setDevelopedRollForWizard(null);
+        return;
+      }
+      if (rollToConfirm) {
+        setRollToConfirm(null);
+        return;
+      }
+
+      switch (currentView) {
+        case 'rollDetail':
+          setSelectedRoll(null);
+          setCurrentView('rolls');
+          break;
+        case 'albumDetail':
+          setSelectedAlbum(null);
+          setCurrentView('profile');
+          break;
+        case 'settings':
+          setCurrentView('profile');
+          break;
+        case 'notifications':
+          setCurrentView('community');
+          break;
+        case 'uncategorizedRolls':
+          setCurrentView('rolls');
+          break;
+        case 'camera':
+          setCurrentView('rolls');
+          break;
+        default:
+          // On main tab views, do nothing to prevent exiting the app.
+          console.log("Back button pressed on main view. Preventing exit.");
+          break;
+      }
+    };
+
+    const listenerPromise = CapacitorApp.addListener('backButton', handleBackButton);
+
+    return () => {
+      listenerPromise.then(listener => listener.remove());
+    };
+  }, [
+    isRollsSettingsOpen,
+    developedRollForWizard,
+    rollToConfirm,
+    currentView,
+    setIsRollsSettingsOpen,
+    setDevelopedRollForWizard,
+    setRollToConfirm,
+    setCurrentView,
+    setSelectedRoll,
+    setSelectedAlbum
+  ]);
 
   const renderCurrentView = () => {
     switch (currentView) {

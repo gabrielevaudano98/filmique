@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
@@ -144,6 +145,22 @@ const RollsView: React.FC = () => {
 
   const groupEntries = Object.entries(groupedRolls);
 
+  const handleSwipe = (direction: 'left' | 'right') => {
+    const currentIndex = sectionOrder.indexOf(studioSection);
+    if (direction === 'left' && currentIndex < sectionOrder.length - 1) {
+        setStudioSection(sectionOrder[currentIndex + 1] as any);
+    } else if (direction === 'right' && currentIndex > 0) {
+        setStudioSection(sectionOrder[currentIndex - 1] as any);
+    }
+  };
+
+  const swipeHandlers = useSwipeable({
+      onSwipedLeft: () => handleSwipe('left'),
+      onSwipedRight: () => handleSwipe('right'),
+      preventScrollOnSwipe: true,
+      trackMouse: true,
+  });
+
   return (
     <div className="flex flex-col w-full">
       <div ref={observerTriggerRef} className="flex items-center justify-between pt-4 pb-6">
@@ -157,7 +174,7 @@ const RollsView: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative flex-1">
+      <div {...swipeHandlers} className="relative flex-1">
         <div key={studioSection} className={animationClass}>
           {studioSection === 'darkroom' && (
             <div>
