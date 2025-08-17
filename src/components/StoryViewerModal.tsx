@@ -33,15 +33,15 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
     if (timerRef.current) clearTimeout(timerRef.current);
     if (progressRef.current) {
       progressRef.current.style.transition = 'none';
-      progressRef.current.style.width = '0%';
+      progressRef.current.style.transform = 'scaleX(0)';
     }
 
     if (!isPaused) {
       // Force a reflow to restart the CSS transition
       setTimeout(() => {
         if (progressRef.current) {
-          progressRef.current.style.transition = 'width 5s linear';
-          progressRef.current.style.width = '100%';
+          progressRef.current.style.transition = 'transform 5s linear';
+          progressRef.current.style.transform = 'scaleX(1)';
         }
       }, 50);
 
@@ -93,8 +93,8 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
             {Array.from({ length: totalItems }).map((_, index) => (
               <div key={index} className="h-1 flex-1 bg-white/30 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-white"
-                  style={{ width: index < currentIndex + 1 ? '100%' : '0%' }}
+                  className="h-full bg-white origin-left"
+                  style={{ transform: `scaleX(${index < currentIndex + 1 ? 1 : 0})` }}
                   ref={index === currentIndex + 1 ? progressRef : null}
                 />
               </div>

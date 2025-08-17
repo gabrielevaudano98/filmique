@@ -95,8 +95,8 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll }) => {
         </div>
         <div className="w-full bg-neutral-700 rounded-full h-1.5">
           <div
-            className="bg-cyan-400 h-1.5 rounded-full transition-all duration-1000"
-            style={{ width: `${progress}%` }}
+            className="bg-cyan-400 h-1.5 rounded-full transition-transform duration-1000 origin-left"
+            style={{ transform: `scaleX(${progress / 100})` }}
           ></div>
         </div>
       </div>

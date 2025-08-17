@@ -140,10 +140,10 @@ const ChallengesView: React.FC = () => {
                         </div>
                         <div className="bg-gray-700 rounded-full h-2">
                           <div 
-                            className={`h-2 rounded-full transition-all duration-300 ${
+                            className={`h-2 rounded-full transition-transform duration-300 origin-left ${
                               isComplete ? 'bg-green-400' : 'bg-purple-400'
                             }`}
-                            style={{ width: `${progress}%` }}
+                            style={{ transform: `scaleX(${progress / 100})` }}
                           ></div>
                         </div>
                       </div>

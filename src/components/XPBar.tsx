@@ -22,8 +22,8 @@ const XPBar: React.FC<XPBarProps> = ({ xp, level }) => {
       </div>
       <div className="w-full bg-gray-700 rounded-full h-2.5">
         <div
-          className="bg-amber-400 h-2.5 rounded-full transition-all duration-500"
-          style={{ width: `${progress}%` }}
+          className="bg-amber-400 h-2.5 rounded-full transition-transform duration-500 origin-left"
+          style={{ transform: `scaleX(${progress / 100})` }}
         ></div>
       </div>
     </div>
