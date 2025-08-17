@@ -10,7 +10,7 @@ interface PostViewProps {
 }
 
 const PostView: React.FC<PostViewProps> = ({ post }) => {
-  const { profile, handleLike, addComment, deleteComment, setCurrentView, setSelectedAlbum } = useAppContext();
+  const { profile, handleLike, addComment, deleteComment, setCurrentView, setSelectedAlbum, isOnline } = useAppContext();
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
@@ -141,7 +141,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
       <div className="p-4 flex flex-col space-y-3">
         {/* Action Buttons */}
         <div className="flex items-center space-x-4">
-          <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className={`flex items-center space-x-2 transition-colors rounded-lg ${post.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'}`}>
+          <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} disabled={!isOnline} className={`flex items-center space-x-2 transition-colors rounded-lg ${post.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'} disabled:text-gray-600 disabled:cursor-not-allowed`}>
             <Heart className={`w-6 h-6 transition-transform duration-200 ${post.isLiked ? 'fill-current scale-110' : ''}`} />
           </button>
           <button className="flex items-center space-x-2 text-gray-400 hover:text-white">
@@ -177,7 +177,8 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
             {latestComment.user_id === profile.id && (
               <button 
                 onClick={() => deleteComment(latestComment.id)}
-                className="p-1 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                disabled={!isOnline}
+                className="p-1 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity disabled:text-gray-600 disabled:cursor-not-allowed"
                 aria-label="Delete comment"
               >
                 <Trash2 className="w-3 h-3" />
@@ -193,11 +194,12 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
             type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder="Add a comment..."
+            placeholder={isOnline ? "Add a comment..." : "Commenting is disabled offline"}
             className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm"
+            disabled={!isOnline}
           />
           {commentText.trim() && (
-            <button type="submit" disabled={isSubmittingComment} className="text-amber-400 font-bold text-sm disabled:text-gray-500 transition-colors">
+            <button type="submit" disabled={isSubmittingComment || !isOnline} className="text-amber-400 font-bold text-sm disabled:text-gray-500 transition-colors">
               {isSubmittingComment ? 'Posting...' : 'Post'}
             </button>
           )}

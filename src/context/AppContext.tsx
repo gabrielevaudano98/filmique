@@ -8,6 +8,8 @@ import { useAlbums } from '../hooks/useAlbums';
 import { useRollsSettings } from '../hooks/useRollsSettings';
 import * as api from '../services/api';
 import { Library, Clock, Printer } from 'lucide-react';
+import { Network } from '@capacitor/network';
+import { showInfoToast, showSuccessToast } from '../utils/toasts';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -28,6 +30,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [studioSection, setStudioSection] = useState<'rolls' | 'darkroom' | 'prints'>('rolls');
   const [isStudioHeaderSticky, setIsStudioHeaderSticky] = useState(false);
   const [isRollsSettingsOpen, setIsRollsSettingsOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState(true);
 
   // Data State
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
@@ -45,6 +48,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const social = useSocial(auth.profile);
   const albumsData = useAlbums(auth.profile);
   const rollsSettings = useRollsSettings();
+
+  useEffect(() => {
+    const initializeNetworkListener = async () => {
+      const status = await Network.getStatus();
+      setIsOnline(status.connected);
+
+      Network.addListener('networkStatusChange', (status) => {
+        setIsOnline(status.connected);
+        if (status.connected) {
+          showSuccessToast("You're back online!");
+        } else {
+          showInfoToast("You've gone offline. Some features may be unavailable.");
+        }
+      });
+    };
+
+    initializeNetworkListener();
+
+    return () => {
+      Network.removeAllListeners();
+    };
+  }, []);
 
   useEffect(() => {
     const getFilmStocks = async () => {
@@ -100,7 +125,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     studioSectionOptions,
     isRollsSettingsOpen,
     setIsRollsSettingsOpen,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, isRollsSettingsOpen]);
+    isOnline,
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, isRollsSettingsOpen, isOnline]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };

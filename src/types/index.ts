@@ -164,6 +164,7 @@ export interface AppContextType {
   session: Session | null;
   profile: UserProfile | null;
   isLoading: boolean;
+  isOnline: boolean;
   currentView: string;
   setCurrentView: (view: string) => void;
   cameraMode: 'simple' | 'pro';
