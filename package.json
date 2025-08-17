@@ -22,6 +22,7 @@
     "@capacitor/status-bar": "^7.0.2",
     "@dnd-kit/core": "^6.3.1",
     "@supabase/supabase-js": "^2.54.0",
+    "@types/uuid": "^10.0.0",
     "capacitor-camera-view": "^1.2.0",
     "file-saver": "^2.0.5",
     "jeep-sqlite": "^2.8.0",
@@ -30,7 +31,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.5.2",
-    "react-swipeable": "^7.0.2"
+    "react-swipeable": "^7.0.2",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@dyad-sh/react-vite-component-tagger": "^0.8.0",

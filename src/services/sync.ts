@@ -2,6 +2,20 @@ import { dbService } from './database';
 import * as api from './api';
 import { Roll, Photo } from '../types';
 import { compressImage } from '../utils/imageProcessor';
+import { Filesystem } from '@capacitor/filesystem';
+import { v4 as uuidv4 } from 'uuid';
+
+// Helper to read a local file as a blob
+const readFileAsBlob = async (path: string): Promise<Blob> => {
+  const { data } = await Filesystem.readFile({ path });
+  const byteCharacters = atob(data as string);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: 'image/jpeg' });
+};
 
 class SyncService {
   private isSyncing = false;
@@ -27,9 +41,7 @@ class SyncService {
           await dbService.deleteTransaction(tx.id);
         } catch (error) {
           console.error(`Failed to process transaction ${tx.id} of type ${tx.type}:`, error);
-          // Here you might add logic to mark the transaction as 'failed'
-          // and implement retry logic if needed. For now, we'll just stop.
-          break; // Stop sync on first error to maintain order
+          break; 
         }
       }
     } catch (error) {
@@ -48,27 +60,64 @@ class SyncService {
       case 'UPDATE_ROLL':
         await this.syncUpdateRoll(tx.payload);
         break;
-      // Add other transaction types here in the future
       default:
         console.warn(`Unknown transaction type: ${tx.type}`);
     }
   }
 
   private async syncCreateRoll(payload: { roll: Roll }) {
-    const { roll } = payload;
-    // This is a simplified version. A real implementation would handle photo uploads.
-    // For now, we just create the roll record.
-    const { error } = await api.createNewRoll(roll.user_id, roll.film_type, roll.capacity, roll.aspect_ratio);
-    if (error) throw error;
-    
-    const updatedRoll = { ...roll, sync_status: 'synced' as const };
-    await dbService.saveRoll(updatedRoll);
+    const { roll: localRoll } = payload;
+
+    await dbService.saveRoll({ ...localRoll, sync_status: 'syncing' });
+
+    const { error: createRollError } = await api.createRollRecord(localRoll);
+    if (createRollError) throw createRollError;
+
+    const uploadedPhotos: Photo[] = [];
+    if (localRoll.photos) {
+      for (const localPhoto of localRoll.photos) {
+        if (localPhoto.local_path) {
+          const fileBlob = await readFileAsBlob(localPhoto.local_path);
+          const compressedBlob = await compressImage(fileBlob);
+          
+          const filePath = `${localRoll.user_id}/${localRoll.id}/${uuidv4()}.jpeg`;
+          const { error: uploadError } = await api.uploadPhotoToStorage(filePath, compressedBlob);
+          if (uploadError) throw uploadError;
+
+          const { data: urlData } = api.getPublicUrl('photos', filePath);
+          
+          const serverPhoto: Photo = {
+            ...localPhoto,
+            url: urlData.publicUrl,
+            thumbnail_url: urlData.publicUrl,
+          };
+
+          const { error: createPhotoError } = await api.createPhotoRecord(serverPhoto);
+          if (createPhotoError) throw createPhotoError;
+
+          uploadedPhotos.push(serverPhoto);
+        }
+      }
+    }
+
+    const finalSyncedRoll: Roll = {
+      ...localRoll,
+      sync_status: 'synced',
+      photos: uploadedPhotos,
+    };
+    await dbService.saveRoll(finalSyncedRoll);
   }
 
   private async syncUpdateRoll(payload: { rollId: string, updates: Partial<Roll> }) {
     const { rollId, updates } = payload;
     const { error } = await api.updateRoll(rollId, updates);
     if (error) throw error;
+    // The local record is already updated optimistically, so we just need to confirm sync.
+    const rolls = await dbService.getRolls(payload.updates.user_id!);
+    const rollToUpdate = rolls.find(r => r.id === rollId);
+    if (rollToUpdate) {
+      await dbService.saveRoll({ ...rollToUpdate, ...updates, sync_status: 'synced' });
+    }
   }
 }
 

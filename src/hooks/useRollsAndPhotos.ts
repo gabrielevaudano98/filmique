@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import * as api from '../services/api';
 import { UserProfile, Roll, Photo, FilmStock } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast, showWarningToast } from '../utils/toasts';
@@ -23,11 +24,25 @@ export const useRollsAndPhotos = (
 
   const refetchRolls = useCallback(async () => {
     if (!profile) return;
-    const localRolls = await dbService.getRolls(profile.id);
+    
+    let localRolls = await dbService.getRolls(profile.id);
+    
+    const { data: serverRolls, error } = await api.fetchAllRolls(profile.id);
+    if (!error && serverRolls) {
+        const localRollIds = new Set(localRolls.map(r => r.id));
+        for (const serverRoll of serverRolls) {
+            if (!localRollIds.has(serverRoll.id)) {
+                await dbService.saveRoll({ ...serverRoll, sync_status: 'synced' });
+            }
+        }
+        localRolls = await dbService.getRolls(profile.id);
+    }
+    
     const active = localRolls.find(r => !r.is_completed) || null;
     const completed = localRolls.filter(r => r.is_completed);
     setActiveRoll(active);
     setCompletedRolls(completed);
+
   }, [profile]);
 
   useEffect(() => {
@@ -44,10 +59,9 @@ export const useRollsAndPhotos = (
 
   const startNewRoll = useCallback(async (film: FilmStock, aspectRatio: string) => {
     if (!profile) return;
-    // Optimistic UI update
-    const tempId = `local-roll-${Date.now()}`;
+    
     const newRoll: Roll = {
-      id: tempId,
+      id: uuidv4(),
       user_id: profile.id,
       film_type: film.name,
       capacity: film.capacity,
@@ -57,6 +71,7 @@ export const useRollsAndPhotos = (
       aspect_ratio: aspectRatio,
       is_archived: false,
       sync_status: 'local',
+      photos: [],
     };
     
     setActiveRoll(newRoll);
@@ -78,7 +93,7 @@ export const useRollsAndPhotos = (
     try {
       const localPath = await localFileStorage.savePhoto(imageBlob, activeRoll.id);
       const newPhoto: Photo = {
-        id: `local-photo-${Date.now()}`,
+        id: uuidv4(),
         user_id: profile.id,
         roll_id: activeRoll.id,
         url: null,
@@ -100,6 +115,7 @@ export const useRollsAndPhotos = (
       };
 
       await dbService.saveRoll(updatedRoll);
+      await dbService.addTransaction('UPDATE_ROLL', { rollId: updatedRoll.id, updates: { shots_used: updatedRoll.shots_used, is_completed: updatedRoll.is_completed, photos: updatedRoll.photos } });
 
       if (isCompleted) {
         setActiveRoll(null);
