@@ -14,23 +14,54 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
 };
 
 /**
- * Saves a photo blob to the app's private data directory.
+ * Saves a photo blob to the app's private data directory. Can overwrite an existing file.
  * @param blob The image blob to save.
  * @param rollId The ID of the roll this photo belongs to.
+ * @param existingUri Optional. The URI of an existing file to overwrite.
  * @returns The filesystem URI of the saved file.
  */
-export const savePhoto = async (blob: Blob, rollId: string): Promise<string> => {
-  const filename = `${rollId}/${Date.now()}.jpeg`;
+export const savePhoto = async (blob: Blob, rollId: string, existingUri?: string): Promise<string> => {
   const base64Data = await blobToBase64(blob);
 
+  if (existingUri) {
+    const pathSegments = existingUri.split('/files/');
+    const relativePath = pathSegments.length > 1 ? pathSegments[1] : '';
+    
+    if (relativePath) {
+      await Filesystem.writeFile({
+        path: relativePath,
+        data: base64Data,
+        directory: Directory.Data,
+      });
+      return existingUri;
+    }
+  }
+
+  const filename = `${rollId}/${Date.now()}.jpeg`;
   const savedFile = await Filesystem.writeFile({
     path: filename,
     data: base64Data,
-    directory: Directory.Data, // Use private, sandboxed storage
-    recursive: true, // Create the rollId directory if it doesn't exist
+    directory: Directory.Data,
+    recursive: true,
   });
 
   return savedFile.uri;
+};
+
+/**
+ * Reads a local photo file and returns it as a Blob.
+ * @param path The filesystem URI of the file to read.
+ * @returns A promise that resolves with the image Blob.
+ */
+export const readPhoto = async (path: string): Promise<Blob> => {
+  const { data } = await Filesystem.readFile({ path });
+  const byteCharacters = atob(data as string);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  return new Blob([byteArray], { type: 'image/jpeg' });
 };
 
 /**
@@ -45,7 +76,6 @@ export const deletePhoto = async (path: string): Promise<void> => {
 
 /**
  * Converts a filesystem URI to a web-viewable path.
- * This is necessary to display locally saved images in <img> tags.
  * @param path The filesystem URI.
  * @returns A URL string that can be used in an `src` attribute.
  */

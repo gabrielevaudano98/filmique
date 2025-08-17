@@ -8,6 +8,7 @@ import { ImpactStyle } from '@capacitor/haptics';
 import * as localFileStorage from '../utils/localFileStorage';
 import { dbService } from '../services/database';
 import { isRollDeveloped } from '../utils/rollUtils';
+import { applyFilter } from '../utils/imageProcessor';
 
 export const useRollsAndPhotos = (
   profile: UserProfile | null, 
@@ -159,8 +160,40 @@ export const useRollsAndPhotos = (
   };
 
   const developRoll = useCallback(async (roll: Roll) => {
-    showWarningToast("Development of local-only rolls will be enabled in a future step.");
-  }, []);
+    if (!profile || !roll.photos || roll.photos.length === 0) {
+      showErrorToast("This roll has no photos to develop.");
+      return;
+    }
+
+    const filmStock = filmStocks.find(fs => fs.name === roll.film_type);
+    if (!filmStock) {
+      showErrorToast("Film stock data not found for this roll.");
+      return;
+    }
+
+    const toastId = showLoadingToast(`Developing ${roll.title || roll.film_type}...`);
+
+    try {
+      for (const photo of roll.photos) {
+        if (photo.local_path) {
+          const webPath = localFileStorage.getWebPath(photo.local_path);
+          const developedBlob = await applyFilter(webPath, filmStock.preset);
+          await localFileStorage.savePhoto(developedBlob, roll.id, photo.local_path);
+        }
+      }
+
+      const developedRoll = await updateAndQueueRoll(roll, { developed_at: new Date().toISOString() });
+      
+      dismissToast(toastId);
+      showSuccessToast("Development complete!");
+      setDevelopedRollForWizard(developedRoll);
+
+    } catch (error) {
+      dismissToast(toastId);
+      console.error("Error during local development:", error);
+      showErrorToast("An error occurred during development.");
+    }
+  }, [profile, filmStocks]);
 
   const updateRollTitle = useCallback(async (rollId: string, title: string) => {
     const roll = completedRolls.find(r => r.id === rollId);

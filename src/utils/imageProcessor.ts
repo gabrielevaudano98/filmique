@@ -10,10 +10,9 @@ function loadImage(url: string): Promise<HTMLImageElement> {
   });
 }
 
-export async function applyFilterAndCompress(
-  imageUrl: string, 
-  preset: FilmPreset,
-  quality: number = 0.85 // High quality JPEG
+export async function applyFilter(
+  imageUrl: string,
+  preset: FilmPreset
 ): Promise<Blob> {
   const image = await loadImage(imageUrl);
   const canvas = document.createElement('canvas');
@@ -26,7 +25,13 @@ export async function applyFilterAndCompress(
   canvas.width = image.naturalWidth;
   canvas.height = image.naturalHeight;
   
-  // Apply filters (simplified for brevity, a full implementation would go here)
+  const filters = [];
+  if (preset.contrast) filters.push(`contrast(${preset.contrast}%)`);
+  if (preset.saturation) filters.push(`saturate(${preset.saturation}%)`);
+  if (preset.ev) filters.push(`brightness(${1 + preset.ev})`);
+  if (preset.bw?.enable) filters.push('grayscale(100%)');
+  
+  ctx.filter = filters.join(' ');
   ctx.drawImage(image, 0, 0);
 
   return new Promise((resolve, reject) => {
@@ -36,7 +41,7 @@ export async function applyFilterAndCompress(
       } else {
         reject(new Error('Canvas to Blob conversion failed'));
       }
-    }, 'image/jpeg', quality);
+    }, 'image/jpeg', 0.9);
   });
 }
 
