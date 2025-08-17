@@ -136,7 +136,7 @@ const ProfileView: React.FC = () => {
       </div>
 
       {/* Tabs Section */}
-      <div className="mt-8 sticky top-0 bg-warm-900 z-10">
+      <div className="mt-6 sticky top-0 bg-warm-900 z-10">
         <div className="flex border-b border-neutral-700">
           <TabButton icon={LayoutGrid} isActive={activeTab === 'albums'} onClick={() => setActiveTab('albums')} />
           <TabButton icon={ImageIcon} isActive={activeTab === 'snapshots'} onClick={() => setActiveTab('snapshots')} />
@@ -144,7 +144,7 @@ const ProfileView: React.FC = () => {
         </div>
       </div>
       
-      <div className="mt-4 p-2">
+      <div className="mt-1 p-1">
         {activeTab === 'albums' && (
           albums.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">

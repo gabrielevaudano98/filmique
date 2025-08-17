@@ -78,7 +78,7 @@ const OnboardingView: React.FC = () => {
 
   return (
     <div className="w-full min-h-screen flex flex-col items-center justify-center bg-transparent p-4">
-      <div className="w-full max-w-md bg-neutral-800/80 backdrop-blur-lg border border-neutral-700/50 rounded-2xl p-8 shadow-2xl">
+      <div className="w-full max-w-md bg-gray-800 rounded-2xl p-8 shadow-2xl">
         {step === 1 && (
           <div>
             <h1 className="text-3xl font-bold text-amber-400 mb-4">Welcome to Filmique!</h1>

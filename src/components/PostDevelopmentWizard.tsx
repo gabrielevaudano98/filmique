@@ -40,7 +40,7 @@ const PostDevelopmentWizard: React.FC<PostDevelopmentWizardProps> = ({ roll, onC
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
-        <div className="bg-neutral-800/80 backdrop-blur-lg border border-neutral-700/50 rounded-2xl max-w-md w-full flex flex-col max-h-[90vh] shadow-2xl animate-modal-enter">
+        <div className="bg-gray-800 rounded-2xl max-w-md w-full flex flex-col max-h-[90vh] shadow-2xl animate-modal-enter">
           <div className="flex-shrink-0 p-5 border-b border-gray-700 text-center">
             <h2 className="text-2xl font-bold text-amber-400">Development Complete!</h2>
             <p className="text-gray-300 mt-1">Your roll "{roll.title || roll.film_type}" is ready.</p>

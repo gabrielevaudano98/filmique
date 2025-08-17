@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as api from '../services/api';
 import { UserProfile, Post, Comment } from '../types';
-import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast, showInfoToast } from '../utils/toasts';
-import { addActionToQueue } from '../utils/queue';
+import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
 
-export const useSocial = (profile: UserProfile | null, isOnline: boolean) => {
+export const useSocial = (profile: UserProfile | null) => {
   const [feed, setFeed] = useState<Post[]>([]);
   const [recentStories, setRecentStories] = useState<Map<string, { user: UserProfile, posts: Post[] }>>(new Map());
 
@@ -50,16 +49,6 @@ export const useSocial = (profile: UserProfile | null, isOnline: boolean) => {
       return p;
     }));
 
-    if (!isOnline) {
-      await addActionToQueue({
-        type: isLiked ? 'unlike' : 'like',
-        payload: { userId: profile.id, postId },
-        timestamp: Date.now(),
-      });
-      showInfoToast('You are offline. Action will sync when you reconnect.');
-      return;
-    }
-
     const action = isLiked ? api.unlikePost(profile.id, postId) : api.likePost(profile.id, postId);
     const { error } = await action;
     if (error) {
@@ -68,22 +57,12 @@ export const useSocial = (profile: UserProfile | null, isOnline: boolean) => {
     } else if (!isLiked) {
       api.recordActivity('like', profile.id, postId, postOwnerId);
     }
-  }, [profile, fetchFeed, isOnline]);
+  }, [profile, fetchFeed]);
 
   const handleFollow = useCallback(async (userId: string, isFollowed?: boolean) => {
     if (!profile) return;
 
     setFeed(prevFeed => prevFeed.map(p => p.user_id === userId ? { ...p, isFollowed: !isFollowed } : p));
-
-    if (!isOnline) {
-      await addActionToQueue({
-        type: isFollowed ? 'unfollow' : 'follow',
-        payload: { followerId: profile.id, followingId: userId },
-        timestamp: Date.now(),
-      });
-      showInfoToast('You are offline. Action will sync when you reconnect.');
-      return;
-    }
 
     const action = isFollowed ? api.unfollowUser(profile.id, userId) : api.followUser(profile.id, userId);
     const { error } = await action;
@@ -93,7 +72,7 @@ export const useSocial = (profile: UserProfile | null, isOnline: boolean) => {
     } else if (!isFollowed) {
       api.recordActivity('follow', profile.id, userId, userId);
     }
-  }, [profile, fetchFeed, isOnline]);
+  }, [profile, fetchFeed]);
 
   const createPost = useCallback(async (rollId: string, caption: string, coverUrl: string | null, albumId: string | null) => {
     if (!profile) return;
@@ -120,16 +99,6 @@ export const useSocial = (profile: UserProfile | null, isOnline: boolean) => {
     };
     setFeed(prevFeed => prevFeed.map(p => p.id === postId ? { ...p, comments: [...p.comments, tempComment] } : p));
 
-    if (!isOnline) {
-      await addActionToQueue({
-        type: 'addComment',
-        payload: { userId: profile.id, postId, content },
-        timestamp: Date.now(),
-      });
-      showInfoToast('You are offline. Comment will sync when you reconnect.');
-      return;
-    }
-
     const { error } = await api.addComment(profile.id, postId, content);
     if (error) {
       showErrorToast(error.message);
@@ -138,7 +107,7 @@ export const useSocial = (profile: UserProfile | null, isOnline: boolean) => {
       api.recordActivity('comment', profile.id, postId, postOwnerId);
       fetchFeed(); // Re-fetch to sync real comment ID
     }
-  }, [profile, fetchFeed, isOnline]);
+  }, [profile, fetchFeed]);
 
   const deleteComment = useCallback(async (commentId: string) => {
     setFeed(prevFeed => prevFeed.map(p => ({ ...p, comments: p.comments.filter(c => c.id !== commentId) })));

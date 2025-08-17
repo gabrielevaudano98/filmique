@@ -29,7 +29,7 @@ const SettingsRow: React.FC<{
 const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div className="mb-6">
     <h3 className="px-4 pb-2 text-sm font-semibold text-gray-400 uppercase tracking-wider">{title}</h3>
-    <div className="bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-xl overflow-hidden">
+    <div className="bg-neutral-800 rounded-xl overflow-hidden border border-neutral-700/50">
       {React.Children.map(children, (child, index) => (
         <>
           {child}

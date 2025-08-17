@@ -125,11 +125,7 @@ function App() {
       {postDevelopmentWizard}
       {isRollsSettingsOpen && <RollsSettingsView />}
       <main className="min-h-screen w-full pb-28">
-        <div 
-          key={currentView}
-          className="max-w-6xl mx-auto w-full h-full px-4 py-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] animate-fade-in"
-          style={{ animationDuration: '500ms' }}
-        >
+        <div className="max-w-6xl mx-auto w-full h-full px-4 py-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">
           {renderCurrentView()}
         </div>
       </main>
