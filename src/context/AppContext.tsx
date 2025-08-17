@@ -7,6 +7,7 @@ import { useSocial } from '../hooks/useSocial';
 import { useAlbums } from '../hooks/useAlbums';
 import { useRollsSettings } from '../hooks/useRollsSettings';
 import * as api from '../services/api';
+import { Library, Clock, Printer } from 'lucide-react';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -24,10 +25,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [headerAction, setHeaderAction] = useState<{ icon: React.ElementType, action: () => void } | null>(null);
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [rollsViewSection, setRollsViewSection] = useState<'rolls' | 'darkroom'>('rolls');
+  const [studioSection, setStudioSection] = useState<'rolls' | 'darkroom' | 'prints'>('rolls');
+  const [isStudioHeaderSticky, setIsStudioHeaderSticky] = useState(false);
 
   // Data State
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
+
+  const studioSectionOptions = [
+    { value: 'rolls', label: 'Rolls', icon: Library, description: 'Your collection of developed film.', colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' } },
+    { value: 'darkroom', label: 'Darkroom', icon: Clock, description: 'Develop your completed rolls.', colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' } },
+    { value: 'prints', label: 'Prints', icon: Printer, description: 'Order prints of your photos.', colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' } },
+  ];
 
   // Modular Hooks
   const auth = useAuth();
@@ -84,9 +92,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsTopBarVisible,
     searchTerm,
     setSearchTerm,
-    rollsViewSection,
-    setRollsViewSection,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, rollsViewSection]);
+    studioSection,
+    setStudioSection,
+    isStudioHeaderSticky,
+    setIsStudioHeaderSticky,
+    studioSectionOptions,
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };

@@ -242,6 +242,9 @@ export interface AppContextType {
   setIsTopBarVisible: (visible: boolean) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  rollsViewSection: 'rolls' | 'darkroom';
-  setRollsViewSection: (section: 'rolls' | 'darkroom') => void;
+  studioSection: 'rolls' | 'darkroom' | 'prints';
+  setStudioSection: (section: 'rolls' | 'darkroom' | 'prints') => void;
+  isStudioHeaderSticky: boolean;
+  setIsStudioHeaderSticky: (isSticky: boolean) => void;
+  studioSectionOptions: any[];
 }

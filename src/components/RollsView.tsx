@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
@@ -32,9 +32,26 @@ const RollsView: React.FC = () => {
     developingRolls, completedRolls,
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
     searchTerm, setSearchTerm,
+    studioSection, setStudioSection, studioSectionOptions,
+    setIsStudioHeaderSticky,
   } = useAppContext();
 
-  const [activeSection, setActiveSection] = useState<'rolls' | 'darkroom' | 'prints'>('rolls');
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsStudioHeaderSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+      },
+      { threshold: 0, rootMargin: "-65px 0px 0px 0px" }
+    );
+
+    const currentHeaderRef = headerRef.current;
+    if (currentHeaderRef) observer.observe(currentHeaderRef);
+    return () => {
+      if (currentHeaderRef) observer.unobserve(currentHeaderRef);
+    };
+  }, [setIsStudioHeaderSticky]);
 
   const { shelfRolls, archivedRolls } = useMemo(() => {
     const developed = completedRolls.filter(r => isRollDeveloped(r));
@@ -106,28 +123,26 @@ const RollsView: React.FC = () => {
   }, [processedRolls, rollsGroupBy]);
 
   const groupEntries = Object.entries(groupedRolls);
-
-  const sectionOptions = [
-    { value: 'rolls', icon: Library, colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' } },
-    { value: 'darkroom', icon: Clock, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' } },
-    { value: 'prints', icon: Printer, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' } },
-  ];
+  const activeSectionData = studioSectionOptions.find(opt => opt.value === studioSection);
 
   return (
     <div className="flex flex-col w-full">
-      <div className="flex items-center justify-between mb-6 bg-neutral-100/15 backdrop-blur-lg -mx-4 -mt-4 px-4 pt-4 pb-6 border-b border-white/10">
-        <h1 className="text-3xl font-bold text-white">Studio</h1>
-        <div className="w-auto">
-          <SegmentedControl
-            options={sectionOptions}
-            value={activeSection}
-            onChange={(val) => setActiveSection(val as any)}
-          />
+      <div ref={headerRef}>
+        <div className="flex items-center justify-between bg-neutral-100/15 backdrop-blur-lg -mx-4 -mt-4 px-4 pt-4 pb-6 border-b border-white/10">
+          <h1 className="text-3xl font-bold text-white">Studio</h1>
+          <div className="w-auto">
+            <SegmentedControl
+              options={studioSectionOptions}
+              value={studioSection}
+              onChange={(val) => setStudioSection(val as any)}
+            />
+          </div>
         </div>
+        {activeSectionData && <p className="text-center text-sm text-neutral-400 pt-2 mb-6">{activeSectionData.description}</p>}
       </div>
 
       <div className="relative flex-1">
-        {activeSection === 'darkroom' && (
+        {studioSection === 'darkroom' && (
           <div key="darkroom" className="animate-slide-in-from-left">
             {developingRolls.length > 0 ? (
               <div className="space-y-3">
@@ -137,7 +152,7 @@ const RollsView: React.FC = () => {
           </div>
         )}
 
-        {activeSection === 'rolls' && (
+        {studioSection === 'rolls' && (
           <div key="rolls" className="animate-slide-in-from-right">
             <div className="sticky top-[64px] z-20 flex justify-end pointer-events-none -mx-4 px-4 h-14 items-center">
               <div className="pointer-events-auto flex items-center gap-2">
@@ -164,7 +179,7 @@ const RollsView: React.FC = () => {
           </div>
         )}
 
-        {activeSection === 'prints' && (
+        {studioSection === 'prints' && (
           <div key="prints" className="animate-fade-in">
             <PrintsView />
           </div>

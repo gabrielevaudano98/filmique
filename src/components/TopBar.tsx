@@ -3,10 +3,16 @@ import { useAppContext } from '../context/AppContext';
 import NotificationsBell from './NotificationsBell';
 
 const TopBar: React.FC = () => {
-  const { notifications, setCurrentView, headerAction, isTopBarVisible, currentView } = useAppContext();
+  const { 
+    notifications, setCurrentView, headerAction, isTopBarVisible, currentView,
+    isStudioHeaderSticky, studioSection, setStudioSection, studioSectionOptions
+  } = useAppContext();
+  
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
   const isStudioView = currentView === 'rolls';
+  const isStudioSticky = isStudioView && isStudioHeaderSticky;
+  const activeSectionData = studioSectionOptions.find(opt => opt.value === studioSection);
 
   const BackButton = headerAction ? headerAction.icon : null;
 
@@ -24,21 +30,43 @@ const TopBar: React.FC = () => {
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <div className="flex items-center justify-between h-16 px-4">
-        <div className="w-10">
-          {headerAction && BackButton && (
-            <button onClick={headerAction.action} className={`p-2 transition-colors -ml-2 ${backButtonClasses}`}>
-              <BackButton className="w-5 h-5" />
-            </button>
-          )}
-        </div>
-        <h1 className="text-lg font-bold text-white">
-          Filmique
-        </h1>
-        <NotificationsBell 
-          theme="dark"
-          unreadCount={unreadCount} 
-          onClick={() => setCurrentView('notifications')} 
-        />
+        {isStudioSticky ? (
+          <>
+            <div className="text-left">
+              <h1 className="text-lg font-bold text-white">Studio</h1>
+              {activeSectionData && <p className="text-xs text-neutral-400">{activeSectionData.description}</p>}
+            </div>
+            <div className="flex items-center space-x-4">
+              {studioSectionOptions.map(opt => (
+                <button 
+                  key={opt.value} 
+                  onClick={() => setStudioSection(opt.value as any)}
+                  className={`text-sm font-bold transition-colors ${studioSection === opt.value ? 'text-white' : 'text-neutral-400 hover:text-white'}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="w-10">
+              {headerAction && BackButton && (
+                <button onClick={headerAction.action} className={`p-2 transition-colors -ml-2 ${backButtonClasses}`}>
+                  <BackButton className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+            <h1 className="text-lg font-bold text-white">
+              Filmique
+            </h1>
+            <NotificationsBell 
+              theme="dark"
+              unreadCount={unreadCount} 
+              onClick={() => setCurrentView('notifications')} 
+            />
+          </>
+        )}
       </div>
     </header>
   );
