@@ -21,11 +21,11 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
   const [showCreateAlbumModal, setShowCreateAlbumModal] = useState(false);
 
   // For now, only synced rolls can be posted.
-  const postableRolls = unpostedRolls.filter(r => r.sync_status === 'synced');
+  const postableRolls = unpostedRolls;
 
   useEffect(() => {
     if (selectedRoll && selectedRoll.photos && selectedRoll.photos.length > 0) {
-      setSelectedCoverUrl(selectedRoll.photos[0].url);
+      setSelectedCoverUrl(selectedRoll.photos[0].url || selectedRoll.photos[0].local_path);
     }
   }, [selectedRoll]);
 
@@ -75,7 +75,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                 {postableRolls.length > 0 ? (
                   postableRolls.map(roll => {
                     const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
-                    const thumbnailUrl = roll.photos?.[0]?.thumbnail_url || '';
+                    const thumbnailUrl = roll.photos?.[0]?.thumbnail_url || roll.photos?.[0]?.local_path || '';
                     return (
                       <button
                         key={roll.id}
@@ -91,7 +91,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                     );
                   })
                 ) : (
-                  <p className="text-center text-gray-500 py-8">You have no developed & synced rolls to post.</p>
+                  <p className="text-center text-gray-500 py-8">You have no developed rolls to post.</p>
                 )}
               </div>
             )}
@@ -102,15 +102,15 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                   <label className="text-sm font-semibold text-gray-300 mb-2 block">Select Cover Photo</label>
                   <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto rounded-lg p-1 bg-gray-900/50">
                     {selectedRoll.photos?.map(photo => {
-                      const cacheBuster = selectedRoll.developed_at ? `?t=${new Date(selectedRoll.developed_at).getTime()}` : '';
-                      const isSelected = selectedCoverUrl === photo.url;
+                      const photoSrc = photo.url || photo.local_path;
+                      const isSelected = selectedCoverUrl === photoSrc;
                       return (
                         <button 
                           key={photo.id}
-                          onClick={() => setSelectedCoverUrl(photo.url)}
+                          onClick={() => setSelectedCoverUrl(photoSrc)}
                           className={`relative aspect-square w-full rounded-md overflow-hidden border-2 transition-all ${isSelected ? 'border-amber-400' : 'border-transparent'}`}
                         >
-                          <Image src={photo.url || photo.local_path || ''} alt="Photo preview" className="w-full h-full object-cover bg-gray-700" />
+                          <Image src={photoSrc} alt="Photo preview" className="w-full h-full object-cover bg-gray-700" />
                           {isSelected && (
                             <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                               <Check className="w-6 h-6 text-white" />
