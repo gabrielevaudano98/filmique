@@ -160,6 +160,14 @@ export interface UserBadge {
   };
 }
 
+export type ActionType = 'like' | 'unlike' | 'follow' | 'unfollow' | 'addComment' | 'deleteComment';
+
+export interface QueuedAction {
+  type: ActionType;
+  payload: any;
+  timestamp: number;
+}
+
 export interface AppContextType {
   session: Session | null;
   profile: UserProfile | null;

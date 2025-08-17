@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
-import { AppContextType, FilmStock, Roll, Album } from '../types';
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
+import { AppContextType, FilmStock } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileData } from '../hooks/useProfileData';
 import { useRollsAndPhotos } from '../hooks/useRollsAndPhotos';
@@ -10,6 +12,7 @@ import * as api from '../services/api';
 import { Library, Clock, Printer } from 'lucide-react';
 import { Network } from '@capacitor/network';
 import { showInfoToast, showSuccessToast } from '../utils/toasts';
+import { processActionQueue } from '../utils/queue';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -45,19 +48,68 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const auth = useAuth();
   const profileData = useProfileData(auth.profile);
   const rollsAndPhotos = useRollsAndPhotos(auth.profile, filmStocks, auth.refreshProfile);
-  const social = useSocial(auth.profile);
+  const social = useSocial(auth.profile, isOnline);
   const albumsData = useAlbums(auth.profile);
   const rollsSettings = useRollsSettings();
+
+  useEffect(() => {
+    const initializePushNotifications = async () => {
+      if (!Capacitor.isNativePlatform()) return;
+
+      let permStatus = await PushNotifications.checkPermissions();
+
+      if (permStatus.receive === 'prompt') {
+        permStatus = await PushNotifications.requestPermissions();
+      }
+
+      if (permStatus.receive !== 'granted') {
+        console.warn('User denied push notifications permission.');
+        return;
+      }
+
+      await PushNotifications.register();
+    };
+
+    if (auth.session) {
+      initializePushNotifications();
+    }
+
+    PushNotifications.addListener('registration', (token) => {
+      console.info('Push registration success, token:', token.value);
+    });
+
+    PushNotifications.addListener('registrationError', (error) => {
+      console.error('Error on registration:', error);
+    });
+
+    PushNotifications.addListener('pushNotificationReceived', (notification) => {
+      showInfoToast(notification.body || 'You have a new notification!');
+      profileData.fetchNotifications();
+    });
+
+    PushNotifications.addListener('pushNotificationActionPerformed', () => {
+      setCurrentView('notifications');
+    });
+
+    return () => {
+      PushNotifications.removeAllListeners();
+    };
+  }, [auth.session, profileData.fetchNotifications]);
 
   useEffect(() => {
     const initializeNetworkListener = async () => {
       const status = await Network.getStatus();
       setIsOnline(status.connected);
 
-      Network.addListener('networkStatusChange', (status) => {
+      Network.addListener('networkStatusChange', async (status) => {
         setIsOnline(status.connected);
         if (status.connected) {
           showSuccessToast("You're back online!");
+          const { processedCount } = await processActionQueue();
+          if (processedCount > 0) {
+            showSuccessToast(`Synced ${processedCount} offline action(s).`);
+            await social.fetchFeed();
+          }
         } else {
           showInfoToast("You've gone offline. Some features may be unavailable.");
         }
@@ -69,7 +121,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => {
       Network.removeAllListeners();
     };
-  }, []);
+  }, [social.fetchFeed]);
 
   useEffect(() => {
     const getFilmStocks = async () => {
