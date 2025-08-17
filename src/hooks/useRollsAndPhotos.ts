@@ -211,25 +211,30 @@ export const useRollsAndPhotos = (
 
   const deleteRoll = useCallback(async (rollId: string) => {
     if (!profile) return;
-    const toastId = showLoadingToast('Deleting roll...');
+    
     try {
-      await db.transaction('rw', db.rolls, db.photos, async () => {
+      // Optimistic UI: Delete from local DB and filesystem immediately.
+      await db.transaction('rw', db.rolls, db.photos, db.pending_transactions, async () => {
         await db.rolls.delete(rollId);
         await db.photos.where('roll_id').equals(rollId).delete();
+        
+        // Add a transaction to the queue to sync this deletion with the cloud later.
+        await db.pending_transactions.add({
+          type: 'DELETE_ROLL',
+          payload: { rollId },
+          status: 'pending',
+          created_at: new Date().toISOString(),
+          attempts: 0,
+        });
       });
       
       await deleteRollDirectory(profile.id, rollId);
 
       setSelectedRoll(null);
-      showSuccessToast('Roll deleted from device.');
-
-      // Direct API call removed. This will be handled by the sync engine later.
-      // await api.deleteRollById(rollId);
+      showSuccessToast('Roll deleted. Syncing deletion to the cloud.');
 
     } catch (error: any) {
       showErrorToast(`Failed to delete roll: ${error?.message}`);
-    } finally {
-      dismissToast(toastId);
     }
   }, [profile]);
 
