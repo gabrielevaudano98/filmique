@@ -18,10 +18,10 @@ const TopBar: React.FC = () => {
 
   const headerClasses = `sticky top-0 z-40 transition-all duration-300 backdrop-blur-lg ${
     isStudioSticky
-      ? 'bg-neutral-700/90 border-b border-neutral-600/50'
+      ? 'bg-neutral-800/60 border-b border-neutral-700/50'
       : isStudioView
       ? 'bg-transparent border-b border-transparent'
-      : 'bg-neutral-700/90 border-b border-neutral-600/50'
+      : 'bg-neutral-800/60 border-b border-neutral-700/50'
   } ${!isTopBarVisible ? '-translate-y-full' : 'translate-y-0'}`;
   
   return (
