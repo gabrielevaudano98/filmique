@@ -162,6 +162,14 @@ export interface UserBadge {
   };
 }
 
+export interface PendingTransaction {
+  id: number;
+  type: string;
+  payload: any;
+  status: 'pending' | 'failed';
+  created_at: string;
+}
+
 export interface AppContextType {
   session: Session | null;
   profile: UserProfile | null;
