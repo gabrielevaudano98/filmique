@@ -115,10 +115,11 @@ const RollsView: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full">
-      <div className="flex items-center justify-between mb-6 bg-neutral-700 -mx-4 -mt-4 px-4 pt-4 pb-6 border-b border-neutral-800/50">
-        <h1 className="text-3xl font-bold text-white">Studio</h1>
+      <div className="flex items-center justify-between mb-6 bg-gradient-to-b from-white to-neutral-100/80 -mx-4 -mt-4 px-4 pt-4 pb-6 border-b border-neutral-200">
+        <h1 className="text-3xl font-bold text-black">Studio</h1>
         <div className="w-auto">
           <SegmentedControl
+            theme="light"
             options={sectionOptions}
             value={activeSection}
             onChange={(val) => setActiveSection(val as any)}
@@ -141,15 +142,15 @@ const RollsView: React.FC = () => {
           <div key="rolls" className="animate-slide-in-from-right">
             <div className="sticky top-[64px] z-20 flex justify-end pointer-events-none -mx-4 px-4 h-14 items-center">
               <div className="pointer-events-auto flex items-center gap-2">
-                <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-                <RollsControls />
+                <ExpandableSearch theme="light" searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+                <RollsControls theme="light" />
               </div>
             </div>
             <div className="space-y-6 -mt-14">
               {processedRolls.length > 0 ? (
                 groupEntries.map(([groupName, rolls]) => (
                   <div key={groupName}>
-                    <h3 className="sticky top-[64px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
+                    <h3 className="sticky top-[64px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-neutral-800 bg-white/80 backdrop-blur-lg border-y border-neutral-200 pr-[150px]">
                       {groupName}
                     </h3>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
