@@ -61,7 +61,7 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+      <div className="bg-neutral-800/80 backdrop-blur-lg border border-neutral-700/50 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-white">Create New {itemType}</h2>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full">

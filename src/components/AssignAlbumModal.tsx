@@ -38,7 +38,7 @@ const AssignAlbumModal: React.FC<AssignAlbumModalProps> = ({ roll, onClose }) =>
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 rounded-2xl max-w-sm w-full flex flex-col max-h-[80vh] shadow-2xl">
+      <div className="bg-neutral-800/80 backdrop-blur-lg border border-neutral-700/50 rounded-2xl max-w-sm w-full flex flex-col max-h-[80vh] shadow-2xl">
         <div className="flex-shrink-0 p-5 border-b border-gray-700 flex items-center justify-between">
           <h2 className="text-xl font-bold text-white">Assign to Album</h2>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full">

@@ -15,7 +15,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ isOpen, onClose
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-      <div className="bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+      <div className="bg-neutral-800/80 backdrop-blur-lg border border-neutral-700/50 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold font-recoleta text-red-400 flex items-center gap-2">
             <AlertTriangle className="w-5 h-5" />
