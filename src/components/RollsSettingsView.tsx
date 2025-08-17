@@ -7,11 +7,11 @@ import TextSegmentedControl from './TextSegmentedControl';
 const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div className="mb-6">
     <h3 className="px-2 pb-2 text-sm font-semibold text-gray-400 uppercase tracking-wider">{title}</h3>
-    <div className="bg-neutral-900/50 rounded-xl border border-neutral-700/50">
+    <div className="bg-white/5 rounded-xl border border-white/10">
       {React.Children.map(children, (child, index) => (
         <React.Fragment key={index}>
           {child}
-          {index < React.Children.count(children) - 1 && <div className="h-px bg-neutral-700/50 mx-4"></div>}
+          {index < React.Children.count(children) - 1 && <div className="h-px bg-white/10 mx-4"></div>}
         </React.Fragment>
       ))}
     </div>
@@ -21,10 +21,10 @@ const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({
 const SettingsRow: React.FC<{ label: string; isSelected: boolean; onClick: () => void; }> = ({ label, isSelected, onClick }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center justify-between p-4 text-left transition-colors rounded-lg ${isSelected ? '' : 'hover:bg-neutral-700/30'}`}
+    className={`w-full flex items-center justify-between p-4 text-left transition-colors rounded-lg ${isSelected ? 'bg-brand-amber-start/10' : 'hover:bg-white/5'}`}
   >
-    <span className={`font-medium ${isSelected ? 'text-amber-400' : 'text-white'}`}>{label}</span>
-    {isSelected && <Check className="w-5 h-5 text-amber-400" />}
+    <span className={`font-medium ${isSelected ? 'text-brand-amber-start' : 'text-white'}`}>{label}</span>
+    {isSelected && <Check className="w-5 h-5 text-brand-amber-start" />}
   </button>
 );
 
@@ -68,9 +68,9 @@ const RollsSettingsView: React.FC = () => {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end z-[60]" onClick={handleClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full bg-neutral-800 rounded-t-2xl shadow-2xl flex flex-col max-h-[80vh] animate-slide-up"
+        className="w-full bg-gradient-to-b from-neutral-800/80 to-neutral-900/90 backdrop-blur-2xl border-t border-white/10 rounded-t-2xl shadow-2xl flex flex-col max-h-[80vh] animate-slide-up"
       >
-        <div {...handlers} className="flex-shrink-0 p-4 text-center relative cursor-grab border-b border-neutral-700/50">
+        <div {...handlers} className="flex-shrink-0 p-4 text-center relative cursor-grab">
           <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto mb-2"></div>
           <h2 className="text-lg font-bold text-white">Display Options</h2>
           <button onClick={handleClose} className="absolute top-1/2 -translate-y-1/2 right-4 p-2 text-gray-400 hover:text-white transition-colors rounded-full">
@@ -104,10 +104,10 @@ const RollsSettingsView: React.FC = () => {
           </SettingsGroup>
         </div>
 
-        <div className="p-4 border-t border-neutral-700/50 flex-shrink-0">
+        <div className="p-4 border-t border-neutral-700/50 flex-shrink-0 bg-neutral-900/50">
           <button
             onClick={handleClose}
-            className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors"
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-black font-bold transition-all shadow-lg shadow-brand-amber-start/20 hover:opacity-90 active:scale-95"
           >
             Done
           </button>
