@@ -181,7 +181,7 @@ const RollsView: React.FC = () => {
                 {processedRolls.length > 0 ? (
                   groupEntries.map(([groupName, rolls]) => (
                     <div key={groupName}>
-                      <h3 className="sticky top-[80px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
+                      <h3 className="sticky top-[80px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-700/90 backdrop-blur-lg border-y border-neutral-600/50 pr-[150px]">
                         {groupName}
                       </h3>
                       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
