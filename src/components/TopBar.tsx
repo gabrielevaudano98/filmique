@@ -12,7 +12,7 @@ const TopBar: React.FC = () => {
 
   const headerClasses = `sticky top-0 z-40 transition-all duration-300 backdrop-blur-lg ${
     isStudioView
-      ? 'bg-neutral-100/10'
+      ? 'bg-neutral-100/15'
       : 'bg-neutral-900/80 border-b border-neutral-700/50'
   } ${!isTopBarVisible ? '-translate-y-full' : 'translate-y-0'}`;
   
