@@ -79,8 +79,11 @@ export const useRollsAndPhotos = (
       await refreshProfile();
 
       // If there's an existing active roll, delete it locally.
-      if (activeRoll) {
-        await db.rolls.delete(activeRoll.id);
+      // Fetch the current active roll directly from the DB to avoid stale closures.
+      const userRolls = await db.rolls.where({ user_id: profile.id }).toArray();
+      const currentActiveRoll = userRolls.find(r => !r.is_completed);
+      if (currentActiveRoll) {
+        await db.rolls.delete(currentActiveRoll.id);
         // TODO: Queue a transaction to delete the old roll from Supabase.
       }
 
@@ -105,47 +108,57 @@ export const useRollsAndPhotos = (
       showErrorToast(error.message || 'An error occurred while loading film.');
       dismissToast(toastId);
     }
-  }, [profile, activeRoll, refreshProfile]);
+  }, [profile, refreshProfile]);
 
   const takePhoto = useCallback(async (imageBlob: Blob, metadata: any) => {
-    if (!profile || !activeRoll || isSavingPhoto) return;
-
-    if (activeRoll.shots_used >= activeRoll.capacity) {
-      showWarningToast("This film roll is already full.");
-      return;
-    }
+    if (!profile || isSavingPhoto) return;
 
     impact(ImpactStyle.Light);
     setIsSavingPhoto(true);
     
     try {
+      // Fetch the current active roll directly from the DB to ensure we have the latest state
+      const currentActiveRoll = await db.rolls.where({ user_id: profile.id, is_completed: false }).first();
+
+      if (!currentActiveRoll) {
+        showErrorToast("No active roll loaded.");
+        setIsSavingPhoto(false);
+        return;
+      }
+
+      if (currentActiveRoll.shots_used >= currentActiveRoll.capacity) {
+        showWarningToast("This film roll is already full.");
+        setIsSavingPhoto(false);
+        return;
+      }
+
       // TODO: STEP 3 - Save imageBlob to local filesystem and get local_path.
       // For now, we'll proceed with only the database record.
-      const local_path = `placeholder/${profile.id}/${activeRoll.id}/${Date.now()}.jpeg`;
+      const local_path = `placeholder/${profile.id}/${currentActiveRoll.id}/${Date.now()}.jpeg`;
 
       const newPhoto: LocalPhoto = {
         id: crypto.randomUUID(),
         user_id: profile.id,
-        roll_id: activeRoll.id,
+        roll_id: currentActiveRoll.id,
         local_path,
         metadata,
         created_at: new Date().toISOString(),
       };
 
-      const newShotsUsed = activeRoll.shots_used + 1;
-      const isCompleted = newShotsUsed >= activeRoll.capacity;
+      const newShotsUsed = currentActiveRoll.shots_used + 1;
+      const isCompleted = newShotsUsed >= currentActiveRoll.capacity;
 
       // Use a Dexie transaction to ensure both operations succeed or fail together.
       await db.transaction('rw', db.photos, db.rolls, async () => {
         await db.photos.add(newPhoto);
-        await db.rolls.update(activeRoll.id, { 
+        await db.rolls.update(currentActiveRoll.id, { 
           shots_used: newShotsUsed, 
           is_completed: isCompleted 
         });
       });
 
       if (isCompleted) {
-        const completedRoll = await db.rolls.get(activeRoll.id);
+        const completedRoll = await db.rolls.get(currentActiveRoll.id);
         if (completedRoll) setRollToConfirm(completedRoll);
       }
 
@@ -155,7 +168,7 @@ export const useRollsAndPhotos = (
     } finally {
       setIsSavingPhoto(false);
     }
-  }, [profile, activeRoll, isSavingPhoto, impact]);
+  }, [profile, isSavingPhoto, impact]);
 
   const sendToStudio = async (roll: Roll, title: string) => {
     const completedAt = new Date().toISOString();
