@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { isRollDeveloped } from '../utils/rollUtils';
@@ -32,34 +32,9 @@ const RollsView: React.FC = () => {
     developingRolls, completedRolls,
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
     searchTerm, setSearchTerm,
-    setIsTopBarVisible,
   } = useAppContext();
 
   const [activeSection, setActiveSection] = useState<'rolls' | 'darkroom' | 'prints'>('rolls');
-  const [isHeaderStuck, setIsHeaderStuck] = useState(false);
-  const headerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setIsTopBarVisible(false);
-    return () => {
-      setIsTopBarVisible(true);
-    };
-  }, [setIsTopBarVisible]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setIsHeaderStuck(!entry.isIntersecting && entry.boundingClientRect.top < 0);
-      },
-      { threshold: 0, rootMargin: "-1px 0px 0px 0px" }
-    );
-
-    const currentHeaderRef = headerRef.current;
-    if (currentHeaderRef) observer.observe(currentHeaderRef);
-    return () => {
-      if (currentHeaderRef) observer.unobserve(currentHeaderRef);
-    };
-  }, []);
 
   const { shelfRolls, archivedRolls } = useMemo(() => {
     const developed = completedRolls.filter(r => isRollDeveloped(r));
@@ -133,32 +108,14 @@ const RollsView: React.FC = () => {
   const groupEntries = Object.entries(groupedRolls);
 
   const sectionOptions = [
-    { value: 'rolls', label: 'Shelf', icon: Library, colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' } },
-    { value: 'darkroom', label: 'Darkroom', icon: Clock, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' } },
-    { value: 'prints', label: 'Prints', icon: Printer, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' } },
+    { value: 'rolls', icon: Library, colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' } },
+    { value: 'darkroom', icon: Clock, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' } },
+    { value: 'prints', icon: Printer, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' } },
   ];
 
   return (
     <div className="flex flex-col w-full">
-      {/* Sticky Header */}
-      <div 
-        className={`sticky top-0 z-30 bg-neutral-900/80 backdrop-blur-lg border-b border-neutral-700/50 transition-opacity duration-300 ${isHeaderStuck ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-        style={{ paddingTop: 'env(safe-area-inset-top)' }}
-      >
-        <div className="flex items-center justify-between h-16 px-4">
-          <h1 className="text-xl font-bold text-white">Studio</h1>
-          <div className="w-auto">
-            <SegmentedControl
-              options={sectionOptions}
-              value={activeSection}
-              onChange={(val) => setActiveSection(val as any)}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Main Header (Observed) */}
-      <div ref={headerRef} className="flex items-center justify-between mb-6 bg-neutral-100/15 backdrop-blur-lg -mx-4 px-4 pt-4 pb-6 border-b border-white/10" style={{ marginTop: `calc(-1 * env(safe-area-inset-top))` }}>
+      <div className="flex items-center justify-between mb-6 bg-neutral-100/15 backdrop-blur-lg -mx-4 -mt-4 px-4 pt-4 pb-6 border-b border-white/10">
         <h1 className="text-3xl font-bold text-white">Studio</h1>
         <div className="w-auto">
           <SegmentedControl
@@ -169,7 +126,7 @@ const RollsView: React.FC = () => {
         </div>
       </div>
 
-      <div className="relative flex-1 -mt-6">
+      <div className="relative flex-1">
         {activeSection === 'darkroom' && (
           <div key="darkroom" className="animate-slide-in-from-left">
             {developingRolls.length > 0 ? (
