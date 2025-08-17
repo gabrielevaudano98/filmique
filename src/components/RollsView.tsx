@@ -145,11 +145,11 @@ const RollsView: React.FC = () => {
                 <RollsControls />
               </div>
             </div>
-            <div className="-mt-14">
+            <div className="space-y-6 -mt-14">
               {processedRolls.length > 0 ? (
                 groupEntries.map(([groupName, rolls]) => (
-                  <div key={groupName} className="mb-6">
-                    <h3 className="sticky top-[120px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
+                  <div key={groupName}>
+                    <h3 className="sticky top-[64px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
                       {groupName}
                     </h3>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
