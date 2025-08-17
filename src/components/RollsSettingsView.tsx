@@ -7,11 +7,11 @@ import TextSegmentedControl from './TextSegmentedControl';
 const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div className="mb-6">
     <h3 className="px-2 pb-2 text-sm font-semibold text-gray-400 uppercase tracking-wider">{title}</h3>
-    <div className="bg-white/5 rounded-xl border border-white/10">
+    <div className="bg-neutral-900/50 backdrop-blur-sm rounded-xl border border-neutral-700/50 shadow-lg shadow-black/20">
       {React.Children.map(children, (child, index) => (
         <React.Fragment key={index}>
           {child}
-          {index < React.Children.count(children) - 1 && <div className="h-px bg-white/10 mx-4"></div>}
+          {index < React.Children.count(children) - 1 && <div className="h-px bg-neutral-700/50 mx-4"></div>}
         </React.Fragment>
       ))}
     </div>
@@ -70,7 +70,7 @@ const RollsSettingsView: React.FC = () => {
         onClick={(e) => e.stopPropagation()}
         className="w-full bg-gradient-to-b from-neutral-800/80 to-neutral-900/90 backdrop-blur-2xl border-t border-white/10 rounded-t-2xl shadow-2xl flex flex-col max-h-[80vh] animate-slide-up"
       >
-        <div {...handlers} className="flex-shrink-0 p-4 text-center relative cursor-grab">
+        <div {...handlers} className="flex-shrink-0 p-4 text-center relative cursor-grab border-b border-neutral-700/50">
           <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto mb-2"></div>
           <h2 className="text-lg font-bold text-white">Display Options</h2>
           <button onClick={handleClose} className="absolute top-1/2 -translate-y-1/2 right-4 p-2 text-gray-400 hover:text-white transition-colors rounded-full">
