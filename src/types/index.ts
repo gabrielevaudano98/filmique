@@ -247,4 +247,6 @@ export interface AppContextType {
   isStudioHeaderSticky: boolean;
   setIsStudioHeaderSticky: (isSticky: boolean) => void;
   studioSectionOptions: any[];
+  isRollsSettingsOpen: boolean;
+  setIsRollsSettingsOpen: (isOpen: boolean) => void;
 }

@@ -7,7 +7,7 @@ interface RollsControlsProps {
 }
 
 const RollsControls: React.FC<RollsControlsProps> = ({ theme = 'dark' }) => {
-  const { setCurrentView } = useAppContext();
+  const { setIsRollsSettingsOpen } = useAppContext();
   const isLight = theme === 'light';
 
   const buttonClasses = isLight
@@ -16,7 +16,7 @@ const RollsControls: React.FC<RollsControlsProps> = ({ theme = 'dark' }) => {
 
   return (
     <button
-      onClick={() => setCurrentView('rollsSettings')}
+      onClick={() => setIsRollsSettingsOpen(true)}
       className={`flex items-center justify-center w-11 h-11 backdrop-blur-lg border rounded-xl transition-colors ${buttonClasses}`}
       aria-label="Display options"
     >

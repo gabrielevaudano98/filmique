@@ -281,3 +281,17 @@
 
 .animate-slide-in-from-right { animation: slide-in-from-right 350ms ease-out forwards; }
 .animate-slide-in-from-left { animation: slide-in-from-left 350ms ease-out forwards; }
+
+/* Bottom Sheet Animation */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.4s cubic-bezier(0.2, 1, 0.35, 1) forwards;
+}

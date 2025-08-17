@@ -26,7 +26,8 @@ function App() {
     session, profile, isLoading, currentView, authStep, 
     rollToConfirm, setRollToConfirm, 
     sendToStudio, putOnShelf,
-    developedRollForWizard, setDevelopedRollForWizard
+    developedRollForWizard, setDevelopedRollForWizard,
+    isRollsSettingsOpen
   } = useAppContext();
 
   const renderCurrentView = () => {
@@ -41,7 +42,6 @@ function App() {
       case 'albumDetail': return <AlbumDetailView />;
       case 'notifications': return <NotificationsView />;
       case 'uncategorizedRolls': return <UncategorizedRollsView />;
-      case 'rollsSettings': return <RollsSettingsView />;
       default: return <CommunityView />;
     }
   };
@@ -109,6 +109,7 @@ function App() {
       <TopBar />
       {completionWizard}
       {postDevelopmentWizard}
+      {isRollsSettingsOpen && <RollsSettingsView />}
       <main className="min-h-screen w-full pb-28">
         <div className="max-w-6xl mx-auto w-full h-full px-4 py-4">
           {renderCurrentView()}

@@ -1,38 +1,36 @@
 import React from 'react';
 import { useSwipeable } from 'react-swipeable';
-import { ArrowLeft } from 'lucide-react';
+import { X, Check } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import SegmentedControl from './SegmentedControl';
+import TextSegmentedControl from './TextSegmentedControl';
 
 const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div className="mb-6">
-    <h3 className="px-4 pb-2 text-sm font-semibold text-gray-400 uppercase tracking-wider">{title}</h3>
-    <div className="bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-xl p-2 space-y-1">
-      {children}
+    <h3 className="px-2 pb-2 text-sm font-semibold text-gray-400 uppercase tracking-wider">{title}</h3>
+    <div className="bg-neutral-900/50 rounded-xl border border-neutral-700/50">
+      {React.Children.map(children, (child, index) => (
+        <React.Fragment key={index}>
+          {child}
+          {index < React.Children.count(children) - 1 && <div className="h-px bg-neutral-700/50 mx-4"></div>}
+        </React.Fragment>
+      ))}
     </div>
   </div>
 );
 
-const SettingsRow: React.FC<{
-  label: string;
-  isSelected: boolean;
-  onClick: () => void;
-}> = ({ label, isSelected, onClick }) => (
+const SettingsRow: React.FC<{ label: string; isSelected: boolean; onClick: () => void; }> = ({ label, isSelected, onClick }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center justify-between p-3 text-left transition-all duration-200 border rounded-lg ${
-      isSelected
-        ? 'border-brand-amber-start bg-brand-amber-start/10'
-        : 'border-transparent hover:bg-neutral-700/50'
-    }`}
+    className={`w-full flex items-center justify-between p-4 text-left transition-colors rounded-lg ${isSelected ? '' : 'hover:bg-neutral-700/30'}`}
   >
-    <span className={`font-medium ${isSelected ? 'text-brand-amber-start' : 'text-white'}`}>{label}</span>
+    <span className={`font-medium ${isSelected ? 'text-amber-400' : 'text-white'}`}>{label}</span>
+    {isSelected && <Check className="w-5 h-5 text-amber-400" />}
   </button>
 );
 
 const RollsSettingsView: React.FC = () => {
   const {
-    setCurrentView,
+    setIsRollsSettingsOpen,
     completedRolls,
     rollsSortOrder, setRollsSortOrder,
     rollsGroupBy, setRollsGroupBy,
@@ -40,8 +38,10 @@ const RollsSettingsView: React.FC = () => {
     rollsViewMode, setRollsViewMode,
   } = useAppContext();
 
+  const handleClose = () => setIsRollsSettingsOpen(false);
+
   const handlers = useSwipeable({
-    onSwipedRight: () => setCurrentView('rolls'),
+    onSwipedDown: handleClose,
     preventScrollOnSwipe: true,
     trackMouse: true,
   });
@@ -65,64 +65,53 @@ const RollsSettingsView: React.FC = () => {
   ];
 
   return (
-    <div {...handlers} className="flex-1 flex flex-col bg-transparent text-white h-full">
-      <div className="flex items-center p-4 border-b border-neutral-800 flex-shrink-0">
-        <button onClick={() => setCurrentView('rolls')} className="p-2 text-gray-400 hover:text-white rounded-full">
-          <ArrowLeft className="w-5 h-5" />
-        </button>
-        <h1 className="text-xl font-bold text-white mx-auto">Display Options</h1>
-        <div className="w-6 h-6"></div>
-      </div>
-      <div className="p-4 sm:p-6 overflow-y-auto no-scrollbar flex-1">
-        <SettingsGroup title="Status">
-          <SettingsRow
-            label="Active"
-            isSelected={rollsViewMode === 'active'}
-            onClick={() => setRollsViewMode('active')}
-          />
-          <SettingsRow
-            label="Archived"
-            isSelected={rollsViewMode === 'archived'}
-            onClick={() => setRollsViewMode('archived')}
-          />
-        </SettingsGroup>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end z-[60]" onClick={handleClose}>
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full bg-neutral-800 rounded-t-2xl shadow-2xl flex flex-col max-h-[80vh] animate-slide-up"
+      >
+        <div {...handlers} className="flex-shrink-0 p-4 text-center relative cursor-grab border-b border-neutral-700/50">
+          <div className="w-10 h-1.5 bg-neutral-700 rounded-full mx-auto mb-2"></div>
+          <h2 className="text-lg font-bold text-white">Display Options</h2>
+          <button onClick={handleClose} className="absolute top-1/2 -translate-y-1/2 right-4 p-2 text-gray-400 hover:text-white transition-colors rounded-full">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-        <SettingsGroup title="Group by">
-          <div className="p-2">
-            <SegmentedControl 
-              options={groupOptions} 
-              value={rollsGroupBy} 
-              onChange={setRollsGroupBy} 
-            />
-          </div>
-        </SettingsGroup>
+        <div className="overflow-y-auto no-scrollbar p-4 sm:p-6">
+          <SettingsGroup title="Status">
+            <SettingsRow label="Active" isSelected={rollsViewMode === 'active'} onClick={() => setRollsViewMode('active')} />
+            <SettingsRow label="Archived" isSelected={rollsViewMode === 'archived'} onClick={() => setRollsViewMode('archived')} />
+          </SettingsGroup>
 
-        <SettingsGroup title="Sort by">
-          {sortOptions.map(opt => (
-            <SettingsRow
-              key={opt.key}
-              label={opt.label}
-              isSelected={rollsSortOrder === opt.key}
-              onClick={() => setRollsSortOrder(opt.key)}
-            />
-          ))}
-        </SettingsGroup>
+          <SettingsGroup title="Group by">
+            <div className="p-2">
+              <TextSegmentedControl options={groupOptions} value={rollsGroupBy} onChange={setRollsGroupBy} />
+            </div>
+          </SettingsGroup>
 
-        <SettingsGroup title="Filter by Film">
-          <SettingsRow
-            label="All Film Types"
-            isSelected={rollsSelectedFilm === 'all'}
-            onClick={() => setRollsSelectedFilm('all')}
-          />
-          {filmTypes.map(film => (
-            <SettingsRow
-              key={film}
-              label={film}
-              isSelected={rollsSelectedFilm === film}
-              onClick={() => setRollsSelectedFilm(film)}
-            />
-          ))}
-        </SettingsGroup>
+          <SettingsGroup title="Sort by">
+            {sortOptions.map(opt => (
+              <SettingsRow key={opt.key} label={opt.label} isSelected={rollsSortOrder === opt.key} onClick={() => setRollsSortOrder(opt.key)} />
+            ))}
+          </SettingsGroup>
+
+          <SettingsGroup title="Filter by Film">
+            <SettingsRow label="All Film Types" isSelected={rollsSelectedFilm === 'all'} onClick={() => setRollsSelectedFilm('all')} />
+            {filmTypes.map(film => (
+              <SettingsRow key={film} label={film} isSelected={rollsSelectedFilm === film} onClick={() => setRollsSelectedFilm(film)} />
+            ))}
+          </SettingsGroup>
+        </div>
+
+        <div className="p-4 border-t border-neutral-700/50 flex-shrink-0">
+          <button
+            onClick={handleClose}
+            className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors"
+          >
+            Done
+          </button>
+        </div>
       </div>
     </div>
   );

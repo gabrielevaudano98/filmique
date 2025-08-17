@@ -27,6 +27,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [searchTerm, setSearchTerm] = useState('');
   const [studioSection, setStudioSection] = useState<'rolls' | 'darkroom' | 'prints'>('rolls');
   const [isStudioHeaderSticky, setIsStudioHeaderSticky] = useState(false);
+  const [isRollsSettingsOpen, setIsRollsSettingsOpen] = useState(false);
 
   // Data State
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
@@ -97,7 +98,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     isStudioHeaderSticky,
     setIsStudioHeaderSticky,
     studioSectionOptions,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky]);
+    isRollsSettingsOpen,
+    setIsRollsSettingsOpen,
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, isRollsSettingsOpen]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };
