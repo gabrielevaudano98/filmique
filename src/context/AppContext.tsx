@@ -10,6 +10,7 @@ import * as api from '../services/api';
 import { Library, Clock, Printer } from 'lucide-react';
 import { Network } from '@capacitor/network';
 import { showInfoToast, showSuccessToast } from '../utils/toasts';
+import { useSyncEngine } from '../hooks/useSyncEngine';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -48,6 +49,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const social = useSocial(auth.profile);
   const albumsData = useAlbums(auth.profile);
   const rollsSettings = useRollsSettings();
+
+  // Initialize the sync engine
+  useSyncEngine(isOnline);
 
   useEffect(() => {
     const initializeNetworkListener = async () => {

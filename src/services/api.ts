@@ -60,11 +60,8 @@ export const fetchAllRolls = async (userId: string) => {
   if (data) await setCache(cacheKey, data);
   return { data, error };
 };
-export const deleteRollById = async (rollId: string) => {
-  const { data: roll } = await supabase.from('rolls').select('user_id').eq('id', rollId).single();
-  const result = await supabase.from('rolls').delete().eq('id', rollId);
-  if (!result.error && roll) await invalidateCache([`rolls-${roll.user_id}`, `albums-${roll.user_id}`, 'feed']);
-  return result;
+export const deleteRollById = (rollId: string) => {
+  return supabase.from('rolls').delete().eq('id', rollId);
 };
 export const createNewRoll = async (userId: string, filmType: string, capacity: number, aspectRatio: string) => {
   const result = await supabase.from('rolls').insert({ user_id: userId, film_type: filmType, capacity, aspect_ratio: aspectRatio }).select().single();
