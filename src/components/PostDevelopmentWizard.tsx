@@ -19,6 +19,23 @@ const PostDevelopmentWizard: React.FC<PostDevelopmentWizardProps> = ({ roll, onC
   const [caption, setCaption] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showCreateAlbumModal, setShowCreateAlbumModal] = useState(false);
+  const [photoSrcs, setPhotoSrcs] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const loadPhotoSrcs = async () => {
+      if (roll.photos) {
+        const srcs: Record<string, string> = {};
+        for (const photo of roll.photos) {
+          const localPhoto = photo as LocalPhoto;
+          if (localPhoto.local_path) {
+            srcs[photo.id] = await getPhotoAsWebViewPath(localPhoto.local_path);
+          }
+        }
+        setPhotoSrcs(srcs);
+      }
+    };
+    loadPhotoSrcs();
+  }, [roll.photos]);
 
   useEffect(() => {
     refetchAlbums();
@@ -51,13 +68,13 @@ const PostDevelopmentWizard: React.FC<PostDevelopmentWizardProps> = ({ roll, onC
           <div className="overflow-y-auto no-scrollbar p-5 space-y-6">
             {/* Photo Preview */}
             <div className="flex space-x-2 overflow-x-auto no-scrollbar pb-2">
-              {roll.photos?.slice(0, 5).map(photo => {
-                const localPhoto = photo as LocalPhoto;
-                const imageSrc = localPhoto.url ? localPhoto.url : getPhotoAsWebViewPath(localPhoto.local_path!);
-                return (
-                  <Image key={photo.id} src={`${imageSrc}${cacheBuster}`} alt="developed photo" className="w-20 h-20 rounded-md object-cover bg-gray-700 flex-shrink-0" />
-                );
-              })}
+              {roll.photos?.slice(0, 5).map(photo => (
+                photoSrcs[photo.id] ? (
+                  <Image key={photo.id} src={`${photoSrcs[photo.id]}${cacheBuster}`} alt="developed photo" className="w-20 h-20 rounded-md object-cover bg-gray-700 flex-shrink-0" />
+                ) : (
+                  <div key={photo.id} className="w-20 h-20 rounded-md bg-gray-700 flex-shrink-0" />
+                )
+              ))}
               {roll.photos && roll.photos.length > 5 && (
                 <div className="w-20 h-20 rounded-md bg-gray-700 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                   +{roll.photos.length - 5}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Film, Camera, Clock, ZoomIn, MapPin } from 'lucide-react';
 import { Photo, Roll } from '../types';
 import Histogram from './Histogram';
@@ -22,13 +22,22 @@ const InfoRow: React.FC<{ label: string; value: string | number | undefined; ico
 );
 
 const PhotoInfoModal: React.FC<PhotoInfoModalProps> = ({ photo, roll, onClose }) => {
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadPhotoSrc = async () => {
+      const localPhoto = photo as LocalPhoto;
+      const src = localPhoto.url ? localPhoto.url : await getPhotoAsWebViewPath(localPhoto.local_path!);
+      setImageSrc(src);
+    };
+    loadPhotoSrc();
+  }, [photo]);
+
   const developedDate = roll.developed_at 
     ? new Date(roll.developed_at).toLocaleDateString()
     : 'N/A';
   
   const geolocation = photo.metadata?.geolocation;
-  const localPhoto = photo as LocalPhoto;
-  const imageSrc = localPhoto.url ? localPhoto.url : getPhotoAsWebViewPath(localPhoto.local_path!);
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-end z-[70]" onClick={onClose}>
@@ -44,10 +53,12 @@ const PhotoInfoModal: React.FC<PhotoInfoModalProps> = ({ photo, roll, onClose })
         </header>
 
         <div className="overflow-y-auto p-6 space-y-8 no-scrollbar">
-          <div>
-            <h3 className="text-lg font-semibold text-brand-amber-start mb-4">Color Analysis</h3>
-            <Histogram imageUrl={imageSrc} />
-          </div>
+          {imageSrc && (
+            <div>
+              <h3 className="text-lg font-semibold text-brand-amber-start mb-4">Color Analysis</h3>
+              <Histogram imageUrl={imageSrc} />
+            </div>
+          )}
 
           <div>
             <h3 className="text-lg font-semibold text-brand-amber-start mb-4">Roll Information</h3>

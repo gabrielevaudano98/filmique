@@ -18,6 +18,11 @@ const Histogram: React.FC<HistogramProps> = ({ imageUrl, preset, precomputedData
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!imageUrl) {
+      setIsLoading(false);
+      return;
+    }
+
     if (precomputedData) {
       setHistogramData(precomputedData);
       setIsLoading(false);

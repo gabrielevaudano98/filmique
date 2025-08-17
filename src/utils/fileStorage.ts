@@ -1,7 +1,9 @@
 import { Directory, Filesystem } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
+import { db } from '../integrations/db';
 
-// Helper to read a blob and return a base64 string without the data URL prefix
+const IS_NATIVE = Capacitor.isNativePlatform();
+
 const blobToBase64 = (blob: Blob): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -16,56 +18,83 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
 };
 
 /**
- * Saves a photo blob to the device's private data directory.
- * @returns The URI of the saved file.
+ * Saves a photo blob to the appropriate storage for the platform.
+ * @returns A platform-specific path/identifier for the saved photo.
  */
-export const savePhoto = async (blob: Blob, userId: string, rollId: string): Promise<string> => {
-  const filename = `${Date.now()}.jpeg`;
-  const path = `photos/${userId}/${rollId}/${filename}`;
-
-  const base64Data = await blobToBase64(blob);
-
-  const result = await Filesystem.writeFile({
-    path,
-    data: base64Data,
-    directory: Directory.Data, // Private to the app, not user-visible
-    recursive: true, // Create parent directories if they don't exist
-  });
-
-  return result.uri;
+export const savePhoto = async (blob: Blob, userId: string, rollId: string, photoId: string): Promise<string> => {
+  if (IS_NATIVE) {
+    const filename = `${photoId}.jpeg`;
+    const path = `photos/${userId}/${rollId}/${filename}`;
+    const base64Data = await blobToBase64(blob);
+    const result = await Filesystem.writeFile({
+      path,
+      data: base64Data,
+      directory: Directory.Data,
+      recursive: true,
+    });
+    return result.uri;
+  } else {
+    // On web, we store the blob in IndexedDB.
+    await db.photo_blobs.put({ photo_id: photoId, blob });
+    // The "path" is simply the photo's ID, which we'll use to look it up.
+    return photoId;
+  }
 };
 
 /**
- * Converts a filesystem URI to a URL that can be used in the WebView's <img> tags.
+ * Gets a displayable URL for a photo from its local path/identifier.
  */
-export const getPhotoAsWebViewPath = (uri: string): string => {
-  return Capacitor.convertFileSrc(uri);
+export const getPhotoAsWebViewPath = async (pathOrId: string): Promise<string> => {
+  if (IS_NATIVE) {
+    // On native, this is a synchronous conversion.
+    return Capacitor.convertFileSrc(pathOrId);
+  } else {
+    // On web, we read from IndexedDB and create a temporary object URL.
+    const record = await db.photo_blobs.get(pathOrId);
+    if (record?.blob) {
+      return URL.createObjectURL(record.blob);
+    }
+    // Return a transparent pixel as a fallback.
+    return 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+  }
 };
 
 /**
- * Reads a local file URI and returns its content as a base64 data URL.
- * This is necessary for components like Canvas that can't use the WebView path directly.
+ * Reads a local photo and returns its content as a base64 data URL.
  */
-export const getPhotoAsBase64 = async (uri: string): Promise<string> => {
-  const result = await Filesystem.readFile({ path: uri });
-  return `data:image/jpeg;base64,${result.data}`;
+export const getPhotoAsBase64 = async (pathOrId: string): Promise<string> => {
+  if (IS_NATIVE) {
+    const result = await Filesystem.readFile({ path: pathOrId });
+    return `data:image/jpeg;base64,${result.data}`;
+  } else {
+    const record = await db.photo_blobs.get(pathOrId);
+    if (record?.blob) {
+      const base64 = await blobToBase64(record.blob);
+      return `data:image/jpeg;base64,${base64}`;
+    }
+    return '';
+  }
 };
 
 /**
- * Deletes an entire directory for a roll, cleaning up all its photos.
+ * Deletes all local files/blobs associated with a roll.
  */
 export const deleteRollDirectory = async (userId: string, rollId: string): Promise<void> => {
+  if (IS_NATIVE) {
     const path = `photos/${userId}/${rollId}`;
     try {
-        await Filesystem.rmdir({
-            path,
-            directory: Directory.Data,
-            recursive: true,
-        });
+      await Filesystem.rmdir({ path, directory: Directory.Data, recursive: true });
     } catch (e) {
-        // It's okay if the directory doesn't exist. We can ignore that error.
-        if ((e as any).message !== 'Folder does not exist.') {
-            console.error(`Failed to delete directory ${path}`, e);
-        }
+      if ((e as any).message !== 'Folder does not exist.') {
+        console.error(`Failed to delete directory ${path}`, e);
+      }
     }
+  } else {
+    // On web, delete all blobs for photos belonging to this roll.
+    const photosToDelete = await db.photos.where('roll_id').equals(rollId).toArray();
+    const photoIds = photosToDelete.map(p => p.id);
+    if (photoIds.length > 0) {
+      await db.photo_blobs.bulkDelete(photoIds);
+    }
+  }
 };

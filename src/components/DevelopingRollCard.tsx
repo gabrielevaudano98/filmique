@@ -14,9 +14,26 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll }) => {
   const { filmStocks, developRoll } = useAppContext();
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [photoSrcs, setPhotoSrcs] = useState<Record<string, string>>({});
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const canisterRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const loadPhotoSrcs = async () => {
+      if (roll.photos) {
+        const srcs: Record<string, string> = {};
+        for (const photo of roll.photos) {
+          const localPhoto = photo as LocalPhoto;
+          if (localPhoto.local_path) {
+            srcs[photo.id] = await getPhotoAsWebViewPath(localPhoto.local_path);
+          }
+        }
+        setPhotoSrcs(srcs);
+      }
+    };
+    loadPhotoSrcs();
+  }, [roll.photos]);
 
   useEffect(() => {
     if (!roll.completed_at) return;
@@ -121,17 +138,17 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll }) => {
             />
           </div>
           {roll.photos && roll.photos.length > 0 ? (
-            roll.photos.map(photo => {
-              const localPhoto = photo as LocalPhoto;
-              const imageSrc = localPhoto.url ? localPhoto.url : getPhotoAsWebViewPath(localPhoto.local_path!);
-              return (
+            roll.photos.map(photo => (
+              photoSrcs[photo.id] ? (
                 <NegativePhoto
                   key={photo.id}
-                  src={imageSrc}
+                  src={photoSrcs[photo.id]}
                   className="h-24 w-auto rounded-sm object-cover bg-neutral-700 shrink-0"
                 />
-              );
-            })
+              ) : (
+                <div key={photo.id} className="h-24 w-auto aspect-square rounded-sm bg-neutral-700 shrink-0" />
+              )
+            ))
           ) : (
             <div className="h-24 flex items-center justify-center text-gray-400 text-sm px-4 shrink-0">
               No photos in this roll.

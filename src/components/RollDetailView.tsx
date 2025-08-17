@@ -32,6 +32,23 @@ const RollDetailView: React.FC = () => {
   const debouncedTags = useDebounce(tags, 1000);
   const [isSticky, setIsSticky] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
+  const [photoSrcs, setPhotoSrcs] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const loadPhotoSrcs = async () => {
+      if (selectedRoll?.photos) {
+        const srcs: Record<string, string> = {};
+        for (const photo of selectedRoll.photos) {
+          const localPhoto = photo as LocalPhoto;
+          if (localPhoto.local_path) {
+            srcs[photo.id] = await getPhotoAsWebViewPath(localPhoto.local_path);
+          }
+        }
+        setPhotoSrcs(srcs);
+      }
+    };
+    loadPhotoSrcs();
+  }, [selectedRoll?.photos]);
 
   const handleBack = useCallback(() => {
     setSelectedRoll(null);
@@ -147,18 +164,18 @@ const RollDetailView: React.FC = () => {
                 </div>
                 {/* Photos */}
                 <div className="flex space-x-2 p-2">
-                  {selectedRoll.photos?.map((photo) => {
-                    const localPhoto = photo as LocalPhoto;
-                    const imageSrc = localPhoto.url ? localPhoto.url : getPhotoAsWebViewPath(localPhoto.local_path!);
-                    return (
-                      <button key={photo.id} onClick={() => setPhotoToView(photo)} className="w-40 h-40 flex-shrink-0 rounded-md overflow-hidden group bg-neutral-900">
+                  {selectedRoll.photos?.map((photo) => (
+                    <button key={photo.id} onClick={() => setPhotoToView(photo)} className="w-40 h-40 flex-shrink-0 rounded-md overflow-hidden group bg-neutral-900">
+                      {photoSrcs[photo.id] ? (
                         <NegativePhoto
-                          src={imageSrc}
+                          src={photoSrcs[photo.id]}
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         />
-                      </button>
-                    );
-                  })}
+                      ) : (
+                        <div className="w-full h-full bg-neutral-700" />
+                      )}
+                    </button>
+                  ))}
                 </div>
                 {/* Bottom Sprockets */}
                 <div className="flex px-2">

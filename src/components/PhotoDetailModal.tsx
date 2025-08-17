@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Download, Info, Share as ShareIcon } from 'lucide-react';
 import { Photo } from '../context/AppContext';
 import { useAppContext } from '../context/AppContext';
@@ -16,6 +16,16 @@ interface PhotoDetailModalProps {
 const PhotoDetailModal: React.FC<PhotoDetailModalProps> = ({ photo, onClose, onShowInfo }) => {
   const { downloadPhoto } = useAppContext();
   const { sharePhoto } = useNativeShare();
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadPhotoSrc = async () => {
+      const localPhoto = photo as LocalPhoto;
+      const src = localPhoto.url ? localPhoto.url : await getPhotoAsWebViewPath(localPhoto.local_path!);
+      setImageSrc(src);
+    };
+    loadPhotoSrc();
+  }, [photo]);
 
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -32,14 +42,12 @@ const PhotoDetailModal: React.FC<PhotoDetailModalProps> = ({ photo, onClose, onS
     onShowInfo();
   };
 
-  const localPhoto = photo as LocalPhoto;
-  const imageSrc = localPhoto.url ? localPhoto.url : getPhotoAsWebViewPath(localPhoto.local_path!);
   const cacheBuster = `?t=${new Date().getTime()}`;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-90 backdrop-blur-sm flex items-center justify-center z-[60] p-4" onClick={onClose}>
       <div className="relative max-w-4xl max-h-[90vh] w-full h-full" onClick={e => e.stopPropagation()}>
-        <Image src={`${imageSrc}${cacheBuster}`} alt="Full size view" className="w-full h-full object-contain" />
+        {imageSrc && <Image src={`${imageSrc}${cacheBuster}`} alt="Full size view" className="w-full h-full object-contain" />}
         <div className="absolute top-4 right-4 flex space-x-2">
           <button onClick={handleShowInfo} className="bg-gray-800/70 hover:bg-gray-700 text-white font-semibold p-3 rounded-full transition-colors">
             <Info className="w-6 h-6" />

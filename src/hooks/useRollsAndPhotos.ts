@@ -23,20 +23,21 @@ export const useRollsAndPhotos = (
   const [developedRollForWizard, setDevelopedRollForWizard] = useState<Roll | null>(null);
   const { impact, notification } = useHaptics();
 
-  // --- Live Queries: The new source of truth from the local DB ---
   const allRolls = useLiveQuery(
     () => profile ? db.rolls.where('user_id').equals(profile.id).toArray() : [],
     [profile]
   );
 
-  const { activeRoll, completedRolls } = useMemo(() => {
-    if (!allRolls) return { activeRoll: null, completedRolls: [] };
-    const active = allRolls.find(r => !r.is_completed) || null;
-    const completed = allRolls.filter(r => r.is_completed);
-    return { activeRoll, completedRolls };
+  const activeRoll = useMemo(() => {
+    if (!allRolls) return null;
+    return allRolls.find(r => !r.is_completed) || null;
   }, [allRolls]);
 
-  // Syncs data from Supabase down to the local Dexie DB.
+  const completedRolls = useMemo(() => {
+    if (!allRolls) return [];
+    return allRolls.filter(r => r.is_completed);
+  }, [allRolls]);
+
   const syncDownRollsFromCloud = useCallback(async () => {
     if (!profile) return;
     const { data: cloudRolls, error } = await api.fetchAllRolls(profile.id);
@@ -126,13 +127,14 @@ export const useRollsAndPhotos = (
         return;
       }
 
-      const fileUri = await savePhoto(imageBlob, profile.id, currentActiveRoll.id);
+      const photoId = crypto.randomUUID();
+      const fileUriOrId = await savePhoto(imageBlob, profile.id, currentActiveRoll.id, photoId);
 
       const newPhoto: LocalPhoto = {
-        id: crypto.randomUUID(),
+        id: photoId,
         user_id: profile.id,
         roll_id: currentActiveRoll.id,
-        local_path: fileUri,
+        local_path: fileUriOrId,
         metadata,
         created_at: new Date().toISOString(),
       };

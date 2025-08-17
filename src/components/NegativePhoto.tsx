@@ -10,6 +10,8 @@ const NegativePhoto: React.FC<NegativePhotoProps> = ({ src, className }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    if (!src) return;
+
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext('2d', { willReadFrequently: true });
     if (!canvas || !ctx) return;
@@ -65,9 +67,7 @@ const NegativePhoto: React.FC<NegativePhotoProps> = ({ src, className }) => {
       if (src.startsWith('capacitor://')) {
         img.src = await getPhotoAsBase64(src);
       } else {
-        const url = new URL(src);
-        url.searchParams.set('t', new Date().getTime().toString());
-        img.src = url.toString();
+        img.src = src;
       }
     };
 

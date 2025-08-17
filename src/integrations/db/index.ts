@@ -25,21 +25,40 @@ export interface LocalPhoto extends Omit<Photo, 'url' | 'thumbnail_url'> {
   thumbnail_url?: string | null;
 }
 
+export interface PhotoBlob {
+  photo_id: string;
+  blob: Blob;
+}
+
 // This class defines the database schema.
 export class FilmiqueDB extends Dexie {
   rolls!: Table<LocalRoll>;
   photos!: Table<LocalPhoto>;
   profile!: Table<UserProfile>;
   pending_transactions!: Table<PendingTransaction>;
+  photo_blobs!: Table<PhotoBlob>;
 
   constructor() {
     super('filmiqueDB');
-    this.version(1).stores({
+    this.version(2).stores({
       // 'id' is the primary key. The other fields are indexed for faster queries.
       rolls: 'id, user_id, is_completed, sync_status, album_id',
       photos: 'id, roll_id, user_id, local_path',
       profile: 'id',
       // '++id' means it's an auto-incrementing primary key.
+      pending_transactions: '++id, type, status, created_at',
+      photo_blobs: 'photo_id', // New table for storing image blobs
+    }).upgrade(tx => {
+      // This upgrade function is empty because we are just adding a new table.
+      // Dexie handles this automatically. If we were changing an existing table,
+      // we would put the migration logic here.
+      return tx.table('photo_blobs').clear();
+    });
+
+    this.version(1).stores({
+      rolls: 'id, user_id, is_completed, sync_status, album_id',
+      photos: 'id, roll_id, user_id, local_path',
+      profile: 'id',
       pending_transactions: '++id, type, status, created_at',
     });
   }
