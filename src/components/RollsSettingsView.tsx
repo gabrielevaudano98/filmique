@@ -103,15 +103,6 @@ const RollsSettingsView: React.FC = () => {
             ))}
           </SettingsGroup>
         </div>
-
-        <div className="p-4 border-t border-neutral-700/50 flex-shrink-0 bg-neutral-900/50">
-          <button
-            onClick={handleClose}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-black font-bold transition-all shadow-lg shadow-brand-amber-start/20 hover:opacity-90 active:scale-95"
-          >
-            Done
-          </button>
-        </div>
       </div>
     </div>
   );
