@@ -6,18 +6,17 @@ const TopBar: React.FC = () => {
   const { notifications, setCurrentView, headerAction, isTopBarVisible, currentView } = useAppContext();
   const unreadCount = notifications.filter(n => !n.is_read).length;
 
-  const isLight = currentView === 'rolls';
+  const isStudioView = currentView === 'rolls';
 
   const BackButton = headerAction ? headerAction.icon : null;
 
-  const headerClasses = `sticky top-0 z-40 transition-colors duration-300 backdrop-blur-lg ${
-    isLight
-      ? 'bg-gradient-to-b from-white to-neutral-100/80'
+  const headerClasses = `sticky top-0 z-40 transition-all duration-300 backdrop-blur-lg ${
+    isStudioView
+      ? 'bg-neutral-100/10'
       : 'bg-neutral-900/80 border-b border-neutral-700/50'
   } ${!isTopBarVisible ? '-translate-y-full' : 'translate-y-0'}`;
   
-  const titleClasses = isLight ? 'text-black' : 'text-white';
-  const backButtonClasses = isLight ? 'text-neutral-600 hover:text-black' : 'text-gray-300 hover:text-white';
+  const backButtonClasses = 'text-gray-300 hover:text-white';
 
   return (
     <header 
@@ -32,11 +31,11 @@ const TopBar: React.FC = () => {
             </button>
           )}
         </div>
-        <h1 className={`text-lg font-bold ${titleClasses}`}>
+        <h1 className="text-lg font-bold text-white">
           Filmique
         </h1>
         <NotificationsBell 
-          theme={isLight ? 'light' : 'dark'}
+          theme="dark"
           unreadCount={unreadCount} 
           onClick={() => setCurrentView('notifications')} 
         />
