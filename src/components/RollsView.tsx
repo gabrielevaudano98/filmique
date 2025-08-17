@@ -108,9 +108,9 @@ const RollsView: React.FC = () => {
   const groupEntries = Object.entries(groupedRolls);
 
   const sectionOptions = [
-    { value: 'rolls', icon: Library, colors: { from: 'from-violet-500', to: 'to-sky-500', shadow: 'shadow-sky-500/40' } },
-    { value: 'darkroom', icon: Clock, colors: { from: 'from-yellow-400', to: 'to-brand-amber-start', shadow: 'shadow-brand-amber-start/40' } },
-    { value: 'prints', icon: Printer, colors: { from: 'from-teal-400', to: 'to-green-500', shadow: 'shadow-green-500/30' } },
+    { value: 'rolls', icon: Library, colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' } },
+    { value: 'darkroom', icon: Clock, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' } },
+    { value: 'prints', icon: Printer, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' } },
   ];
 
   return (
@@ -149,7 +149,7 @@ const RollsView: React.FC = () => {
               {processedRolls.length > 0 ? (
                 groupEntries.map(([groupName, rolls]) => (
                   <div key={groupName}>
-                    <h3 className="sticky top-[120px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
+                    <h3 className="sticky top-[64px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-900/80 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
                       {groupName}
                     </h3>
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
