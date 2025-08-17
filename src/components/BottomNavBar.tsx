@@ -47,8 +47,8 @@ const BottomNavBar: React.FC = () => {
   const rightItems = navItems.slice(1, 3);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 h-28 flex justify-center z-50 pointer-events-none pb-safe">
-      <div className="relative flex items-center pointer-events-auto">
+    <nav className="fixed bottom-0 left-0 right-0 h-28 flex justify-center z-50 pointer-events-none pb-safe-b">
+      <div className="relative flex items-center pointer-events-auto pl-safe-l pr-safe-r">
         {/* Main glass pill background */}
         <div className="absolute top-1/2 -translate-y-1/2 h-[72px] w-full bg-gradient-to-b from-neutral-800/60 to-neutral-900/70 backdrop-blur-2xl rounded-[36px] border border-white/10 shadow-depth shadow-[inset_0_1px_0_0_rgba(255,255,255,0.07)]"></div>
 

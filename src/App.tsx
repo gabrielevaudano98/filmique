@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { App as CapacitorApp } from '@capacitor/app';
+import { StatusBar, Style } from '@capacitor/status-bar';
+import { SplashScreen } from '@capacitor/splash-screen';
 import CameraView from './components/CameraView';
 import RollsView from './components/RollsView';
 import CommunityView from './components/CommunityView';
@@ -34,67 +36,40 @@ function App() {
   } = useAppContext();
 
   useEffect(() => {
+    const initializeNativeApp = async () => {
+      if (Capacitor.isNativePlatform()) {
+        await StatusBar.setStyle({ style: Style.Dark });
+        await SplashScreen.hide();
+      }
+    };
+    initializeNativeApp();
+  }, []);
+
+  useEffect(() => {
     if (!Capacitor.isNativePlatform()) return;
 
     const handleBackButton = () => {
-      // Priority: Close modals first, then navigate back through views.
-      if (isRollsSettingsOpen) {
-        setIsRollsSettingsOpen(false);
-        return;
-      }
-      if (developedRollForWizard) {
-        setDevelopedRollForWizard(null);
-        return;
-      }
-      if (rollToConfirm) {
-        setRollToConfirm(null);
-        return;
-      }
+      if (isRollsSettingsOpen) { setIsRollsSettingsOpen(false); return; }
+      if (developedRollForWizard) { setDevelopedRollForWizard(null); return; }
+      if (rollToConfirm) { setRollToConfirm(null); return; }
 
       switch (currentView) {
-        case 'rollDetail':
-          setSelectedRoll(null);
-          setCurrentView('rolls');
-          break;
-        case 'albumDetail':
-          setSelectedAlbum(null);
-          setCurrentView('profile');
-          break;
-        case 'settings':
-          setCurrentView('profile');
-          break;
-        case 'notifications':
-          setCurrentView('community');
-          break;
-        case 'uncategorizedRolls':
-          setCurrentView('rolls');
-          break;
-        case 'camera':
-          setCurrentView('rolls');
-          break;
-        default:
-          // On main tab views, do nothing to prevent exiting the app.
-          console.log("Back button pressed on main view. Preventing exit.");
-          break;
+        case 'rollDetail': setSelectedRoll(null); setCurrentView('rolls'); break;
+        case 'albumDetail': setSelectedAlbum(null); setCurrentView('profile'); break;
+        case 'settings': setCurrentView('profile'); break;
+        case 'notifications': setCurrentView('community'); break;
+        case 'uncategorizedRolls': setCurrentView('rolls'); break;
+        case 'camera': setCurrentView('rolls'); break;
+        default: console.log("Back button pressed on main view. Preventing exit."); break;
       }
     };
 
     const listenerPromise = CapacitorApp.addListener('backButton', handleBackButton);
-
-    return () => {
-      listenerPromise.then(listener => listener.remove());
-    };
+    return () => { listenerPromise.then(l => l.remove()); };
   }, [
-    isRollsSettingsOpen,
-    developedRollForWizard,
-    rollToConfirm,
-    currentView,
-    setIsRollsSettingsOpen,
-    setDevelopedRollForWizard,
-    setRollToConfirm,
-    setCurrentView,
-    setSelectedRoll,
-    setSelectedAlbum
+    isRollsSettingsOpen, developedRollForWizard, rollToConfirm, currentView,
+    setIsRollsSettingsOpen, setDevelopedRollForWizard, setRollToConfirm,
+    setCurrentView, setSelectedRoll, setSelectedAlbum
   ]);
 
   const renderCurrentView = () => {
@@ -124,51 +99,23 @@ function App() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-transparent flex items-center justify-center">
-        <p className="text-white">Loading...</p>
-      </div>
-    );
+    return <div className="min-h-screen bg-transparent flex items-center justify-center"><p className="text-white">Loading...</p></div>;
   }
 
   if (!session) {
     const AuthComponent = authStep === 'otp' ? <OtpView /> : <LoginView />;
-    return (
-      <div className="min-h-screen bg-transparent text-white flex flex-col">
-        <main className="flex-1 max-w-6xl mx-auto w-full flex">
-          {AuthComponent}
-        </main>
-      </div>
-    );
+    return <div className="min-h-screen bg-transparent text-white flex flex-col"><main className="flex-1 max-w-6xl mx-auto w-full flex">{AuthComponent}</main></div>;
   }
 
   if (profile && !profile.has_completed_onboarding) {
     return <OnboardingView />;
   }
   
-  const completionWizard = rollToConfirm && (
-    <RollCompletionWizard
-      roll={rollToConfirm}
-      onSendToStudio={handleWizardSendToStudio}
-      onPutOnShelf={handleWizardPutOnShelf}
-    />
-  );
-
-  const postDevelopmentWizard = developedRollForWizard && (
-    <PostDevelopmentWizard
-      roll={developedRollForWizard}
-      onClose={() => setDevelopedRollForWizard(null)}
-    />
-  );
+  const completionWizard = rollToConfirm && <RollCompletionWizard roll={rollToConfirm} onSendToStudio={handleWizardSendToStudio} onPutOnShelf={handleWizardPutOnShelf} />;
+  const postDevelopmentWizard = developedRollForWizard && <PostDevelopmentWizard roll={developedRollForWizard} onClose={() => setDevelopedRollForWizard(null)} />;
 
   if (currentView === 'camera') {
-    return (
-      <>
-        {completionWizard}
-        {postDevelopmentWizard}
-        <CameraView />
-      </>
-    );
+    return <>{completionWizard}{postDevelopmentWizard}<CameraView /></>;
   }
 
   return (
@@ -178,7 +125,7 @@ function App() {
       {postDevelopmentWizard}
       {isRollsSettingsOpen && <RollsSettingsView />}
       <main className="min-h-screen w-full pb-28">
-        <div className="max-w-6xl mx-auto w-full h-full px-4 py-4">
+        <div className="max-w-6xl mx-auto w-full h-full px-4 py-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">
           {renderCurrentView()}
         </div>
       </main>

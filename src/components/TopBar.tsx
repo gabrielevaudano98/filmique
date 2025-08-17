@@ -29,9 +29,9 @@ const TopBar: React.FC = () => {
       className={headerClasses}
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
-      <div className="relative flex items-center justify-between px-4 h-20">
+      <div className="relative flex items-center justify-between px-4 h-20 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">
         {/* Default Header (Filmique & Bell) */}
-        <div className={`absolute inset-0 flex items-center justify-between px-4 transition-all duration-300 ${isStudioSticky ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
+        <div className={`absolute inset-0 flex items-center justify-between px-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] transition-all duration-300 ${isStudioSticky ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
           <div className="w-10">
             {headerAction && BackButton && (
               <button onClick={headerAction.action} className="p-2 transition-colors -ml-2 text-gray-300 hover:text-white">
@@ -48,7 +48,7 @@ const TopBar: React.FC = () => {
         </div>
 
         {/* Studio Sticky Header */}
-        <div className={`absolute inset-0 flex items-center justify-between px-4 transition-all duration-300 ${isStudioSticky ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
+        <div className={`absolute inset-0 flex items-center justify-between px-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] transition-all duration-300 ${isStudioSticky ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
           <h1 className="text-xl font-bold text-white">Studio</h1>
           <div className="w-auto">
             <SegmentedControl
