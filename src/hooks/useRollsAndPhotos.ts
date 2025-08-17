@@ -183,7 +183,7 @@ export const useRollsAndPhotos = (
     if (!profile) return;
     const toastId = showLoadingToast('Developing your film...');
     try {
-      await api.developRollPhotos(roll, filmStocks);
+      // This is now a local-only operation. We just set the timestamp.
       await db.rolls.update(roll.id, { developed_at: new Date().toISOString() });
       
       const updatedRoll = await db.rolls.get(roll.id);
@@ -196,7 +196,7 @@ export const useRollsAndPhotos = (
     } finally {
       dismissToast(toastId);
     }
-  }, [profile, filmStocks, notification]);
+  }, [profile, notification]);
 
   const updateRollTitle = useCallback(async (rollId: string, title: string) => {
     await db.rolls.update(rollId, { title });
@@ -223,7 +223,8 @@ export const useRollsAndPhotos = (
       setSelectedRoll(null);
       showSuccessToast('Roll deleted from device.');
 
-      await api.deleteRollById(rollId);
+      // Direct API call removed. This will be handled by the sync engine later.
+      // await api.deleteRollById(rollId);
 
     } catch (error: any) {
       showErrorToast(`Failed to delete roll: ${error?.message}`);
