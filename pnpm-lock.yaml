@@ -86,6 +86,9 @@ importers:
       react-swipeable:
         specifier: ^7.0.2
         version: 7.0.2(react@18.3.1)
+      sql.js:
+        specifier: ^1.13.0
+        version: 1.13.0
       uuid:
         specifier: ^11.1.0
         version: 11.1.0

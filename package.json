@@ -32,6 +32,7 @@
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.5.2",
     "react-swipeable": "^7.0.2",
+    "sql.js": "^1.13.0",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

@@ -5,6 +5,7 @@ import './index.css';
 import { AppProvider } from './context/AppContext';
 import ToastProvider from './components/ToastProvider.tsx';
 import { JeepSqlite } from 'jeep-sqlite/dist/components/jeep-sqlite';
+import sqlWasmUrl from 'sql.js/dist/sql-wasm.wasm?url';
 
 // Define the custom element for the SQLite PWA driver
 customElements.define('jeep-sqlite', JeepSqlite);
@@ -16,7 +17,9 @@ const AppWrapper = () => {
     const setup = async () => {
       const platform = (await (await import('@capacitor/core')).Capacitor.getPlatform());
       if (platform === 'web') {
-        const jeepEl = document.createElement('jeep-sqlite');
+        const jeepEl = document.createElement('jeep-sqlite') as any;
+        // Provide the correct URL for the wasm file
+        jeepEl.sqlWasmUrl = sqlWasmUrl;
         document.body.appendChild(jeepEl);
         await customElements.whenDefined('jeep-sqlite');
         await (await import('@capacitor-community/sqlite')).CapacitorSQLite.initWebStore();
