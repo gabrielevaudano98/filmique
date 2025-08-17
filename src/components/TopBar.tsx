@@ -34,14 +34,14 @@ const TopBar: React.FC = () => {
             <div className="text-left">
               <h1 className="text-lg font-bold text-white">Studio</h1>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-3">
               {studioSectionOptions.map(opt => {
                 const Icon = opt.icon;
                 return (
                   <button 
                     key={opt.value} 
                     onClick={() => setStudioSection(opt.value as any)}
-                    className={`p-2 rounded-full transition-colors ${studioSection === opt.value ? 'bg-white/10 text-white' : 'text-neutral-400 hover:text-white'}`}
+                    className={`p-3 rounded-full transition-colors ${studioSection === opt.value ? 'bg-white/10 text-white' : 'text-neutral-400 hover:text-white'}`}
                   >
                     <Icon className="w-5 h-5" />
                   </button>
