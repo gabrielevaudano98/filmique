@@ -11,7 +11,7 @@ const TopBar: React.FC = () => {
   const BackButton = headerAction ? headerAction.icon : null;
 
   const headerClasses = isLight
-    ? 'bg-neutral-100/80 backdrop-blur-lg border-b border-neutral-300/50'
+    ? 'bg-gradient-to-b from-neutral-50 to-neutral-200/80 backdrop-blur-lg'
     : 'bg-neutral-900/80 backdrop-blur-lg border-b border-neutral-700/50';
   
   const titleClasses = isLight ? 'text-black' : 'text-white';

@@ -21,7 +21,7 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
   const shadowClass = activeOption ? `shadow-lg ${activeOption.colors.shadow}` : '';
 
   const wrapperClasses = isLight
-    ? "relative grid w-full p-1.5 bg-neutral-200/80 backdrop-blur-lg border border-neutral-300/50 rounded-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] gap-2"
+    ? "relative grid w-full p-1 bg-neutral-900/5 rounded-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)] gap-1"
     : "relative grid w-full p-1.5 bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-xl shadow-[inset_0_1px_2px_rgba(0,0,0,0.5)] gap-2";
 
   return (
@@ -31,7 +31,7 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
     >
       {/* Sliding Pill Background */}
       <div
-        className={`absolute top-1.5 bottom-1.5 h-auto rounded-lg ${gradientClass} ${shadowClass} shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] border border-white/20 transition-all duration-500 ease-[cubic-bezier(0.2,1,0.35,1)]`}
+        className={`absolute top-1 bottom-1 h-auto rounded-lg ${gradientClass} ${shadowClass} shadow-[inset_0_1px_1px_rgba(255,255,255,0.3)] border border-white/20 transition-all duration-500 ease-[cubic-bezier(0.2,1,0.35,1)]`}
         style={{
           gridColumn: `${activeIndex + 1}`,
         }}
@@ -42,12 +42,12 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
         const isActive = value === opt.value;
         const hasLabel = opt.label && opt.label.length > 0;
 
-        const buttonClasses = `relative z-10 flex-1 text-sm font-bold text-center transition-all duration-300 rounded-lg flex items-center justify-center
+        const buttonClasses = `relative z-10 flex-1 text-sm font-bold text-center transition-colors duration-300 rounded-lg flex items-center justify-center
           ${hasLabel ? 'py-3 gap-2' : 'p-2.5'}
           ${isActive
             ? 'text-white'
             : isLight
-            ? 'text-neutral-800 hover:text-black bg-white/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.1)] hover:bg-white/70'
+            ? 'text-neutral-600 hover:text-black'
             : 'text-gray-300 hover:text-white bg-neutral-900/50 shadow-[inset_0_1px_3px_rgba(0,0,0,0.5)] hover:bg-white/10'
           }`;
 
