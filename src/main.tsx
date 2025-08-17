@@ -4,6 +4,10 @@ import App from './App.tsx';
 import './index.css';
 import { AppProvider } from './context/AppContext';
 import ToastProvider from './components/ToastProvider.tsx';
+import { defineCustomElements as jeepSqlite } from 'jeep-sqlite/loader';
+
+// Initialize jeep-sqlite for web platform
+jeepSqlite(window);
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
