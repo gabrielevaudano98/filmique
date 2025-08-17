@@ -10,5 +10,6 @@ export default defineConfig(async () => {
     optimizeDeps: {
       exclude: ['lucide-react'],
     },
+    assetsInclude: ['**/*.wasm'],
   };
 });
