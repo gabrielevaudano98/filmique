@@ -28,11 +28,15 @@ export const useRollsAndPhotos = (
     [profile]
   );
 
-  const { activeRoll, completedRolls } = useMemo(() => {
-    if (!allRolls) return { activeRoll: null, completedRolls: [] };
-    const active = allRolls.find(r => !r.is_completed) || null;
-    const completed = allRolls.filter(r => r.is_completed);
-    return { activeRoll, completedRolls };
+  // Refactored to prevent initialization errors during re-renders.
+  const activeRoll = useMemo(() => {
+    if (!allRolls) return null;
+    return allRolls.find(r => !r.is_completed) || null;
+  }, [allRolls]);
+
+  const completedRolls = useMemo(() => {
+    if (!allRolls) return [];
+    return allRolls.filter(r => r.is_completed);
   }, [allRolls]);
 
   // Syncs data from Supabase down to the local Dexie DB.
