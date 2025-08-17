@@ -1,66 +1,64 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import * as api from '../services/api';
-import { UserProfile, Roll, Photo, FilmStock } from '../types';
+import { UserProfile, Roll, Photo, FilmStock, LocalRoll, LocalPhoto } from '../types';
 import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast, showWarningToast } from '../utils/toasts';
 import { filenameFromUrl } from '../utils/storage';
 import { isRollDeveloped } from '../utils/rollUtils';
 import { useHaptics } from './useHaptics';
 import { ImpactStyle, NotificationType } from '@capacitor/haptics';
+import { db } from '../integrations/db';
 
 export const useRollsAndPhotos = (
   profile: UserProfile | null, 
   filmStocks: FilmStock[],
   refreshProfile: () => Promise<void>
 ) => {
-  const [activeRoll, setActiveRoll] = useState<Roll | null>(null);
-  const [completedRolls, setCompletedRolls] = useState<Roll[]>([]);
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
-  const [rollToName, setRollToName] = useState<Roll | null>(null);
   const [rollToConfirm, setRollToConfirm] = useState<Roll | null>(null);
   const [isSavingPhoto, setIsSavingPhoto] = useState(false);
   const [developedRollForWizard, setDevelopedRollForWizard] = useState<Roll | null>(null);
   const { impact, notification } = useHaptics();
 
-  const refetchRolls = useCallback(async () => {
+  // --- Live Queries: The new source of truth from the local DB ---
+  const allRolls = useLiveQuery(
+    () => profile ? db.rolls.where('user_id').equals(profile.id).toArray() : [],
+    [profile]
+  );
+
+  const { activeRoll, completedRolls } = useMemo(() => {
+    if (!allRolls) return { activeRoll: null, completedRolls: [] };
+    const active = allRolls.find(r => !r.is_completed) || null;
+    const completed = allRolls.filter(r => r.is_completed);
+    return { activeRoll, completedRolls };
+  }, [allRolls]);
+
+  // Syncs data from Supabase down to the local Dexie DB.
+  const syncDownRollsFromCloud = useCallback(async () => {
     if (!profile) return;
-    const { data: fetchedRolls, error } = await api.fetchAllRolls(profile.id);
-    if (error || !fetchedRolls) return;
+    const { data: cloudRolls, error } = await api.fetchAllRolls(profile.id);
+    if (error || !cloudRolls) return;
 
-    const untitledCompletedRolls = fetchedRolls.filter(r => r.is_completed && !r.title);
-    let finalRolls = fetchedRolls;
-
-    if (untitledCompletedRolls.length > 0) {
-        const updates = untitledCompletedRolls.map(roll => {
-            const date = new Date(roll.created_at);
-            const formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
-            const shortId = roll.id.substring(0, 8);
-            const defaultTitle = `Untitled ${formattedDate} - ${shortId}`;
-            return api.updateRoll(roll.id, { title: defaultTitle }).then(response => response.data);
-        });
-
-        const updatedRollsData = (await Promise.all(updates)).filter(Boolean) as Roll[];
-        const updatedRollsMap = new Map(updatedRollsData.map(r => [r.id, r]));
-        
-        finalRolls = fetchedRolls.map(r => updatedRollsMap.get(r.id) || r);
-    }
-
-    const active = finalRolls.find(r => !r.is_completed) || null;
-    const completed = finalRolls.filter(r => r.is_completed);
-    setActiveRoll(active);
-    setCompletedRolls(completed);
+    // Dexie's bulkPut is smart: it inserts new records and updates existing ones.
+    await db.rolls.bulkPut(cloudRolls as LocalRoll[]);
     
+    // We also need to sync photos for these rolls
+    const allPhotos = cloudRolls.flatMap(roll => roll.photos || []);
+    if (allPhotos.length > 0) {
+      await db.photos.bulkPut(allPhotos as LocalPhoto[]);
+    }
   }, [profile]);
 
   useEffect(() => {
     if (profile) {
-      refetchRolls();
+      syncDownRollsFromCloud();
     }
-  }, [profile, refetchRolls]);
+  }, [profile, syncDownRollsFromCloud]);
 
   const developingRolls = useMemo(() => {
-    return completedRolls
+    return (completedRolls || [])
       .filter(r => r.is_completed && r.completed_at && !isRollDeveloped(r))
       .sort((a, b) => new Date(b.completed_at!).getTime() - new Date(a.completed_at!).getTime());
   }, [completedRolls]);
@@ -74,21 +72,33 @@ export const useRollsAndPhotos = (
     
     const toastId = showLoadingToast('Purchasing film...');
     try {
+      // Credit deduction is server-authoritative and must happen online.
       const { error: updateError } = await api.updateProfile(profile.id, { credits: profile.credits - film.price });
       if (updateError) throw updateError;
 
       await refreshProfile();
 
+      // If there's an existing active roll, delete it locally.
       if (activeRoll) {
-        await api.deleteRollById(activeRoll.id);
+        await db.rolls.delete(activeRoll.id);
+        // TODO: Queue a transaction to delete the old roll from Supabase.
       }
 
-      const { data, error } = await api.createNewRoll(profile.id, film.name, film.capacity, aspectRatio);
-      if (error) {
-        throw error;
-      }
+      const newRoll: LocalRoll = {
+        id: crypto.randomUUID(),
+        user_id: profile.id,
+        film_type: film.name,
+        capacity: film.capacity,
+        aspect_ratio: aspectRatio,
+        shots_used: 0,
+        is_completed: false,
+        created_at: new Date().toISOString(),
+        sync_status: 'local_only',
+        is_archived: false,
+      };
       
-      setActiveRoll(data);
+      await db.rolls.add(newRoll);
+      
       dismissToast(toastId);
       showSuccessToast(`${film.name} loaded!`);
     } catch (error: any) {
@@ -107,27 +117,40 @@ export const useRollsAndPhotos = (
 
     impact(ImpactStyle.Light);
     setIsSavingPhoto(true);
-    const filePath = `${profile.id}/${activeRoll.id}/${Date.now()}.jpeg`;
+    
     try {
-      await api.uploadPhotoToStorage(filePath, imageBlob);
-      const { data: urlData } = api.getPublicUrl('photos', filePath);
-      await api.createPhotoRecord(profile.id, activeRoll.id, urlData.publicUrl, metadata);
-      
+      // TODO: STEP 3 - Save imageBlob to local filesystem and get local_path.
+      // For now, we'll proceed with only the database record.
+      const local_path = `placeholder/${profile.id}/${activeRoll.id}/${Date.now()}.jpeg`;
+
+      const newPhoto: LocalPhoto = {
+        id: crypto.randomUUID(),
+        user_id: profile.id,
+        roll_id: activeRoll.id,
+        local_path,
+        metadata,
+        created_at: new Date().toISOString(),
+      };
+
       const newShotsUsed = activeRoll.shots_used + 1;
       const isCompleted = newShotsUsed >= activeRoll.capacity;
-      const updatePayload: any = { shots_used: newShotsUsed, is_completed: isCompleted };
-      
-      const { data: updatedRoll } = await api.updateRoll(activeRoll.id, updatePayload);
-      if (updatedRoll) {
-        if (isCompleted) {
-          setActiveRoll(null);
-          setCompletedRolls(prev => [updatedRoll, ...prev]);
-          setRollToConfirm(updatedRoll);
-        } else {
-          setActiveRoll(updatedRoll);
-        }
+
+      // Use a Dexie transaction to ensure both operations succeed or fail together.
+      await db.transaction('rw', db.photos, db.rolls, async () => {
+        await db.photos.add(newPhoto);
+        await db.rolls.update(activeRoll.id, { 
+          shots_used: newShotsUsed, 
+          is_completed: isCompleted 
+        });
+      });
+
+      if (isCompleted) {
+        const completedRoll = await db.rolls.get(activeRoll.id);
+        if (completedRoll) setRollToConfirm(completedRoll);
       }
+
     } catch (error) {
+      console.error("Failed to save photo locally:", error);
       showErrorToast('Failed to save photo.');
     } finally {
       setIsSavingPhoto(false);
@@ -136,50 +159,35 @@ export const useRollsAndPhotos = (
 
   const sendToStudio = async (roll: Roll, title: string) => {
     const completedAt = new Date().toISOString();
-    const updatedRoll = { ...roll, title, completed_at: completedAt };
-    setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
-
-    const { error } = await api.updateRoll(roll.id, { title, completed_at: completedAt });
-    if (error) {
-      showErrorToast('Failed to send roll to the studio.');
-      setCompletedRolls(prev => prev.map(r => r.id === roll.id ? roll : r));
-    } else {
-      showSuccessToast("Roll sent to the studio!");
-    }
+    await db.rolls.update(roll.id, { title, completed_at: completedAt });
+    // TODO: Queue a transaction to update the roll in Supabase.
+    showSuccessToast("Roll sent to the studio!");
   };
 
   const putOnShelf = async (roll: Roll, title: string) => {
-    const updatedRoll = { ...roll, title };
-    setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
-
-    const { error } = await api.updateRoll(roll.id, { title });
-    if (error) {
-      showErrorToast('Failed to place roll on shelf.');
-      setCompletedRolls(prev => prev.map(r => r.id === roll.id ? roll : r));
-    } else {
-      showSuccessToast("Roll placed on your shelf.");
-    }
+    await db.rolls.update(roll.id, { title });
+    // TODO: Queue a transaction to update the roll in Supabase.
+    showSuccessToast("Roll placed on your shelf.");
   };
 
   const developShelvedRoll = async (rollId: string) => {
-      const { error } = await api.updateRoll(rollId, { completed_at: new Date().toISOString() });
-      if (error) { showErrorToast('Could not send to the studio.'); }
-      else {
-        showSuccessToast("Roll sent to the studio!");
-        refetchRolls();
-      }
+    await db.rolls.update(rollId, { completed_at: new Date().toISOString() });
+    // TODO: Queue a transaction to update the roll in Supabase.
+    showSuccessToast("Roll sent to the studio!");
   };
 
   const developRoll = useCallback(async (roll: Roll) => {
     if (!profile) return;
     const toastId = showLoadingToast('Developing your film...');
     try {
+      // TODO: This needs to be refactored for offline.
+      // The image processing should happen locally, then get queued for upload.
       await api.developRollPhotos(roll, filmStocks);
-      const { data: updatedRoll } = await api.updateRoll(roll.id, { developed_at: new Date().toISOString() });
-      if (updatedRoll) {
-        setCompletedRolls(prev => prev.map(r => r.id === roll.id ? updatedRoll : r));
-        setDevelopedRollForWizard(updatedRoll);
-      }
+      await db.rolls.update(roll.id, { developed_at: new Date().toISOString() });
+      
+      const updatedRoll = await db.rolls.get(roll.id);
+      if (updatedRoll) setDevelopedRollForWizard(updatedRoll);
+
       showSuccessToast('Roll developed successfully!');
       notification(NotificationType.Success);
     } catch (error: any) {
@@ -190,48 +198,34 @@ export const useRollsAndPhotos = (
   }, [profile, filmStocks, notification]);
 
   const updateRollTitle = useCallback(async (rollId: string, title: string) => {
-    if (!profile) return false;
-    const { error } = await api.updateRoll(rollId, { title });
-    if (error) return false;
-    setCompletedRolls(prev => prev.map(r => r.id === rollId ? { ...r, title } : r));
-    if (selectedRoll?.id === rollId) setSelectedRoll(prev => prev ? { ...prev, title } : null);
+    await db.rolls.update(rollId, { title });
+    // TODO: Queue transaction
     return true;
-  }, [profile, selectedRoll]);
+  }, []);
 
   const updateRollTags = useCallback(async (rollId: string, tags: string[]) => {
-    if (!profile) return false;
-    const { error } = await api.updateRoll(rollId, { tags });
-    if (error) {
-      showErrorToast('Failed to update tags.');
-      return false;
-    }
-    setCompletedRolls(prev => prev.map(r => r.id === rollId ? { ...r, tags } : r));
-    if (selectedRoll?.id === rollId) setSelectedRoll(prev => prev ? { ...prev, tags } : null);
+    await db.rolls.update(rollId, { tags });
+    // TODO: Queue transaction
     showSuccessToast('Tags updated!');
     return true;
-  }, [profile, selectedRoll]);
+  }, []);
 
   const deleteRoll = useCallback(async (rollId: string) => {
     if (!profile) return;
     const toastId = showLoadingToast('Deleting roll...');
     try {
-      const { data: posts } = await api.getPostsForRoll(rollId);
-      const postIds = posts?.map(p => p.id) || [];
-      if (postIds.length > 0) {
-        await api.deleteLikesForPosts(postIds);
-        await api.deleteCommentsForPosts(postIds);
-      }
-      await api.deletePostsForRoll(rollId);
-      const { data: photos } = await api.getPhotosForRoll(rollId);
-      if (photos && photos.length > 0) {
-        const photoPaths = photos.map(p => filenameFromUrl(p.url)).filter(Boolean);
-        if (photoPaths.length > 0) await api.deletePhotosFromStorage(photoPaths);
-      }
-      await api.deletePhotosForRoll(rollId);
-      await api.deleteRollById(rollId);
-      setCompletedRolls(prev => prev.filter(r => r.id !== rollId));
+      // Delete locally first for immediate UI feedback.
+      await db.transaction('rw', db.rolls, db.photos, async () => {
+        await db.rolls.delete(rollId);
+        await db.photos.where('roll_id').equals(rollId).delete();
+      });
       setSelectedRoll(null);
-      showSuccessToast('Roll deleted.');
+      showSuccessToast('Roll deleted from device.');
+
+      // TODO: Queue a transaction to delete everything from Supabase.
+      // For now, we'll call the API directly.
+      await api.deleteRollById(rollId);
+
     } catch (error: any) {
       showErrorToast(`Failed to delete roll: ${error?.message}`);
     } finally {
@@ -240,9 +234,10 @@ export const useRollsAndPhotos = (
   }, [profile]);
 
   const downloadPhoto = useCallback(async (photo: Photo) => {
+    // This will need to be updated to read from local file storage first.
     try {
-      const response = await fetch(photo.url);
-      saveAs(await response.blob(), filenameFromUrl(photo.url));
+      const response = await fetch(photo.url!);
+      saveAs(await response.blob(), filenameFromUrl(photo.url!));
       showSuccessToast('Photo download started!');
     } catch (error) {
       showErrorToast('Could not download photo.');
@@ -250,13 +245,14 @@ export const useRollsAndPhotos = (
   }, []);
 
   const downloadRoll = useCallback(async (roll: Roll) => {
+    // This will need to be updated to read from local file storage.
     if (!roll.photos || roll.photos.length === 0) return;
     const toastId = showLoadingToast(`Zipping ${roll.photos.length} photos...`);
     try {
       const zip = new JSZip();
       await Promise.all(roll.photos.map(async (photo) => {
-        const response = await fetch(photo.url);
-        zip.file(filenameFromUrl(photo.url), await response.blob());
+        const response = await fetch(photo.url!);
+        zip.file(filenameFromUrl(photo.url!), await response.blob());
       }));
       saveAs(await zip.generateAsync({ type: 'blob' }), `${(roll.title || roll.film_type)}.zip`);
       showSuccessToast('Roll download started!');
@@ -268,15 +264,10 @@ export const useRollsAndPhotos = (
   }, []);
 
   const archiveRoll = useCallback(async (rollId: string, archive: boolean) => {
-    if (!profile) return;
-    const { error } = await api.archiveRoll(rollId, archive);
-    if (error) {
-      showErrorToast(`Failed to ${archive ? 'archive' : 'unarchive'} roll.`);
-    } else {
-      showSuccessToast(`Roll ${archive ? 'archived' : 'unarchived'}.`);
-      refetchRolls();
-    }
-  }, [profile, refetchRolls]);
+    await db.rolls.update(rollId, { is_archived: archive });
+    showSuccessToast(`Roll ${archive ? 'archived' : 'unarchived'}.`);
+    // TODO: Queue transaction
+  }, []);
 
   return {
     activeRoll,
@@ -284,8 +275,6 @@ export const useRollsAndPhotos = (
     developingRolls,
     selectedRoll,
     setSelectedRoll,
-    rollToName,
-    setRollToName,
     rollToConfirm,
     setRollToConfirm,
     isSavingPhoto,
@@ -297,7 +286,7 @@ export const useRollsAndPhotos = (
     deleteRoll,
     downloadPhoto,
     downloadRoll,
-    refetchRolls,
+    refetchRolls: syncDownRollsFromCloud,
     sendToStudio,
     putOnShelf,
     developShelvedRoll,
