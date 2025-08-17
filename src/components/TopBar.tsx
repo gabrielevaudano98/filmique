@@ -12,7 +12,6 @@ const TopBar: React.FC = () => {
 
   const isStudioView = currentView === 'rolls';
   const isStudioSticky = isStudioView && isStudioHeaderSticky;
-  const activeSectionData = studioSectionOptions.find(opt => opt.value === studioSection);
 
   const BackButton = headerAction ? headerAction.icon : null;
 
@@ -34,7 +33,6 @@ const TopBar: React.FC = () => {
           <>
             <div className="text-left">
               <h1 className="text-lg font-bold text-white">Studio</h1>
-              {activeSectionData && <p className="text-xs text-neutral-400">{activeSectionData.description}</p>}
             </div>
             <div className="flex items-center space-x-2">
               {studioSectionOptions.map(opt => {

@@ -143,11 +143,10 @@ const RollsView: React.FC = () => {
   }, [processedRolls, rollsGroupBy]);
 
   const groupEntries = Object.entries(groupedRolls);
-  const activeSectionData = studioSectionOptions.find(opt => opt.value === studioSection);
 
   return (
     <div className="flex flex-col w-full">
-      <div ref={headerRef}>
+      <div ref={headerRef} className="pb-4">
         <div className="flex items-center justify-between bg-neutral-100/15 backdrop-blur-lg -mx-4 -mt-4 px-4 pt-4 pb-6 border-b border-white/10">
           <h1 className="text-3xl font-bold text-white">Studio</h1>
           <div className="w-auto">
@@ -158,10 +157,9 @@ const RollsView: React.FC = () => {
             />
           </div>
         </div>
-        {activeSectionData && <p className="text-center text-sm text-neutral-400 pt-2 mb-6">{activeSectionData.description}</p>}
       </div>
 
-      <div className="relative flex-1 overflow-hidden">
+      <div className="relative flex-1">
         <div key={studioSection} className={animationClass}>
           {studioSection === 'darkroom' && (
             <div>
