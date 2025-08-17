@@ -36,16 +36,19 @@ const TopBar: React.FC = () => {
               <h1 className="text-lg font-bold text-white">Studio</h1>
               {activeSectionData && <p className="text-xs text-neutral-400">{activeSectionData.description}</p>}
             </div>
-            <div className="flex items-center space-x-4">
-              {studioSectionOptions.map(opt => (
-                <button 
-                  key={opt.value} 
-                  onClick={() => setStudioSection(opt.value as any)}
-                  className={`text-sm font-bold transition-colors ${studioSection === opt.value ? 'text-white' : 'text-neutral-400 hover:text-white'}`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            <div className="flex items-center space-x-2">
+              {studioSectionOptions.map(opt => {
+                const Icon = opt.icon;
+                return (
+                  <button 
+                    key={opt.value} 
+                    onClick={() => setStudioSection(opt.value as any)}
+                    className={`p-2 rounded-full transition-colors ${studioSection === opt.value ? 'bg-white/10 text-white' : 'text-neutral-400 hover:text-white'}`}
+                  >
+                    <Icon className="w-5 h-5" />
+                  </button>
+                );
+              })}
             </div>
           </>
         ) : (
