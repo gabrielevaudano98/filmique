@@ -209,3 +209,8 @@ export const recordActivity = (activityType: string, actorId: string, entityId: 
     body: { activityType, actorId, entityId, entityOwnerId },
   });
 };
+export const processPrintOrder = (userId: string, orderCost: number) => {
+  return supabase.functions.invoke('process-print-order', {
+    body: { userId, orderCost },
+  });
+};

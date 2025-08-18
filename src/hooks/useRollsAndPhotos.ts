@@ -351,6 +351,29 @@ export const useRollsAndPhotos = (
     }
   }, [profile]);
 
+  const queuePrintOrder = useCallback(async (photoIds: string[], totalCost: number) => {
+    if (!profile) return;
+    const toastId = showLoadingToast('Queuing print order...');
+    try {
+      await db.pending_transactions.add({
+        type: 'PURCHASE_PRINT',
+        payload: {
+          userId: profile.id,
+          photoIds,
+          orderCost: totalCost,
+        },
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        attempts: 0,
+      });
+      dismissToast(toastId);
+      showInfoToast('Print order queued! It will be processed when you are online.');
+    } catch (error: any) {
+      dismissToast(toastId);
+      showErrorToast(`Failed to queue order: ${error.message}`);
+    }
+  }, [profile]);
+
   return {
     activeRoll,
     completedRolls,
@@ -379,5 +402,6 @@ export const useRollsAndPhotos = (
     setDevelopedRollForWizard,
     archiveRoll,
     manuallyBackupRoll,
+    queuePrintOrder,
   };
 };

@@ -105,6 +105,21 @@ export const useSyncEngine = (isOnline: boolean) => {
           break;
         }
 
+        case 'PURCHASE_PRINT': {
+          const { userId, orderCost } = transaction.payload;
+          const { error } = await api.processPrintOrder(userId, orderCost);
+          if (error) {
+            if (error.message.includes('Insufficient credits')) {
+              showErrorToast("Print order failed: You don't have enough credits.");
+              await db.pending_transactions.delete(transaction.id!);
+              return;
+            }
+            throw error;
+          }
+          showSuccessToast('Print order processed successfully!');
+          break;
+        }
+
         default:
           console.warn(`Unknown transaction type: ${transaction.type}`);
       }

@@ -52,6 +52,7 @@ export interface UserProfile {
   has_completed_onboarding: boolean;
   bio: string | null;
   is_geolocation_enabled: boolean;
+  is_auto_backup_enabled?: boolean;
 }
 
 export interface Photo {
@@ -81,6 +82,16 @@ export interface Roll {
   aspect_ratio: string;
   is_archived: boolean;
   tags?: string[] | null;
+}
+
+export interface LocalRoll extends Roll {
+  sync_status: 'local_only' | 'syncing' | 'synced';
+}
+
+export interface LocalPhoto extends Omit<Photo, 'url' | 'thumbnail_url'> {
+  local_path?: string;
+  url?: string | null;
+  thumbnail_url?: string | null;
 }
 
 export interface Comment {
@@ -223,7 +234,7 @@ export interface AppContextType {
   markNotificationsAsRead: () => Promise<void>;
   followersCount: number;
   followingCount: number;
-  updateProfileDetails: (details: { bio?: string; avatarFile?: File; is_geolocation_enabled?: boolean; }) => Promise<void>;
+  updateProfileDetails: (details: { bio?: string; avatarFile?: File; is_geolocation_enabled?: boolean; is_auto_backup_enabled?: boolean; }) => Promise<void>;
   userPosts: Post[];
   sendToStudio: (roll: Roll, title: string) => Promise<void>;
   putOnShelf: (roll: Roll, title: string) => Promise<void>;
@@ -233,6 +244,7 @@ export interface AppContextType {
   fetchProfilePageData: () => Promise<void>;
   archiveRoll: (rollId: string, archive: boolean) => Promise<void>;
   manuallyBackupRoll: (rollId: string) => Promise<void>;
+  queuePrintOrder: (photoIds: string[], totalCost: number) => Promise<void>;
   rollsSortOrder: string;
   setRollsSortOrder: (order: string) => void;
   rollsGroupBy: string;
