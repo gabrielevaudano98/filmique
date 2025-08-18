@@ -8,7 +8,7 @@ import { formatDuration } from '../utils/time';
 import { getPhotoAsWebViewPath } from '../utils/fileStorage';
 import { LocalPhoto, LocalRoll } from '../integrations/db';
 import SyncStatusIcon from './SyncStatusIcon';
-import ConfirmDeleteModal from './ConfirmDeleteModal';
+import SpeedUpModal from './SpeedUpModal';
 
 const DEVELOPMENT_TIME_MS = 36 * 60 * 60 * 1000;
 const SPEED_UP_COST = 25;
@@ -16,9 +16,8 @@ const SPEED_UP_COST = 25;
 const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
   const { filmStocks, developRoll, speedUpDevelopment } = useAppContext();
   const [timeRemaining, setTimeRemaining] = useState(0);
-  const [progress, setProgress] = useState(0);
   const [photoSrcs, setPhotoSrcs] = useState<Record<string, string>>({});
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showSpeedUpModal, setShowSpeedUpModal] = useState(false);
   const roll = baseRoll as LocalRoll;
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -43,18 +42,16 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
   useEffect(() => {
     if (!roll.completed_at) return;
 
-    const calculateProgress = () => {
+    const calculateTime = () => {
       const completedTime = new Date(roll.completed_at!).getTime();
       const now = new Date().getTime();
       const elapsed = now - completedTime;
       const remaining = DEVELOPMENT_TIME_MS - elapsed;
-      
       setTimeRemaining(remaining);
-      setProgress(Math.min(100, (elapsed / DEVELOPMENT_TIME_MS) * 100));
     };
 
-    calculateProgress();
-    const interval = setInterval(calculateProgress, 1000 * 60); // Update every minute
+    calculateTime();
+    const interval = setInterval(calculateTime, 1000 * 60); // Update every minute
 
     return () => clearInterval(interval);
   }, [roll.completed_at]);
@@ -92,13 +89,13 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
   `)}")`;
 
   const filmStock = filmStocks.find(fs => fs.name === roll.film_type);
-  const isReadyToDevelop = progress >= 100;
+  const isReadyToDevelop = timeRemaining <= 0;
 
   return (
     <>
       <div className="bg-warm-800/50 rounded-xl overflow-hidden border border-warm-700/30 shadow-lg">
         <div className="p-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between">
             <div>
               <h4 className="font-bold text-white truncate">{roll.film_type}</h4>
               <div className="flex items-center gap-2">
@@ -122,7 +119,7 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
                     <span>{formatDuration(timeRemaining)}</span>
                   </div>
                   <button 
-                      onClick={() => setShowConfirm(true)}
+                      onClick={() => setShowSpeedUpModal(true)}
                       className="bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold py-1 px-2 rounded-full flex items-center space-x-1"
                   >
                       <Zap className="w-3 h-3" />
@@ -131,12 +128,6 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
                 </>
               )}
             </div>
-          </div>
-          <div className="w-full bg-neutral-700 rounded-full h-1.5">
-            <div
-              className="bg-cyan-400 h-1.5 rounded-full transition-transform duration-1000 origin-left"
-              style={{ transform: `scaleX(${progress / 100})` }}
-            ></div>
           </div>
         </div>
         <div
@@ -177,19 +168,15 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
           </div>
         </div>
       </div>
-      {showConfirm && (
-        <ConfirmDeleteModal
-            isOpen={showConfirm}
-            onClose={() => setShowConfirm(false)}
-            onConfirm={() => {
-                speedUpDevelopment(roll);
-                setShowConfirm(false);
-            }}
-            title="Speed Up Development"
-            message={`Are you sure you want to spend ${SPEED_UP_COST} credits to finish development immediately?`}
-            confirmText="Yes, Speed Up"
-        />
-      )}
+      <SpeedUpModal
+          isOpen={showSpeedUpModal}
+          onClose={() => setShowSpeedUpModal(false)}
+          onConfirm={() => {
+              speedUpDevelopment(roll);
+              setShowSpeedUpModal(false);
+          }}
+          cost={SPEED_UP_COST}
+      />
     </>
   );
 };
