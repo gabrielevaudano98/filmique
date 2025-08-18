@@ -21,6 +21,9 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const roll = baseRoll as LocalRoll;
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const canisterRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     const loadPhotoSrcs = async () => {
       if (roll.photos) {
@@ -56,6 +59,13 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
     return () => clearInterval(interval);
   }, [roll.completed_at]);
 
+  const handleParallaxScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    if (canisterRef.current) {
+      const scrollLeft = event.currentTarget.scrollLeft;
+      canisterRef.current.style.transform = `translateX(${scrollLeft * 0.6}px)`;
+    }
+  };
+
   const filmStripBg = `url("data:image/svg+xml;utf8,${encodeURIComponent(`
     <svg xmlns='http://www.w3.org/2000/svg' width='200' height='100' viewBox='0 0 200 100'>
       <defs>
@@ -86,56 +96,52 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
 
   return (
     <>
-      <div className="bg-neutral-800/70 rounded-xl overflow-hidden border border-neutral-700/50 shadow-lg">
-        {/* Header */}
-        <div className="p-4 flex items-center justify-between border-b border-neutral-700/50">
-          <div className="flex items-center gap-3">
-            <FilmCanisterIcon filmType={roll.film_type} imageUrl={filmStock?.roll_image_url} className="h-10 w-auto" />
+      <div className="bg-warm-800/50 rounded-xl overflow-hidden border border-warm-700/30 shadow-lg">
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-3">
             <div>
-              <h4 className="font-bold text-white truncate">{roll.title || roll.film_type}</h4>
-              <p className="text-xs text-gray-400">{roll.shots_used} photos</p>
+              <h4 className="font-bold text-white truncate">{roll.film_type}</h4>
+              <div className="flex items-center gap-2">
+                <p className="text-sm text-gray-400">{roll.shots_used} photos</p>
+                <SyncStatusIcon status={roll.sync_status} />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {isReadyToDevelop ? (
+                <button 
+                  onClick={() => developRoll(roll)}
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2"
+                >
+                  <Zap className="w-4 h-4" />
+                  <span>Develop</span>
+                </button>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-cyan-400">
+                    <Clock className="w-4 h-4" />
+                    <span>{formatDuration(timeRemaining)}</span>
+                  </div>
+                  <button 
+                      onClick={() => setShowConfirm(true)}
+                      className="bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold py-1 px-2 rounded-full flex items-center space-x-1"
+                  >
+                      <Zap className="w-3 h-3" />
+                      <span>{SPEED_UP_COST}</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
-          <SyncStatusIcon status={roll.sync_status} />
-        </div>
-
-        {/* Main Content */}
-        <div className="p-4 flex flex-col items-center gap-4">
-          <div className="text-center">
-            <p className="text-xs text-cyan-400 font-bold uppercase tracking-wider">
-              {isReadyToDevelop ? 'Ready' : 'Time Remaining'}
-            </p>
-            <p className="text-3xl font-bold text-white">{formatDuration(timeRemaining)}</p>
-          </div>
-          
           <div className="w-full bg-neutral-700 rounded-full h-1.5">
             <div
               className="bg-cyan-400 h-1.5 rounded-full transition-transform duration-1000 origin-left"
               style={{ transform: `scaleX(${progress / 100})` }}
             ></div>
           </div>
-
-          {isReadyToDevelop ? (
-            <button 
-              onClick={() => developRoll(roll)}
-              className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
-            >
-              <Zap className="w-4 h-4" />
-              <span>Develop Now</span>
-            </button>
-          ) : (
-            <button 
-              onClick={() => setShowConfirm(true)}
-              className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
-            >
-              <Zap className="w-4 h-4" />
-              <span>Speed Up for {SPEED_UP_COST} Credits</span>
-            </button>
-          )}
         </div>
-
-        {/* Film Strip */}
         <div
+          ref={scrollContainerRef}
+          onScroll={handleParallaxScroll}
           className="overflow-x-auto no-scrollbar py-3"
           style={{
             backgroundImage: filmStripBg,
@@ -144,6 +150,13 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
           }}
         >
           <div className="flex space-x-2 px-4 items-center">
+            <div ref={canisterRef} className="z-10">
+              <FilmCanisterIcon
+                filmType={roll.film_type}
+                imageUrl={filmStock?.roll_image_url}
+                className="h-24 w-auto shrink-0 mr-1"
+              />
+            </div>
             {roll.photos && roll.photos.length > 0 ? (
               roll.photos.map(photo => (
                 photoSrcs[photo.id] ? (
