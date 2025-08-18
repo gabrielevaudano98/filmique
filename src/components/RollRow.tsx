@@ -39,8 +39,8 @@ const RollRow: React.FC<RollRowProps> = ({ roll: baseRoll }) => {
     >
       <FilmCanisterIcon filmType={roll.film_type} imageUrl={filmStock?.roll_image_url} className="h-16 w-auto flex-shrink-0 mr-4" />
       
-      <div className="flex-1">
-        <h3 className="font-bold text-white leading-tight">{roll.title || 'Untitled Roll'}</h3>
+      <div className="flex-1 min-w-0">
+        <h3 className="font-bold text-white leading-tight truncate">{roll.title || 'Untitled Roll'}</h3>
         <div className="flex items-center space-x-4 text-xs text-gray-400 mt-1.5">
           <span className="flex items-center gap-1.5">
             <FilmIcon size={14} />
@@ -55,11 +55,10 @@ const RollRow: React.FC<RollRowProps> = ({ roll: baseRoll }) => {
         </div>
       </div>
 
-      <div className="flex items-center space-x-4 text-gray-400">
+      <div className="flex items-center space-x-4 text-gray-400 pl-4">
         {!isDeveloped && (
-          <div className="flex items-center gap-1.5 text-cyan-400 text-xs font-bold">
-            <Clock className="w-3 h-3" />
-            <span>Developing</span>
+          <div title="Developing">
+            <Clock className="w-4 h-4 text-cyan-400" />
           </div>
         )}
         <div className="flex items-center gap-1.5 text-sm">
