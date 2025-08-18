@@ -10,6 +10,7 @@ import { useDebounce } from '../hooks/useDebounce';
 import NegativePhoto from './NegativePhoto';
 import { getPhotoAsWebViewPath } from '../utils/fileStorage';
 import { LocalPhoto } from '../integrations/db';
+import UnlockRollView from './UnlockRollView';
 
 const PRINT_COST_PER_PHOTO = 10;
 
@@ -95,9 +96,13 @@ const RollDetailView: React.FC = () => {
     }
   }, [debouncedTags, selectedRoll, updateRollTags]);
 
-  if (!selectedRoll) {
+  if (!selectedRoll || !profile) {
     setCurrentView('rolls');
     return null;
+  }
+
+  if (profile.experience_mode === 'authentic' && selectedRoll.is_locked) {
+    return <UnlockRollView roll={selectedRoll} />;
   }
 
   const developedDate = selectedRoll.developed_at 
@@ -105,7 +110,7 @@ const RollDetailView: React.FC = () => {
     : new Date(new Date(selectedRoll.completed_at!).getTime() + 7 * 24 * 60 * 60 * 1000);
 
   const printCost = (selectedRoll.shots_used || 0) * PRINT_COST_PER_PHOTO;
-  const canAffordPrint = profile ? profile.credits >= printCost : false;
+  const canAffordPrint = profile.credits >= printCost;
 
   const handlePrint = () => {
     if (canAffordPrint && !selectedRoll.is_printed) {
@@ -149,20 +154,22 @@ const RollDetailView: React.FC = () => {
 
         <div className="p-4 space-y-8">
           {/* Print Action Card */}
-          <div className="bg-gradient-to-r from-blue-500/20 to-neutral-800/20 rounded-xl p-4 border border-blue-500/30 flex items-center justify-between">
-            <div>
-              <h3 className="font-bold text-white">Order High-Quality Prints</h3>
-              <p className="text-sm text-gray-300">Cost: {printCost} credits</p>
+          {profile.experience_mode !== 'digital' && (
+            <div className="bg-gradient-to-r from-blue-500/20 to-neutral-800/20 rounded-xl p-4 border border-blue-500/30 flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-white">Order High-Quality Prints</h3>
+                <p className="text-sm text-gray-300">Cost: {printCost} credits</p>
+              </div>
+              <button 
+                onClick={handlePrint}
+                disabled={!canAffordPrint || selectedRoll.is_printed}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center space-x-2"
+              >
+                <Printer className="w-4 h-4" />
+                <span>{selectedRoll.is_printed ? 'Ordered' : 'Print this Roll'}</span>
+              </button>
             </div>
-            <button 
-              onClick={handlePrint}
-              disabled={!canAffordPrint || selectedRoll.is_printed}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center space-x-2"
-            >
-              <Printer className="w-4 h-4" />
-              <span>{selectedRoll.is_printed ? 'Ordered' : 'Print this Roll'}</span>
-            </button>
-          </div>
+          )}
 
           {/* Info & Tags Section */}
           <div className="p-4 bg-neutral-800/50 rounded-xl border border-neutral-700/50">

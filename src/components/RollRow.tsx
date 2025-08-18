@@ -1,7 +1,7 @@
 import React from 'react';
 import { Roll } from '../types';
 import { useAppContext } from '../context/AppContext';
-import { Image as ImageIcon, Clock, ChevronRight, CalendarDays, UploadCloud } from 'lucide-react';
+import { Image as ImageIcon, Clock, ChevronRight, CalendarDays, UploadCloud, Lock } from 'lucide-react';
 import FilmCanisterIcon from './FilmCanisterIcon';
 import SyncStatusIcon from './SyncStatusIcon';
 import { LocalRoll } from '../integrations/db';
@@ -42,7 +42,10 @@ const RollRow: React.FC<RollRowProps> = ({ roll: baseRoll }) => {
       <FilmCanisterIcon filmType={roll.film_type} imageUrl={filmStock?.roll_image_url} className="h-16 w-auto flex-shrink-0 mr-4" />
       
       <div className="flex-1 min-w-0">
-        <h3 className="font-bold text-white leading-tight truncate">{roll.title || 'Untitled Roll'}</h3>
+        <div className="flex items-center gap-2">
+          {roll.is_locked && <Lock className="w-4 h-4 text-amber-400 flex-shrink-0" />}
+          <h3 className="font-bold text-white leading-tight truncate">{roll.title || 'Untitled Roll'}</h3>
+        </div>
         <div className="flex items-center space-x-4 text-xs text-gray-400 mt-1.5">
           {developedDate && (
             <span className="flex items-center gap-1.5">

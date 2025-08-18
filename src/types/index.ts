@@ -53,6 +53,7 @@ export interface UserProfile {
   bio: string | null;
   is_geolocation_enabled: boolean;
   is_auto_backup_enabled?: boolean;
+  experience_mode: 'digital' | 'standard' | 'authentic';
 }
 
 export interface Photo {
@@ -83,6 +84,8 @@ export interface Roll {
   is_archived: boolean;
   tags?: string[] | null;
   is_printed?: boolean;
+  is_locked?: boolean;
+  unlock_code?: string | null;
 }
 
 export interface LocalRoll extends Roll {
@@ -224,6 +227,7 @@ export interface AppContextType {
   setSelectedRoll: (r: Roll | null) => void;
   developRoll: (roll: Roll) => Promise<void>;
   speedUpDevelopment: (roll: Roll) => Promise<void>;
+  unlockRoll: (rollId: string, code: string) => Promise<void>;
   selectedAlbum: Album | null;
   setSelectedAlbum: (a: Album | null) => void;
   selectAlbum: (albumId: string) => Promise<void>;
@@ -251,7 +255,7 @@ export interface AppContextType {
   markNotificationsAsRead: () => Promise<void>;
   followersCount: number;
   followingCount: number;
-  updateProfileDetails: (details: { bio?: string; avatarFile?: File; is_geolocation_enabled?: boolean; is_auto_backup_enabled?: boolean; }) => Promise<void>;
+  updateProfileDetails: (details: { bio?: string; avatarFile?: File; is_geolocation_enabled?: boolean; is_auto_backup_enabled?: boolean; experience_mode?: 'digital' | 'standard' | 'authentic'; }) => Promise<void>;
   userPosts: Post[];
   sendToStudio: (roll: Roll, title: string) => Promise<void>;
   putOnShelf: (roll: Roll, title: string) => Promise<void>;

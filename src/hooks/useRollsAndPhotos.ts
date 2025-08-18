@@ -253,6 +253,26 @@ export const useRollsAndPhotos = (
     }
   }, [profile, developRoll, refreshProfile]);
 
+  const unlockRoll = useCallback(async (rollId: string, code: string) => {
+    const { data: roll, error } = await api.getRollById(rollId);
+    if (error || !roll) {
+      showErrorToast("Could not find the roll.");
+      return;
+    }
+  
+    if (roll.unlock_code === code) {
+      const { error: updateError } = await api.updateRoll(rollId, { is_locked: false, unlock_code: null });
+      if (updateError) {
+        showErrorToast("Failed to unlock roll.");
+      } else {
+        showSuccessToast("Roll unlocked!");
+        await syncDownRollsFromCloud();
+      }
+    } else {
+      showErrorToast("Incorrect code. Please try again.");
+    }
+  }, [syncDownRollsFromCloud]);
+
   const updateRollTitle = useCallback(async (rollId: string, title: string) => {
     await db.rolls.update(rollId, { title });
     return true;
@@ -390,6 +410,7 @@ export const useRollsAndPhotos = (
     takePhoto,
     developRoll,
     speedUpDevelopment,
+    unlockRoll,
     updateRollTitle,
     updateRollTags,
     deleteRoll,

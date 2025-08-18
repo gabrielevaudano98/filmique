@@ -23,10 +23,10 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Missing required parameters' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // 1. Fetch user's current credits
+    // 1. Fetch user's profile including experience_mode
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('credits')
+      .select('credits, experience_mode')
       .eq('id', userId)
       .single();
 
@@ -52,10 +52,20 @@ serve(async (req) => {
       .insert({ user_id: userId, roll_id: rollId, cost });
     if (orderError) throw orderError;
 
-    // 5. Mark the roll as printed
+    // 5. Mark the roll as printed AND set lock status if in authentic mode
+    const rollUpdateData: { is_printed: boolean; is_locked?: boolean; unlock_code?: string } = {
+      is_printed: true,
+    };
+
+    if (profile.experience_mode === 'authentic') {
+      const unlockCode = Math.floor(1000 + Math.random() * 9000).toString();
+      rollUpdateData.is_locked = true;
+      rollUpdateData.unlock_code = unlockCode;
+    }
+
     const { error: rollError } = await supabase
       .from('rolls')
-      .update({ is_printed: true })
+      .update(rollUpdateData)
       .eq('id', rollId);
     if (rollError) throw rollError;
 

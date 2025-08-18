@@ -60,6 +60,7 @@ export const fetchAllRolls = async (userId: string) => {
   if (data) await setCache(cacheKey, data);
   return { data, error };
 };
+export const getRollById = (rollId: string) => supabase.from('rolls').select('*').eq('id', rollId).single();
 export const deleteRollById = (rollId: string) => {
   return supabase.from('rolls').delete().eq('id', rollId);
 };

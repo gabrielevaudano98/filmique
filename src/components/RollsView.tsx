@@ -2,7 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
-import { Film, Archive } from 'lucide-react';
+import { Film, Archive, Lock } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
@@ -37,6 +37,7 @@ function usePrevious<T>(value: T): T | undefined {
 
 const RollsView: React.FC = () => {
   const { 
+    profile,
     developingRolls, completedRolls,
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
     searchTerm, setSearchTerm,
@@ -46,7 +47,15 @@ const RollsView: React.FC = () => {
 
   const observerTriggerRef = useRef<HTMLDivElement>(null);
   const prevSection = usePrevious(studioSection);
-  const sectionOrder = useMemo(() => studioSectionOptions.map(opt => opt.value), [studioSectionOptions]);
+
+  const availableSections = useMemo(() => {
+    if (profile?.experience_mode === 'digital') {
+      return studioSectionOptions.filter(opt => opt.value !== 'prints');
+    }
+    return studioSectionOptions;
+  }, [profile, studioSectionOptions]);
+
+  const sectionOrder = useMemo(() => availableSections.map(opt => opt.value), [availableSections]);
 
   const direction = useMemo(() => {
     if (!prevSection) return 'right';
@@ -165,7 +174,7 @@ const RollsView: React.FC = () => {
         <h1 className="text-3xl font-bold text-white">Studio</h1>
         <div className="w-auto">
           <SegmentedControl
-            options={studioSectionOptions}
+            options={availableSections}
             value={studioSection}
             onChange={(val) => setStudioSection(val as any)}
           />

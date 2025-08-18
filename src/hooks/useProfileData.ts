@@ -44,12 +44,16 @@ export const useProfileData = (profile: UserProfile | null) => {
     bio?: string; 
     avatarFile?: File;
     is_geolocation_enabled?: boolean;
+    is_auto_backup_enabled?: boolean;
+    experience_mode?: 'digital' | 'standard' | 'authentic';
   }) => {
     if (!profile) return;
     const updatePayload: { 
       bio?: string; 
       avatar_url?: string;
       is_geolocation_enabled?: boolean;
+      is_auto_backup_enabled?: boolean;
+      experience_mode?: 'digital' | 'standard' | 'authentic';
     } = {};
     
     if (details.avatarFile) {
@@ -72,11 +76,17 @@ export const useProfileData = (profile: UserProfile | null) => {
     if (typeof details.is_geolocation_enabled !== 'undefined') {
       updatePayload.is_geolocation_enabled = details.is_geolocation_enabled;
     }
+    if (typeof details.is_auto_backup_enabled !== 'undefined') {
+      updatePayload.is_auto_backup_enabled = details.is_auto_backup_enabled;
+    }
+    if (details.experience_mode) {
+      updatePayload.experience_mode = details.experience_mode;
+    }
 
     if (Object.keys(updatePayload).length > 0) {
       const { error } = await api.updateProfile(profile.id, updatePayload);
       if (error) showErrorToast(`Failed to update profile: ${error.message}`);
-      else showSuccessToast('Profile updated!');
+      else showSuccessToast('Settings updated!');
     }
   }, [profile]);
 

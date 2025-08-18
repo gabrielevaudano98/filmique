@@ -1,11 +1,12 @@
 import React from 'react';
 import {
-  UserCircle, Star, Bell, Camera as CameraIcon, ShieldCheck, HelpCircle, Info, ChevronRight, LogOut, Trash2, ArrowLeft, MapPin
+  UserCircle, Star, Bell, Camera as CameraIcon, ShieldCheck, HelpCircle, Info, ChevronRight, LogOut, Trash2, ArrowLeft, MapPin, Film
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { supabase } from '../integrations/supabase/client';
 import toast from 'react-hot-toast';
 import SettingsToggleRow from './SettingsToggleRow';
+import TextSegmentedControl from './TextSegmentedControl';
 
 const SettingsRow: React.FC<{
   icon: React.ReactNode;
@@ -65,6 +66,17 @@ const SettingsView: React.FC = () => {
     await refreshProfile();
   };
 
+  const handleExperienceChange = async (mode: 'digital' | 'standard' | 'authentic') => {
+    await updateProfileDetails({ experience_mode: mode });
+    await refreshProfile();
+  };
+
+  const experienceOptions = [
+    { value: 'digital', label: 'Digital' },
+    { value: 'standard', label: 'Standard' },
+    { value: 'authentic', label: 'Authentic' },
+  ];
+
   return (
     <div className="flex-1 flex flex-col bg-transparent text-white">
        <div className="flex items-center p-4 border-b border-neutral-800">
@@ -90,6 +102,21 @@ const SettingsView: React.FC = () => {
             subtitle={profile?.subscription ? profile.subscription.charAt(0).toUpperCase() + profile.subscription.slice(1) : 'Free'}
             onClick={() => setCurrentView('subscription')}
           />
+        </SettingsGroup>
+
+        <SettingsGroup title="Experience Mode">
+          <div className="p-4">
+            <TextSegmentedControl 
+              options={experienceOptions} 
+              value={profile?.experience_mode || 'standard'} 
+              onChange={(val) => handleExperienceChange(val as any)} 
+            />
+            <p className="text-xs text-gray-400 mt-3 text-center px-2">
+              {profile?.experience_mode === 'digital' && 'Digital-only experience. Prints are disabled.'}
+              {profile?.experience_mode === 'standard' && 'Digital photos develop on a timer. Prints can be ordered anytime.'}
+              {profile?.experience_mode === 'authentic' && 'Digital photos are locked until you order prints and enter the unlock code.'}
+            </p>
+          </div>
         </SettingsGroup>
 
         <SettingsGroup title="Preferences">
