@@ -197,21 +197,30 @@ export const useRollsAndPhotos = (
     if (!profile) return;
     const toastId = showLoadingToast('Developing your film...');
     try {
+      const isPremium = profile.subscription === 'plus' || profile.subscription === 'premium';
+
       await db.transaction('rw', db.rolls, db.pending_transactions, async () => {
         await db.rolls.update(roll.id, { developed_at: new Date().toISOString() });
-        await db.pending_transactions.add({
-          type: 'BACKUP_ROLL',
-          payload: { rollId: roll.id },
-          status: 'pending',
-          created_at: new Date().toISOString(),
-          attempts: 0,
-        });
+        
+        if (isPremium) {
+          await db.pending_transactions.add({
+            type: 'BACKUP_ROLL',
+            payload: { rollId: roll.id },
+            status: 'pending',
+            created_at: new Date().toISOString(),
+            attempts: 0,
+          });
+        }
       });
       
       const updatedRoll = await db.rolls.get(roll.id);
       if (updatedRoll) setDevelopedRollForWizard(updatedRoll);
 
-      showSuccessToast('Roll developed! Backup scheduled.');
+      if (isPremium) {
+        showSuccessToast('Roll developed! Automatic backup scheduled.');
+      } else {
+        showSuccessToast('Roll developed!');
+      }
       notification(NotificationType.Success);
     } catch (error: any) {
       showErrorToast(error?.message || 'Failed to develop roll.');
