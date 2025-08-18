@@ -27,25 +27,30 @@ export const useAuth = () => {
     return currentSession?.user || null;
   }, []);
 
+  // Effect for one-time initialization
   useEffect(() => {
     const initializeAuth = async () => {
       await refreshProfile();
       setIsLoading(false);
     };
     initializeAuth();
+  }, [refreshProfile]);
 
-    const { data: authListener } = api.onAuthStateChange((_event, newSession) => {
+  // Effect for handling auth state changes from Supabase
+  useEffect(() => {
+    const { data: authListener } = api.onAuthStateChange((event, newSession) => {
       setSession(newSession);
-      if (!newSession) {
+      if (event === 'SIGNED_OUT') {
         setProfile(null);
         setAuthStep('login');
-      } else if (newSession && !profile) {
+      } else if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        // When user signs in or their data is updated, refresh the profile
         refreshProfile();
       }
     });
 
     return () => authListener?.subscription.unsubscribe();
-  }, [refreshProfile, profile]);
+  }, [refreshProfile]);
 
   const handleLogin = async (email: string) => {
     if (!isNonEmptyString(email) || !isEmail(email)) {
