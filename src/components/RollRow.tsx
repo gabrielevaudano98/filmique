@@ -1,7 +1,7 @@
 import React from 'react';
 import { Roll } from '../types';
 import { useAppContext } from '../context/AppContext';
-import { Image as ImageIcon, Clock, ChevronRight, CalendarDays, CloudUpload } from 'lucide-react';
+import { Image as ImageIcon, Clock, ChevronRight, CalendarDays, UploadCloud } from 'lucide-react';
 import FilmCanisterIcon from './FilmCanisterIcon';
 import SyncStatusIcon from './SyncStatusIcon';
 import { LocalRoll } from '../integrations/db';
@@ -75,7 +75,7 @@ const RollRow: React.FC<RollRowProps> = ({ roll: baseRoll }) => {
               className="flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300"
               title="Backup this roll to the cloud"
             >
-              <CloudUpload size={16} />
+              <UploadCloud size={16} />
             </button>
           ) : (
             <SyncStatusIcon status={roll.sync_status} />
