@@ -3,14 +3,17 @@ import { Roll } from '../types';
 import { useAppContext } from '../context/AppContext';
 import FilmCanisterIcon from './FilmCanisterIcon';
 import { Image as ImageIcon } from 'lucide-react';
+import SyncStatusIcon from './SyncStatusIcon';
+import { LocalRoll } from '../integrations/db';
 
 interface RollCardProps {
   roll: Roll;
 }
 
-const RollCard: React.FC<RollCardProps> = ({ roll }) => {
+const RollCard: React.FC<RollCardProps> = ({ roll: baseRoll }) => {
   const { setSelectedRoll, setCurrentView, filmStocks } = useAppContext();
-  const filmStock = filmStocks.find(fs => fs.name === roll.film_type);
+  const filmStock = filmStocks.find(fs => fs.name === baseRoll.film_type);
+  const roll = baseRoll as LocalRoll;
 
   const handleClick = () => {
     setSelectedRoll(roll);
@@ -33,9 +36,12 @@ const RollCard: React.FC<RollCardProps> = ({ roll }) => {
         <p className="font-bold text-white text-sm truncate" title={roll.title || 'Untitled Roll'}>
           {roll.title || 'Untitled Roll'}
         </p>
-        <div className="flex items-center justify-center space-x-1 text-xs text-gray-400 mt-1">
-          <ImageIcon className="w-3 h-3" />
-          <span>{roll.shots_used} photos</span>
+        <div className="flex items-center justify-center space-x-2 text-xs text-gray-400 mt-1">
+          <div className="flex items-center space-x-1">
+            <ImageIcon className="w-3 h-3" />
+            <span>{roll.shots_used} photos</span>
+          </div>
+          <SyncStatusIcon status={roll.sync_status} />
         </div>
       </div>
     </button>

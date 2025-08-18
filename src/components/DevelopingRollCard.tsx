@@ -6,15 +6,17 @@ import NegativePhoto from './NegativePhoto';
 import FilmCanisterIcon from './FilmCanisterIcon';
 import { formatDuration } from '../utils/time';
 import { getPhotoAsWebViewPath } from '../utils/fileStorage';
-import { LocalPhoto } from '../integrations/db';
+import { LocalPhoto, LocalRoll } from '../integrations/db';
+import SyncStatusIcon from './SyncStatusIcon';
 
 const DEVELOPMENT_TIME_MS = 36 * 60 * 60 * 1000;
 
-const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll }) => {
+const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
   const { filmStocks, developRoll } = useAppContext();
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [progress, setProgress] = useState(0);
   const [photoSrcs, setPhotoSrcs] = useState<Record<string, string>>({});
+  const roll = baseRoll as LocalRoll;
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const canisterRef = useRef<HTMLDivElement>(null);
@@ -95,7 +97,10 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll }) => {
         <div className="flex items-center justify-between mb-3">
           <div>
             <h4 className="font-bold text-white truncate">{roll.film_type}</h4>
-            <p className="text-sm text-gray-400">{roll.shots_used} photos</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-gray-400">{roll.shots_used} photos</p>
+              <SyncStatusIcon status={roll.sync_status} />
+            </div>
           </div>
           {isReadyToDevelop ? (
             <button 

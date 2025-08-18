@@ -11,7 +11,7 @@ interface CreatePostModalProps {
 }
 
 const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRolls }) => {
-  const { createPost, albums, refetchAlbums } = useAppContext();
+  const { createPost, albums, refetchAlbums, isOnline } = useAppContext();
   const [step, setStep] = useState<'select_roll' | 'write_caption'>('select_roll');
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
   const [caption, setCaption] = useState('');
@@ -138,7 +138,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                         <option key={album.id} value={album.id}>{album.title}</option>
                       ))}
                     </select>
-                    <button type="button" onClick={() => setShowCreateAlbumModal(true)} className="flex items-center space-x-2 text-amber-400 text-sm font-semibold p-2 hover:bg-amber-500/10 rounded-lg">
+                    <button type="button" onClick={() => setShowCreateAlbumModal(true)} className="flex items-center space-x-2 text-amber-400 text-sm font-semibold p-2 hover:bg-amber-500/10 rounded-lg self-start">
                       <PlusCircle className="w-4 h-4" />
                       <span>Create New Album</span>
                     </button>
@@ -152,7 +152,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
             <div className="flex-shrink-0 p-5 border-t border-gray-700">
               <button
                 onClick={handlePublish}
-                disabled={isLoading || !caption.trim()}
+                disabled={isLoading || !caption.trim() || !isOnline}
                 className="w-full py-3 rounded-lg bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 <Send className="w-4 h-4" />

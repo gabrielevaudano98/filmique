@@ -14,7 +14,7 @@ interface PhotoDetailModalProps {
 }
 
 const PhotoDetailModal: React.FC<PhotoDetailModalProps> = ({ photo, onClose, onShowInfo }) => {
-  const { downloadPhoto } = useAppContext();
+  const { downloadPhoto, isOnline } = useAppContext();
   const { sharePhoto } = useNativeShare();
   const [imageSrc, setImageSrc] = useState<string | null>(null);
 
@@ -52,10 +52,10 @@ const PhotoDetailModal: React.FC<PhotoDetailModalProps> = ({ photo, onClose, onS
           <button onClick={handleShowInfo} className="bg-gray-800/70 hover:bg-gray-700 text-white font-semibold p-3 rounded-full transition-colors">
             <Info className="w-6 h-6" />
           </button>
-          <button onClick={handleShare} className="bg-gray-800/70 hover:bg-gray-700 text-white font-semibold p-3 rounded-full transition-colors">
+          <button onClick={handleShare} disabled={!isOnline} className="bg-gray-800/70 hover:bg-gray-700 text-white font-semibold p-3 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             <ShareIcon className="w-6 h-6" />
           </button>
-          <button onClick={handleDownload} className="bg-gray-800/70 hover:bg-gray-700 text-white font-semibold p-3 rounded-full transition-colors">
+          <button onClick={handleDownload} disabled={!isOnline} className="bg-gray-800/70 hover:bg-gray-700 text-white font-semibold p-3 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             <Download className="w-6 h-6" />
           </button>
           <button onClick={onClose} className="bg-gray-800/70 hover:bg-gray-700 text-white font-semibold p-3 rounded-full transition-colors">
