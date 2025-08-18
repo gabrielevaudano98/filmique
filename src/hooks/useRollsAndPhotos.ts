@@ -351,15 +351,16 @@ export const useRollsAndPhotos = (
     }
   }, [profile]);
 
-  const queuePrintOrder = useCallback(async (photoIds: string[], totalCost: number) => {
+  const queuePrintOrder = useCallback(async (rollId: string, totalCost: number) => {
     if (!profile) return;
     const toastId = showLoadingToast('Queuing print order...');
     try {
+      await db.rolls.update(rollId, { is_printed: true });
       await db.pending_transactions.add({
         type: 'PURCHASE_PRINT',
         payload: {
           userId: profile.id,
-          photoIds,
+          rollId,
           orderCost: totalCost,
         },
         status: 'pending',

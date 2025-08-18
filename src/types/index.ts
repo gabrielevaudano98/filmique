@@ -82,6 +82,7 @@ export interface Roll {
   aspect_ratio: string;
   is_archived: boolean;
   tags?: string[] | null;
+  is_printed?: boolean;
 }
 
 export interface LocalRoll extends Roll {
@@ -171,6 +172,22 @@ export interface UserBadge {
   };
 }
 
+export interface PrintOrder {
+  id: string;
+  user_id: string;
+  roll_id: string;
+  status: 'queued' | 'processing' | 'shipped' | 'canceled';
+  cost: number;
+  created_at: string;
+  shipped_at: string | null;
+  rolls: {
+    title: string | null;
+    film_type: string;
+    shots_used: number;
+    photos: { thumbnail_url: string }[];
+  };
+}
+
 export interface AppContextType {
   session: Session | null;
   profile: UserProfile | null;
@@ -244,7 +261,10 @@ export interface AppContextType {
   fetchProfilePageData: () => Promise<void>;
   archiveRoll: (rollId: string, archive: boolean) => Promise<void>;
   manuallyBackupRoll: (rollId: string) => Promise<void>;
-  queuePrintOrder: (photoIds: string[], totalCost: number) => Promise<void>;
+  queuePrintOrder: (rollId: string, totalCost: number) => Promise<void>;
+  printOrders: PrintOrder[];
+  fetchPrintOrders: () => Promise<void>;
+  cancelPrintOrder: (orderId: string) => Promise<void>;
   rollsSortOrder: string;
   setRollsSortOrder: (order: string) => void;
   rollsGroupBy: string;

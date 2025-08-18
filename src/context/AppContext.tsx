@@ -6,6 +6,7 @@ import { useRollsAndPhotos } from '../hooks/useRollsAndPhotos';
 import { useSocial } from '../hooks/useSocial';
 import { useAlbums } from '../hooks/useAlbums';
 import { useRollsSettings } from '../hooks/useRollsSettings';
+import { usePrintOrders } from '../hooks/usePrintOrders';
 import * as api from '../services/api';
 import { Library, Clock, Printer } from 'lucide-react';
 import { Network } from '@capacitor/network';
@@ -49,6 +50,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const social = useSocial(auth.profile);
   const albumsData = useAlbums(auth.profile);
   const rollsSettings = useRollsSettings();
+  const printOrdersData = usePrintOrders(auth.profile);
 
   // Initialize the sync engine
   useSyncEngine(isOnline);
@@ -111,6 +113,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ...social,
     ...albumsData,
     ...rollsSettings,
+    ...printOrdersData,
     createAlbum: createAlbumWithRefresh,
     createPost: createPostWithRefresh,
     filmStocks,
@@ -135,7 +138,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     isRollsSettingsOpen,
     setIsRollsSettingsOpen,
     isOnline,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, isRollsSettingsOpen, isOnline]);
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, printOrdersData, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, isRollsSettingsOpen, isOnline]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };

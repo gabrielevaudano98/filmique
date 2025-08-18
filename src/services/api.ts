@@ -203,14 +203,29 @@ export const updateRollsAlbum = async (rollIds: string[], albumId: string | null
 export const fetchNotifications = (userId: string) => supabase.from('notifications').select('*, actors:profiles!notifications_actor_id_fkey(username, avatar_url)').eq('user_id', userId).order('created_at', { ascending: false }).limit(30);
 export const markNotificationsRead = (ids: string[]) => supabase.from('notifications').update({ is_read: true }).in('id', ids);
 
+// Print Orders
+export const fetchPrintOrders = (userId: string) => {
+  return supabase
+    .from('print_orders')
+    .select('*, rolls(*, photos(thumbnail_url))')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+};
+
+export const cancelPrintOrder = (orderId: string) => {
+  return supabase.functions.invoke('cancel-print-order', {
+    body: { orderId },
+  });
+};
+
 // Edge Functions
 export const recordActivity = (activityType: string, actorId: string, entityId: string, entityOwnerId?: string) => {
   return supabase.functions.invoke('record-activity', {
     body: { activityType, actorId, entityId, entityOwnerId },
   });
 };
-export const processPrintOrder = (userId: string, orderCost: number) => {
+export const processPrintOrder = (userId: string, rollId: string, orderCost: number) => {
   return supabase.functions.invoke('process-print-order', {
-    body: { userId, orderCost },
+    body: { userId, rollId, orderCost },
   });
 };
