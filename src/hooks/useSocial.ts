@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as api from '../services/api';
 import { UserProfile, Post, Comment } from '../types';
-import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast } from '../utils/toasts';
+import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast, showInfoToast } from '../utils/toasts';
+import { db } from '../integrations/db';
 
 export const useSocial = (profile: UserProfile | null) => {
   const [feed, setFeed] = useState<Post[]>([]);
@@ -76,16 +77,28 @@ export const useSocial = (profile: UserProfile | null) => {
 
   const createPost = useCallback(async (rollId: string, caption: string, coverUrl: string | null, albumId: string | null) => {
     if (!profile) return;
-    const toastId = showLoadingToast('Publishing post...');
-    const { data, error } = await api.createPost(profile.id, rollId, caption, coverUrl, albumId);
-    if (error) showErrorToast(error.message);
-    else {
-      api.recordActivity('post', profile.id, data.id, profile.id);
-      showSuccessToast('Post published!');
-      fetchFeed();
+    const toastId = showLoadingToast('Queuing post...');
+    try {
+      await db.pending_transactions.add({
+        type: 'CREATE_POST',
+        payload: {
+          userId: profile.id,
+          rollId,
+          caption,
+          coverUrl,
+          albumId,
+        },
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        attempts: 0,
+      });
+      dismissToast(toastId);
+      showInfoToast('Post queued! It will be published when you are online.');
+    } catch (error: any) {
+      dismissToast(toastId);
+      showErrorToast(`Failed to queue post: ${error.message}`);
     }
-    dismissToast(toastId);
-  }, [profile, fetchFeed]);
+  }, [profile]);
 
   const addComment = useCallback(async (postId: string, postOwnerId: string, content: string) => {
     if (!profile) return;

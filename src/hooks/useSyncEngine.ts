@@ -29,7 +29,7 @@ export const useSyncEngine = (isOnline: boolean) => {
           showSuccessToast('Cloud data synced.');
           break;
         
-        case 'BACKUP_ROLL':
+        case 'BACKUP_ROLL': {
           const { rollId } = transaction.payload;
           await db.rolls.update(rollId, { sync_status: 'syncing' });
 
@@ -64,6 +64,46 @@ export const useSyncEngine = (isOnline: boolean) => {
 
           showSuccessToast(`"${rollToBackup.title || 'A roll'}" has been backed up.`);
           break;
+        }
+
+        case 'CREATE_POST': {
+          const { userId, rollId, caption, coverUrl, albumId } = transaction.payload;
+          
+          const rollToPost = await db.rolls.get(rollId);
+          if (!rollToPost) throw new Error('Local roll for post not found.');
+
+          // If the roll isn't synced yet, we must sync it first.
+          if (rollToPost.sync_status !== 'synced') {
+            const photosToUpload = await db.photos.where('roll_id').equals(rollId).toArray();
+            const updatedPhotos: LocalPhoto[] = [];
+
+            for (const photo of photosToUpload) {
+              if (!photo.local_path) continue;
+              const blob = await readPhotoBlob(photo.local_path);
+              if (!blob) continue;
+
+              const path = `${photo.user_id}/${photo.roll_id}/${photo.id}.jpeg`;
+              await api.uploadBackupPhoto(path, blob);
+              const { data: urlData } = api.getPublicUrl('photos', path);
+              updatedPhotos.push({ ...photo, url: urlData.publicUrl, thumbnail_url: urlData.publicUrl });
+            }
+            
+            await api.upsertCloudRoll(rollToPost);
+            await api.batchUpsertCloudPhotos(updatedPhotos);
+            
+            await db.transaction('rw', db.rolls, db.photos, async () => {
+              await db.rolls.update(rollId, { sync_status: 'synced' });
+              await db.photos.bulkPut(updatedPhotos);
+            });
+          }
+
+          // Now that we're sure the roll is synced, create the post.
+          const { error } = await api.createPost(userId, rollId, caption, coverUrl, albumId);
+          if (error) throw error;
+
+          showSuccessToast('Your post has been published!');
+          break;
+        }
 
         default:
           console.warn(`Unknown transaction type: ${transaction.type}`);
