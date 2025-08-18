@@ -2,20 +2,21 @@ import React from 'react';
 import { Roll } from '../types';
 import { useAppContext } from '../context/AppContext';
 import { Image as ImageIcon, Clock } from 'lucide-react';
+import FilmCanisterIcon from './FilmCanisterIcon';
 import SyncStatusIcon from './SyncStatusIcon';
 import { LocalRoll } from '../integrations/db';
 import { isRollDeveloped } from '../utils/rollUtils';
 import { showInfoToast } from '../utils/toasts';
-import Image from './Image';
 
 interface RollCardProps {
   roll: Roll;
 }
 
 const RollCard: React.FC<RollCardProps> = ({ roll: baseRoll }) => {
-  const { setSelectedRoll, setCurrentView } = useAppContext();
+  const { setSelectedRoll, setCurrentView, filmStocks } = useAppContext();
   const roll = baseRoll as LocalRoll;
   const isDeveloped = isRollDeveloped(roll);
+  const filmStock = filmStocks.find(fs => fs.name === roll.film_type);
 
   const handleClick = () => {
     if (!isDeveloped) {
@@ -26,27 +27,16 @@ const RollCard: React.FC<RollCardProps> = ({ roll: baseRoll }) => {
     setCurrentView('rollDetail');
   };
 
-  const coverPhotoUrl = roll.photos?.[0]?.thumbnail_url;
-  const cacheBuster = roll.developed_at ? `?t=${new Date(roll.developed_at).getTime()}` : '';
-
   return (
     <button 
       onClick={handleClick}
-      className="w-full aspect-square bg-neutral-800 rounded-xl overflow-hidden group relative text-left flex flex-col justify-end p-3 border border-neutral-700/50 hover:border-brand-amber-start/50 transition-all"
+      className="w-full aspect-square bg-neutral-800 rounded-xl overflow-hidden group relative text-left flex flex-col justify-center items-center p-3 border border-neutral-700/50 hover:border-brand-amber-start/50 transition-all"
     >
-      <div className="absolute inset-0 bg-neutral-700">
-        <Image
-          src={coverPhotoUrl ? `${coverPhotoUrl}${cacheBuster}` : undefined}
-          alt={roll.title || 'Roll cover'}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-      </div>
+      <FilmCanisterIcon filmType={roll.film_type} imageUrl={filmStock?.roll_image_url} className="h-20 w-auto transition-transform duration-300 group-hover:scale-105" />
       
-      <div className="relative z-10">
-        <h3 className="font-bold text-base text-white leading-tight truncate">{roll.title || 'Untitled Roll'}</h3>
-        <p className="text-xs text-gray-300 truncate">{roll.film_type}</p>
-        <div className="flex items-center space-x-3 text-xs text-gray-400 mt-1">
+      <div className="mt-3 text-center">
+        <h3 className="font-bold text-sm text-white leading-tight truncate w-24">{roll.title || 'Untitled Roll'}</h3>
+        <div className="flex items-center justify-center space-x-3 text-xs text-gray-400 mt-1">
           <span className="flex items-center gap-1"><ImageIcon className="w-3 h-3" /> {roll.shots_used}</span>
           <SyncStatusIcon status={roll.sync_status} />
         </div>
