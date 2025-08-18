@@ -77,12 +77,6 @@ export const useRollsAndPhotos = (
 
       await refreshProfile();
 
-      const userRolls = await db.rolls.where({ user_id: profile.id }).toArray();
-      const currentActiveRoll = userRolls.find(r => !r.is_completed);
-      if (currentActiveRoll) {
-        await db.rolls.delete(currentActiveRoll.id);
-      }
-
       const newRoll: LocalRoll = {
         id: crypto.randomUUID(),
         user_id: profile.id,
@@ -96,7 +90,13 @@ export const useRollsAndPhotos = (
         is_archived: false,
       };
       
-      await db.rolls.add(newRoll);
+      await db.transaction('rw', db.rolls, async () => {
+        const currentActiveRoll = await db.rolls.where({ user_id: profile.id, is_completed: false }).first();
+        if (currentActiveRoll) {
+          await db.rolls.delete(currentActiveRoll.id);
+        }
+        await db.rolls.add(newRoll);
+      });
       
       dismissToast(toastId);
       showSuccessToast(`${film.name} loaded!`);
@@ -113,45 +113,43 @@ export const useRollsAndPhotos = (
     setIsSavingPhoto(true);
     
     try {
-      const currentActiveRoll = await db.rolls.where({ user_id: profile.id, is_completed: false }).first();
-
-      if (!currentActiveRoll) {
+      if (!activeRoll) {
         showErrorToast("No active roll loaded.");
         setIsSavingPhoto(false);
         return;
       }
 
-      if (currentActiveRoll.shots_used >= currentActiveRoll.capacity) {
+      if (activeRoll.shots_used >= activeRoll.capacity) {
         showWarningToast("This film roll is already full.");
         setIsSavingPhoto(false);
         return;
       }
 
       const photoId = crypto.randomUUID();
-      const fileUriOrId = await savePhoto(imageBlob, profile.id, currentActiveRoll.id, photoId);
+      const fileUriOrId = await savePhoto(imageBlob, profile.id, activeRoll.id, photoId);
 
       const newPhoto: LocalPhoto = {
         id: photoId,
         user_id: profile.id,
-        roll_id: currentActiveRoll.id,
+        roll_id: activeRoll.id,
         local_path: fileUriOrId,
         metadata,
         created_at: new Date().toISOString(),
       };
 
-      const newShotsUsed = currentActiveRoll.shots_used + 1;
-      const isCompleted = newShotsUsed >= currentActiveRoll.capacity;
+      const newShotsUsed = activeRoll.shots_used + 1;
+      const isCompleted = newShotsUsed >= activeRoll.capacity;
 
       await db.transaction('rw', db.photos, db.rolls, async () => {
         await db.photos.add(newPhoto);
-        await db.rolls.update(currentActiveRoll.id, { 
+        await db.rolls.update(activeRoll.id, { 
           shots_used: newShotsUsed, 
           is_completed: isCompleted 
         });
       });
 
       if (isCompleted) {
-        const completedRoll = await db.rolls.get(currentActiveRoll.id);
+        const completedRoll = await db.rolls.get(activeRoll.id);
         if (completedRoll) setRollToConfirm(completedRoll);
       }
 
@@ -161,7 +159,7 @@ export const useRollsAndPhotos = (
     } finally {
       setIsSavingPhoto(false);
     }
-  }, [profile, isSavingPhoto, impact]);
+  }, [profile, isSavingPhoto, impact, activeRoll, setRollToConfirm]);
 
   const sendToStudio = async (roll: Roll, title: string) => {
     const completedAt = new Date().toISOString();
