@@ -2,7 +2,6 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
-import { isRollDeveloped } from '../utils/rollUtils';
 import RollCard from './RollCard';
 import { Film, Archive } from 'lucide-react';
 import RollsControls from './RollsControls';
@@ -75,10 +74,9 @@ const RollsView: React.FC = () => {
   }, [setIsStudioHeaderSticky]);
 
   const { shelfRolls, archivedRolls } = useMemo(() => {
-    const developed = completedRolls.filter(r => isRollDeveloped(r));
     return {
-      shelfRolls: developed.filter(r => !r.is_archived),
-      archivedRolls: developed.filter(r => r.is_archived),
+      shelfRolls: completedRolls.filter(r => !r.is_archived),
+      archivedRolls: completedRolls.filter(r => r.is_archived),
     };
   }, [completedRolls]);
 

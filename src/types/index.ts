@@ -195,6 +195,7 @@ export interface AppContextType {
   selectedRoll: Roll | null;
   setSelectedRoll: (r: Roll | null) => void;
   developRoll: (roll: Roll) => Promise<void>;
+  speedUpDevelopment: (roll: Roll) => Promise<void>;
   selectedAlbum: Album | null;
   setSelectedAlbum: (a: Album | null) => void;
   selectAlbum: (albumId: string) => Promise<void>;

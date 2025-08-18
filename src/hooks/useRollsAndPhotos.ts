@@ -12,6 +12,8 @@ import { ImpactStyle, NotificationType } from '@capacitor/haptics';
 import { db } from '../integrations/db';
 import { savePhoto, deleteRollDirectory } from '../utils/fileStorage';
 
+const SPEED_UP_COST = 25;
+
 export const useRollsAndPhotos = (
   profile: UserProfile | null, 
   filmStocks: FilmStock[],
@@ -217,6 +219,29 @@ export const useRollsAndPhotos = (
     }
   }, [profile, notification]);
 
+  const speedUpDevelopment = useCallback(async (roll: Roll) => {
+    if (!profile) return;
+
+    if (profile.credits < SPEED_UP_COST) {
+      showErrorToast(`You need ${SPEED_UP_COST} credits to speed up development.`);
+      return;
+    }
+
+    const toastId = showLoadingToast('Speeding up development...');
+    try {
+      const { error: updateError } = await api.updateProfile(profile.id, { credits: profile.credits - SPEED_UP_COST });
+      if (updateError) throw updateError;
+
+      await refreshProfile();
+      await developRoll(roll);
+
+      dismissToast(toastId);
+    } catch (error: any) {
+      dismissToast(toastId);
+      showErrorToast(error.message || 'Failed to speed up development.');
+    }
+  }, [profile, developRoll, refreshProfile]);
+
   const updateRollTitle = useCallback(async (rollId: string, title: string) => {
     await db.rolls.update(rollId, { title });
     return true;
@@ -300,6 +325,7 @@ export const useRollsAndPhotos = (
     startNewRoll,
     takePhoto,
     developRoll,
+    speedUpDevelopment,
     updateRollTitle,
     updateRollTags,
     deleteRoll,
