@@ -214,6 +214,8 @@ export interface AppContextType {
   searchUsers: (query: string) => Promise<UserProfile[] | null>;
   rollToConfirm: Roll | null;
   setRollToConfirm: (r: Roll | null) => void;
+  rollToSpeedUp: Roll | null;
+  setRollToSpeedUp: (r: Roll | null) => void;
   deleteRoll: (rollId: string) => Promise<void>;
   downloadPhoto: (photo: Photo) => Promise<void>;
   downloadRoll: (roll: Roll) => Promise<void>;

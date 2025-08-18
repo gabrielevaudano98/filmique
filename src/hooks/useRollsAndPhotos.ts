@@ -21,6 +21,7 @@ export const useRollsAndPhotos = (
 ) => {
   const [selectedRoll, setSelectedRoll] = useState<Roll | null>(null);
   const [rollToConfirm, setRollToConfirm] = useState<Roll | null>(null);
+  const [rollToSpeedUp, setRollToSpeedUp] = useState<Roll | null>(null);
   const [isSavingPhoto, setIsSavingPhoto] = useState(false);
   const [developedRollForWizard, setDevelopedRollForWizard] = useState<Roll | null>(null);
   const { impact, notification } = useHaptics();
@@ -321,6 +322,8 @@ export const useRollsAndPhotos = (
     setSelectedRoll,
     rollToConfirm,
     setRollToConfirm,
+    rollToSpeedUp,
+    setRollToSpeedUp,
     isSavingPhoto,
     startNewRoll,
     takePhoto,

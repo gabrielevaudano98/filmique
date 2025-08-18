@@ -23,16 +23,21 @@ import RollCompletionWizard from './components/RollCompletionWizard';
 import PostDevelopmentWizard from './components/PostDevelopmentWizard';
 import RollsSettingsView from './components/RollsSettingsView';
 import LibraryView from './components/LibraryView';
+import SpeedUpModal from './components/SpeedUpModal';
 import { Roll } from './types';
+
+const SPEED_UP_COST = 25;
 
 function App() {
   const { 
     session, profile, isLoading, currentView, setCurrentView, authStep, 
     rollToConfirm, setRollToConfirm, 
+    rollToSpeedUp, setRollToSpeedUp,
     sendToStudio, putOnShelf,
     developedRollForWizard, setDevelopedRollForWizard,
     isRollsSettingsOpen, setIsRollsSettingsOpen,
-    setSelectedRoll, setSelectedAlbum
+    setSelectedRoll, setSelectedAlbum,
+    speedUpDevelopment
   } = useAppContext();
 
   useEffect(() => {
@@ -98,6 +103,13 @@ function App() {
     setRollToConfirm(null);
   };
 
+  const handleConfirmSpeedUp = () => {
+    if (rollToSpeedUp) {
+      speedUpDevelopment(rollToSpeedUp);
+      setRollToSpeedUp(null);
+    }
+  };
+
   if (isLoading) {
     return <div className="min-h-screen bg-transparent flex items-center justify-center"><p className="text-white">Loading...</p></div>;
   }
@@ -113,9 +125,10 @@ function App() {
   
   const completionWizard = rollToConfirm && <RollCompletionWizard roll={rollToConfirm} onSendToStudio={handleWizardSendToStudio} onPutOnShelf={handleWizardPutOnShelf} />;
   const postDevelopmentWizard = developedRollForWizard && <PostDevelopmentWizard roll={developedRollForWizard} onClose={() => setDevelopedRollForWizard(null)} />;
+  const speedUpModal = rollToSpeedUp && <SpeedUpModal isOpen={!!rollToSpeedUp} onClose={() => setRollToSpeedUp(null)} onConfirm={handleConfirmSpeedUp} cost={SPEED_UP_COST} />;
 
   if (currentView === 'camera') {
-    return <>{completionWizard}{postDevelopmentWizard}<CameraView /></>;
+    return <>{completionWizard}{postDevelopmentWizard}{speedUpModal}<CameraView /></>;
   }
 
   return (
@@ -123,6 +136,7 @@ function App() {
       <TopBar />
       {completionWizard}
       {postDevelopmentWizard}
+      {speedUpModal}
       {isRollsSettingsOpen && <RollsSettingsView />}
       <main className="min-h-screen w-full pb-28">
         <div className="max-w-6xl mx-auto w-full h-full px-4 py-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">

@@ -8,16 +8,14 @@ import { formatDuration } from '../utils/time';
 import { getPhotoAsWebViewPath } from '../utils/fileStorage';
 import { LocalPhoto, LocalRoll } from '../integrations/db';
 import SyncStatusIcon from './SyncStatusIcon';
-import SpeedUpModal from './SpeedUpModal';
 
 const DEVELOPMENT_TIME_MS = 36 * 60 * 60 * 1000;
 const SPEED_UP_COST = 25;
 
 const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
-  const { filmStocks, developRoll, speedUpDevelopment } = useAppContext();
+  const { filmStocks, developRoll, setRollToSpeedUp } = useAppContext();
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [photoSrcs, setPhotoSrcs] = useState<Record<string, string>>({});
-  const [showSpeedUpModal, setShowSpeedUpModal] = useState(false);
   const roll = baseRoll as LocalRoll;
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -92,92 +90,81 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
   const isReadyToDevelop = timeRemaining <= 0;
 
   return (
-    <>
-      <div className="bg-warm-800/50 rounded-xl overflow-hidden border border-warm-700/30 shadow-lg">
-        <div className="p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-bold text-white truncate">{roll.film_type}</h4>
-              <div className="flex items-center gap-2">
-                <p className="text-sm text-gray-400">{roll.shots_used} photos</p>
-                <SyncStatusIcon status={roll.sync_status} />
-              </div>
-            </div>
+    <div className="bg-warm-800/50 rounded-xl overflow-hidden border border-warm-700/30 shadow-lg">
+      <div className="p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="font-bold text-white truncate">{roll.film_type}</h4>
             <div className="flex items-center gap-2">
-              {isReadyToDevelop ? (
-                <button 
-                  onClick={() => developRoll(roll)}
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2"
-                >
-                  <Zap className="w-4 h-4" />
-                  <span>Develop</span>
-                </button>
-              ) : (
-                <>
-                  <div className="flex items-center gap-2 text-sm text-cyan-400">
-                    <Clock className="w-4 h-4" />
-                    <span>{formatDuration(timeRemaining)}</span>
-                  </div>
-                  <button 
-                      onClick={() => setShowSpeedUpModal(true)}
-                      className="bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold py-1 px-2 rounded-full flex items-center space-x-1"
-                  >
-                      <Zap className="w-3 h-3" />
-                      <span>{SPEED_UP_COST}</span>
-                  </button>
-                </>
-              )}
+              <p className="text-sm text-gray-400">{roll.shots_used} photos</p>
+              <SyncStatusIcon status={roll.sync_status} />
             </div>
           </div>
-        </div>
-        <div
-          ref={scrollContainerRef}
-          onScroll={handleParallaxScroll}
-          className="overflow-x-auto no-scrollbar py-3"
-          style={{
-            backgroundImage: filmStripBg,
-            backgroundRepeat: 'repeat-x',
-            backgroundSize: 'auto 100%',
-          }}
-        >
-          <div className="flex space-x-2 px-4 items-center">
-            <div ref={canisterRef} className="z-10">
-              <FilmCanisterIcon
-                filmType={roll.film_type}
-                imageUrl={filmStock?.roll_image_url}
-                className="h-24 w-auto shrink-0 mr-1"
-              />
-            </div>
-            {roll.photos && roll.photos.length > 0 ? (
-              roll.photos.map(photo => (
-                photoSrcs[photo.id] ? (
-                  <NegativePhoto
-                    key={photo.id}
-                    src={photoSrcs[photo.id]}
-                    className="h-24 w-auto rounded-sm object-cover bg-neutral-700 shrink-0"
-                  />
-                ) : (
-                  <div key={photo.id} className="h-24 w-auto aspect-square rounded-sm bg-neutral-700 shrink-0" />
-                )
-              ))
+          <div className="flex items-center gap-2">
+            {isReadyToDevelop ? (
+              <button 
+                onClick={() => developRoll(roll)}
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2"
+              >
+                <Zap className="w-4 h-4" />
+                <span>Develop</span>
+              </button>
             ) : (
-              <div className="h-24 flex items-center justify-center text-gray-400 text-sm px-4 shrink-0">
-                No photos in this roll.
-              </div>
+              <>
+                <div className="flex items-center gap-2 text-sm text-cyan-400">
+                  <Clock className="w-4 h-4" />
+                  <span>{formatDuration(timeRemaining)}</span>
+                </div>
+                <button 
+                    onClick={() => setRollToSpeedUp(roll)}
+                    className="bg-amber-500 hover:bg-amber-600 text-black text-xs font-bold py-1 px-2 rounded-full flex items-center space-x-1"
+                >
+                    <Zap className="w-3 h-3" />
+                    <span>{SPEED_UP_COST}</span>
+                </button>
+              </>
             )}
           </div>
         </div>
       </div>
-      <SpeedUpModal
-          isOpen={showSpeedUpModal}
-          onClose={() => setShowSpeedUpModal(false)}
-          onConfirm={() => {
-              speedUpDevelopment(roll);
-              setShowSpeedUpModal(false);
-          }}
-          cost={SPEED_UP_COST}
-      />
-    </>
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleParallaxScroll}
+        className="overflow-x-auto no-scrollbar py-3"
+        style={{
+          backgroundImage: filmStripBg,
+          backgroundRepeat: 'repeat-x',
+          backgroundSize: 'auto 100%',
+        }}
+      >
+        <div className="flex space-x-2 px-4 items-center">
+          <div ref={canisterRef} className="z-10">
+            <FilmCanisterIcon
+              filmType={roll.film_type}
+              imageUrl={filmStock?.roll_image_url}
+              className="h-24 w-auto shrink-0 mr-1"
+            />
+          </div>
+          {roll.photos && roll.photos.length > 0 ? (
+            roll.photos.map(photo => (
+              photoSrcs[photo.id] ? (
+                <NegativePhoto
+                  key={photo.id}
+                  src={photoSrcs[photo.id]}
+                  className="h-24 w-auto rounded-sm object-cover bg-neutral-700 shrink-0"
+                />
+              ) : (
+                <div key={photo.id} className="h-24 w-auto aspect-square rounded-sm bg-neutral-700 shrink-0" />
+              )
+            ))
+          ) : (
+            <div className="h-24 flex items-center justify-center text-gray-400 text-sm px-4 shrink-0">
+              No photos in this roll.
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
