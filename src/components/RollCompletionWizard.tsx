@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Clock, Archive, Edit, Printer } from 'lucide-react';
+import { Archive, Edit, Printer, Zap } from 'lucide-react';
 import { Roll } from '../types';
 import { useAppContext } from '../context/AppContext';
 
 const PRINT_COST_PER_PHOTO = 10;
+const DEVELOPMENT_COST = 10;
 
 interface RollCompletionWizardProps {
   roll: Roll;
@@ -19,10 +20,12 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onSen
   const isAuthenticMode = profile?.experience_mode === 'authentic';
   const printCost = roll.shots_used * PRINT_COST_PER_PHOTO;
   const canAffordPrint = profile && profile.credits >= printCost;
+  const canAffordDevelop = profile && profile.credits >= DEVELOPMENT_COST;
 
   const handleAction = (action: 'studio' | 'shelf') => {
     if (!title.trim()) return;
     if (isAuthenticMode && !canAffordPrint) return;
+    if (!isAuthenticMode && action === 'studio' && !canAffordDevelop) return;
 
     setIsLoading(action);
     if (action === 'studio') {
@@ -73,16 +76,16 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onSen
               )}
               <button 
                 type="submit"
-                disabled={!title.trim() || !!isLoading || (isAuthenticMode && !canAffordPrint)}
+                disabled={!title.trim() || !!isLoading || (isAuthenticMode && !canAffordPrint) || (!isAuthenticMode && !canAffordDevelop)}
                 className="flex-1 flex justify-center items-center space-x-2 py-3 px-4 rounded-xl shadow-lg shadow-brand-amber-start/20 text-base font-bold text-white bg-gradient-to-r from-brand-amber-start to-brand-amber-end hover:opacity-90 transition-all disabled:opacity-50"
               >
-                {isAuthenticMode ? <Printer className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                {isAuthenticMode ? <Printer className="w-5 h-5" /> : <Zap className="w-5 h-5" />}
                 <span>
                   {isLoading === 'studio' 
                     ? 'Sending...' 
                     : isAuthenticMode
                     ? (canAffordPrint ? `Develop & Print (${printCost}cr)` : `Insufficient Credits`)
-                    : 'Send to Studio'
+                    : (canAffordDevelop ? `Develop (${DEVELOPMENT_COST}cr)` : 'Insufficient Credits')
                   }
                 </span>
               </button>

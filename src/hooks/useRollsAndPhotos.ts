@@ -14,6 +14,7 @@ import { savePhoto, deleteRollDirectory } from '../utils/fileStorage';
 
 const SPEED_UP_COST = 25;
 const PRINT_COST_PER_PHOTO = 10;
+const DEVELOPMENT_COST = 10;
 
 export const useRollsAndPhotos = (
   profile: UserProfile | null, 
@@ -216,6 +217,16 @@ export const useRollsAndPhotos = (
       await queuePrintOrder(roll.id, totalCost);
       showSuccessToast("Roll sent for printing! Your unlock code will arrive with your prints.");
     } else {
+      if (profile.credits < DEVELOPMENT_COST) {
+        showErrorToast("Insufficient credits to develop this roll.");
+        return;
+      }
+      const { error: updateError } = await api.updateProfile(profile.id, { credits: profile.credits - DEVELOPMENT_COST });
+      if (updateError) {
+        showErrorToast(`Failed to deduct credits: ${updateError.message}`);
+        return;
+      }
+      await refreshProfile();
       await db.rolls.update(roll.id, { title, completed_at: completedAt });
       showSuccessToast("Roll sent to the studio!");
     }
