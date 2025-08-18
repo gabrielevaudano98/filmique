@@ -2,9 +2,8 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
-import { isRollDeveloped, isRollDeveloping } from '../utils/rollUtils';
+import { isRollDeveloped } from '../utils/rollUtils';
 import RollCard from './RollCard';
-import RollOnShelf from './RollOnShelf';
 import { Film, Archive } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
@@ -39,7 +38,7 @@ function usePrevious<T>(value: T): T | undefined {
 
 const RollsView: React.FC = () => {
   const { 
-    completedRolls,
+    developingRolls, completedRolls,
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
     searchTerm, setSearchTerm,
     studioSection, setStudioSection, studioSectionOptions,
@@ -75,11 +74,12 @@ const RollsView: React.FC = () => {
     };
   }, [setIsStudioHeaderSticky]);
 
-  const { shelfRolls, archivedRolls, developingRolls } = useMemo(() => {
-    const shelf = completedRolls.filter(r => !r.is_archived && !isRollDeveloping(r));
-    const archived = completedRolls.filter(r => r.is_archived);
-    const developing = completedRolls.filter(r => isRollDeveloping(r));
-    return { shelfRolls: shelf, archivedRolls: archived, developingRolls: developing };
+  const { shelfRolls, archivedRolls } = useMemo(() => {
+    const developed = completedRolls.filter(r => isRollDeveloped(r));
+    return {
+      shelfRolls: developed.filter(r => !r.is_archived),
+      archivedRolls: developed.filter(r => r.is_archived),
+    };
   }, [completedRolls]);
 
   const processedRolls = useMemo(() => {
@@ -202,11 +202,7 @@ const RollsView: React.FC = () => {
                         {groupName}
                       </h3>
                       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
-                        {rolls.map(roll => 
-                          isRollDeveloped(roll)
-                            ? <RollCard key={roll.id} roll={roll} />
-                            : <RollOnShelf key={roll.id} roll={roll} />
-                        )}
+                        {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
                       </div>
                     </div>
                   ))
