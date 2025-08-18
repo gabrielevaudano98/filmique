@@ -33,10 +33,11 @@ const RollRow: React.FC<RollRowProps> = ({ roll: baseRoll }) => {
     : null;
 
   return (
-    <button 
+    <div 
       onClick={handleClick}
-      disabled={!isDeveloped}
-      className="w-full flex items-center p-3 bg-neutral-800/50 rounded-xl text-left border border-transparent hover:border-brand-amber-start/50 transition-all disabled:opacity-60 disabled:hover:border-transparent"
+      role="button"
+      tabIndex={isDeveloped ? 0 : -1}
+      className={`w-full flex items-center p-3 bg-neutral-800/50 rounded-xl text-left border border-transparent transition-all ${isDeveloped ? 'hover:border-brand-amber-start/50 cursor-pointer' : 'opacity-60'}`}
     >
       <FilmCanisterIcon filmType={roll.film_type} imageUrl={filmStock?.roll_image_url} className="h-16 w-auto flex-shrink-0 mr-4" />
       
@@ -84,7 +85,7 @@ const RollRow: React.FC<RollRowProps> = ({ roll: baseRoll }) => {
 
         <ChevronRight className="w-5 h-5 text-gray-600" />
       </div>
-    </button>
+    </div>
   );
 };
 
