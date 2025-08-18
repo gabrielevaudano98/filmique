@@ -40,10 +40,15 @@ const RollRow: React.FC<RollRowProps> = ({ roll: baseRoll }) => {
       <FilmCanisterIcon filmType={roll.film_type} imageUrl={filmStock?.roll_image_url} className="h-16 w-auto flex-shrink-0 mr-4" />
       
       <div className="flex-1 min-w-0">
-        <p className="font-bold text-white text-sm truncate">{roll.film_type}</p>
-        {developedDate && (
-          <p className="text-xs text-gray-400 mt-1">{developedDate}</p>
-        )}
+        <h3 className="font-bold text-white leading-tight truncate">{roll.title || 'Untitled Roll'}</h3>
+        <div className="flex items-center space-x-4 text-xs text-gray-400 mt-1.5">
+          {developedDate && (
+            <span className="flex items-center gap-1.5">
+              <CalendarDays size={14} />
+              {developedDate}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center space-x-4 text-gray-400 pl-4">
