@@ -18,36 +18,38 @@ const SpeedUpDevelopmentModal: React.FC<SpeedUpDevelopmentModalProps> = ({ roll,
   };
 
   return (
-    <div className="fixed inset-0 bg-warm-900/50 backdrop-blur-xl flex items-center justify-center z-[60] p-4">
-      <div className="bg-transparent max-w-sm w-full p-6 animate-modal-enter text-center">
-        <div className="animate-fade-in">
-          <div className="inline-block p-4 bg-warm-800/50 border border-warm-700/50 rounded-full mb-5 shadow-lg">
-            <Zap className="w-10 h-10 text-brand-amber-start" />
-          </div>
-          <h2 className="text-3xl font-bold text-white">Speed Up Development</h2>
-          <p className="text-lg text-warm-300 mt-2 mb-8">
-            Spend <span className="font-bold text-white">{cost} credits</span> to instantly develop your roll "{roll.title || roll.film_type}"?
-          </p>
-          
-          <div className="mt-8 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-            <button 
-              type="button"
-              onClick={onClose}
-              disabled={isLoading}
-              className="flex-1 flex justify-center items-center space-x-2 py-3 px-4 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-base font-bold text-white transition-colors disabled:opacity-50"
-            >
-              <span>Cancel</span>
-            </button>
-            <button 
-              type="button"
-              onClick={handleConfirm}
-              disabled={isLoading}
-              className="flex-1 flex justify-center items-center space-x-2 py-3 px-4 rounded-xl shadow-lg shadow-brand-amber-start/20 text-base font-bold text-black bg-gradient-to-r from-brand-amber-start to-brand-amber-end hover:opacity-90 transition-all disabled:opacity-50"
-            >
-              <Zap className="w-5 h-5" />
-              <span>{isLoading ? 'Processing...' : `Confirm & Spend ${cost}`}</span>
-            </button>
-          </div>
+    <div 
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fade-in"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-2xl max-w-sm w-full p-8 shadow-2xl text-center animate-modal-enter"
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="mb-4">
+          <Zap className="w-12 h-12 text-brand-amber-start mx-auto" />
+        </div>
+        <h2 className="text-2xl font-bold text-white">Instant Development</h2>
+        <p className="text-gray-300 mt-2 leading-relaxed">
+          Spend <span className="font-bold text-white">{cost} credits</span> to finish developing
+          <br />
+          <span className="font-semibold text-amber-400">"{roll.title || roll.film_type}"</span> now?
+        </p>
+        <div className="mt-8 flex justify-center space-x-4">
+          <button 
+            onClick={onClose}
+            disabled={isLoading}
+            className="px-8 py-3 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-base font-bold text-white transition-colors disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={handleConfirm}
+            disabled={isLoading}
+            className="px-8 py-3 rounded-xl shadow-lg shadow-brand-amber-start/20 text-base font-bold text-black bg-gradient-to-r from-brand-amber-start to-brand-amber-end hover:opacity-90 transition-all disabled:opacity-50"
+          >
+            {isLoading ? 'Processing...' : 'Confirm'}
+          </button>
         </div>
       </div>
     </div>
