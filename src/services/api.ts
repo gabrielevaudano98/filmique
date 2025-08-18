@@ -1,7 +1,7 @@
 import { supabase } from '../integrations/supabase/client';
 import { extractStoragePathFromPublicUrl } from '../utils/storage';
 import { applyFilter } from '../utils/imageProcessor';
-import { Roll, Photo, FilmStock, UserProfile, Album } from '../types';
+import { Roll, Photo, FilmStock, UserProfile, Album, LocalRoll, LocalPhoto } from '../types';
 import { getCache, setCache, invalidateCache } from '../utils/cache';
 
 export const POST_SELECT_QUERY = '*, cover_photo_url, profiles!posts_user_id_fkey(username, avatar_url, level, id), rolls!posts_roll_id_fkey(title, film_type, developed_at, photos(*)), likes(user_id), comments(*, profiles(username, avatar_url)), albums(*)';
@@ -62,6 +62,20 @@ export const fetchAllRolls = async (userId: string) => {
 };
 export const deleteRollById = (rollId: string) => {
   return supabase.from('rolls').delete().eq('id', rollId);
+};
+export const upsertCloudRoll = (roll: LocalRoll) => {
+  const { photos, sync_status, ...rollData } = roll;
+  return supabase.from('rolls').upsert(rollData);
+};
+export const batchUpsertCloudPhotos = (photos: LocalPhoto[]) => {
+  const photoData = photos.map(({ local_path, ...rest }) => rest);
+  return supabase.from('photos').upsert(photoData);
+};
+export const uploadBackupPhoto = (path: string, blob: Blob) => {
+  return supabase.storage.from('photos').upload(path, blob, {
+    contentType: 'image/jpeg',
+    upsert: true,
+  });
 };
 export const createNewRoll = async (userId: string, filmType: string, capacity: number, aspectRatio: string) => {
   const result = await supabase.from('rolls').insert({ user_id: userId, film_type: filmType, capacity, aspect_ratio: aspectRatio }).select().single();

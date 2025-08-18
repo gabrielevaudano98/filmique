@@ -183,13 +183,21 @@ export const useRollsAndPhotos = (
     if (!profile) return;
     const toastId = showLoadingToast('Developing your film...');
     try {
-      // This is now a local-only operation. We just set the timestamp.
-      await db.rolls.update(roll.id, { developed_at: new Date().toISOString() });
+      await db.transaction('rw', db.rolls, db.pending_transactions, async () => {
+        await db.rolls.update(roll.id, { developed_at: new Date().toISOString() });
+        await db.pending_transactions.add({
+          type: 'BACKUP_ROLL',
+          payload: { rollId: roll.id },
+          status: 'pending',
+          created_at: new Date().toISOString(),
+          attempts: 0,
+        });
+      });
       
       const updatedRoll = await db.rolls.get(roll.id);
       if (updatedRoll) setDevelopedRollForWizard(updatedRoll);
 
-      showSuccessToast('Roll developed successfully!');
+      showSuccessToast('Roll developed! Backup scheduled.');
       notification(NotificationType.Success);
     } catch (error: any) {
       showErrorToast(error?.message || 'Failed to develop roll.');
@@ -213,12 +221,10 @@ export const useRollsAndPhotos = (
     if (!profile) return;
     
     try {
-      // Optimistic UI: Delete from local DB and filesystem immediately.
       await db.transaction('rw', db.rolls, db.photos, db.pending_transactions, async () => {
         await db.rolls.delete(rollId);
         await db.photos.where('roll_id').equals(rollId).delete();
         
-        // Add a transaction to the queue to sync this deletion with the cloud later.
         await db.pending_transactions.add({
           type: 'DELETE_ROLL',
           payload: { rollId },

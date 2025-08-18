@@ -42,6 +42,20 @@ export const savePhoto = async (blob: Blob, userId: string, rollId: string, phot
 };
 
 /**
+ * Reads a local photo and returns its content as a Blob.
+ */
+export const readPhotoBlob = async (pathOrId: string): Promise<Blob | null> => {
+  if (IS_NATIVE) {
+    const result = await Filesystem.readFile({ path: pathOrId });
+    const base64Response = await fetch(`data:image/jpeg;base64,${result.data}`);
+    return await base64Response.blob();
+  } else {
+    const record = await db.photo_blobs.get(pathOrId);
+    return record?.blob || null;
+  }
+};
+
+/**
  * Gets a displayable URL for a photo from its local path/identifier.
  */
 export const getPhotoAsWebViewPath = async (pathOrId: string): Promise<string> => {
