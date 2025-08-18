@@ -2,6 +2,7 @@ import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import NotificationsBell from './NotificationsBell';
 import SegmentedControl from './SegmentedControl';
+import SyncStatusIndicator from './SyncStatusIndicator';
 
 const TopBar: React.FC = () => {
   const { 
@@ -33,10 +34,12 @@ const TopBar: React.FC = () => {
         {/* Default Header (Filmique & Bell) */}
         <div className={`absolute inset-0 flex items-center justify-between px-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] transition-all duration-300 ${isStudioSticky ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
           <div className="w-10">
-            {headerAction && BackButton && (
+            {headerAction && BackButton ? (
               <button onClick={headerAction.action} className="p-2 transition-colors -ml-2 text-gray-300 hover:text-white">
                 <BackButton className="w-5 h-5" />
               </button>
+            ) : (
+              <SyncStatusIndicator />
             )}
           </div>
           <h1 className="text-lg font-bold text-white">Filmique</h1>

@@ -12,6 +12,7 @@ import { Library, Clock, Printer } from 'lucide-react';
 import { Network } from '@capacitor/network';
 import { showInfoToast, showSuccessToast } from '../utils/toasts';
 import { useSyncEngine } from '../hooks/useSyncEngine';
+import { useSyncStatus } from '../hooks/useSyncStatus';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -55,6 +56,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const albumsData = useAlbums(auth.profile);
   const rollsSettings = useRollsSettings();
   const printOrdersData = usePrintOrders(auth.profile);
+  const syncStatus = useSyncStatus(isOnline);
 
   // Initialize the sync engine
   useSyncEngine(isOnline);
@@ -142,6 +144,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     isRollsSettingsOpen,
     setIsRollsSettingsOpen,
     isOnline,
+    syncStatus,
     isPrintsSettingsOpen,
     setIsPrintsSettingsOpen,
     printSearchTerm,
@@ -150,7 +153,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setPrintStatusFilter,
     printSortOrder,
     setPrintSortOrder,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, printOrdersData, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, isRollsSettingsOpen, isOnline, isPrintsSettingsOpen, printSearchTerm, printStatusFilter, printSortOrder]);
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, printOrdersData, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, isRollsSettingsOpen, isOnline, syncStatus, isPrintsSettingsOpen, printSearchTerm, printStatusFilter, printSortOrder]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };

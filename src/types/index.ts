@@ -1,5 +1,6 @@
 import { Session } from '@supabase/supabase-js';
 import React from 'react';
+import { SyncStatus } from '../hooks/useSyncStatus';
 
 export interface Grain { amt: number; size?: number; rough?: number; chroma?: number; }
 export interface Vignette { ev: number; radius?: number; softness?: number; }
@@ -196,6 +197,7 @@ export interface AppContextType {
   profile: UserProfile | null;
   isLoading: boolean;
   isOnline: boolean;
+  syncStatus: SyncStatus;
   currentView: string;
   setCurrentView: (view: string) => void;
   cameraMode: 'simple' | 'pro';
