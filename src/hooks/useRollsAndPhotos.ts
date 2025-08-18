@@ -23,14 +23,10 @@ export const useRollsAndPhotos = (
   const [developedRollForWizard, setDevelopedRollForWizard] = useState<Roll | null>(null);
   const { impact, notification } = useHaptics();
 
-  const allRolls = useLiveQuery(async () => {
-    if (!profile) return [];
-    const rolls = await db.rolls.where('user_id').equals(profile.id).toArray();
-    for (const roll of rolls) {
-      roll.photos = await db.photos.where('roll_id').equals(roll.id).toArray();
-    }
-    return rolls;
-  }, [profile]);
+  const allRolls = useLiveQuery(
+    () => profile ? db.rolls.where('user_id').equals(profile.id).toArray() : [],
+    [profile]
+  );
 
   const activeRoll = useMemo(() => {
     if (!allRolls) return null;
