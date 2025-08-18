@@ -88,7 +88,7 @@ const SettingsView: React.FC = () => {
             color="bg-brand-amber-start"
             title="Subscription"
             subtitle={profile?.subscription ? profile.subscription.charAt(0).toUpperCase() + profile.subscription.slice(1) : 'Free'}
-            onClick={handleComingSoon}
+            onClick={() => setCurrentView('subscription')}
           />
         </SettingsGroup>
 

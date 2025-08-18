@@ -198,11 +198,12 @@ export const useRollsAndPhotos = (
     const toastId = showLoadingToast('Developing your film...');
     try {
       const isPremium = profile.subscription === 'plus' || profile.subscription === 'premium';
+      const autoBackupEnabled = profile.is_auto_backup_enabled ?? true;
 
       await db.transaction('rw', db.rolls, db.pending_transactions, async () => {
         await db.rolls.update(roll.id, { developed_at: new Date().toISOString() });
         
-        if (isPremium) {
+        if (isPremium && autoBackupEnabled) {
           await db.pending_transactions.add({
             type: 'BACKUP_ROLL',
             payload: { rollId: roll.id },
@@ -216,7 +217,7 @@ export const useRollsAndPhotos = (
       const updatedRoll = await db.rolls.get(roll.id);
       if (updatedRoll) setDevelopedRollForWizard(updatedRoll);
 
-      if (isPremium) {
+      if (isPremium && autoBackupEnabled) {
         showSuccessToast('Roll developed! Automatic backup scheduled.');
       } else {
         showSuccessToast('Roll developed!');

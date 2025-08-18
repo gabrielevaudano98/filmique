@@ -25,6 +25,7 @@ import RollsSettingsView from './components/RollsSettingsView';
 import LibraryView from './components/LibraryView';
 import SpeedUpModal from './components/SpeedUpModal';
 import { Roll } from './types';
+import SubscriptionView from './components/SubscriptionView';
 
 const SPEED_UP_COST = 25;
 
@@ -62,6 +63,7 @@ function App() {
         case 'rollDetail': setSelectedRoll(null); setCurrentView('rolls'); break;
         case 'albumDetail': setSelectedAlbum(null); setCurrentView('profile'); break;
         case 'settings': setCurrentView('profile'); break;
+        case 'subscription': setCurrentView('settings'); break;
         case 'notifications': setCurrentView('community'); break;
         case 'uncategorizedRolls': setCurrentView('rolls'); break;
         case 'camera': setCurrentView('rolls'); break;
@@ -85,6 +87,7 @@ function App() {
       case 'challenges': return <ChallengesView />;
       case 'profile': return <ProfileView />;
       case 'settings': return <SettingsView />;
+      case 'subscription': return <SubscriptionView />;
       case 'rollDetail': return <RollDetailView />;
       case 'albumDetail': return <AlbumDetailView />;
       case 'notifications': return <NotificationsView />;
@@ -146,6 +149,3 @@ function App() {
       <BottomNavBar />
     </div>
   );
-}
-
-export default App;
