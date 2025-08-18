@@ -2,7 +2,6 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
-import RollCard from './RollCard';
 import { Film, Archive } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
@@ -10,6 +9,7 @@ import DevelopingRollCard from './DevelopingRollCard';
 import PrintsView from './PrintsView';
 import DarkroomEmptyState from './DarkroomEmptyState';
 import SegmentedControl from './SegmentedControl';
+import RollRow from './RollRow';
 
 const RollsEmptyState = () => (
     <div className="text-center py-24 text-neutral-500">
@@ -199,8 +199,8 @@ const RollsView: React.FC = () => {
                       <h3 className="sticky top-[80px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-800/60 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
                         {groupName}
                       </h3>
-                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 pt-3">
-                        {rolls.map(roll => <RollCard key={roll.id} roll={roll} />)}
+                      <div className="flex flex-col space-y-3 pt-3">
+                        {rolls.map(roll => <RollRow key={roll.id} roll={roll} />)}
                       </div>
                     </div>
                   ))
