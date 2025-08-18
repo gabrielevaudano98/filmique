@@ -148,4 +148,7 @@ function App() {
       </main>
       <BottomNavBar />
     </div>
-  );
+  )
+}
+
+export default App;
