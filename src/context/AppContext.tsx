@@ -32,7 +32,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [studioSection, setStudioSection] = useState<'rolls' | 'darkroom' | 'prints'>('rolls');
   const [isStudioHeaderSticky, setIsStudioHeaderSticky] = useState(false);
   const [isRollsSettingsOpen, setIsRollsSettingsOpen] = useState(false);
+  const [isPrintsSettingsOpen, setIsPrintsSettingsOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
+  const [printSearchTerm, setPrintSearchTerm] = useState('');
+  const [printStatusFilter, setPrintStatusFilter] = useState('all');
+  const [printSortOrder, setPrintSortOrder] = useState('newest');
 
   // Data State
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
@@ -138,7 +142,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     isRollsSettingsOpen,
     setIsRollsSettingsOpen,
     isOnline,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, printOrdersData, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, isRollsSettingsOpen, isOnline]);
+    isPrintsSettingsOpen,
+    setIsPrintsSettingsOpen,
+    printSearchTerm,
+    setPrintSearchTerm,
+    printStatusFilter,
+    setPrintStatusFilter,
+    printSortOrder,
+    setPrintSortOrder,
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, printOrdersData, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, isRollsSettingsOpen, isOnline, isPrintsSettingsOpen, printSearchTerm, printStatusFilter, printSortOrder]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };

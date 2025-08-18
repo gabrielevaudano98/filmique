@@ -286,4 +286,12 @@ export interface AppContextType {
   studioSectionOptions: any[];
   isRollsSettingsOpen: boolean;
   setIsRollsSettingsOpen: (isOpen: boolean) => void;
+  isPrintsSettingsOpen: boolean;
+  setIsPrintsSettingsOpen: (isOpen: boolean) => void;
+  printSearchTerm: string;
+  setPrintSearchTerm: (term: string) => void;
+  printStatusFilter: string;
+  setPrintStatusFilter: (status: string) => void;
+  printSortOrder: string;
+  setPrintSortOrder: (order: string) => void;
 }

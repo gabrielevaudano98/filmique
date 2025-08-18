@@ -26,6 +26,7 @@ import LibraryView from './components/LibraryView';
 import SpeedUpModal from './components/SpeedUpModal';
 import { Roll } from './types';
 import SubscriptionView from './components/SubscriptionView';
+import PrintsSettingsView from './components/PrintsSettingsView';
 
 const SPEED_UP_COST = 25;
 
@@ -37,6 +38,7 @@ function App() {
     sendToStudio, putOnShelf,
     developedRollForWizard, setDevelopedRollForWizard,
     isRollsSettingsOpen, setIsRollsSettingsOpen,
+    isPrintsSettingsOpen,
     setSelectedRoll, setSelectedAlbum,
     speedUpDevelopment
   } = useAppContext();
@@ -141,6 +143,7 @@ function App() {
       {postDevelopmentWizard}
       {speedUpModal}
       {isRollsSettingsOpen && <RollsSettingsView />}
+      {isPrintsSettingsOpen && <PrintsSettingsView />}
       <main className="min-h-screen w-full pb-28">
         <div className="max-w-6xl mx-auto w-full h-full px-4 py-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">
           {renderCurrentView()}
