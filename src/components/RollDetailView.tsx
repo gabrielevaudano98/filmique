@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { ArrowLeft, Download, Trash2, Archive, ArchiveRestore, Tag, Film } from 'lucide-react';
+import { ArrowLeft, Download, Trash2, Archive, ArchiveRestore, Tag, Film, Printer } from 'lucide-react';
 import PhotoDetailModal from './PhotoDetailModal';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import { Photo } from '../context/AppContext';
@@ -10,6 +10,8 @@ import { useDebounce } from '../hooks/useDebounce';
 import NegativePhoto from './NegativePhoto';
 import { getPhotoAsWebViewPath } from '../utils/fileStorage';
 import { LocalPhoto } from '../integrations/db';
+
+const PRINT_COST_PER_PHOTO = 10;
 
 const RollDetailView: React.FC = () => {
   const { 
@@ -22,7 +24,9 @@ const RollDetailView: React.FC = () => {
     updateRollTags,
     setHeaderAction,
     setIsTopBarVisible,
-    setStudioSection
+    setStudioSection,
+    queuePrintOrder,
+    profile
   } = useAppContext();
   
   const [photoToView, setPhotoToView] = useState<Photo | null>(null);
@@ -100,6 +104,15 @@ const RollDetailView: React.FC = () => {
     ? new Date(selectedRoll.developed_at)
     : new Date(new Date(selectedRoll.completed_at!).getTime() + 7 * 24 * 60 * 60 * 1000);
 
+  const printCost = (selectedRoll.shots_used || 0) * PRINT_COST_PER_PHOTO;
+  const canAffordPrint = profile ? profile.credits >= printCost : false;
+
+  const handlePrint = () => {
+    if (canAffordPrint && !selectedRoll.is_printed) {
+      queuePrintOrder(selectedRoll.id, printCost);
+    }
+  };
+
   const actionButtons = (
     <>
       <button onClick={() => downloadRoll(selectedRoll)} className="p-2 text-gray-300 hover:text-white transition-colors rounded-full"><Download className="w-5 h-5" /></button>
@@ -135,6 +148,22 @@ const RollDetailView: React.FC = () => {
         </div>
 
         <div className="p-4 space-y-8">
+          {/* Print Action Card */}
+          <div className="bg-gradient-to-r from-blue-500/20 to-neutral-800/20 rounded-xl p-4 border border-blue-500/30 flex items-center justify-between">
+            <div>
+              <h3 className="font-bold text-white">Order High-Quality Prints</h3>
+              <p className="text-sm text-gray-300">Cost: {printCost} credits</p>
+            </div>
+            <button 
+              onClick={handlePrint}
+              disabled={!canAffordPrint || selectedRoll.is_printed}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center space-x-2"
+            >
+              <Printer className="w-4 h-4" />
+              <span>{selectedRoll.is_printed ? 'Ordered' : 'Print this Roll'}</span>
+            </button>
+          </div>
+
           {/* Info & Tags Section */}
           <div className="p-4 bg-neutral-800/50 rounded-xl border border-neutral-700/50">
             <div className="flex justify-between items-center mb-3">
