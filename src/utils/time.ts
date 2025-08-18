@@ -26,14 +26,12 @@ export function formatDuration(ms: number): string {
   const hours = Math.floor(ms / (1000 * 60 * 60));
   
   if (hours >= 1) {
-    const plural = hours === 1 ? '' : 's';
-    return `${hours} hour${plural} remaining`;
+    return `${hours}h left`;
   }
 
   const totalMinutes = Math.floor(ms / (1000 * 60));
   if (totalMinutes < 1) {
-      return 'Less than a minute left';
+      return '<1 min left';
   }
-  const plural = totalMinutes === 1 ? '' : 's';
-  return `${totalMinutes} minute${plural} left`;
+  return `${totalMinutes} min left`;
 }
