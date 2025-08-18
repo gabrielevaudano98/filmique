@@ -21,8 +21,19 @@ export function formatDistanceToNow(dateString: string): string {
 }
 
 export function formatDuration(ms: number): string {
-  if (ms < 0) ms = 0;
+  if (ms <= 0) return 'Ready to develop';
+
   const hours = Math.floor(ms / (1000 * 60 * 60));
-  const minutes = Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60));
-  return `${hours}h ${minutes}m remaining`;
+  
+  if (hours >= 1) {
+    const plural = hours === 1 ? '' : 's';
+    return `${hours} hour${plural} remaining`;
+  }
+
+  const totalMinutes = Math.floor(ms / (1000 * 60));
+  if (totalMinutes < 1) {
+      return 'Less than a minute left';
+  }
+  const plural = totalMinutes === 1 ? '' : 's';
+  return `${totalMinutes} minute${plural} left`;
 }
