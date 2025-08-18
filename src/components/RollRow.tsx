@@ -1,7 +1,7 @@
 import React from 'react';
 import { Roll } from '../types';
 import { useAppContext } from '../context/AppContext';
-import { Image as ImageIcon, Clock, ChevronRight } from 'lucide-react';
+import { Image as ImageIcon, Clock, ChevronRight, Film as FilmIcon, CalendarDays } from 'lucide-react';
 import FilmCanisterIcon from './FilmCanisterIcon';
 import SyncStatusIcon from './SyncStatusIcon';
 import { LocalRoll } from '../integrations/db';
@@ -28,7 +28,7 @@ const RollRow: React.FC<RollRowProps> = ({ roll: baseRoll }) => {
   };
 
   const developedDate = roll.developed_at 
-    ? new Date(roll.developed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    ? new Date(roll.developed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : null;
 
   return (
@@ -41,8 +41,18 @@ const RollRow: React.FC<RollRowProps> = ({ roll: baseRoll }) => {
       
       <div className="flex-1">
         <h3 className="font-bold text-white leading-tight">{roll.title || 'Untitled Roll'}</h3>
-        <p className="text-sm text-gray-400">{roll.film_type}</p>
-        {developedDate && <p className="text-xs text-gray-500 mt-1">{developedDate}</p>}
+        <div className="flex items-center space-x-4 text-xs text-gray-400 mt-1.5">
+          <span className="flex items-center gap-1.5">
+            <FilmIcon size={14} />
+            {roll.film_type}
+          </span>
+          {developedDate && (
+            <span className="flex items-center gap-1.5">
+              <CalendarDays size={14} />
+              {developedDate}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center space-x-4 text-gray-400">
@@ -52,8 +62,8 @@ const RollRow: React.FC<RollRowProps> = ({ roll: baseRoll }) => {
             <span>Developing</span>
           </div>
         )}
-        <div className="flex items-center gap-1.5 text-xs">
-          <ImageIcon className="w-3 h-3" /> 
+        <div className="flex items-center gap-1.5 text-sm">
+          <ImageIcon size={14} /> 
           <span>{roll.shots_used}</span>
         </div>
         <SyncStatusIcon status={roll.sync_status} />
