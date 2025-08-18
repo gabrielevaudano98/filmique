@@ -13,6 +13,7 @@ import { db } from '../integrations/db';
 import { savePhoto, deleteRollDirectory } from '../utils/fileStorage';
 
 const SPEED_UP_COST = 25;
+const PRINT_COST_PER_PHOTO = 10;
 
 export const useRollsAndPhotos = (
   profile: UserProfile | null, 
@@ -177,10 +178,47 @@ export const useRollsAndPhotos = (
     }
   }, [profile, isSavingPhoto, impact, activeRoll, setRollToConfirm]);
 
+  const queuePrintOrder = useCallback(async (rollId: string, totalCost: number) => {
+    if (!profile) return;
+    const toastId = showLoadingToast('Queuing print order...');
+    try {
+      await db.rolls.update(rollId, { is_printed: true });
+      await db.pending_transactions.add({
+        type: 'PURCHASE_PRINT',
+        payload: {
+          userId: profile.id,
+          rollId,
+          orderCost: totalCost,
+        },
+        status: 'pending',
+        created_at: new Date().toISOString(),
+        attempts: 0,
+      });
+      dismissToast(toastId);
+      showInfoToast('Print order queued! It will be processed when you are online.');
+    } catch (error: any) {
+      dismissToast(toastId);
+      showErrorToast(`Failed to queue order: ${error.message}`);
+    }
+  }, [profile]);
+
   const sendToStudio = async (roll: Roll, title: string) => {
+    if (!profile) return;
     const completedAt = new Date().toISOString();
-    await db.rolls.update(roll.id, { title, completed_at: completedAt });
-    showSuccessToast("Roll sent to the studio!");
+    
+    if (profile.experience_mode === 'authentic') {
+      const totalCost = roll.shots_used * PRINT_COST_PER_PHOTO;
+      if (profile.credits < totalCost) {
+        showErrorToast("Insufficient credits to order prints.");
+        return;
+      }
+      await db.rolls.update(roll.id, { title, completed_at: completedAt });
+      await queuePrintOrder(roll.id, totalCost);
+      showSuccessToast("Roll sent for printing! Your unlock code will arrive with your prints.");
+    } else {
+      await db.rolls.update(roll.id, { title, completed_at: completedAt });
+      showSuccessToast("Roll sent to the studio!");
+    }
   };
 
   const putOnShelf = async (roll: Roll, title: string) => {
@@ -368,30 +406,6 @@ export const useRollsAndPhotos = (
     } catch (error: any) {
         showErrorToast(`Failed to schedule backup: ${error.message}`);
         await db.rolls.update(rollId, { sync_status: 'local_only' });
-    }
-  }, [profile]);
-
-  const queuePrintOrder = useCallback(async (rollId: string, totalCost: number) => {
-    if (!profile) return;
-    const toastId = showLoadingToast('Queuing print order...');
-    try {
-      await db.rolls.update(rollId, { is_printed: true });
-      await db.pending_transactions.add({
-        type: 'PURCHASE_PRINT',
-        payload: {
-          userId: profile.id,
-          rollId,
-          orderCost: totalCost,
-        },
-        status: 'pending',
-        created_at: new Date().toISOString(),
-        attempts: 0,
-      });
-      dismissToast(toastId);
-      showInfoToast('Print order queued! It will be processed when you are online.');
-    } catch (error: any) {
-      dismissToast(toastId);
-      showErrorToast(`Failed to queue order: ${error.message}`);
     }
   }, [profile]);
 

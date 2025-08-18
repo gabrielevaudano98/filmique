@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Clock, Archive, Edit } from 'lucide-react';
+import { Clock, Archive, Edit, Printer } from 'lucide-react';
 import { Roll } from '../types';
+import { useAppContext } from '../context/AppContext';
+
+const PRINT_COST_PER_PHOTO = 10;
 
 interface RollCompletionWizardProps {
   roll: Roll;
@@ -9,11 +12,18 @@ interface RollCompletionWizardProps {
 }
 
 const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onSendToStudio, onPutOnShelf }) => {
+  const { profile } = useAppContext();
   const [title, setTitle] = useState('');
   const [isLoading, setIsLoading] = useState<'studio' | 'shelf' | null>(null);
 
+  const isAuthenticMode = profile?.experience_mode === 'authentic';
+  const printCost = roll.shots_used * PRINT_COST_PER_PHOTO;
+  const canAffordPrint = profile && profile.credits >= printCost;
+
   const handleAction = (action: 'studio' | 'shelf') => {
     if (!title.trim()) return;
+    if (isAuthenticMode && !canAffordPrint) return;
+
     setIsLoading(action);
     if (action === 'studio') {
       onSendToStudio(roll, title.trim());
@@ -28,7 +38,10 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onSen
         <div className="animate-fade-in">
           <h2 className="text-3xl font-bold text-white">Name Your Roll</h2>
           <p className="text-lg text-warm-300 mt-2 mb-8">
-            Give this roll a unique name for your shelf. You can change it later.
+            {isAuthenticMode
+              ? "Give this roll a name. It will be sent for printing to begin the development process."
+              : "Give this roll a unique name for your shelf. You can change it later."
+            }
           </p>
           
           <form onSubmit={(e) => { e.preventDefault(); handleAction('studio'); }}>
@@ -47,22 +60,31 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onSen
             </div>
 
             <div className="mt-8 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-              <button 
-                type="button"
-                onClick={() => handleAction('shelf')}
-                disabled={!title.trim() || !!isLoading}
-                className="flex-1 flex justify-center items-center space-x-2 py-3 px-4 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-base font-bold text-white transition-colors disabled:opacity-50"
-              >
-                <Archive className="w-5 h-5" />
-                <span>{isLoading === 'shelf' ? 'Shelving...' : 'Put on Shelf'}</span>
-              </button>
+              {!isAuthenticMode && (
+                <button 
+                  type="button"
+                  onClick={() => handleAction('shelf')}
+                  disabled={!title.trim() || !!isLoading}
+                  className="flex-1 flex justify-center items-center space-x-2 py-3 px-4 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-base font-bold text-white transition-colors disabled:opacity-50"
+                >
+                  <Archive className="w-5 h-5" />
+                  <span>{isLoading === 'shelf' ? 'Shelving...' : 'Put on Shelf'}</span>
+                </button>
+              )}
               <button 
                 type="submit"
-                disabled={!title.trim() || !!isLoading}
+                disabled={!title.trim() || !!isLoading || (isAuthenticMode && !canAffordPrint)}
                 className="flex-1 flex justify-center items-center space-x-2 py-3 px-4 rounded-xl shadow-lg shadow-brand-amber-start/20 text-base font-bold text-white bg-gradient-to-r from-brand-amber-start to-brand-amber-end hover:opacity-90 transition-all disabled:opacity-50"
               >
-                <Clock className="w-5 h-5" />
-                <span>{isLoading === 'studio' ? 'Sending...' : 'Send to Studio'}</span>
+                {isAuthenticMode ? <Printer className="w-5 h-5" /> : <Clock className="w-5 h-5" />}
+                <span>
+                  {isLoading === 'studio' 
+                    ? 'Sending...' 
+                    : isAuthenticMode
+                    ? (canAffordPrint ? `Develop & Print (${printCost}cr)` : `Insufficient Credits`)
+                    : 'Send to Studio'
+                  }
+                </span>
               </button>
             </div>
           </form>
