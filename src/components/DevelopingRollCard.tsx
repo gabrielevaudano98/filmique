@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Roll } from '../types';
 import { useAppContext } from '../context/AppContext';
 import { Clock, Zap } from 'lucide-react';
@@ -8,7 +8,7 @@ import { formatDuration } from '../utils/time';
 import { getPhotoAsWebViewPath } from '../utils/fileStorage';
 import { LocalPhoto, LocalRoll } from '../integrations/db';
 import SyncStatusIcon from './SyncStatusIcon';
-import SpeedUpModal from './SpeedUpModal';
+import ConfirmDeleteModal from './ConfirmDeleteModal';
 
 const DEVELOPMENT_TIME_MS = 36 * 60 * 60 * 1000;
 const SPEED_UP_COST = 25;
@@ -18,7 +18,7 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [progress, setProgress] = useState(0);
   const [photoSrcs, setPhotoSrcs] = useState<Record<string, string>>({});
-  const [showSpeedUpModal, setShowSpeedUpModal] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const roll = baseRoll as LocalRoll;
 
   useEffect(() => {
@@ -125,7 +125,7 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
             </button>
           ) : (
             <button 
-              onClick={() => setShowSpeedUpModal(true)}
+              onClick={() => setShowConfirm(true)}
               className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center space-x-2"
             >
               <Zap className="w-4 h-4" />
@@ -164,15 +164,19 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
           </div>
         </div>
       </div>
-      <SpeedUpModal
-        isOpen={showSpeedUpModal}
-        onClose={() => setShowSpeedUpModal(false)}
-        onConfirm={() => {
-            speedUpDevelopment(roll);
-            setShowSpeedUpModal(false);
-        }}
-        cost={SPEED_UP_COST}
-      />
+      {showConfirm && (
+        <ConfirmDeleteModal
+            isOpen={showConfirm}
+            onClose={() => setShowConfirm(false)}
+            onConfirm={() => {
+                speedUpDevelopment(roll);
+                setShowConfirm(false);
+            }}
+            title="Speed Up Development"
+            message={`Are you sure you want to spend ${SPEED_UP_COST} credits to finish development immediately?`}
+            confirmText="Yes, Speed Up"
+        />
+      )}
     </>
   );
 };
