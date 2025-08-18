@@ -1,7 +1,7 @@
 import React from 'react';
 import { Roll } from '../types';
 import { useAppContext } from '../context/AppContext';
-import { Image as ImageIcon, Clock, ChevronRight, Film as FilmIcon, CalendarDays } from 'lucide-react';
+import { Image as ImageIcon, Clock, ChevronRight, CalendarDays, CloudUpload } from 'lucide-react';
 import FilmCanisterIcon from './FilmCanisterIcon';
 import SyncStatusIcon from './SyncStatusIcon';
 import { LocalRoll } from '../integrations/db';
@@ -13,10 +13,11 @@ interface RollRowProps {
 }
 
 const RollRow: React.FC<RollRowProps> = ({ roll: baseRoll }) => {
-  const { setSelectedRoll, setCurrentView, filmStocks } = useAppContext();
+  const { setSelectedRoll, setCurrentView, filmStocks, profile, manuallyBackupRoll } = useAppContext();
   const roll = baseRoll as LocalRoll;
   const isDeveloped = isRollDeveloped(roll);
   const filmStock = filmStocks.find(fs => fs.name === roll.film_type);
+  const isPremium = profile?.subscription === 'plus' || profile?.subscription === 'premium';
 
   const handleClick = () => {
     if (!isDeveloped) {
@@ -61,7 +62,26 @@ const RollRow: React.FC<RollRowProps> = ({ roll: baseRoll }) => {
           <ImageIcon size={14} /> 
           <span>{roll.shots_used}</span>
         </div>
-        <SyncStatusIcon status={roll.sync_status} />
+        
+        {isPremium ? (
+          <SyncStatusIcon status={roll.sync_status} />
+        ) : (
+          roll.sync_status === 'local_only' ? (
+            <button 
+              onClick={(e) => {
+                  e.stopPropagation();
+                  manuallyBackupRoll(roll.id);
+              }}
+              className="flex items-center gap-1.5 text-sm text-blue-400 hover:text-blue-300"
+              title="Backup this roll to the cloud"
+            >
+              <CloudUpload size={16} />
+            </button>
+          ) : (
+            <SyncStatusIcon status={roll.sync_status} />
+          )
+        )}
+
         <ChevronRight className="w-5 h-5 text-gray-600" />
       </div>
     </button>

@@ -4,7 +4,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import * as api from '../services/api';
 import { UserProfile, Roll, Photo, FilmStock, LocalRoll, LocalPhoto } from '../types';
-import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast, showWarningToast } from '../utils/toasts';
+import { showErrorToast, showSuccessToast, showLoadingToast, dismissToast, showWarningToast, showInfoToast } from '../utils/toasts';
 import { filenameFromUrl } from '../utils/storage';
 import { isRollDeveloped } from '../utils/rollUtils';
 import { useHaptics } from './useHaptics';
@@ -323,6 +323,33 @@ export const useRollsAndPhotos = (
     showSuccessToast(`Roll ${archive ? 'archived' : 'unarchived'}.`);
   }, []);
 
+  const manuallyBackupRoll = useCallback(async (rollId: string) => {
+    if (!profile) return;
+
+    const isPremium = profile.subscription === 'plus' || profile.subscription === 'premium';
+    if (isPremium) {
+        showInfoToast("As a premium member, your rolls are backed up automatically!");
+        return;
+    }
+
+    try {
+        await db.transaction('rw', db.rolls, db.pending_transactions, async () => {
+            await db.rolls.update(rollId, { sync_status: 'syncing' });
+            await db.pending_transactions.add({
+                type: 'BACKUP_ROLL',
+                payload: { rollId },
+                status: 'pending',
+                created_at: new Date().toISOString(),
+                attempts: 0,
+            });
+        });
+        showSuccessToast("Roll backup scheduled! It will upload when you're online.");
+    } catch (error: any) {
+        showErrorToast(`Failed to schedule backup: ${error.message}`);
+        await db.rolls.update(rollId, { sync_status: 'local_only' });
+    }
+  }, [profile]);
+
   return {
     activeRoll,
     completedRolls,
@@ -350,5 +377,6 @@ export const useRollsAndPhotos = (
     developedRollForWizard,
     setDevelopedRollForWizard,
     archiveRoll,
+    manuallyBackupRoll,
   };
 };
