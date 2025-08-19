@@ -94,9 +94,9 @@ const DevelopingRollCard: React.FC<{ roll: Roll }> = ({ roll: baseRoll }) => {
       <div className="p-4">
         <div className="flex items-center justify-between">
           <div>
-            <h4 className="font-bold text-white truncate">{roll.film_type}</h4>
+            <h4 className="font-bold text-white truncate">{roll.title || 'Untitled Roll'}</h4>
             <div className="flex items-center gap-2">
-              <p className="text-sm text-gray-400">{roll.shots_used} photos</p>
+              <p className="text-sm text-gray-400">{roll.film_type}</p>
               <SyncStatusIcon status={roll.sync_status} />
             </div>
           </div>
