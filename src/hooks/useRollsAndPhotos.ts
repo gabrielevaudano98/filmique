@@ -115,7 +115,10 @@ export const useRollsAndPhotos = (
       };
       
       await db.transaction('rw', db.rolls, async () => {
-        const currentActiveRoll = await db.rolls.where({ user_id: profile.id, is_completed: false }).first();
+        const currentActiveRoll = await db.rolls
+          .where('user_id').equals(profile.id)
+          .and(roll => roll.is_completed === false)
+          .first();
         if (currentActiveRoll) {
           await db.rolls.delete(currentActiveRoll.id);
         }
