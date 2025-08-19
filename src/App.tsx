@@ -43,6 +43,7 @@ function App() {
     setSelectedRoll, setSelectedAlbum,
     speedUpDevelopment,
     isSyncStatusModalOpen,
+    setStudioSection,
   } = useAppContext();
 
   useEffect(() => {
@@ -103,11 +104,15 @@ function App() {
   const handleWizardSendToStudio = (roll: Roll, title: string) => {
     sendToStudio(roll, title);
     setRollToConfirm(null);
+    setCurrentView('rolls');
+    setStudioSection('darkroom');
   };
 
   const handleWizardPutOnShelf = (roll: Roll, title: string) => {
     putOnShelf(roll, title);
     setRollToConfirm(null);
+    setCurrentView('rolls');
+    setStudioSection('rolls');
   };
 
   const handleConfirmSpeedUp = () => {
