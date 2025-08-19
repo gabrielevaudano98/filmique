@@ -40,6 +40,14 @@ export class FilmiqueDB extends Dexie {
 
   constructor() {
     super('filmiqueDB');
+    this.version(4).stores({
+      rolls: 'id, user_id, is_completed, sync_status, album_id, [user_id+is_completed]',
+    }).upgrade(async tx => {
+      // Migrate is_completed from boolean to number (0 or 1)
+      return tx.table('rolls').toCollection().modify(roll => {
+        roll.is_completed = roll.is_completed ? 1 : 0;
+      });
+    });
     this.version(3).stores({
       rolls: 'id, user_id, is_completed, sync_status, album_id, [user_id+is_completed]', // Added compound index
     });
