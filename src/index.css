@@ -300,8 +300,14 @@
 
 /* Camera Viewfinder Loading Animation */
 @keyframes focus-in-out {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(0.95); opacity: 1; }
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
 }
 
 @keyframes pulse-soft {
