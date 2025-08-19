@@ -41,20 +41,20 @@ export class FilmiqueDB extends Dexie {
   constructor() {
     super('filmiqueDB');
     this.version(3).stores({
-      rolls: 'id, user_id, is_completed, sync_status, album_id, [user_id+is_completed]', // Added compound index
+      rolls: 'id, user_id, is_completed, sync_status, album_id, [user_id+is_completed]',
+      photos: 'id, roll_id, user_id, local_path',
+      profile: 'id',
+      pending_transactions: '++id, type, status, created_at',
+      photo_blobs: 'photo_id',
     });
+    
     this.version(2).stores({
-      // 'id' is the primary key. The other fields are indexed for faster queries.
       rolls: 'id, user_id, is_completed, sync_status, album_id',
       photos: 'id, roll_id, user_id, local_path',
       profile: 'id',
-      // '++id' means it's an auto-incrementing primary key.
       pending_transactions: '++id, type, status, created_at',
-      photo_blobs: 'photo_id', // New table for storing image blobs
+      photo_blobs: 'photo_id',
     }).upgrade(tx => {
-      // This upgrade function is empty because we are just adding a new table.
-      // Dexie handles this automatically. If we were changing an existing table,
-      // we would put the migration logic here.
       return tx.table('photo_blobs').clear();
     });
 
