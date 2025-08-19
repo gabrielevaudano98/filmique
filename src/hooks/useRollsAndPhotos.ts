@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
@@ -25,6 +25,7 @@ export const useRollsAndPhotos = (
   const [rollToConfirm, setRollToConfirm] = useState<Roll | null>(null);
   const [rollToSpeedUp, setRollToSpeedUp] = useState<Roll | null>(null);
   const [isSavingPhoto, setIsSavingPhoto] = useState(false);
+  const isSavingRef = useRef(false);
   const [developedRollForWizard, setDevelopedRollForWizard] = useState<Roll | null>(null);
   const { impact, notification } = useHaptics();
 
@@ -132,20 +133,28 @@ export const useRollsAndPhotos = (
   }, [profile, refreshProfile]);
 
   const takePhoto = useCallback(async (imageBlob: Blob, metadata: any) => {
-    if (!profile || isSavingPhoto || !activeRoll) {
+    if (!profile || isSavingRef.current || !activeRoll) {
       if (!activeRoll) showErrorToast("No active roll loaded.");
       return;
     }
 
     impact(ImpactStyle.Light);
+    isSavingRef.current = true;
     setIsSavingPhoto(true);
     
     try {
       if (activeRoll.shots_used >= activeRoll.capacity) {
         showWarningToast("This film roll is already full.");
+        isSavingRef.current = false;
         setIsSavingPhoto(false);
         return;
       }
+
+      const newShotsUsed = activeRoll.shots_used + 1;
+      const isCompleted = newShotsUsed >= activeRoll.capacity;
+
+      // Optimistically update UI
+      setActiveRoll(prev => prev ? { ...prev, shots_used: newShotsUsed, is_completed: isCompleted ? 1 : 0 } : null);
 
       const photoId = crypto.randomUUID();
       const fileUriOrId = await savePhoto(imageBlob, profile.id, activeRoll.id, photoId);
@@ -159,9 +168,6 @@ export const useRollsAndPhotos = (
         created_at: new Date().toISOString(),
       };
 
-      const newShotsUsed = activeRoll.shots_used + 1;
-      const isCompleted = newShotsUsed >= activeRoll.capacity;
-
       await db.transaction('rw', db.photos, db.rolls, async () => {
         await db.photos.add(newPhoto);
         await db.rolls.update(activeRoll.id, { 
@@ -169,8 +175,6 @@ export const useRollsAndPhotos = (
           is_completed: isCompleted ? 1 : 0 
         });
       });
-
-      setActiveRoll(prev => prev ? { ...prev, shots_used: newShotsUsed, is_completed: isCompleted ? 1 : 0 } : null);
 
       if (isCompleted) {
         const completedRoll = { ...activeRoll, shots_used: newShotsUsed, is_completed: 1 };
@@ -181,10 +185,13 @@ export const useRollsAndPhotos = (
     } catch (error) {
       console.error("Failed to save photo locally:", error);
       showErrorToast('Failed to save photo.');
+      // Revert optimistic update on error
+      setActiveRoll(activeRoll);
     } finally {
+      isSavingRef.current = false;
       setIsSavingPhoto(false);
     }
-  }, [profile, isSavingPhoto, impact, activeRoll, setRollToConfirm]);
+  }, [profile, impact, activeRoll, setRollToConfirm]);
 
   const queuePrintOrder = useCallback(async (rollId: string, totalCost: number) => {
     if (!profile) return;
