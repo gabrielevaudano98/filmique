@@ -24,7 +24,7 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onSen
 
   const handleAction = (action: 'studio' | 'shelf') => {
     if (!title.trim()) return;
-    if (isAuthenticMode && !canAffordPrint) return;
+    if (isAuthenticMode && action === 'studio' && !canAffordPrint) return;
     if (!isAuthenticMode && action === 'studio' && !canAffordDevelop) return;
 
     setIsLoading(action);
@@ -63,17 +63,15 @@ const RollCompletionWizard: React.FC<RollCompletionWizardProps> = ({ roll, onSen
             </div>
 
             <div className="mt-8 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
-              {!isAuthenticMode && (
-                <button 
-                  type="button"
-                  onClick={() => handleAction('shelf')}
-                  disabled={!title.trim() || !!isLoading}
-                  className="flex-1 flex justify-center items-center space-x-2 py-3 px-4 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-base font-bold text-white transition-colors disabled:opacity-50"
-                >
-                  <Archive className="w-5 h-5" />
-                  <span>{isLoading === 'shelf' ? 'Shelving...' : 'Put on Shelf'}</span>
-                </button>
-              )}
+              <button 
+                type="button"
+                onClick={() => handleAction('shelf')}
+                disabled={!title.trim() || !!isLoading}
+                className="flex-1 flex justify-center items-center space-x-2 py-3 px-4 rounded-xl bg-neutral-700 hover:bg-neutral-600 text-base font-bold text-white transition-colors disabled:opacity-50"
+              >
+                <Archive className="w-5 h-5" />
+                <span>{isLoading === 'shelf' ? 'Shelving...' : 'Put on Shelf'}</span>
+              </button>
               <button 
                 type="submit"
                 disabled={!title.trim() || !!isLoading || (isAuthenticMode && !canAffordPrint) || (!isAuthenticMode && !canAffordDevelop)}
