@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSwipeable } from 'react-swipeable';
 import {
-  UserCircle, Star, Bell, Camera as CameraIcon, ShieldCheck, HelpCircle, Info, ChevronRight, LogOut, Trash2, ArrowLeft, MapPin, Film
+  UserCircle, Star, Bell, Camera as CameraIcon, ShieldCheck, HelpCircle, Info, ChevronRight, LogOut, Trash2, ArrowLeft, MapPin
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { supabase } from '../integrations/supabase/client';
@@ -17,7 +17,7 @@ const SettingsRow: React.FC<{
   onClick?: () => void;
 }> = ({ icon, color, title, subtitle, onClick }) => (
   <button onClick={onClick} className="w-full flex items-center p-4 text-left hover:bg-white/5 transition-colors min-h-[64px]">
-    <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 shrink-0 ${color}`}>
+    <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 shrink-0 ${color}`}>
       {icon}
     </div>
     <div className="flex-1">
@@ -40,6 +40,20 @@ const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({
       ))}
     </div>
   </div>
+);
+
+const SettingsActionRow: React.FC<{
+  icon: React.ReactNode;
+  title: string;
+  colorClass?: string;
+  onClick?: () => void;
+}> = ({ icon, title, colorClass = 'text-white', onClick }) => (
+  <button onClick={onClick} className="w-full flex items-center justify-center p-4 text-left hover:bg-white/5 transition-colors font-semibold">
+    <div className={`flex items-center justify-center gap-2 ${colorClass}`}>
+      {icon}
+      <span>{title}</span>
+    </div>
+  </button>
 );
 
 const SettingsView: React.FC = () => {
@@ -173,22 +187,22 @@ const SettingsView: React.FC = () => {
           />
         </SettingsGroup>
 
-        <div className="mt-10 space-y-4">
-          <button
+        <SettingsGroup title="Session">
+          <SettingsActionRow
+            icon={<LogOut className="w-5 h-5" />}
+            title="Log Out"
             onClick={handleLogout}
-            className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-neutral-800 border border-neutral-700 hover:bg-neutral-700/80 rounded-xl transition-colors font-semibold"
-          >
-            <LogOut className="w-5 h-5" />
-            <span>Log Out</span>
-          </button>
-          <button
+          />
+        </SettingsGroup>
+
+        <SettingsGroup title="Danger Zone">
+          <SettingsActionRow
+            icon={<Trash2 className="w-5 h-5" />}
+            title="Delete Account"
+            colorClass="text-red-500"
             onClick={handleAccountDeletion}
-            className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-transparent hover:bg-red-900/30 rounded-xl transition-colors text-red-500 hover:text-red-400 font-semibold"
-          >
-            <Trash2 className="w-5 h-5" />
-            <span>Delete Account</span>
-          </button>
-        </div>
+          />
+        </SettingsGroup>
 
         <div className="text-center text-gray-500 text-xs mt-8">
           Version 0.0.4.69
