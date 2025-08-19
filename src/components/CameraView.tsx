@@ -363,54 +363,42 @@ const CameraView: React.FC = () => {
             </div>
           )}
 
-          <div className="w-full flex items-center justify-between px-4 py-2 pl-safe-l pr-safe-r">
-            {/* Left: Roll Info */}
-            <div className="flex-1 flex justify-start">
-              <button onClick={() => setShowFilmModal(true)} className="flex items-center gap-3 text-left transition-opacity hover:opacity-80 p-2">
-                <Film className="w-7 h-7 text-amber-400 flex-shrink-0" />
-                <div>
-                  <span className="block text-gray-400 text-xs font-bold uppercase tracking-wider">Loaded Film</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="block text-white font-recoleta text-lg leading-tight">
-                      {activeRoll ? activeRoll.film_type : 'None'}
-                    </span>
-                    {profile?.is_geolocation_enabled && (
-                      <MapPin className="w-4 h-4 text-green-400" title="Geolocation is enabled" />
-                    )}
-                  </div>
-                </div>
-              </button>
+          <div className="w-full flex flex-col items-center justify-center px-4 py-2 gap-4">
+            <div className="flex items-center justify-center space-x-1 bg-black/20 p-1 rounded-full">
+              <button onClick={() => setCameraMode('simple')} className={`px-4 py-1 text-xs font-bold rounded-full transition-colors ${cameraMode === 'simple' ? 'bg-neutral-700 text-white' : 'text-gray-400'}`}>PHOTO</button>
+              {!isNative && <button onClick={() => setCameraMode('pro')} className={`px-4 py-1 text-xs font-bold rounded-full transition-colors ${cameraMode === 'pro' ? 'bg-neutral-700 text-white' : 'text-gray-400'}`}>PRO</button>}
             </div>
 
-            {/* Center: Shutter */}
-            <div className="flex-shrink-0">
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex items-center justify-center space-x-6 font-sans text-base">
-                  <button onClick={() => setCameraMode('simple')} className={cameraMode === 'simple' ? 'text-amber-400 font-bold' : 'text-white'}>PHOTO</button>
-                  {!isNative && <button onClick={() => setCameraMode('pro')} className={cameraMode === 'pro' ? 'text-amber-400 font-bold' : 'text-white'}>PRO</button>}
-                </div>
-                <div className="w-[88px] h-[88px] bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
-                  <button onClick={handleTakePhoto} disabled={activeRoll?.is_completed || isSavingPhoto} aria-label="Take Photo" className="w-20 h-20 rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200">
-                    {isSavingPhoto ? (
-                      <Loader className="w-8 h-8 text-gray-500 animate-spin" />
-                    ) : activeRoll?.is_completed ? (
-                      <Lock className="w-8 h-8 text-gray-500" />
-                    ) : (
-                      <Camera className="w-6 h-6 text-gray-900" />
-                    )}
-                  </button>
-                </div>
+            <div className="w-full flex items-center justify-between">
+              <div className="flex justify-start" style={{ width: '104px' }}>
+                <button onClick={() => setShowFilmModal(true)} className="w-16 h-16 flex flex-col items-center justify-center text-center transition-opacity hover:opacity-80 p-2 rounded-full bg-neutral-800/50">
+                  <Film className="w-6 h-6 text-amber-400" />
+                  <span className="text-xs font-bold text-white mt-1">
+                    {activeRoll ? `${activeRoll.shots_used}/${activeRoll.capacity}` : 'Load'}
+                  </span>
+                </button>
               </div>
-            </div>
 
-            {/* Right: Zoom & Switch */}
-            <div className="flex-1 flex justify-end items-center space-x-2">
-              <button onClick={cycleZoom} disabled={isNative || zoomLevels.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 text-white flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
-                {!isNative && `${zoom.toFixed(1)}x`}
-              </button>
-              <button onClick={switchCamera} disabled={!isNative && cameras.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
-                <RefreshCw className="w-6 h-6 text-white" />
-              </button>
+              <div className="w-20 h-20 bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
+                <button onClick={handleTakePhoto} disabled={activeRoll?.is_completed || isSavingPhoto} aria-label="Take Photo" className="w-[72px] h-[72px] rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200">
+                  {isSavingPhoto ? (
+                    <Loader className="w-8 h-8 text-gray-500 animate-spin" />
+                  ) : activeRoll?.is_completed ? (
+                    <Lock className="w-8 h-8 text-gray-500" />
+                  ) : (
+                    <Camera className="w-6 h-6 text-gray-900" />
+                  )}
+                </button>
+              </div>
+
+              <div className="flex justify-end items-center space-x-2" style={{ width: '104px' }}>
+                <button onClick={cycleZoom} disabled={isNative || zoomLevels.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 text-white flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50 text-xs font-bold">
+                  {!isNative ? `${zoom.toFixed(1)}x` : '1.0x'}
+                </button>
+                <button onClick={switchCamera} disabled={!isNative && cameras.length <= 1} className="w-12 h-12 rounded-full bg-neutral-800 flex items-center justify-center transition-transform hover:scale-105 disabled:opacity-50">
+                  <RefreshCw className="w-6 h-6 text-white" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
