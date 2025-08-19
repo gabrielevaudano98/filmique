@@ -137,56 +137,54 @@ export const useRollsAndPhotos = (
       if (!activeRoll) showErrorToast("No active roll loaded.");
       return;
     }
-
+  
     impact(ImpactStyle.Light);
     isSavingRef.current = true;
     setIsSavingPhoto(true);
-    
+  
     try {
-      if (activeRoll.shots_used >= activeRoll.capacity) {
+      const rollBeforeShot = activeRoll;
+  
+      if (rollBeforeShot.shots_used >= rollBeforeShot.capacity) {
         showWarningToast("This film roll is already full.");
-        isSavingRef.current = false;
-        setIsSavingPhoto(false);
         return;
       }
-
-      const newShotsUsed = activeRoll.shots_used + 1;
-      const isCompleted = newShotsUsed >= activeRoll.capacity;
-
-      // Optimistically update UI
-      setActiveRoll(prev => prev ? { ...prev, shots_used: newShotsUsed, is_completed: isCompleted ? 1 : 0 } : null);
-
+  
+      const newShotsUsed = rollBeforeShot.shots_used + 1;
+      const isCompleted = newShotsUsed >= rollBeforeShot.capacity;
+  
       const photoId = crypto.randomUUID();
-      const fileUriOrId = await savePhoto(imageBlob, profile.id, activeRoll.id, photoId);
-
+      const fileUriOrId = await savePhoto(imageBlob, profile.id, rollBeforeShot.id, photoId);
+  
       const newPhoto: LocalPhoto = {
         id: photoId,
         user_id: profile.id,
-        roll_id: activeRoll.id,
+        roll_id: rollBeforeShot.id,
         local_path: fileUriOrId,
         metadata,
         created_at: new Date().toISOString(),
       };
-
+  
+      // Update DB and let useLiveQuery handle the state update for reliability
       await db.transaction('rw', db.photos, db.rolls, async () => {
         await db.photos.add(newPhoto);
-        await db.rolls.update(activeRoll.id, { 
-          shots_used: newShotsUsed, 
-          is_completed: isCompleted ? 1 : 0 
+        await db.rolls.update(rollBeforeShot.id, {
+          shots_used: newShotsUsed,
+          is_completed: isCompleted ? 1 : 0,
         });
       });
-
+  
       if (isCompleted) {
-        const completedRoll = { ...activeRoll, shots_used: newShotsUsed, is_completed: 1 };
-        setRollToConfirm(completedRoll);
-        setActiveRoll(null);
+        // The useLiveQuery will update the state, removing the active roll.
+        // We just need to trigger the completion wizard.
+        const completedRoll = await db.rolls.get(rollBeforeShot.id);
+        if (completedRoll) {
+          setRollToConfirm(completedRoll);
+        }
       }
-
     } catch (error) {
       console.error("Failed to save photo locally:", error);
       showErrorToast('Failed to save photo.');
-      // Revert optimistic update on error
-      setActiveRoll(activeRoll);
     } finally {
       isSavingRef.current = false;
       setIsSavingPhoto(false);
