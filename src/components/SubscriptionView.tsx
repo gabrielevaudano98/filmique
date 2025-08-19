@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSwipeable } from 'react-swipeable';
 import { ArrowLeft, CheckCircle, Star, Cloud, Sparkles } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import SettingsToggleRow from './SettingsToggleRow';
@@ -11,8 +12,23 @@ const Feature: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </li>
 );
 
+const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+  <div className="mb-8">
+    <h3 className="px-4 pb-2 text-sm font-semibold text-gray-400 uppercase tracking-wider">{title}</h3>
+    <div className="bg-neutral-800/60 backdrop-blur-lg rounded-xl overflow-hidden border border-neutral-700/50 shadow-lg">
+      {children}
+    </div>
+  </div>
+);
+
 const SubscriptionView: React.FC = () => {
   const { profile, setCurrentView, updateProfileDetails, refreshProfile } = useAppContext();
+
+  const handlers = useSwipeable({
+    onSwipedRight: () => setCurrentView('settings'),
+    preventScrollOnSwipe: true,
+    trackMouse: true,
+  });
 
   const handleComingSoon = () => {
     showInfoToast('Payment processing is coming soon!');
@@ -26,8 +42,8 @@ const SubscriptionView: React.FC = () => {
   const isPremium = profile?.subscription === 'plus' || profile?.subscription === 'premium';
 
   return (
-    <div className="flex-1 flex flex-col bg-transparent text-white">
-      <div className="flex items-center p-4 border-b border-neutral-800">
+    <div {...handlers} className="flex-1 flex flex-col bg-transparent text-white animate-slide-in-from-right">
+      <div className="flex items-center p-4 border-b border-neutral-700/50 bg-neutral-800/60 backdrop-blur-lg">
         <button onClick={() => setCurrentView('settings')} className="p-2 text-gray-400 hover:text-white rounded-full">
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -37,7 +53,7 @@ const SubscriptionView: React.FC = () => {
 
       <div className="p-4 sm:p-6 overflow-y-auto no-scrollbar">
         {/* Current Plan */}
-        <div className="bg-neutral-800 rounded-xl p-6 mb-8 border border-neutral-700/50">
+        <div className="bg-neutral-800/60 backdrop-blur-lg rounded-xl p-6 mb-8 border border-neutral-700/50 shadow-lg">
           <h2 className="text-lg font-semibold text-gray-300">Your Current Plan</h2>
           <p className="text-3xl font-bold text-brand-amber-start mt-1">
             {isPremium ? 'Filmique+' : 'Basic'}
@@ -48,28 +64,25 @@ const SubscriptionView: React.FC = () => {
         </div>
 
         {/* Premium Features Settings */}
-        <div className="mb-8">
-          <h3 className="px-4 pb-2 text-sm font-semibold text-gray-400 uppercase tracking-wider">Premium Settings</h3>
-          <div className="bg-neutral-800 rounded-xl overflow-hidden border border-neutral-700/50">
-            <SettingsToggleRow
-              icon={<Cloud className="w-5 h-5 text-white" />}
-              color="bg-blue-500"
-              title="Automatic Cloud Backup"
-              subtitle="Automatically back up developed rolls to the cloud."
-              checked={isPremium && (profile?.is_auto_backup_enabled ?? true)}
-              onChange={handleAutoBackupToggle}
-            />
-             {!isPremium && (
-              <div className="px-4 pb-3 text-xs text-gray-500 -mt-2">
-                Upgrade to Filmique+ to enable this feature.
-              </div>
-            )}
-          </div>
-        </div>
+        <SettingsGroup title="Premium Settings">
+          <SettingsToggleRow
+            icon={<Cloud className="w-5 h-5 text-white" />}
+            color="bg-blue-500"
+            title="Automatic Cloud Backup"
+            subtitle="Automatically back up developed rolls to the cloud."
+            checked={isPremium && (profile?.is_auto_backup_enabled ?? true)}
+            onChange={handleAutoBackupToggle}
+          />
+           {!isPremium && (
+            <div className="px-4 pb-3 text-xs text-gray-500 -mt-2">
+              Upgrade to Filmique+ to enable this feature.
+            </div>
+          )}
+        </SettingsGroup>
 
         {/* Upgrade Plan */}
         {!isPremium && (
-          <div className="bg-gradient-to-br from-brand-amber-start/20 to-neutral-800/20 rounded-xl p-6 border border-brand-amber-start/30">
+          <div className="bg-gradient-to-br from-brand-amber-start/20 to-neutral-800/60 backdrop-blur-lg rounded-xl p-6 border border-brand-amber-start/30 shadow-lg">
             <div className="flex items-center space-x-3 mb-4">
               <div className="p-2 bg-brand-amber-start rounded-full">
                 <Star className="w-6 h-6 text-black" />

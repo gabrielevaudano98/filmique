@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSwipeable } from 'react-swipeable';
 import {
   UserCircle, Star, Bell, Camera as CameraIcon, ShieldCheck, HelpCircle, Info, ChevronRight, LogOut, Trash2, ArrowLeft, MapPin, Film
 } from 'lucide-react';
@@ -44,6 +45,12 @@ const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({
 const SettingsView: React.FC = () => {
   const { profile, setCurrentView, updateProfileDetails, refreshProfile } = useAppContext();
 
+  const handlers = useSwipeable({
+    onSwipedRight: () => setCurrentView('profile'),
+    preventScrollOnSwipe: true,
+    trackMouse: true,
+  });
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -78,7 +85,7 @@ const SettingsView: React.FC = () => {
   ];
 
   return (
-    <div className="flex-1 flex flex-col bg-transparent text-white">
+    <div {...handlers} className="flex-1 flex flex-col bg-transparent text-white animate-slide-in-from-right">
        <div className="flex items-center p-4 border-b border-neutral-700/50 bg-neutral-800/60 backdrop-blur-lg">
         <button onClick={() => setCurrentView('profile')} className="p-2 text-gray-400 hover:text-white rounded-full">
           <ArrowLeft className="w-5 h-5" />
