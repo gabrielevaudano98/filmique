@@ -189,7 +189,7 @@ export const useRollsAndPhotos = (
         payload: {
           userId: profile.id,
           rollId,
-          orderCost: totalCost,
+          cost: totalCost,
         },
         status: 'pending',
         created_at: new Date().toISOString(),

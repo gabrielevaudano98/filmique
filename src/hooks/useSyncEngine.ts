@@ -106,8 +106,8 @@ export const useSyncEngine = (isOnline: boolean) => {
         }
 
         case 'PURCHASE_PRINT': {
-          const { userId, rollId, orderCost } = transaction.payload;
-          const { error } = await api.processPrintOrder(userId, rollId, orderCost);
+          const { userId, rollId, cost } = transaction.payload;
+          const { error } = await api.processPrintOrder(userId, rollId, cost);
           if (error) {
             if (error.message.includes('Insufficient credits')) {
               showErrorToast("Print order failed: You don't have enough credits.");

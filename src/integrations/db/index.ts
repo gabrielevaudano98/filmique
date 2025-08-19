@@ -4,7 +4,7 @@ import { Roll, Photo, UserProfile } from '../../types';
 // Defines the structure for a pending transaction in the offline queue.
 export interface PendingTransaction {
   id?: number;
-  type: 'CREATE_POST' | 'PURCHASE_PRINT' | 'BACKUP_ROLL' | 'SYNC_PROFILE';
+  type: 'CREATE_POST' | 'PURCHASE_PRINT' | 'BACKUP_ROLL' | 'SYNC_PROFILE' | 'DELETE_ROLL';
   payload: any;
   status: 'pending' | 'failed';
   created_at: string;
@@ -40,6 +40,9 @@ export class FilmiqueDB extends Dexie {
 
   constructor() {
     super('filmiqueDB');
+    this.version(3).stores({
+      rolls: 'id, user_id, is_completed, sync_status, album_id, [user_id+is_completed]', // Added compound index
+    });
     this.version(2).stores({
       // 'id' is the primary key. The other fields are indexed for faster queries.
       rolls: 'id, user_id, is_completed, sync_status, album_id',
