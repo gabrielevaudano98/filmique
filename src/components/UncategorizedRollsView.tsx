@@ -6,6 +6,7 @@ import { isRollDeveloped } from '../utils/rollUtils';
 import RollListItem from './RollListItem';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import AssignAlbumModal from './AssignAlbumModal';
+import { useSwipeable } from 'react-swipeable';
 
 const UncategorizedRollsView: React.FC = () => {
   const { completedRolls, setCurrentView, deleteRoll } = useAppContext();
@@ -22,8 +23,14 @@ const UncategorizedRollsView: React.FC = () => {
     setCurrentView('rolls');
   };
 
+  const handlers = useSwipeable({
+    onSwipedRight: handleBack,
+    preventScrollOnSwipe: true,
+    trackMouse: true,
+  });
+
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full" {...handlers}>
       <div className="flex items-center justify-between mb-6">
         <button onClick={handleBack} className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors p-2 -ml-2">
           <ArrowLeft className="w-5 h-5" />

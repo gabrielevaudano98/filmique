@@ -6,6 +6,7 @@ import { Roll, Photo } from '../types';
 import PhotoGridItem from './PhotoGridItem';
 import PhotoDetailModal from './PhotoDetailModal';
 import PhotoInfoModal from './PhotoInfoModal';
+import { useSwipeable } from 'react-swipeable';
 
 const AlbumDetailView: React.FC = () => {
   const { selectedAlbum, setCurrentView, setSelectedAlbum } = useAppContext();
@@ -22,6 +23,12 @@ const AlbumDetailView: React.FC = () => {
     setSelectedAlbum(null);
     setCurrentView('library');
   };
+
+  const handlers = useSwipeable({
+    onSwipedRight: handleBack,
+    preventScrollOnSwipe: true,
+    trackMouse: true,
+  });
 
   const allPhotos = useMemo(() => {
     if (!selectedAlbum?.rolls) return [];
@@ -42,7 +49,7 @@ const AlbumDetailView: React.FC = () => {
   const Icon = info.icon;
 
   return (
-    <div className="flex flex-col w-full">
+    <div className="flex flex-col w-full" {...handlers}>
       <div className="flex items-center justify-between mb-6">
         <button onClick={handleBack} className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors p-2 -ml-2">
           <ArrowLeft className="w-5 h-5" />
