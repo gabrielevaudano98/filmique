@@ -35,10 +35,10 @@ const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ title }) => {
     };
   }, []);
 
-  const headerClasses = `sticky top-[80px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white pr-[150px] transition-all duration-200 ${
+  const headerClasses = `sticky top-[80px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white pr-[150px] transition-colors duration-200 border-y ${
     isSticky
-      ? 'bg-neutral-800/60 backdrop-blur-lg border-y border-neutral-700/50'
-      : 'bg-transparent'
+      ? 'bg-neutral-800/60 backdrop-blur-lg border-neutral-700/50'
+      : 'bg-transparent border-transparent'
   }`;
 
   return (
