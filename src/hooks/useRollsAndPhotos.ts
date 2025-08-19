@@ -50,7 +50,7 @@ export const useRollsAndPhotos = (
 
   const activeRollFromDB = useMemo(() => {
     if (!allRolls) return null;
-    return (allRolls.find(r => r.is_completed === 0) as LocalRoll) || null;
+    return (allRolls.find(r => !r.is_completed) as LocalRoll) || null;
   }, [allRolls]);
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export const useRollsAndPhotos = (
 
   const completedRolls = useMemo(() => {
     if (!allRolls) return [];
-    return allRolls.filter(r => r.is_completed === 1);
+    return allRolls.filter(r => r.is_completed);
   }, [allRolls]);
 
   const syncDownRollsFromCloud = useCallback(async () => {
@@ -108,14 +108,14 @@ export const useRollsAndPhotos = (
         capacity: film.capacity,
         aspect_ratio: aspectRatio,
         shots_used: 0,
-        is_completed: 0,
+        is_completed: false,
         created_at: new Date().toISOString(),
         sync_status: 'local_only',
         is_archived: false,
       };
       
       await db.transaction('rw', db.rolls, async () => {
-        const currentActiveRoll = await db.rolls.where({ user_id: profile.id, is_completed: 0 }).first();
+        const currentActiveRoll = await db.rolls.where({ user_id: profile.id, is_completed: false }).first();
         if (currentActiveRoll) {
           await db.rolls.delete(currentActiveRoll.id);
         }
@@ -169,7 +169,7 @@ export const useRollsAndPhotos = (
         await db.photos.add(newPhoto);
         await db.rolls.update(rollBeforeShot.id, {
           shots_used: newShotsUsed,
-          is_completed: isCompleted ? 1 : 0,
+          is_completed: isCompleted,
         });
       });
   

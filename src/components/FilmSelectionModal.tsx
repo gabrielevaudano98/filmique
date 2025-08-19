@@ -105,7 +105,7 @@ const FilmSelectionModal: React.FC<{
 
           {/* Film List */}
           <div className="overflow-y-auto no-scrollbar p-4 space-y-6">
-            {activeRoll && activeRoll.is_completed === 0 && (
+            {activeRoll && !activeRoll.is_completed && (
               <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-200 p-3 rounded-lg text-sm">
                 Changing film will discard the <strong>{activeRoll.shots_used} shots</strong> on your current roll.
               </div>

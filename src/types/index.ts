@@ -73,7 +73,7 @@ export interface Roll {
   film_type: string;
   capacity: number;
   shots_used: number;
-  is_completed: number; // 0 for false, 1 for true
+  is_completed: boolean;
   created_at: string;
   completed_at?: string | null;
   developed_at?: string | null;
