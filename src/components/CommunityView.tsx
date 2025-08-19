@@ -11,10 +11,10 @@ import FullStoryViewer from './FullStoryViewer';
 const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => void; }> = ({ label, isActive, onClick }) => (
   <button
     onClick={onClick}
-    className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex-shrink-0 whitespace-nowrap
+    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex-shrink-0 whitespace-nowrap
       ${isActive
-        ? 'bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white shadow-lg shadow-brand-amber-start/20'
-        : 'bg-neutral-800/60 text-gray-300 hover:bg-neutral-700/50 border border-neutral-700/50'
+        ? 'bg-white text-neutral-900 shadow-md'
+        : 'bg-neutral-800/60 text-gray-300 hover:bg-neutral-700/80'
       }`}
   >
     {label}
@@ -125,14 +125,14 @@ const CommunityView: React.FC = () => {
         <div className="flex space-x-3">
           <button
             onClick={() => setCurrentView('profile')}
-            className="bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-full p-3 shadow-lg text-white hover:bg-neutral-700 transition-colors"
+            className="bg-neutral-800/60 backdrop-blur-lg border border-white/10 rounded-full w-11 h-11 flex items-center justify-center shadow-lg text-white hover:bg-neutral-700 transition-colors"
             aria-label="View Profile"
           >
-            <User className="w-6 h-6" />
+            <User className="w-5 h-5" />
           </button>
           <button
             onClick={() => setShowCreatePostModal(true)}
-            className="bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white font-bold p-3 rounded-full shadow-lg shadow-brand-amber-start/20 hover:opacity-90 transition-all"
+            className="bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white font-bold w-11 h-11 flex items-center justify-center rounded-full shadow-lg shadow-brand-amber-start/20 hover:opacity-90 transition-all"
             aria-label="Create New Post"
           >
             <Plus className="w-6 h-6" />
@@ -142,14 +142,14 @@ const CommunityView: React.FC = () => {
 
       {/* Recent Stories Carousel */}
       {recentStories.size > 0 && (
-        <div className="mb-6">
-          <h2 className="text-xl font-bold mb-4">Recent Stories</h2>
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">Recent Stories</h2>
           <StoryRollsCarousel recentStories={recentStories} onSelectStory={handleSelectStory} />
         </div>
       )}
 
       {/* Filter Pills */}
-      <div className="mb-6">
+      <div className="mb-8">
         <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
           <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
           <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
@@ -161,7 +161,7 @@ const CommunityView: React.FC = () => {
       {/* Discover Feed */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Discover Feed</h2>
+          <h2 className="text-2xl font-bold">Discover Feed</h2>
         </div>
         <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
           {filteredFeed.length > 0 ? (
