@@ -1,4 +1,5 @@
 import React from 'react';
+import { Settings } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import NotificationsBell from './NotificationsBell';
 import SegmentedControl from './SegmentedControl';
@@ -43,11 +44,16 @@ const TopBar: React.FC = () => {
             )}
           </div>
           <h1 className="text-lg font-bold text-white">Filmique</h1>
-          <NotificationsBell 
-            theme="dark"
-            unreadCount={unreadCount} 
-            onClick={() => setCurrentView('notifications')} 
-          />
+          <div className="flex items-center space-x-2">
+            <button onClick={() => setCurrentView('settings')} className="p-2 text-gray-300 hover:text-white transition-colors" aria-label="Settings">
+              <Settings className="w-6 h-6" />
+            </button>
+            <NotificationsBell 
+              theme="dark"
+              unreadCount={unreadCount} 
+              onClick={() => setCurrentView('notifications')} 
+            />
+          </div>
         </div>
 
         {/* Studio Sticky Header */}

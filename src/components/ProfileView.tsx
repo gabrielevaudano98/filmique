@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings, Edit, Loader, CheckCircle, Image as ImageIcon, Award, LayoutGrid } from 'lucide-react';
+import { Edit, Loader, CheckCircle, Image as ImageIcon, Award, LayoutGrid } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useDebounce } from '../hooks/useDebounce';
 import AvatarRing from './AvatarRing';
@@ -86,11 +86,8 @@ const ProfileView: React.FC = () => {
     <div className="flex-1 flex flex-col bg-transparent text-white">
       {/* Header Section */}
       <div className="px-4 pt-4">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           <h2 className="text-2xl font-bold">{profile.username}</h2>
-          <button onClick={() => setCurrentView('settings')} className="p-2 text-gray-400 hover:text-white transition-colors">
-            <Settings className="w-6 h-6" />
-          </button>
         </div>
         <div className="flex items-center mt-4">
           <div className="relative flex-shrink-0">
