@@ -101,14 +101,14 @@ export const useRollsAndPhotos = (
 
       await refreshProfile();
 
-      const newRoll: LocalRoll = {
+      const newRoll: Omit<LocalRoll, 'is_completed'> & { is_completed: number } = {
         id: crypto.randomUUID(),
         user_id: profile.id,
         film_type: film.name,
         capacity: film.capacity,
         aspect_ratio: aspectRatio,
         shots_used: 0,
-        is_completed: false,
+        is_completed: 0,
         created_at: new Date().toISOString(),
         sync_status: 'local_only',
         is_archived: false,
@@ -116,16 +116,15 @@ export const useRollsAndPhotos = (
       
       await db.transaction('rw', db.rolls, async () => {
         const currentActiveRoll = await db.rolls
-          .where('user_id').equals(profile.id)
-          .and(roll => roll.is_completed === false)
+          .where({ user_id: profile.id, is_completed: 0 })
           .first();
         if (currentActiveRoll) {
           await db.rolls.delete(currentActiveRoll.id);
         }
-        await db.rolls.add(newRoll);
+        await db.rolls.add(newRoll as LocalRoll);
       });
       
-      setActiveRoll(newRoll);
+      setActiveRoll(newRoll as LocalRoll);
       dismissToast(toastId);
       showSuccessToast(`${film.name} loaded!`);
     } catch (error: any) {
@@ -172,7 +171,7 @@ export const useRollsAndPhotos = (
         await db.photos.add(newPhoto);
         await db.rolls.update(rollBeforeShot.id, {
           shots_used: newShotsUsed,
-          is_completed: isCompleted,
+          is_completed: isCompleted ? 1 : 0,
         });
       });
   

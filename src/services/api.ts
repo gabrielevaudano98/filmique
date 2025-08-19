@@ -66,7 +66,24 @@ export const deleteRollById = (rollId: string) => {
 };
 export const upsertCloudRoll = (roll: LocalRoll) => {
   const { photos, sync_status, ...rollData } = roll;
-  return supabase.from('rolls').upsert(rollData);
+  
+  const sanitizedRollData: any = { ...rollData };
+
+  // Convert numeric booleans to actual booleans for Supabase
+  if (typeof sanitizedRollData.is_completed !== 'undefined') {
+    sanitizedRollData.is_completed = !!sanitizedRollData.is_completed;
+  }
+  if (typeof sanitizedRollData.is_archived !== 'undefined') {
+    sanitizedRollData.is_archived = !!sanitizedRollData.is_archived;
+  }
+  if (typeof sanitizedRollData.is_printed !== 'undefined') {
+    sanitizedRollData.is_printed = !!sanitizedRollData.is_printed;
+  }
+  if (typeof sanitizedRollData.is_locked !== 'undefined') {
+    sanitizedRollData.is_locked = !!sanitizedRollData.is_locked;
+  }
+
+  return supabase.from('rolls').upsert(sanitizedRollData);
 };
 export const batchUpsertCloudPhotos = (photos: LocalPhoto[]) => {
   const photoData = photos.map(({ local_path, ...rest }) => rest);
@@ -79,7 +96,7 @@ export const uploadBackupPhoto = (path: string, blob: Blob) => {
   });
 };
 export const createNewRoll = async (userId: string, filmType: string, capacity: number, aspectRatio: string) => {
-  const result = await supabase.from('rolls').insert({ user_id: userId, film_type: filmType, capacity, aspect_ratio: aspectRatio }).select().single();
+  const result = await supabase.from('rolls').insert({ user_id: userId, film_type: filmType, capacity, aspect_ratio: aspectRatio, is_completed: false }).select().single();
   if (!result.error) await invalidateCache(`rolls-${userId}`);
   return result;
 };
