@@ -11,7 +11,7 @@ interface SettingsToggleRowProps {
 
 const SettingsToggleRow: React.FC<SettingsToggleRowProps> = ({ icon, color, title, subtitle, checked, onChange }) => (
   <div className="w-full flex items-center p-4 text-left min-h-[64px]">
-    <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 shrink-0 ${color}`}>
+    <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 shrink-0 ${color}`}>
       {icon}
     </div>
     <div className="flex-1">

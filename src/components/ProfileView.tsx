@@ -11,20 +11,15 @@ import PostDetailModal from './PostDetailModal';
 import { Post } from '../types';
 
 const HighlightStat: React.FC<{ value: string | number; label: string }> = ({ value, label }) => (
-  <div className="bg-neutral-800/50 backdrop-blur-sm rounded-xl p-3 text-center border border-neutral-700/50 flex-1">
-    <p className="text-2xl font-bold text-white">{value}</p>
-    <p className="text-xs text-gray-400 mt-1 uppercase tracking-wider">{label}</p>
+  <div className="text-center">
+    <p className="text-xl font-bold text-white">{value}</p>
+    <p className="text-sm text-gray-400">{label}</p>
   </div>
 );
 
-const TabButton: React.FC<{ icon: React.ElementType; label: string; isActive: boolean; onClick: () => void; }> = ({ icon: Icon, label, isActive, onClick }) => (
-  <button 
-    onClick={onClick} 
-    className={`relative flex-1 py-4 flex justify-center items-center text-sm font-bold transition-colors group ${isActive ? 'text-white' : 'text-gray-500 hover:text-white'}`}
-  >
-    <Icon className={`w-5 h-5 mr-2 transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`} />
-    <span>{label}</span>
-    {isActive && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white rounded-full"></div>}
+const TabButton: React.FC<{ icon: React.ElementType; isActive: boolean; onClick: () => void; }> = ({ icon: Icon, isActive, onClick }) => (
+  <button onClick={onClick} className={`flex-1 py-3 flex justify-center items-center border-b-2 transition-colors ${isActive ? 'border-white text-white' : 'border-transparent text-gray-500 hover:text-white'}`}>
+    <Icon className="w-6 h-6" />
   </button>
 );
 
@@ -85,6 +80,8 @@ const ProfileView: React.FC = () => {
     return <div className="text-white p-6">Loading profile...</div>;
   }
 
+  const photoCount = albums.reduce((sum, album) => sum + (album.photoCount || 0), 0);
+
   return (
     <div className="flex-1 flex flex-col bg-transparent text-white">
       {/* Header Section */}
@@ -97,7 +94,7 @@ const ProfileView: React.FC = () => {
             <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} accept="image/*" className="hidden" />
             <AvatarRing src={profile.avatar_url} size={80} onClick={() => avatarInputRef.current?.click()} />
           </div>
-          <div className="flex-1 flex justify-around ml-4 gap-3">
+          <div className="flex-1 flex justify-around ml-4">
             <HighlightStat value={userPosts.length} label="Posts" />
             <HighlightStat value={followersCount} label="Followers" />
             <HighlightStat value={followingCount} label="Following" />
@@ -136,18 +133,18 @@ const ProfileView: React.FC = () => {
       </div>
 
       {/* Tabs Section */}
-      <div className="mt-6 sticky top-0 bg-neutral-900/80 backdrop-blur-lg z-10">
-        <div className="flex border-b border-neutral-700/50">
-          <TabButton icon={LayoutGrid} label="Albums" isActive={activeTab === 'albums'} onClick={() => setActiveTab('albums')} />
-          <TabButton icon={ImageIcon} label="Snapshots" isActive={activeTab === 'snapshots'} onClick={() => setActiveTab('snapshots')} />
-          <TabButton icon={Award} label="Badges" isActive={activeTab === 'badges'} onClick={() => setActiveTab('badges')} />
+      <div className="mt-6 sticky top-0 bg-warm-900 z-10">
+        <div className="flex border-b border-neutral-700">
+          <TabButton icon={LayoutGrid} isActive={activeTab === 'albums'} onClick={() => setActiveTab('albums')} />
+          <TabButton icon={ImageIcon} isActive={activeTab === 'snapshots'} onClick={() => setActiveTab('snapshots')} />
+          <TabButton icon={Award} isActive={activeTab === 'badges'} onClick={() => setActiveTab('badges')} />
         </div>
       </div>
       
-      <div className="p-4">
+      <div className="mt-1 p-1">
         {activeTab === 'albums' && (
           albums.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {albums.map(album => (
                 <AlbumCard 
                   key={album.id} 

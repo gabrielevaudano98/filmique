@@ -20,7 +20,7 @@ const RollPostCard: React.FC<RollPostCardProps> = ({ post, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className="relative aspect-[9/16] w-64 flex-shrink-0 rounded-2xl overflow-hidden shadow-lg group bg-neutral-900 text-left cursor-pointer border border-white/10"
+      className="relative aspect-[9/16] w-64 flex-shrink-0 rounded-2xl overflow-hidden shadow-lg group bg-neutral-900 text-left cursor-pointer"
       role="button"
       tabIndex={0}
       onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onClick(); }}

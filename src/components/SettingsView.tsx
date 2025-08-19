@@ -1,7 +1,6 @@
 import React from 'react';
-import { useSwipeable } from 'react-swipeable';
 import {
-  UserCircle, Star, Bell, Camera as CameraIcon, ShieldCheck, HelpCircle, Info, ChevronRight, LogOut, Trash2, ArrowLeft, MapPin
+  UserCircle, Star, Bell, Camera as CameraIcon, ShieldCheck, HelpCircle, Info, ChevronRight, LogOut, Trash2, ArrowLeft, MapPin, Film
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { supabase } from '../integrations/supabase/client';
@@ -17,7 +16,7 @@ const SettingsRow: React.FC<{
   onClick?: () => void;
 }> = ({ icon, color, title, subtitle, onClick }) => (
   <button onClick={onClick} className="w-full flex items-center p-4 text-left hover:bg-white/5 transition-colors min-h-[64px]">
-    <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 shrink-0 ${color}`}>
+    <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 shrink-0 ${color}`}>
       {icon}
     </div>
     <div className="flex-1">
@@ -42,28 +41,8 @@ const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({
   </div>
 );
 
-const SettingsActionRow: React.FC<{
-  icon: React.ReactNode;
-  title: string;
-  colorClass?: string;
-  onClick?: () => void;
-}> = ({ icon, title, colorClass = 'text-white', onClick }) => (
-  <button onClick={onClick} className="w-full flex items-center justify-center p-4 text-left hover:bg-white/5 transition-colors font-semibold">
-    <div className={`flex items-center justify-center gap-2 ${colorClass}`}>
-      {icon}
-      <span>{title}</span>
-    </div>
-  </button>
-);
-
 const SettingsView: React.FC = () => {
   const { profile, setCurrentView, updateProfileDetails, refreshProfile } = useAppContext();
-
-  const handlers = useSwipeable({
-    onSwipedRight: () => setCurrentView('profile'),
-    preventScrollOnSwipe: true,
-    trackMouse: true,
-  });
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -99,7 +78,7 @@ const SettingsView: React.FC = () => {
   ];
 
   return (
-    <div {...handlers} className="flex-1 flex flex-col bg-transparent text-white animate-slide-in-from-right">
+    <div className="flex-1 flex flex-col bg-transparent text-white">
        <div className="flex items-center p-4 border-b border-neutral-700/50 bg-neutral-800/60 backdrop-blur-lg">
         <button onClick={() => setCurrentView('profile')} className="p-2 text-gray-400 hover:text-white rounded-full">
           <ArrowLeft className="w-5 h-5" />
@@ -187,22 +166,22 @@ const SettingsView: React.FC = () => {
           />
         </SettingsGroup>
 
-        <SettingsGroup title="Session">
-          <SettingsActionRow
-            icon={<LogOut className="w-5 h-5" />}
-            title="Log Out"
+        <div className="mt-10 space-y-4">
+          <button
             onClick={handleLogout}
-          />
-        </SettingsGroup>
-
-        <SettingsGroup title="Danger Zone">
-          <SettingsActionRow
-            icon={<Trash2 className="w-5 h-5" />}
-            title="Delete Account"
-            colorClass="text-red-500"
+            className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-neutral-800 border border-neutral-700 hover:bg-neutral-700/80 rounded-xl transition-colors font-semibold"
+          >
+            <LogOut className="w-5 h-5" />
+            <span>Log Out</span>
+          </button>
+          <button
             onClick={handleAccountDeletion}
-          />
-        </SettingsGroup>
+            className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-transparent hover:bg-red-900/30 rounded-xl transition-colors text-red-500 hover:text-red-400 font-semibold"
+          >
+            <Trash2 className="w-5 h-5" />
+            <span>Delete Account</span>
+          </button>
+        </div>
 
         <div className="text-center text-gray-500 text-xs mt-8">
           Version 0.0.4.69
