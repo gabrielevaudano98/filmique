@@ -300,4 +300,8 @@ export interface AppContextType {
   setPrintStatusFilter: (status: string) => void;
   printSortOrder: string;
   setPrintSortOrder: (order: string) => void;
+  isSyncStatusModalOpen: boolean;
+  setIsSyncStatusModalOpen: (isOpen: boolean) => void;
+  retryFailedTransaction: (transactionId: number) => Promise<void>;
+  deleteFailedTransaction: (transactionId: number) => Promise<void>;
 }

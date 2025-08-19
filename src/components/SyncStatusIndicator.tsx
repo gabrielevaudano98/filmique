@@ -10,13 +10,26 @@ const statusInfo = {
 };
 
 const SyncStatusIndicator: React.FC = () => {
-  const { syncStatus } = useAppContext();
+  const { syncStatus, setIsSyncStatusModalOpen } = useAppContext();
   const { icon: Icon, color, label, animation } = statusInfo[syncStatus];
 
+  const handleClick = () => {
+    if (syncStatus === 'error' || syncStatus === 'syncing') {
+      setIsSyncStatusModalOpen(true);
+    }
+  };
+
+  const isClickable = syncStatus === 'error' || syncStatus === 'syncing';
+
   return (
-    <div className="flex items-center justify-center w-10 h-10" title={label}>
+    <button 
+      onClick={handleClick}
+      className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${isClickable ? 'hover:bg-neutral-700/50' : 'cursor-default'}`} 
+      title={label}
+      disabled={!isClickable}
+    >
       <Icon className={`w-5 h-5 ${color} ${animation}`} />
-    </div>
+    </button>
   );
 };
 

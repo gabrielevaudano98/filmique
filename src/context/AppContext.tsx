@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
 import { AppContextType, FilmStock, Roll, Album } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { useProfileData } from '../hooks/useProfileData';
@@ -13,6 +13,7 @@ import { Network } from '@capacitor/network';
 import { showInfoToast, showSuccessToast } from '../utils/toasts';
 import { useSyncEngine } from '../hooks/useSyncEngine';
 import { useSyncStatus } from '../hooks/useSyncStatus';
+import { db } from '../integrations/db';
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -38,6 +39,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [printSearchTerm, setPrintSearchTerm] = useState('');
   const [printStatusFilter, setPrintStatusFilter] = useState('all');
   const [printSortOrder, setPrintSortOrder] = useState('newest');
+  const [isSyncStatusModalOpen, setIsSyncStatusModalOpen] = useState(false);
 
   // Data State
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
@@ -68,7 +70,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       Network.addListener('networkStatusChange', (status) => {
         setIsOnline(currentIsOnline => {
-          // Only show a toast if the network status has actually changed
           if (status.connected !== currentIsOnline) {
             if (status.connected) {
               showSuccessToast("You're back online!");
@@ -112,6 +113,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     await social.fetchFeed();
   };
 
+  const retryFailedTransaction = useCallback(async (transactionId: number) => {
+    await db.pending_transactions.update(transactionId, { status: 'pending', attempts: 0 });
+    showSuccessToast('Action has been re-queued for sync.');
+  }, []);
+
+  const deleteFailedTransaction = useCallback(async (transactionId: number) => {
+    await db.pending_transactions.delete(transactionId);
+    showSuccessToast('Action removed from queue.');
+  }, []);
+
   const value = useMemo(() => ({
     ...auth,
     ...profileData,
@@ -153,7 +164,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setPrintStatusFilter,
     printSortOrder,
     setPrintSortOrder,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, printOrdersData, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, isRollsSettingsOpen, isOnline, syncStatus, isPrintsSettingsOpen, printSearchTerm, printStatusFilter, printSortOrder]);
+    isSyncStatusModalOpen,
+    setIsSyncStatusModalOpen,
+    retryFailedTransaction,
+    deleteFailedTransaction,
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, printOrdersData, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, isRollsSettingsOpen, isOnline, syncStatus, isPrintsSettingsOpen, printSearchTerm, printStatusFilter, printSortOrder, isSyncStatusModalOpen, retryFailedTransaction, deleteFailedTransaction]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };

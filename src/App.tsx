@@ -27,6 +27,7 @@ import SpeedUpModal from './components/SpeedUpModal';
 import { Roll } from './types';
 import SubscriptionView from './components/SubscriptionView';
 import PrintsSettingsView from './components/PrintsSettingsView';
+import SyncStatusModal from './components/SyncStatusModal';
 
 const SPEED_UP_COST = 25;
 
@@ -40,7 +41,8 @@ function App() {
     isRollsSettingsOpen, setIsRollsSettingsOpen,
     isPrintsSettingsOpen,
     setSelectedRoll, setSelectedAlbum,
-    speedUpDevelopment
+    speedUpDevelopment,
+    isSyncStatusModalOpen,
   } = useAppContext();
 
   useEffect(() => {
@@ -144,6 +146,7 @@ function App() {
       {speedUpModal}
       {isRollsSettingsOpen && <RollsSettingsView />}
       {isPrintsSettingsOpen && <PrintsSettingsView />}
+      {isSyncStatusModalOpen && <SyncStatusModal />}
       <main className="min-h-screen w-full pb-28">
         <div className="max-w-6xl mx-auto w-full h-full px-4 py-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">
           {renderCurrentView()}
