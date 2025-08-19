@@ -46,14 +46,20 @@ export const useRollsAndPhotos = (
     }));
   }, [profile]);
 
-  const activeRoll = useMemo(() => {
+  const [activeRoll, setActiveRoll] = useState<LocalRoll | null>(null);
+
+  const activeRollFromDB = useMemo(() => {
     if (!allRolls) return null;
-    return allRolls.find(r => !r.is_completed) || null;
+    return (allRolls.find(r => r.is_completed === 0) as LocalRoll) || null;
   }, [allRolls]);
+
+  useEffect(() => {
+    setActiveRoll(activeRollFromDB);
+  }, [activeRollFromDB]);
 
   const completedRolls = useMemo(() => {
     if (!allRolls) return [];
-    return allRolls.filter(r => r.is_completed);
+    return allRolls.filter(r => r.is_completed === 1);
   }, [allRolls]);
 
   const syncDownRollsFromCloud = useCallback(async () => {
@@ -116,6 +122,7 @@ export const useRollsAndPhotos = (
         await db.rolls.add(newRoll);
       });
       
+      setActiveRoll(newRoll);
       dismissToast(toastId);
       showSuccessToast(`${film.name} loaded!`);
     } catch (error: any) {
@@ -125,18 +132,15 @@ export const useRollsAndPhotos = (
   }, [profile, refreshProfile]);
 
   const takePhoto = useCallback(async (imageBlob: Blob, metadata: any) => {
-    if (!profile || isSavingPhoto) return;
+    if (!profile || isSavingPhoto || !activeRoll) {
+      if (!activeRoll) showErrorToast("No active roll loaded.");
+      return;
+    }
 
     impact(ImpactStyle.Light);
     setIsSavingPhoto(true);
     
     try {
-      if (!activeRoll) {
-        showErrorToast("No active roll loaded.");
-        setIsSavingPhoto(false);
-        return;
-      }
-
       if (activeRoll.shots_used >= activeRoll.capacity) {
         showWarningToast("This film roll is already full.");
         setIsSavingPhoto(false);
@@ -166,9 +170,12 @@ export const useRollsAndPhotos = (
         });
       });
 
+      setActiveRoll(prev => prev ? { ...prev, shots_used: newShotsUsed, is_completed: isCompleted ? 1 : 0 } : null);
+
       if (isCompleted) {
-        const completedRoll = await db.rolls.get(activeRoll.id);
-        if (completedRoll) setRollToConfirm(completedRoll);
+        const completedRoll = { ...activeRoll, shots_used: newShotsUsed, is_completed: 1 };
+        setRollToConfirm(completedRoll);
+        setActiveRoll(null);
       }
 
     } catch (error) {

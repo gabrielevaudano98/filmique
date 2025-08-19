@@ -312,7 +312,12 @@ const CameraView: React.FC = () => {
   };
 
   if (hasPermission === null) {
-    return <div className="h-screen flex items-center justify-center bg-black text-white">Initializing Camera...</div>;
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-black text-white gap-4">
+        <Camera className="w-16 h-16 text-neutral-700 animate-pulse" />
+        <p className="text-neutral-500 font-medium">Initializing Camera...</p>
+      </div>
+    );
   }
   if (hasPermission === false) {
     return <div className="h-screen flex items-center justify-center bg-black text-red-400 p-4 text-center">Camera access denied. Please enable camera permissions in your browser or device settings.</div>;
