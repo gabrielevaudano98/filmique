@@ -10,7 +10,7 @@ const SegmentedControl: React.FC<{
   value: string;
   onChange: (value: string) => void;
 }> = ({ options, value, onChange }) => (
-  <div className="flex w-full p-1 bg-neutral-900/70 border border-neutral-800 rounded-xl">
+  <div className="flex w-full p-1 bg-black/20 border border-neutral-700/60 rounded-xl">
     {options.map(opt => (
       <button
         key={opt.value}
@@ -72,20 +72,20 @@ const FilmSelectionModal: React.FC<{
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-lg flex items-end sm:items-center justify-center z-50 animate-fade-in">
-        <div className="bg-neutral-900 sm:rounded-2xl w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-md flex flex-col shadow-depth">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center z-50 animate-fade-in">
+        <div className="bg-neutral-900/70 backdrop-blur-2xl border border-neutral-700/50 sm:rounded-2xl w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-md flex flex-col shadow-depth">
           {/* Header */}
-          <div className="flex-shrink-0 border-b border-neutral-700/50 z-10">
+          <div className="flex-shrink-0 bg-neutral-900/50 z-10">
             <div className="w-full flex justify-center pt-3 sm:hidden">
               <div className="w-10 h-1.5 bg-neutral-700 rounded-full"></div>
             </div>
             <div className="flex items-center justify-between p-4">
               <h2 className="text-2xl font-bold text-white">Select Film</h2>
-              <button onClick={onClose} className="p-2 bg-neutral-800 hover:bg-neutral-700 rounded-full transition-colors">
+              <button onClick={onClose} className="p-2 bg-neutral-800/70 hover:bg-neutral-700 rounded-full transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="px-4 pb-4 space-y-3">
+            <div className="px-4 pb-4 space-y-3 border-b border-neutral-700/50">
               <div className="relative">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <input
@@ -93,7 +93,7 @@ const FilmSelectionModal: React.FC<{
                   placeholder="Search film stocks..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full bg-neutral-800 border border-neutral-700 rounded-lg pl-11 pr-4 py-2.5 text-white focus:ring-2 focus:ring-brand-amber-start focus:border-brand-amber-start"
+                  className="w-full bg-black/20 border border-neutral-700/80 rounded-lg pl-11 pr-4 py-2.5 text-white focus:ring-2 focus:ring-brand-amber-start focus:border-brand-amber-start"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -105,7 +105,7 @@ const FilmSelectionModal: React.FC<{
 
           {/* Film List */}
           <div className="overflow-y-auto no-scrollbar p-4 space-y-6">
-            {activeRoll && !activeRoll.is_completed && (
+            {activeRoll && activeRoll.is_completed === 0 && (
               <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-200 p-3 rounded-lg text-sm">
                 Changing film will discard the <strong>{activeRoll.shots_used} shots</strong> on your current roll.
               </div>
