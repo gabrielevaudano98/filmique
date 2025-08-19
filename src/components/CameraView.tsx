@@ -15,6 +15,16 @@ const formatShutterSpeed = (seconds: number): string => {
   return `1/${Math.round(1 / seconds)}`;
 };
 
+// Helper to get a short, display-friendly name for a film stock
+const getShortFilmName = (filmType: string): string => {
+  const parts = filmType.split(' ');
+  // Return everything after the first word (e.g., "Gold 200" from "Kodak Gold 200")
+  if (parts.length > 1) {
+    return parts.slice(1).join(' ');
+  }
+  return filmType;
+};
+
 const CameraView: React.FC = () => {
   const {
     cameraMode,
@@ -336,6 +346,11 @@ const CameraView: React.FC = () => {
               className={`w-full h-full object-cover transition-transform duration-300 ${isFrontCamera ? 'transform -scale-x-100' : ''}`}
             />
           )}
+          {activeRoll && (
+            <div className="absolute top-4 left-4 z-20 bg-black/50 px-3 py-1.5 rounded-full text-sm font-mono font-bold">
+              {activeRoll.shots_used} / {activeRoll.capacity}
+            </div>
+          )}
           <FocalPlaneShutter 
             isAnimating={isShutterAnimating} 
             onAnimationEnd={() => setIsShutterAnimating(false)} 
@@ -373,8 +388,8 @@ const CameraView: React.FC = () => {
               <div className="flex justify-start" style={{ width: '104px' }}>
                 <button onClick={() => setShowFilmModal(true)} className="w-16 h-16 flex flex-col items-center justify-center text-center transition-opacity hover:opacity-80 p-2 rounded-full bg-neutral-800/50">
                   <Film className="w-6 h-6 text-amber-400" />
-                  <span className="text-xs font-bold text-white mt-1">
-                    {activeRoll ? `${activeRoll.shots_used}/${activeRoll.capacity}` : 'Load'}
+                  <span className="text-xs font-bold text-white mt-1 truncate max-w-[56px]">
+                    {activeRoll ? getShortFilmName(activeRoll.film_type) : 'Load'}
                   </span>
                 </button>
               </div>
