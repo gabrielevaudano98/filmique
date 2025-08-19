@@ -320,8 +320,8 @@ const CameraView: React.FC = () => {
   }
 
   return (
-    <div className={`h-screen flex flex-col overflow-hidden text-white camera-modal ${isNative ? 'bg-transparent' : 'bg-black'}`}>
-      <header className="w-full bg-black text-white px-4 flex items-center justify-between relative z-40 h-16 py-3 pt-safe-t pl-safe-l pr-safe-r flex-shrink-0">
+    <div className={`h-screen flex flex-col overflow-hidden text-white camera-modal ${isNative ? 'bg-transparent' : 'bg-black'} pt-safe-t pb-safe-b pl-safe-l pr-safe-r`}>
+      <header className="w-full bg-black text-white px-4 flex items-center justify-between relative z-40 h-16 py-3 flex-shrink-0">
         <button
           onClick={() => setCurrentView('rolls')}
           className="text-gray-300 hover:text-white transition-colors flex items-center gap-1 text-base p-2"
@@ -359,10 +359,10 @@ const CameraView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-gray-900 pb-safe-b select-none flex-shrink-0 flex flex-col justify-center h-[30vh] min-h-[240px] max-h-[300px]">
+      <div className="bg-gray-900 select-none flex-shrink-0 flex flex-col justify-center h-[30vh] min-h-[240px] max-h-[300px]">
         <div className="flex flex-col items-center justify-center">
           {cameraMode === 'pro' && !isNative && (
-            <div className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2 pl-safe-l pr-safe-r">
+            <div className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2">
               <div className="flex items-center justify-center space-x-6">
                 {proControls.map(c => (
                   <button key={c.id} onClick={() => setActiveProControl(activeProControl === c.id ? null : c.id)} className={`flex flex-col items-center gap-1 transition-colors ${activeProControl === c.id ? 'text-amber-400' : 'text-gray-300 hover:text-white'}`}>

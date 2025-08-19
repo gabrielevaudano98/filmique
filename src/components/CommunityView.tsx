@@ -56,7 +56,6 @@ const CommunityView: React.FC = () => {
       }
       setPullPosition(0);
     },
-    preventScrollOnSwipe: true,
     trackMouse: true,
   });
 
