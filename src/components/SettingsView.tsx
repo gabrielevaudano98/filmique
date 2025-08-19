@@ -15,7 +15,7 @@ const SettingsRow: React.FC<{
   subtitle?: string;
   onClick?: () => void;
 }> = ({ icon, color, title, subtitle, onClick }) => (
-  <button onClick={onClick} className="w-full flex items-center p-4 text-left hover:bg-neutral-700/50 transition-colors min-h-[64px]">
+  <button onClick={onClick} className="w-full flex items-center p-4 text-left hover:bg-white/5 transition-colors min-h-[64px]">
     <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-4 shrink-0 ${color}`}>
       {icon}
     </div>
@@ -30,11 +30,11 @@ const SettingsRow: React.FC<{
 const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
   <div className="mb-6">
     <h3 className="px-4 pb-2 text-sm font-semibold text-gray-400 uppercase tracking-wider">{title}</h3>
-    <div className="bg-neutral-800 rounded-xl overflow-hidden border border-neutral-700/50">
+    <div className="bg-neutral-800/60 backdrop-blur-lg rounded-xl overflow-hidden border border-neutral-700/50 shadow-lg">
       {React.Children.map(children, (child, index) => (
         <>
           {child}
-          {index < React.Children.count(children) - 1 && <div className="pl-18"><div className="h-px bg-neutral-700/50"></div></div>}
+          {index < React.Children.count(children) - 1 && <div className="pl-18"><div className="h-px bg-white/5"></div></div>}
         </>
       ))}
     </div>
@@ -79,7 +79,7 @@ const SettingsView: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col bg-transparent text-white">
-       <div className="flex items-center p-4 border-b border-neutral-800">
+       <div className="flex items-center p-4 border-b border-neutral-700/50 bg-neutral-800/60 backdrop-blur-lg">
         <button onClick={() => setCurrentView('profile')} className="p-2 text-gray-400 hover:text-white rounded-full">
           <ArrowLeft className="w-5 h-5" />
         </button>
