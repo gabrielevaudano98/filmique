@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { ArrowLeft, Edit, Image as ImageIcon, Film, Lock, Link2, Globe } from 'lucide-react';
 import ManageRollsModal from './ManageRollsModal';
-import { Roll } from '../types';
-import RollListItem from './RollListItem';
-import ConfirmDeleteModal from './ConfirmDeleteModal';
+import { Roll, Photo } from '../types';
+import PhotoGridItem from './PhotoGridItem';
+import PhotoDetailModal from './PhotoDetailModal';
+import PhotoInfoModal from './PhotoInfoModal';
 
 const AlbumDetailView: React.FC = () => {
-  const { selectedAlbum, setCurrentView, setSelectedAlbum, deleteRoll, removeRollFromAlbum } = useAppContext();
+  const { selectedAlbum, setCurrentView, setSelectedAlbum } = useAppContext();
   const [showManageModal, setShowManageModal] = useState(false);
-  const [rollToDelete, setRollToDelete] = useState<Roll | null>(null);
+  const [photoToView, setPhotoToView] = useState<(Photo & { roll: Roll }) | null>(null);
+  const [photoToShowInfo, setPhotoToShowInfo] = useState<(Photo & { roll: Roll }) | null>(null);
 
   if (!selectedAlbum) {
     setCurrentView('profile');
@@ -18,15 +20,18 @@ const AlbumDetailView: React.FC = () => {
 
   const handleBack = () => {
     setSelectedAlbum(null);
-    setCurrentView('profile');
+    setCurrentView('library');
   };
 
-  const handleRemoveFromAlbum = (roll: Roll) => {
-    removeRollFromAlbum(roll.id);
-  };
+  const allPhotos = useMemo(() => {
+    if (!selectedAlbum?.rolls) return [];
+    return selectedAlbum.rolls.flatMap(roll => 
+      roll.photos?.map(photo => ({ ...photo, roll })) || []
+    );
+  }, [selectedAlbum]);
 
   const rolls = selectedAlbum.rolls || [];
-  const photoCount = rolls.reduce((sum, roll) => sum + (roll.shots_used || 0), 0);
+  const photoCount = allPhotos.length;
 
   const visibilityInfo = {
     private: { icon: Lock, label: 'Private', color: 'text-red-400' },
@@ -41,7 +46,7 @@ const AlbumDetailView: React.FC = () => {
       <div className="flex items-center justify-between mb-6">
         <button onClick={handleBack} className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors p-2 -ml-2">
           <ArrowLeft className="w-5 h-5" />
-          <span className="font-medium">Back to Profile</span>
+          <span className="font-medium">Back to Library</span>
         </button>
         <button onClick={() => setShowManageModal(true)} className="bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors flex items-center space-x-2">
           <Edit className="w-4 h-4" />
@@ -63,15 +68,13 @@ const AlbumDetailView: React.FC = () => {
         </div>
       </div>
 
-      {rolls.length > 0 ? (
-        <div className="space-y-2">
-          {rolls.map(roll => (
-            <RollListItem
-              key={roll.id}
-              roll={roll}
-              onDelete={setRollToDelete}
-              onAssignAlbum={handleRemoveFromAlbum}
-              assignActionIcon="remove"
+      {allPhotos.length > 0 ? (
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+          {allPhotos.map(photo => (
+            <PhotoGridItem
+              key={photo.id}
+              photo={photo}
+              onClick={() => setPhotoToView(photo)}
             />
           ))}
         </div>
@@ -92,17 +95,18 @@ const AlbumDetailView: React.FC = () => {
         />
       )}
 
-      {rollToDelete && (
-        <ConfirmDeleteModal
-          isOpen={!!rollToDelete}
-          onClose={() => setRollToDelete(null)}
-          onConfirm={() => {
-            if (rollToDelete) deleteRoll(rollToDelete.id);
-            setRollToDelete(null);
-          }}
-          title="Delete Roll"
-          message={`Are you sure you want to permanently delete "${rollToDelete.title || rollToDelete.film_type}"? This cannot be undone.`}
-          confirmText="Delete"
+      {photoToView && (
+        <PhotoDetailModal 
+          photo={photoToView} 
+          onClose={() => setPhotoToView(null)}
+          onShowInfo={() => { setPhotoToShowInfo(photoToView); setPhotoToView(null); }}
+        />
+      )}
+      {photoToShowInfo && (
+        <PhotoInfoModal 
+          photo={photoToShowInfo} 
+          roll={photoToShowInfo.roll} 
+          onClose={() => setPhotoToShowInfo(null)} 
         />
       )}
     </div>

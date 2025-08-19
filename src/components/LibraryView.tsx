@@ -1,17 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Album } from '../types';
 import AlbumCard from './AlbumCard';
 import { Plus, Library as LibraryIcon } from 'lucide-react';
 import CreateAlbumModal from './CreateAlbumModal';
+import UncategorizedAlbumCard from './UncategorizedAlbumCard';
+import { isRollDeveloped } from '../utils/rollUtils';
 
 const LibraryView: React.FC = () => {
-  const { albums, setSelectedAlbum, setCurrentView, refetchAlbums } = useAppContext();
+  const { albums, setSelectedAlbum, setCurrentView, refetchAlbums, completedRolls } = useAppContext();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     refetchAlbums();
   }, [refetchAlbums]);
+
+  const uncategorizedRolls = useMemo(() => {
+    return completedRolls.filter(r => isRollDeveloped(r) && !r.album_id && !r.is_archived);
+  }, [completedRolls]);
 
   const handleSelectAlbum = (album: Album) => {
     setSelectedAlbum(album);
@@ -32,8 +38,14 @@ const LibraryView: React.FC = () => {
           </button>
         </div>
 
-        {albums.length > 0 ? (
+        {albums.length > 0 || uncategorizedRolls.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {uncategorizedRolls.length > 0 && (
+              <UncategorizedAlbumCard 
+                rolls={uncategorizedRolls} 
+                onClick={() => setCurrentView('uncategorizedRolls')} 
+              />
+            )}
             {albums.map(album => (
               <AlbumCard 
                 key={album.id} 
