@@ -10,6 +10,7 @@ import PrintsView from './PrintsView';
 import DarkroomEmptyState from './DarkroomEmptyState';
 import SegmentedControl from './SegmentedControl';
 import RollRow from './RollRow';
+import StickyGroupHeader from './StickyGroupHeader';
 
 const RollsEmptyState = () => (
     <div className="text-center py-24 text-neutral-500">
@@ -108,7 +109,7 @@ const RollsView: React.FC = () => {
         case 'oldest': return new Date(dateA).getTime() - new Date(dateB).getTime();
         case 'title_asc': return (a.title || '').localeCompare(b.title || '');
         case 'title_desc': return (b.title || '').localeCompare(a.title || '');
-        case 'newest': default: return new Date(dateB).getTime() - new Date(dateA).getTime();
+        case 'newest': default: return new Date(dateB).getTime() - new Date(a.created_at).getTime();
       }
     });
     return rolls;
@@ -205,9 +206,7 @@ const RollsView: React.FC = () => {
                 {processedRolls.length > 0 ? (
                   groupEntries.map(([groupName, rolls]) => (
                     <div key={groupName}>
-                      <h3 className="sticky top-[80px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white bg-neutral-800/60 backdrop-blur-lg border-y border-neutral-700/50 pr-[150px]">
-                        {groupName}
-                      </h3>
+                      <StickyGroupHeader title={groupName} />
                       <div className="flex flex-col space-y-3 pt-3">
                         {rolls.map(roll => <RollRow key={roll.id} roll={roll} />)}
                       </div>
