@@ -12,6 +12,7 @@ const TopBar: React.FC = () => {
     notifications, setCurrentView, headerAction, isTopBarVisible, currentView,
     isStudioHeaderSticky, studioSection, setStudioSection, studioSectionOptions,
     searchTerm, setSearchTerm,
+    setIsRollsSettingsOpen,
   } = useAppContext();
   
   const unreadCount = notifications.filter(n => !n.is_read).length;
@@ -26,7 +27,7 @@ const TopBar: React.FC = () => {
       ? 'bg-neutral-800/60 border-b border-neutral-700/50'
       : isStudioView
       ? 'bg-transparent border-b border-transparent'
-      : 'bg-neutral-800/60 border-b border-700/50' // Changed to neutral-700/50 for consistency
+      : 'bg-neutral-800/60 border-b border-neutral-700/50' // Changed to neutral-700/50 for consistency
   } ${!isTopBarVisible ? '-translate-y-full' : 'translate-y-0'}`;
   
   return (
@@ -63,8 +64,12 @@ const TopBar: React.FC = () => {
         <div className={`absolute inset-0 flex items-center justify-between px-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] transition-all duration-300 ${isStudioSticky ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
           <h1 className="text-xl font-bold text-white">Studio</h1>
           <div className="w-auto flex items-center gap-2">
-            <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-            <RollsControls />
+            {studioSection === 'rolls' && (
+              <>
+                <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+                <RollsControls />
+              </>
+            )}
             <SegmentedControl
               options={studioSectionOptions}
               value={studioSection}

@@ -320,8 +320,8 @@ const CameraView: React.FC = () => {
   }
 
   return (
-    <div className={`h-screen flex flex-col overflow-hidden text-white camera-modal ${isNative ? 'bg-transparent' : 'bg-black'}`}>
-      <header className="w-full bg-black text-white px-4 flex items-center justify-between relative z-40 h-16 py-3 pt-safe-t pl-safe-l pr-safe-r flex-shrink-0">
+    <div className={`h-screen flex flex-col overflow-hidden text-white camera-modal ${isNative ? 'bg-transparent' : 'bg-black'} pt-safe-t pb-safe-b pl-safe-l pr-safe-r`}>
+      <header className="w-full bg-black text-white px-4 flex items-center justify-between relative z-40 h-16 py-3 flex-shrink-0">
         <button
           onClick={() => setCurrentView('rolls')}
           className="text-gray-300 hover:text-white transition-colors flex items-center gap-1 text-base p-2"
