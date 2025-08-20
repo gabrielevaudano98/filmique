@@ -163,6 +163,21 @@ const RollsView: React.FC = () => {
         </div>
       </div>
 
+      {/* Controls row: always visible (search + display options) so users see filtering immediately */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
+          <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+          <div className="hidden sm:block">
+            <RollsControls />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Small hint of grouping/sort — the full display options are in the RollsSettings modal */}
+          <div className="text-sm text-gray-400 hidden sm:block">Group: <span className="font-semibold text-white ml-2">{rollsGroupBy}</span></div>
+        </div>
+      </div>
+
       <div {...swipeHandlers} className="relative flex-1 overflow-hidden">
         <div
           className="flex h-full transition-transform duration-300 ease-out"
