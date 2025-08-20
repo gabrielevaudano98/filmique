@@ -2,35 +2,44 @@ import React from 'react';
 
 interface StickyGroupHeaderProps {
   title: string;
+  actions?: React.ReactNode;
 }
 
 /**
- * Simplified StickyGroupHeader
+ * StickyGroupHeader
  *
  * Renders a fixed-height spacer so the header doesn't shift content when it becomes sticky,
- * and uses a single sticky <h3> with a predictable top offset that respects safe-area insets.
+ * and shows a single sticky row with a left-aligned title and right-aligned actions.
  *
- * NOTE: This avoids the sentinel/IntersectionObserver approach which caused rendering glitches
- * across different devices and made the header appear in the wrong place.
+ * This keeps layout stable and makes it easy to place compact search/filter buttons next to the date.
  */
 const TOPBAR_PX = 64; // height reserved for top bar (adjust if top bar height changes)
 const HEADER_HEIGHT_PX = 56; // visual height of the header
 
-const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ title }) => {
+const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ title, actions }) => {
   const topOffset = `calc(env(safe-area-inset-top, 0px) + ${TOPBAR_PX}px)`;
 
   return (
-    <div>
+    <div className="mb-2">
       {/* Spacer keeps layout height identical whether header is sticky or not */}
       <div style={{ height: HEADER_HEIGHT_PX }} />
 
       {/* Sticky header — top offset accounts for safe-area + top bar */}
-      <h3
+      <div
         style={{ top: topOffset }}
-        className="sticky z-30 flex items-center px-4 text-lg font-semibold transition-all duration-200"
+        className="sticky z-30 px-4"
       >
-        <span className="truncate">{title}</span>
-      </h3>
+        <div className="flex items-center justify-between h-[56px]">
+          <h3 className="text-lg font-semibold text-white">
+            {title}
+          </h3>
+          {actions ? (
+            <div className="flex items-center gap-2">
+              {actions}
+            </div>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 };
