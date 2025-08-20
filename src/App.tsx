@@ -5,7 +5,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import CameraView from './components/CameraView';
 import RollsView from './components/RollsView';
-import FeedView from './components/FeedView';
+import FeedView from './views/FeedView';
 import ChallengesView from './components/ChallengesView';
 import ProfileView from './components/ProfileView';
 import SettingsView from './components/SettingsView';
