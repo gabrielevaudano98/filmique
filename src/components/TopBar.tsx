@@ -29,7 +29,7 @@ const TopBar: React.FC = () => {
   return (
     <header 
       className={headerClasses}
-      style={{ height: 'var(--top-bar-total-height)' }}
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <div className="relative flex items-center justify-between px-4 h-20 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">
         {/* Default Header (Filmique & Bell) */}
