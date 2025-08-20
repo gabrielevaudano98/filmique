@@ -2,15 +2,15 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Plus, User, ArrowDown, Users, Library as LibraryIcon } from 'lucide-react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext, Post } from '../context/AppContext';
-import CreatePostModal from './CreatePostModal';
-import RollPostCard from './RollPostCard';
+import CreatePostModal from '../components/CreatePostModal';
+import RollPostCard from '../components/RollPostCard';
 import { isRollDeveloped } from '../utils/rollUtils';
-import StoryRollsCarousel from './StoryRollsCarousel';
-import FullStoryViewer from './FullStoryViewer';
-import LoadingIndicator from './LoadingIndicator';
-import SegmentedControl from './SegmentedControl';
-import ProfileView from './ProfileView';
-import LibraryView from './LibraryView';
+import StoryRollsCarousel from '../components/StoryRollsCarousel';
+import FullStoryViewer from '../components/FullStoryViewer';
+import LoadingIndicator from '../components/LoadingIndicator';
+import SegmentedControl from '../components/SegmentedControl';
+import ProfileView from '../components/ProfileView';
+import LibraryView from '../components/LibraryView';
 
 const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => void; }> = ({ label, isActive, onClick }) => (
   <button
@@ -118,11 +118,11 @@ const FeedView: React.FC = () => {
 
   if (!profile) return null;
 
-  // Segmented control options for the Feed
+  // Segmented control options for the Feed — icons only (labels hidden), descriptions used for accessibility
   const segmentOptions = [
-    { value: 'community', label: 'Community', icon: Users, colors: { from: 'from-accent-violet', to: 'to-indigo-600', shadow: 'shadow-indigo-500/30' }, description: 'Discover posts' },
-    { value: 'profile', label: 'Profile', icon: User, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' }, description: 'Your profile' },
-    { value: 'gallery', label: 'Gallery', icon: LibraryIcon, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' }, description: 'Library & albums' },
+    { value: 'community', label: 'Community', icon: Users, colors: { from: 'from-accent-violet', to: 'to-indigo-600', shadow: 'shadow-indigo-500/30' }, description: 'Community' },
+    { value: 'profile', label: 'Profile', icon: User, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' }, description: 'Profile' },
+    { value: 'gallery', label: 'Gallery', icon: LibraryIcon, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' }, description: 'Gallery' },
   ];
 
   return (
@@ -134,7 +134,7 @@ const FeedView: React.FC = () => {
         </div>
       </div>
 
-      {/* Header + segment control */}
+      {/* Header + icon-only segment control */}
       <div className="flex items-center justify-between pt-4 pb-4">
         <h1 className="text-3xl font-bold text-white">Feed</h1>
 
@@ -143,6 +143,7 @@ const FeedView: React.FC = () => {
             options={segmentOptions as any}
             value={feedSection}
             onChange={(val: string) => setFeedSection(val as any)}
+            hideLabels={true}
           />
         </div>
 

@@ -1,6 +1,6 @@
 # Filmique - A Film Photography App
 
-Filmique is a modern web application designed to simulate the experience of film photography, allowing users to manage film rolls, take virtual photos, and explore a community feed.
+Filmique is a modern web application designed to simulate the experience of film photography, allowing users to manage film rolls, take virtual photos, and explore a Feed.
 
 ## Features
 
@@ -11,7 +11,7 @@ Filmique is a modern web application designed to simulate the experience of film
 - **Interactive Range Selectors**: Adjust camera settings using intuitive horizontal range selectors with visual feedback.
 - **Photo Gallery**: View your developed photos and completed film rolls.
 - **User Profile**: Track your progress, earned credits, streaks, badges, and achievements.
-- **Community Feed**: Browse photos from other users (mock data).
+- **Feed**: Browse photos from other users (mock data).
 - **Responsive Design**: Built with Tailwind CSS for a mobile-first, adaptive user interface.
 
 ## Tech Stack
