@@ -154,7 +154,9 @@ const RollsView: React.FC = () => {
     <div className="flex flex-col w-full">
       <div ref={observerTriggerRef} className="flex items-center justify-between pt-4 pb-6">
         <h1 className="text-3xl font-bold text-white">Studio</h1>
-        <div className="w-auto">
+        <div className="w-auto flex items-center gap-2"> {/* Added flex and gap for controls */}
+          <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+          <RollsControls />
           <SegmentedControl
             options={availableSections}
             value={studioSection}
@@ -171,7 +173,7 @@ const RollsView: React.FC = () => {
           {sectionOrder.map(section => (
             <div key={section} className="w-full h-full flex-shrink-0">
               {section === 'darkroom' && (
-                <div className="pb-4">
+                <div className="pb-4"> {/* Added pb-4 */}
                   {developingRolls.length > 0 ? (
                     <div className="space-y-3">
                       {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
@@ -180,8 +182,8 @@ const RollsView: React.FC = () => {
                 </div>
               )}
               {section === 'rolls' && (
-                <div className="pb-4">
-                  <div className="space-y-6">
+                <div className="pb-4"> {/* Added pb-4 */}
+                  <div className="space-y-6"> {/* Removed -mt-14 */}
                     {processedRolls.length > 0 ? (
                       groupEntries.map(([groupName, rolls]) => (
                         <div key={groupName}>
@@ -198,7 +200,7 @@ const RollsView: React.FC = () => {
                 </div>
               )}
               {section === 'prints' && (
-                <div className="pb-4">
+                <div className="pb-4"> {/* Added pb-4 */}
                   <PrintsView />
                 </div>
               )}
