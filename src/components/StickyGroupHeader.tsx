@@ -35,7 +35,7 @@ const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ title }) => {
     };
   }, []);
 
-  const headerClasses = `sticky top-[80px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white pr-[150px] transition-colors duration-200 border-y ${
+  const headerClasses = `sticky top-[80px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white transition-colors duration-200 border-y ${
     isSticky
       ? 'bg-neutral-800/60 backdrop-blur-lg border-neutral-700/50'
       : 'bg-transparent border-transparent'
