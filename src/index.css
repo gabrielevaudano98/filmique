@@ -322,3 +322,8 @@
 .animate-pulse-soft {
   animation: pulse-soft 2s ease-in-out infinite;
 }
+
+/* New utility for touch-action */
+.touch-action-pan-y {
+  touch-action: pan-y;
+}
