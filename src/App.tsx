@@ -154,7 +154,7 @@ function App() {
       {isPrintsSettingsOpen && <PrintsSettingsView />}
       {isSyncStatusModalOpen && <SyncStatusModal />}
       <main className="min-h-screen w-full pb-28">
-        <div className="max-w-6xl mx-auto w-full h-full pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+        <div className="max-w-6xl mx-auto w-full h-full px-4 py-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">
           {renderCurrentView()}
         </div>
       </main>

@@ -54,7 +54,7 @@ const RollsView: React.FC = () => {
       ([entry]) => {
         setIsStudioHeaderSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
       },
-      { threshold: 0, rootMargin: "-80px 0px 0px 0px" } // 80px is roughly the top bar height
+      { threshold: 0, rootMargin: "-80px 0px 0px 0px" } // 80px is h-20
     );
 
     const currentTriggerRef = observerTriggerRef.current;
@@ -151,7 +151,7 @@ const RollsView: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col w-full px-4">
+    <div className="flex flex-col w-full">
       <div ref={observerTriggerRef} className="flex items-center justify-between pt-4 pb-6">
         <h1 className="text-3xl font-bold text-white">Studio</h1>
         <div className="w-auto">
@@ -171,7 +171,7 @@ const RollsView: React.FC = () => {
           {sectionOrder.map(section => (
             <div key={section} className="w-full h-full flex-shrink-0">
               {section === 'darkroom' && (
-                <div className="pb-4">
+                <div>
                   {developingRolls.length > 0 ? (
                     <div className="space-y-3">
                       {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
@@ -180,21 +180,18 @@ const RollsView: React.FC = () => {
                 </div>
               )}
               {section === 'rolls' && (
-                <div className="pb-4">
-                  <div className="space-y-6">
-                    {groupEntries.length > 0 ? (
-                      groupEntries.map(([groupName, rolls], idx) => (
+                <div>
+                  <div className="sticky top-[80px] z-20 pointer-events-none -mx-4 px-4 h-14">
+                    <div className="absolute top-0 right-4 h-full pointer-events-auto flex items-center gap-2">
+                      <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+                      <RollsControls />
+                    </div>
+                  </div>
+                  <div className="space-y-6 -mt-14">
+                    {processedRolls.length > 0 ? (
+                      groupEntries.map(([groupName, rolls]) => (
                         <div key={groupName}>
-                          {/** Pass controls only for the first rendered group so search/controls appear in the sticky header */}
-                          <StickyGroupHeader
-                            title={groupName}
-                            controls={idx === 0 ? (
-                              <div className="flex items-center gap-3">
-                                <div className="w-full max-w-lg"><ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} /></div>
-                                <div className="hidden sm:block"><RollsControls /></div>
-                              </div>
-                            ) : undefined}
-                          />
+                          <StickyGroupHeader title={groupName} />
                           <div className="flex flex-col space-y-3 pt-3">
                             {rolls.map(roll => <RollRow key={roll.id} roll={roll} />)}
                           </div>
@@ -207,7 +204,7 @@ const RollsView: React.FC = () => {
                 </div>
               )}
               {section === 'prints' && (
-                <div className="pb-4">
+                <div>
                   <PrintsView />
                 </div>
               )}

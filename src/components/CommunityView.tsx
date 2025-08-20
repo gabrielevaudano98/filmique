@@ -110,7 +110,7 @@ const CommunityView: React.FC = () => {
   };
 
   return (
-    <div {...refreshHandlers} className="w-full text-gray-100"> {/* Removed min-h-full */}
+    <div {...refreshHandlers} className="w-full text-gray-100 min-h-full">
       {/* Refresh Indicator */}
       <div className="absolute top-[-60px] left-0 right-0 flex justify-center items-center transition-transform duration-200" style={{ transform: `translateY(${Math.min(pullPosition, PULL_THRESHOLD * 1.5)}px)` }}>
         <div className="p-3 bg-neutral-800 rounded-full shadow-lg" style={{ opacity: Math.min(pullPosition / PULL_THRESHOLD, 1), transform: `rotate(${Math.min(pullPosition, PULL_THRESHOLD) * 2}deg)` }}>
@@ -149,7 +149,7 @@ const CommunityView: React.FC = () => {
 
       {/* Filter Pills */}
       <div className="mb-6">
-        <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2 touch-action-pan-y"> {/* Added touch-action-pan-y */}
+        <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
           <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
           <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
           <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
@@ -158,11 +158,11 @@ const CommunityView: React.FC = () => {
       </div>
 
       {/* Discover Feed */}
-      <div className="pb-4"> {/* Added pb-4 */}
+      <div>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold">Discover Feed</h2>
         </div>
-        <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 touch-action-pan-y"> {/* Added touch-action-pan-y */}
+        <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
           {filteredFeed.length > 0 ? (
             filteredFeed.map(post => (
               <RollPostCard key={post.id} post={post} onClick={() => handleSelectStory(post.user_id, post.id)} />
