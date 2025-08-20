@@ -4,47 +4,69 @@ interface StickyGroupHeaderProps {
   title: string;
 }
 
+/**
+ * StickyGroupHeader
+ *
+ * Behavior:
+ * - Renders a spacer element (fixed height) so the header's normal position is exactly
+ *   where it appears in the flow (directly below the top bar).
+ * - Uses a small sentinel (1px) above the header to detect when the header should be
+ *   considered "stuck" using an IntersectionObserver. This avoids relying on threshold=1
+ *   on the header itself which can be brittle across devices.
+ * - Header uses CSS `position: sticky` with an inline `top` that accounts for the
+ *   app top bar; visually changes when stuck (backdrop + border) without shifting content.
+ *
+ * Notes:
+ * - If you change the top bar height, update TOPBAR_PX below so the sticky offset remains correct.
+ */
+const TOPBAR_PX = 80; // height of top bar (adjust if top bar height changes)
+const HEADER_HEIGHT_PX = 56; // visual height of the group header (keeps layout stable)
+
 const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ title }) => {
-  const ref = useRef<HTMLHeadingElement>(null);
-  const [isSticky, setIsSticky] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const [isStuck, setIsStuck] = useState(false);
 
   useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+
+    // When sentinel goes out of view above the top offset, the header becomes stuck.
     const observer = new IntersectionObserver(
       ([entry]) => {
-        // When the header's intersection ratio is less than 1, it means it has
-        // hit the top of the viewport and is now in its "sticky" state.
-        setIsSticky(entry.intersectionRatio < 1);
+        // entry.isIntersecting === false => sentinel moved out of the root's view (i.e., header reached top offset)
+        setIsStuck(!entry.isIntersecting);
       },
       {
-        threshold: [1],
-        // The root margin is set to the same offset as the sticky position.
-        // This makes the observer trigger precisely when the element sticks.
-        rootMargin: '-80px 0px 0px 0px', // TopBar is 80px
+        root: null,
+        rootMargin: `-${TOPBAR_PX}px 0px 0px 0px`,
+        threshold: 0,
       }
     );
 
-    const currentRef = ref.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
-      }
-    };
+    observer.observe(sentinel);
+    return () => observer.disconnect();
   }, []);
 
-  const headerClasses = `sticky top-[80px] z-10 py-4 px-4 text-lg font-bold text-white transition-colors duration-200 border-y ${
-    isSticky
-      ? 'bg-neutral-800/60 backdrop-blur-lg border-neutral-700/50 mx-[-1rem]' // Added mx-[-1rem] for full width border
-      : 'bg-transparent border-transparent'
-  }`;
+  // inline top ensures the sticky offset respects safe-area + topbar.
+  const topOffset = `calc(env(safe-area-inset-top, 0px) + ${TOPBAR_PX}px)`;
 
   return (
-    <h3 ref={ref} className={headerClasses}>
-      {title}
-    </h3>
+    <>
+      {/* sentinel sits immediately before the header; once it is scrolled past the top offset
+          the header should be considered stuck. */}
+      <div ref={sentinelRef} style={{ height: 1, width: '100%' }} />
+
+      {/* spacer preserves the original flow height so the header doesn't jump when it becomes sticky */}
+      <div style={{ height: HEADER_HEIGHT_PX }} />
+
+      <h3
+        // sticky positioning with computed top
+        style={{ top: topOffset }}
+        className={`sticky z-30 flex items-center px-4 text-lg font-semibold transition-all duration-200 ${isStuck ? 'bg-neutral-800/70 backdrop-blur-lg border-b border-neutral-700/50 shadow-sm' : 'bg-transparent border-transparent'}`}
+      >
+        <span className="truncate">{title}</span>
+      </h3>
+    </>
   );
 };
 
