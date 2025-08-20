@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Plus, User, ArrowDown, Loader } from 'lucide-react';
+import { Plus, User, ArrowDown } from 'lucide-react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext, Post } from '../context/AppContext';
 import CreatePostModal from './CreatePostModal';
@@ -7,6 +7,7 @@ import RollPostCard from './RollPostCard';
 import { isRollDeveloped } from '../utils/rollUtils';
 import StoryRollsCarousel from './StoryRollsCarousel';
 import FullStoryViewer from './FullStoryViewer';
+import LoadingIndicator from './LoadingIndicator';
 
 const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => void; }> = ({ label, isActive, onClick }) => (
   <button
@@ -119,7 +120,7 @@ const CommunityView: React.FC = () => {
       {/* Refresh Indicator */}
       <div className="absolute top-[-60px] left-0 right-0 flex justify-center items-center transition-transform duration-200" style={{ transform: `translateY(${Math.min(pullPosition, PULL_THRESHOLD * 1.5)}px)` }}>
         <div className="p-3 bg-neutral-800 rounded-full shadow-lg" style={{ opacity: Math.min(pullPosition / PULL_THRESHOLD, 1), transform: `rotate(${Math.min(pullPosition, PULL_THRESHOLD) * 2}deg)` }}>
-          {isRefreshing ? <Loader className="w-6 h-6 animate-spin text-white" /> : <ArrowDown className="w-6 h-6 text-white" />}
+          {isRefreshing ? <LoadingIndicator size={24} /> : <ArrowDown className="w-6 h-6 text-white" />}
         </div>
       </div>
 

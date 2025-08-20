@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { CameraView as NativeCameraView } from 'capacitor-camera-view';
-import { RefreshCw, Film, Lock, Camera, ArrowLeft, Loader, MapPin } from 'lucide-react';
+import { RefreshCw, Film, Lock, Camera, ArrowLeft, MapPin } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
 import RangeSelector from './RangeSelector';
 import FocalPlaneShutter from './FocalPlaneShutter';
+import LoadingIndicator from './LoadingIndicator';
 
 type ProControl = 'iso' | 'shutterSpeed' | 'focus';
 
@@ -314,13 +315,7 @@ const CameraView: React.FC = () => {
   if (hasPermission === null) {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-black text-white">
-        <div className="relative w-20 h-20 text-white animate-pulse-soft">
-          <div className="absolute -top-1 -left-1 w-6 h-6 rounded-tl-lg border-t-2 border-l-2 border-current animate-viewfinder-focus" style={{ animationDelay: '0s' }}></div>
-          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-tr-lg border-t-2 border-r-2 border-current animate-viewfinder-focus" style={{ animationDelay: '0.2s' }}></div>
-          <div className="absolute -bottom-1 -left-1 w-6 h-6 rounded-bl-lg border-b-2 border-l-2 border-current animate-viewfinder-focus" style={{ animationDelay: '0.4s' }}></div>
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-br-lg border-b-2 border-r-2 border-current animate-viewfinder-focus" style={{ animationDelay: '0.6s' }}></div>
-          <Camera className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-neutral-600" />
-        </div>
+        <LoadingIndicator text="Starting camera..." />
       </div>
     );
   }
@@ -410,7 +405,7 @@ const CameraView: React.FC = () => {
               <div className="w-20 h-20 bg-neutral-800 rounded-full flex items-center justify-center ring-4 ring-neutral-700">
                 <button onClick={handleTakePhoto} disabled={activeRoll?.is_completed || isSavingPhoto} aria-label="Take Photo" className="w-[72px] h-[72px] rounded-full bg-white flex items-center justify-center transition-transform active:scale-95 disabled:bg-gray-200">
                   {isSavingPhoto ? (
-                    <Loader className="w-8 h-8 text-gray-500 animate-spin" />
+                    <LoadingIndicator size={20} />
                   ) : activeRoll?.is_completed ? (
                     <Lock className="w-8 h-8 text-gray-500" />
                   ) : (
