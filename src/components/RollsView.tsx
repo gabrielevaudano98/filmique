@@ -3,9 +3,12 @@ import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { Film, Archive } from 'lucide-react';
+import RollsControls from './RollsControls';
+import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
 import PrintsView from './PrintsView';
 import DarkroomEmptyState from './DarkroomEmptyState';
+import SegmentedControl from './SegmentedControl';
 import RollRow from './RollRow';
 import StickyGroupHeader from './StickyGroupHeader';
 
@@ -30,7 +33,7 @@ const RollsView: React.FC = () => {
     profile,
     developingRolls, completedRolls,
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
-    searchTerm,
+    searchTerm, setSearchTerm,
     studioSection, setStudioSection, studioSectionOptions,
     setIsStudioHeaderSticky,
   } = useAppContext();
@@ -51,7 +54,7 @@ const RollsView: React.FC = () => {
       ([entry]) => {
         setIsStudioHeaderSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
       },
-      { threshold: 0, rootMargin: "-80px 0px 0px 0px" } // 80px is h-20 (TopBar height)
+      { threshold: 0, rootMargin: "-80px 0px 0px 0px" } // 80px is h-20
     );
 
     const currentTriggerRef = observerTriggerRef.current;
@@ -152,8 +155,11 @@ const RollsView: React.FC = () => {
       <div ref={observerTriggerRef} className="flex items-center justify-between pt-4 pb-6">
         <h1 className="text-3xl font-bold text-white">Studio</h1>
         <div className="w-auto">
-          {/* SegmentedControl is now handled by TopBar when sticky */}
-          {/* This div is just for initial layout, actual control is in TopBar */}
+          <SegmentedControl
+            options={availableSections}
+            value={studioSection}
+            onChange={(val) => setStudioSection(val as any)}
+          />
         </div>
       </div>
 
