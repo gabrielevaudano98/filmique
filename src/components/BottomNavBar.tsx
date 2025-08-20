@@ -50,7 +50,7 @@ const BottomNavBar: React.FC = () => {
   const navItems = [
     { view: 'rolls', label: 'Rolls', icon: Film },
     { view: 'library', label: 'Library', icon: Library },
-    { view: 'community', label: 'Community', icon: Users },
+    { view: 'feed', label: 'Feed', icon: Users },
   ];
 
   const leftItems = navItems.slice(0, 1);

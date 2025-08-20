@@ -5,7 +5,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import CameraView from './components/CameraView';
 import RollsView from './components/RollsView';
-import CommunityView from './components/CommunityView';
+import FeedView from './components/FeedView';
 import ChallengesView from './components/ChallengesView';
 import ProfileView from './components/ProfileView';
 import SettingsView from './components/SettingsView';
@@ -70,7 +70,7 @@ function App() {
         case 'albumDetail': setSelectedAlbum(null); setCurrentView('profile'); break;
         case 'settings': setCurrentView('profile'); break;
         case 'subscription': setCurrentView('settings'); break;
-        case 'notifications': setCurrentView('community'); break;
+        case 'notifications': setCurrentView('feed'); break;
         case 'uncategorizedRolls': setCurrentView('rolls'); break;
         case 'camera': setCurrentView('rolls'); break;
         default: console.log("Back button pressed on main view. Preventing exit."); break;
@@ -89,7 +89,7 @@ function App() {
     switch (currentView) {
       case 'rolls': return <RollsView />;
       case 'library': return <LibraryView />;
-      case 'community': return <CommunityView />;
+      case 'feed': return <FeedView />;
       case 'challenges': return <ChallengesView />;
       case 'profile': return <ProfileView />;
       case 'settings': return <SettingsView />;
@@ -98,7 +98,7 @@ function App() {
       case 'albumDetail': return <AlbumDetailView />;
       case 'notifications': return <NotificationsView />;
       case 'uncategorizedRolls': return <UncategorizedRollsView />;
-      default: return <CommunityView />;
+      default: return <FeedView />;
     }
   };
 
