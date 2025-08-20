@@ -39,6 +39,8 @@ const CommunityView: React.FC = () => {
     fetchRecentStories();
   }, [fetchFeed, fetchRecentStories]);
 
+  // Important: allow native vertical scrolling on mobile by NOT preventing scroll on swipe.
+  // We only listen for the user's downward swipe when the main scroller (#root) is at the top.
   const refreshHandlers = useSwipeable({
     onSwiping: (event) => {
       const mainScroller = document.getElementById('root');
@@ -56,8 +58,10 @@ const CommunityView: React.FC = () => {
       }
       setPullPosition(0);
     },
-    preventScrollOnSwipe: true,
+    // Allow the browser to manage vertical scrolling for the best native performance.
+    preventScrollOnSwipe: false,
     trackMouse: true,
+    trackTouch: true,
   });
 
   const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);

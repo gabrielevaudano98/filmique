@@ -83,6 +83,12 @@ const RollsView: React.FC = () => {
     };
   }, [setIsStudioHeaderSticky]);
 
+  useEffect(() => {
+    if (!sectionOrder.includes(studioSection)) {
+      setStudioSection(sectionOrder[0] as any);
+    }
+  }, [sectionOrder, setStudioSection, studioSection]);
+
   const { shelfRolls, archivedRolls } = useMemo(() => {
     return {
       shelfRolls: completedRolls.filter(r => !r.is_archived),
@@ -165,8 +171,11 @@ const RollsView: React.FC = () => {
   const swipeHandlers = useSwipeable({
       onSwipedLeft: () => handleSwipe('left'),
       onSwipedRight: () => handleSwipe('right'),
-      preventScrollOnSwipe: true,
+      // Allow the browser to keep handling vertical scrolling for best UX on mobile
+      preventScrollOnSwipe: false,
+      preventDefaultTouchmoveEvent: false,
       trackMouse: true,
+      trackTouch: true,
   });
 
   return (
