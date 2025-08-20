@@ -151,7 +151,7 @@ const RollsView: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col w-full px-4"> {/* Added px-4 here */}
+    <div className="flex flex-col w-full">
       <div ref={observerTriggerRef} className="flex items-center justify-between pt-4 pb-6">
         <h1 className="text-3xl font-bold text-white">Studio</h1>
         <div className="w-auto">
@@ -169,9 +169,9 @@ const RollsView: React.FC = () => {
           style={{ transform: `translateX(-${sectionOrder.indexOf(studioSection) * 100}%)` }}
         >
           {sectionOrder.map(section => (
-            <div key={section} className="w-full h-full flex-shrink-0">
+            <div key={section} className="w-full h-full flex-shrink-0 overflow-y-auto no-scrollbar"> {/* Added overflow-y-auto here */}
               {section === 'darkroom' && (
-                <div className="pb-4">
+                <div className="py-4"> {/* Consistent padding */}
                   {developingRolls.length > 0 ? (
                     <div className="space-y-3">
                       {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
@@ -180,26 +180,23 @@ const RollsView: React.FC = () => {
                 </div>
               )}
               {section === 'rolls' && (
-                <div className="pb-4">
-                  {/* Removed the sticky div for search/controls */}
-                  <div className="space-y-6"> {/* Removed -mt-14 */}
-                    {processedRolls.length > 0 ? (
-                      groupEntries.map(([groupName, rolls]) => (
-                        <div key={groupName}>
-                          <StickyGroupHeader title={groupName} />
-                          <div className="flex flex-col space-y-3 pt-3">
-                            {rolls.map(roll => <RollRow key={roll.id} roll={roll} />)}
-                          </div>
+                <div className="py-4"> {/* Consistent padding */}
+                  {processedRolls.length > 0 ? (
+                    groupEntries.map(([groupName, rolls]) => (
+                      <div key={groupName}>
+                        <StickyGroupHeader title={groupName} /> {/* This is the sticky header */}
+                        <div className="flex flex-col space-y-3 pt-3"> {/* Apply space-y to items */}
+                          {rolls.map(roll => <RollRow key={roll.id} roll={roll} />)}
                         </div>
-                      ))
-                    ) : (
-                      rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
-                    )}
-                  </div>
+                      </div>
+                    ))
+                  ) : (
+                    rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
+                  )}
                 </div>
               )}
               {section === 'prints' && (
-                <div className="pb-4">
+                <div className="py-4"> {/* Consistent padding */}
                   <PrintsView />
                 </div>
               )}
