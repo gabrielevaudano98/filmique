@@ -2,7 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
-import { Film, Archive } from 'lucide-react';
+import { Film, Archive, Lock } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
@@ -28,6 +28,14 @@ const ArchivedEmptyState = () => (
   </div>
 );
 
+function usePrevious<T>(value: T): T | undefined {
+  const ref = useRef<T>();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
 const RollsView: React.FC = () => {
   const { 
     profile,
@@ -39,6 +47,7 @@ const RollsView: React.FC = () => {
   } = useAppContext();
 
   const observerTriggerRef = useRef<HTMLDivElement>(null);
+  const prevSection = usePrevious(studioSection);
 
   const availableSections = useMemo(() => {
     if (profile?.experience_mode === 'digital') {
@@ -48,6 +57,16 @@ const RollsView: React.FC = () => {
   }, [profile, studioSectionOptions]);
 
   const sectionOrder = useMemo(() => availableSections.map(opt => opt.value), [availableSections]);
+
+  const direction = useMemo(() => {
+    if (!prevSection) return 'right';
+    const prevIndex = sectionOrder.indexOf(prevSection);
+    const currentIndex = sectionOrder.indexOf(studioSection);
+    if (prevIndex === -1 || currentIndex === -1) return 'right';
+    return currentIndex > prevIndex ? 'left' : 'right';
+  }, [studioSection, prevSection, sectionOrder]);
+
+  const animationClass = direction === 'left' ? 'animate-slide-in-from-right' : 'animate-slide-in-from-left';
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -163,53 +182,48 @@ const RollsView: React.FC = () => {
         </div>
       </div>
 
-      <div {...swipeHandlers} className="relative flex-1 overflow-hidden">
-        <div
-          className="flex h-full transition-transform duration-300 ease-out"
-          style={{ transform: `translateX(-${sectionOrder.indexOf(studioSection) * 100}%)` }}
-        >
-          {sectionOrder.map(section => (
-            <div key={section} className="w-full h-full flex-shrink-0">
-              {section === 'darkroom' && (
-                <div>
-                  {developingRolls.length > 0 ? (
-                    <div className="space-y-3">
-                      {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
-                    </div>
-                  ) : <DarkroomEmptyState />}
+      <div {...swipeHandlers} className="relative flex-1">
+        <div key={studioSection} className={animationClass}>
+          {studioSection === 'darkroom' && (
+            <div>
+              {developingRolls.length > 0 ? (
+                <div className="space-y-3">
+                  {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
                 </div>
-              )}
-              {section === 'rolls' && (
-                <div>
-                  <div className="sticky top-[80px] z-20 pointer-events-none -mx-4 px-4 h-14">
-                    <div className="absolute top-0 right-4 h-full pointer-events-auto flex items-center gap-2">
-                      <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-                      <RollsControls />
-                    </div>
-                  </div>
-                  <div className="space-y-6 -mt-14">
-                    {processedRolls.length > 0 ? (
-                      groupEntries.map(([groupName, rolls]) => (
-                        <div key={groupName}>
-                          <StickyGroupHeader title={groupName} />
-                          <div className="flex flex-col space-y-3 pt-3">
-                            {rolls.map(roll => <RollRow key={roll.id} roll={roll} />)}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
-                    )}
-                  </div>
-                </div>
-              )}
-              {section === 'prints' && (
-                <div>
-                  <PrintsView />
-                </div>
-              )}
+              ) : <DarkroomEmptyState />}
             </div>
-          ))}
+          )}
+
+          {studioSection === 'rolls' && (
+            <div>
+              <div className="sticky top-[80px] z-20 pointer-events-none -mx-4 px-4 h-14">
+                <div className="absolute top-0 right-4 h-full pointer-events-auto flex items-center gap-2">
+                  <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+                  <RollsControls />
+                </div>
+              </div>
+              <div className="space-y-6 -mt-14">
+                {processedRolls.length > 0 ? (
+                  groupEntries.map(([groupName, rolls]) => (
+                    <div key={groupName}>
+                      <StickyGroupHeader title={groupName} />
+                      <div className="flex flex-col space-y-3 pt-3">
+                        {rolls.map(roll => <RollRow key={roll.id} roll={roll} />)}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
+                )}
+              </div>
+            </div>
+          )}
+
+          {studioSection === 'prints' && (
+            <div>
+              <PrintsView />
+            </div>
+          )}
         </div>
       </div>
     </div>

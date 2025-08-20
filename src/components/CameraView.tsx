@@ -6,7 +6,6 @@ import { useAppContext } from '../context/AppContext';
 import FilmSelectionModal from './FilmSelectionModal';
 import RangeSelector from './RangeSelector';
 import FocalPlaneShutter from './FocalPlaneShutter';
-import LoadingIndicator from './LoadingIndicator';
 
 type ProControl = 'iso' | 'shutterSpeed' | 'focus';
 
@@ -313,15 +312,25 @@ const CameraView: React.FC = () => {
   };
 
   if (hasPermission === null) {
-    return <LoadingIndicator />;
+    return (
+      <div className="h-screen flex flex-col items-center justify-center bg-black text-white">
+        <div className="relative w-20 h-20 text-white animate-pulse-soft">
+          <div className="absolute -top-1 -left-1 w-6 h-6 rounded-tl-lg border-t-2 border-l-2 border-current animate-viewfinder-focus" style={{ animationDelay: '0s' }}></div>
+          <div className="absolute -top-1 -right-1 w-6 h-6 rounded-tr-lg border-t-2 border-r-2 border-current animate-viewfinder-focus" style={{ animationDelay: '0.2s' }}></div>
+          <div className="absolute -bottom-1 -left-1 w-6 h-6 rounded-bl-lg border-b-2 border-l-2 border-current animate-viewfinder-focus" style={{ animationDelay: '0.4s' }}></div>
+          <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-br-lg border-b-2 border-r-2 border-current animate-viewfinder-focus" style={{ animationDelay: '0.6s' }}></div>
+          <Camera className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-neutral-600" />
+        </div>
+      </div>
+    );
   }
   if (hasPermission === false) {
     return <div className="h-screen flex items-center justify-center bg-black text-red-400 p-4 text-center">Camera access denied. Please enable camera permissions in your browser or device settings.</div>;
   }
 
   return (
-    <div className={`h-screen flex flex-col overflow-hidden text-white camera-modal ${isNative ? 'bg-transparent' : 'bg-black'} pt-safe-t pb-safe-b pl-safe-l pr-safe-r`}>
-      <header className="w-full bg-black text-white px-4 flex items-center justify-between relative z-40 h-16 py-3 flex-shrink-0">
+    <div className={`h-screen flex flex-col overflow-hidden text-white camera-modal ${isNative ? 'bg-transparent' : 'bg-black'}`}>
+      <header className="w-full bg-black text-white px-4 flex items-center justify-between relative z-40 h-16 py-3 pt-safe-t pl-safe-l pr-safe-r flex-shrink-0">
         <button
           onClick={() => setCurrentView('rolls')}
           className="text-gray-300 hover:text-white transition-colors flex items-center gap-1 text-base p-2"
@@ -359,10 +368,10 @@ const CameraView: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-gray-900 select-none flex-shrink-0 flex flex-col justify-center h-[30vh] min-h-[240px] max-h-[300px]">
+      <div className="bg-gray-900 pb-safe-b select-none flex-shrink-0 flex flex-col justify-center h-[30vh] min-h-[240px] max-h-[300px]">
         <div className="flex flex-col items-center justify-center">
           {cameraMode === 'pro' && !isNative && (
-            <div className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2">
+            <div className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2 pl-safe-l pr-safe-r">
               <div className="flex items-center justify-center space-x-6">
                 {proControls.map(c => (
                   <button key={c.id} onClick={() => setActiveProControl(activeProControl === c.id ? null : c.id)} className={`flex flex-col items-center gap-1 transition-colors ${activeProControl === c.id ? 'text-amber-400' : 'text-gray-300 hover:text-white'}`}>

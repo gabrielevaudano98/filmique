@@ -28,7 +28,6 @@ import { Roll } from './types';
 import SubscriptionView from './components/SubscriptionView';
 import PrintsSettingsView from './components/PrintsSettingsView';
 import SyncStatusModal from './components/SyncStatusModal';
-import LoadingIndicator from './components/LoadingIndicator';
 
 const SPEED_UP_COST = 25;
 
@@ -124,7 +123,7 @@ function App() {
   };
 
   if (isLoading) {
-    return <LoadingIndicator />;
+    return <div className="min-h-screen bg-transparent flex items-center justify-center"><p className="text-white">Loading...</p></div>;
   }
 
   if (!session) {
