@@ -319,87 +319,56 @@
   animation: focus-in-out 2s ease-in-out infinite;
 }
 
-/* ----- Camera loader (glassmorphic, iOS-inspired) ----- */
+/* ----- Camera token loader (polished glassmorphic) ----- */
 
-/* Container gives subtle glass backdrop for the loader */
-.camera-loader-container {
-  display: inline-flex;
+/* Container */
+.camera-token-loader {
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(6,6,8,0.12));
-  padding: 0.4rem 0.6rem;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(6,6,8,0.06));
+  padding: 0.28rem 0.44rem;
   border-radius: 9999px;
   border: 1px solid rgba(255,255,255,0.04);
-  box-shadow: 0 8px 30px rgba(6,6,8,0.45), inset 0 1px 0 rgba(255,255,255,0.03);
+  box-shadow: 0 10px 30px rgba(6,6,8,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
   backdrop-filter: blur(8px) saturate(140%);
   -webkit-backdrop-filter: blur(8px) saturate(140%);
 }
 
-/* SVG tweaks */
-.camera-loader-svg {
-  display: block;
+/* SVG base */
+.camera-token-svg { display: block; }
+
+/* Corner stroke sweep: subtle dash animation to give a moving light */
+@keyframes corner-sweep {
+  0% { stroke-dashoffset: 30; opacity: 0.28; filter: drop-shadow(0 2px 6px rgba(214,106,46,0.06)); }
+  40% { stroke-dashoffset: 0; opacity: 1; filter: drop-shadow(0 6px 18px rgba(214,106,46,0.12)); }
+  100% { stroke-dashoffset: -30; opacity: 0.32; filter: drop-shadow(0 2px 6px rgba(124,106,254,0.06)); }
 }
 
-/* subtle glass ring */
-.camera-loader-glass {
-  transition: stroke 300ms ease, filter 300ms ease;
-  filter: drop-shadow(0 6px 18px rgba(11,11,12,0.25));
+/* apply staggered sweep to each corner */
+.loader-corner {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 40;
+  animation: corner-sweep 1.35s cubic-bezier(.2,.9,.2,1) infinite;
 }
+.loader-corner-1 { animation-delay: 0ms; }
+.loader-corner-2 { animation-delay: 120ms; }
+.loader-corner-3 { animation-delay: 240ms; }
+.loader-corner-4 { animation-delay: 360ms; }
 
-/* panel animation - scale & opacity */
-@keyframes camera-loader-pulse {
-  0% { transform: scale(0.86); opacity: 0.22; }
-  40% { transform: scale(1.06); opacity: 0.9; }
-  100% { transform: scale(0.92); opacity: 0.4; }
+/* Lens glow pulses a bit stronger in sync with corners */
+@keyframes lens-pulse {
+  0% { transform: scale(0.94); opacity: 0.7; filter: blur(1px); }
+  50% { transform: scale(1.08); opacity: 1; filter: blur(2px); }
+  100% { transform: scale(0.96); opacity: 0.8; filter: blur(1px); }
 }
+.loader-lens-core { animation: lens-pulse 1.35s ease-in-out infinite; transform-origin: center; }
+.loader-lens-highlight { animation: lens-pulse 1.35s ease-in-out infinite 60ms; transform-origin: center; }
 
-/* each part has same animation but staggered delays to create rotating pulse */
-.camera-loader-part {
-  transform-origin: center;
-  transition: fill 240ms ease;
-  fill: rgba(255,255,255,0.06);
-  mix-blend-mode: screen;
-}
-
-/* staggered delays */
-.camera-loader-part-1 { animation: camera-loader-pulse 1200ms cubic-bezier(.2,.9,.2,1) infinite 0ms; }
-.camera-loader-part-2 { animation: camera-loader-pulse 1200ms cubic-bezier(.2,.9,.2,1) infinite 180ms; }
-.camera-loader-part-3 { animation: camera-loader-pulse 1200ms cubic-bezier(.2,.9,.2,1) infinite 360ms; }
-.camera-loader-part-4 { animation: camera-loader-pulse 1200ms cubic-bezier(.2,.9,.2,1) infinite 540ms; }
-
-/* give active parts a warm tint at peaks */
-.camera-loader-part-1[style], .camera-loader-part-2[style], .camera-loader-part-3[style], .camera-loader-part-4[style] {
-  /* fallback */
-}
-
-/* lens glow pulses slightly and brightens when parts peak */
-@keyframes camera-lens-glow {
-  0% { r: 0.12; opacity: 0.6; transform: scale(0.94); }
-  50% { r: 0.22; opacity: 1; transform: scale(1.06); }
-  100% { r: 0.14; opacity: 0.7; transform: scale(0.96); }
-}
-.camera-loader-lens {
-  transition: transform 220ms ease, opacity 220ms ease;
-  animation: camera-lens-glow 1200ms ease-in-out infinite;
-  mix-blend-mode: screen;
-  filter: blur(4px);
-}
-
-/* small bright core */
-.camera-loader-lens-core {
-  transition: transform 200ms ease, opacity 200ms ease;
-  mix-blend-mode: screen;
-}
-
-/* accessibility: reduce motion respect */
+/* reduce motion fallback */
 @media (prefers-reduced-motion: reduce) {
-  .camera-loader-part-1,
-  .camera-loader-part-2,
-  .camera-loader-part-3,
-  .camera-loader-part-4,
-  .camera-loader-lens {
-    animation: none;
-    transform: none;
-    opacity: 1;
-  }
+  .loader-corner { animation: none; opacity: 1; stroke-dasharray: none; }
+  .loader-lens-core, .loader-lens-highlight { animation: none; }
 }
