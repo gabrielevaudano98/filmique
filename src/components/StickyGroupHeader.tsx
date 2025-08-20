@@ -9,6 +9,18 @@ const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ title }) => {
   const [isSticky, setIsSticky] = useState(false);
 
   useEffect(() => {
+    let safeAreaTopPx = 0;
+    // Get the computed value of --safe-area-inset-top
+    const rootStyle = getComputedStyle(document.documentElement);
+    const safeAreaTop = rootStyle.getPropertyValue('--safe-area-inset-top');
+    if (safeAreaTop && safeAreaTop.endsWith('px')) {
+      safeAreaTopPx = parseFloat(safeAreaTop);
+    }
+
+    // TopBar height is h-20, which is 80px.
+    // The total offset for the sticky header is 80px + safeAreaTopPx.
+    const stickyOffset = 80 + safeAreaTopPx;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         // When the header's intersection ratio is less than 1, it means it has
@@ -19,7 +31,7 @@ const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ title }) => {
         threshold: [1],
         // The root margin is set to the same offset as the sticky position.
         // This makes the observer trigger precisely when the element sticks.
-        rootMargin: 'calc(-80px - var(--safe-area-inset-top)) 0px 0px 0px',
+        rootMargin: `-${stickyOffset}px 0px 0px 0px`,
       }
     );
 
