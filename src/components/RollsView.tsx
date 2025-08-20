@@ -2,7 +2,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
-import { Film, Archive, Search, SlidersHorizontal } from 'lucide-react';
+import { Film, Archive } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
 import DevelopingRollCard from './DevelopingRollCard';
@@ -36,7 +36,6 @@ const RollsView: React.FC = () => {
     searchTerm, setSearchTerm,
     studioSection, setStudioSection, studioSectionOptions,
     setIsStudioHeaderSticky,
-    setIsRollsSettingsOpen,
   } = useAppContext();
 
   const observerTriggerRef = useRef<HTMLDivElement>(null);
@@ -152,7 +151,7 @@ const RollsView: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col w-full px-4">
+    <div className="flex flex-col w-full px-4"> {/* Added px-4 here */}
       <div ref={observerTriggerRef} className="flex items-center justify-between pt-4 pb-6">
         <h1 className="text-3xl font-bold text-white">Studio</h1>
         <div className="w-auto">
@@ -164,7 +163,21 @@ const RollsView: React.FC = () => {
         </div>
       </div>
 
-      {/* Note: group headers now include compact actions (search + display options) on the right. */}
+      {/* Controls row: always visible (search + display options) so users see filtering immediately */}
+      <div className="flex items-center justify-between gap-4 mb-6">
+        <div className="flex items-center gap-3">
+          <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+          <div className="hidden sm:block">
+            <RollsControls />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Small hint of grouping/sort — the full display options are in the RollsSettings modal */}
+          <div className="text-sm text-gray-400 hidden sm:block">Group: <span className="font-semibold text-white ml-2">{rollsGroupBy}</span></div>
+        </div>
+      </div>
+
       <div {...swipeHandlers} className="relative flex-1 overflow-hidden">
         <div
           className="flex h-full transition-transform duration-300 ease-out"
@@ -183,29 +196,12 @@ const RollsView: React.FC = () => {
               )}
               {section === 'rolls' && (
                 <div className="pb-4">
-                  <div className="space-y-6">
-                    {groupEntries.length > 0 ? (
+                  {/* Removed the sticky div for search/controls */}
+                  <div className="space-y-6"> {/* Removed -mt-14 */}
+                    {processedRolls.length > 0 ? (
                       groupEntries.map(([groupName, rolls]) => (
                         <div key={groupName}>
-                          <StickyGroupHeader
-                            title={groupName}
-                            actions={(
-                              <div className="flex items-center gap-2">
-                                {/* Compact search button using ExpandableSearch for accessibility + consistent behaviour */}
-                                <div className="w-11 h-11 bg-neutral-800/50 rounded-lg flex items-center justify-center p-1">
-                                  <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-                                </div>
-                                {/* Compact settings button to open display options */}
-                                <button
-                                  onClick={() => setIsRollsSettingsOpen(true)}
-                                  className="w-11 h-11 bg-neutral-800/50 rounded-lg flex items-center justify-center p-1 text-gray-300 hover:text-white"
-                                  aria-label="Display options"
-                                >
-                                  <SlidersHorizontal className="w-5 h-5" />
-                                </button>
-                              </div>
-                            )}
-                          />
+                          <StickyGroupHeader title={groupName} />
                           <div className="flex flex-col space-y-3 pt-3">
                             {rolls.map(roll => <RollRow key={roll.id} roll={roll} />)}
                           </div>
