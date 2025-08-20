@@ -64,7 +64,6 @@ const TopBar: React.FC = () => {
               options={studioSectionOptions}
               value={studioSection}
               onChange={(val) => setStudioSection(val as any)}
-              hideLabels={true}
             />
           </div>
         </div>

@@ -187,7 +187,6 @@ const RollsView: React.FC = () => {
             options={availableSections}
             value={studioSection}
             onChange={(val) => setStudioSection(val as any)}
-            hideLabels={true}
           />
         </div>
       </div>
