@@ -9,6 +9,11 @@ const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ title }) => {
   const [isSticky, setIsSticky] = useState(false);
 
   useEffect(() => {
+    const root = document.documentElement;
+    const topBarHeight = parseFloat(getComputedStyle(root).getPropertyValue('--top-bar-total-height'));
+    const rollsViewHeaderHeight = 80; // Height of the RollsView's non-sticky header (h-20)
+    const totalOffset = topBarHeight + rollsViewHeaderHeight;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         // When the header's intersection ratio is less than 1, it means it has
@@ -17,9 +22,9 @@ const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ title }) => {
       },
       {
         threshold: [1],
-        // The root margin is set to the same offset as the sticky position.
+        // The root margin is set to the negative of the total offset.
         // This makes the observer trigger precisely when the element sticks.
-        rootMargin: 'calc(-80px - var(--safe-area-inset-top)) 0px 0px 0px',
+        rootMargin: `-${totalOffset}px 0px 0px 0px`,
       }
     );
 
@@ -35,7 +40,7 @@ const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ title }) => {
     };
   }, []);
 
-  const headerClasses = `sticky top-[calc(80px + var(--safe-area-inset-top))] z-10 py-4 px-4 pl-[calc(1rem+var(--safe-area-inset-left))] pr-[calc(1rem+var(--safe-area-inset-right))] text-lg font-bold text-white transition-colors duration-200 border-b ${
+  const headerClasses = `sticky top-[calc(var(--top-bar-total-height) + 80px)] z-10 py-4 px-4 pl-[calc(1rem+var(--safe-area-inset-left))] pr-[calc(1rem+var(--safe-area-inset-right))] text-lg font-bold text-white transition-colors duration-200 border-b ${
     isSticky
       ? 'bg-neutral-800/60 backdrop-blur-lg border-neutral-700/50'
       : 'bg-transparent border-transparent'

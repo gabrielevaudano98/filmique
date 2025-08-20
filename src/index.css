@@ -37,6 +37,10 @@
   --safe-area-inset-bottom: env(safe-area-inset-bottom);
   --safe-area-inset-left: env(safe-area-inset-left);
   --safe-area-inset-right: env(safe-area-inset-right);
+
+  /* Calculated heights for sticky elements */
+  --top-bar-total-height: calc(80px + var(--safe-area-inset-top));
+  --bottom-nav-total-height: calc(112px + var(--safe-area-inset-bottom)); /* h-28 = 112px */
 }
 
 /* existing base overrides */
