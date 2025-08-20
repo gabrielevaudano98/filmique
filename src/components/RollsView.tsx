@@ -54,7 +54,7 @@ const RollsView: React.FC = () => {
       ([entry]) => {
         setIsStudioHeaderSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
       },
-      { threshold: 0, rootMargin: "-80px 0px 0px 0px" } // 80px is h-20
+      { threshold: 0, rootMargin: "-80px 0px 0px 0px" } // 80px is roughly the top bar height
     );
 
     const currentTriggerRef = observerTriggerRef.current;
@@ -151,7 +151,7 @@ const RollsView: React.FC = () => {
   });
 
   return (
-    <div className="flex flex-col w-full px-4"> {/* Added px-4 here */}
+    <div className="flex flex-col w-full px-4">
       <div ref={observerTriggerRef} className="flex items-center justify-between pt-4 pb-6">
         <h1 className="text-3xl font-bold text-white">Studio</h1>
         <div className="w-auto">
@@ -160,21 +160,6 @@ const RollsView: React.FC = () => {
             value={studioSection}
             onChange={(val) => setStudioSection(val as any)}
           />
-        </div>
-      </div>
-
-      {/* Controls row: always visible (search + display options) so users see filtering immediately */}
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <div className="flex items-center gap-3">
-          <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-          <div className="hidden sm:block">
-            <RollsControls />
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Small hint of grouping/sort — the full display options are in the RollsSettings modal */}
-          <div className="text-sm text-gray-400 hidden sm:block">Group: <span className="font-semibold text-white ml-2">{rollsGroupBy}</span></div>
         </div>
       </div>
 
@@ -196,12 +181,20 @@ const RollsView: React.FC = () => {
               )}
               {section === 'rolls' && (
                 <div className="pb-4">
-                  {/* Removed the sticky div for search/controls */}
-                  <div className="space-y-6"> {/* Removed -mt-14 */}
-                    {processedRolls.length > 0 ? (
-                      groupEntries.map(([groupName, rolls]) => (
+                  <div className="space-y-6">
+                    {groupEntries.length > 0 ? (
+                      groupEntries.map(([groupName, rolls], idx) => (
                         <div key={groupName}>
-                          <StickyGroupHeader title={groupName} />
+                          {/** Pass controls only for the first rendered group so search/controls appear in the sticky header */}
+                          <StickyGroupHeader
+                            title={groupName}
+                            controls={idx === 0 ? (
+                              <div className="flex items-center gap-3">
+                                <div className="w-full max-w-lg"><ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} /></div>
+                                <div className="hidden sm:block"><RollsControls /></div>
+                              </div>
+                            ) : undefined}
+                          />
                           <div className="flex flex-col space-y-3 pt-3">
                             {rolls.map(roll => <RollRow key={roll.id} roll={roll} />)}
                           </div>
