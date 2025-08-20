@@ -19,7 +19,7 @@ const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ title }) => {
         threshold: [1],
         // The root margin is set to the same offset as the sticky position.
         // This makes the observer trigger precisely when the element sticks.
-        rootMargin: '-80px 0px 0px 0px',
+        rootMargin: 'calc(-80px - var(--safe-area-inset-top)) 0px 0px 0px',
       }
     );
 
@@ -35,7 +35,7 @@ const StickyGroupHeader: React.FC<StickyGroupHeaderProps> = ({ title }) => {
     };
   }, []);
 
-  const headerClasses = `sticky top-[80px] z-10 py-4 -mx-4 px-4 text-lg font-bold text-white pr-[150px] transition-colors duration-200 border-y ${
+  const headerClasses = `sticky top-[calc(80px + var(--safe-area-inset-top))] z-10 py-4 px-4 pl-[calc(1rem+var(--safe-area-inset-left))] pr-[calc(1rem+var(--safe-area-inset-right))] text-lg font-bold text-white transition-colors duration-200 border-b ${
     isSticky
       ? 'bg-neutral-800/60 backdrop-blur-lg border-neutral-700/50'
       : 'bg-transparent border-transparent'

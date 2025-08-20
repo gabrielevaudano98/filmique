@@ -54,7 +54,7 @@ const RollsView: React.FC = () => {
       ([entry]) => {
         setIsStudioHeaderSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
       },
-      { threshold: 0, rootMargin: "-80px 0px 0px 0px" } // 80px is h-20
+      { threshold: 0, rootMargin: "calc(-80px - var(--safe-area-inset-top)) 0px 0px 0px" } // 80px is h-20
     );
 
     const currentTriggerRef = observerTriggerRef.current;
