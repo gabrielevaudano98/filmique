@@ -3,31 +3,11 @@ import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { Film, Archive, Lock } from 'lucide-react';
-import RollsControls from '../components/RollsControls'; // Keep for now, will move to LibraryView
-import ExpandableSearch from '../components/ExpandableSearch'; // Keep for now, will move to LibraryView
 import DevelopingRollCard from '../components/DevelopingRollCard';
 import PrintsView from '../components/PrintsView';
 import DarkroomEmptyState from '../components/DarkroomEmptyState';
 import SegmentedControl from '../components/SegmentedControl';
-import RollRow from '../components/RollRow'; // Will be used by LibraryView
-import StickyGroupHeader from '../components/StickyGroupHeader'; // Will be used by LibraryView
 import LibraryView from '../components/LibraryView'; // Import LibraryView
-
-const RollsEmptyState = () => (
-    <div className="text-center py-24 text-neutral-500">
-      <Film className="w-16 h-16 mx-auto mb-4" />
-      <h3 className="text-xl font-bold text-white">Your Shelf is Empty</h3>
-      <p className="mt-2">Developed rolls will appear here, ready to be viewed and organized.</p>
-    </div>
-);
-
-const ArchivedEmptyState = () => (
-  <div className="text-center py-24 text-neutral-500">
-    <Archive className="w-16 h-16 mx-auto mb-4" />
-    <h3 className="text-xl font-bold text-white">No Archived Rolls</h3>
-    <p className="mt-2">You can archive rolls from their detail page to store them here.</p>
-  </div>
-);
 
 function usePrevious<T>(value: T): T | undefined {
   const ref = useRef<T>();
@@ -40,9 +20,7 @@ function usePrevious<T>(value: T): T | undefined {
 const StudioView: React.FC = () => {
   const { 
     profile,
-    developingRolls, completedRolls,
-    rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
-    searchTerm, setSearchTerm,
+    developingRolls,
     studioSection, setStudioSection, studioSectionOptions,
     setIsStudioHeaderSticky,
   } = useAppContext();
@@ -89,77 +67,6 @@ const StudioView: React.FC = () => {
       setStudioSection(sectionOrder[0] as any);
     }
   }, [sectionOrder, setStudioSection, studioSection]);
-
-  // The following memoized rolls logic will be moved to LibraryView in the next step
-  const { shelfRolls, archivedRolls } = useMemo(() => {
-    return {
-      shelfRolls: completedRolls.filter(r => !r.is_archived),
-      archivedRolls: completedRolls.filter(r => r.is_archived),
-    };
-  }, [completedRolls]);
-
-  const processedRolls = useMemo(() => {
-    let rolls = rollsViewMode === 'active' ? [...shelfRolls] : [...archivedRolls];
-
-    if (searchTerm) {
-      const lowerSearch = searchTerm.toLowerCase();
-      rolls = rolls.filter(r => 
-        r.title?.toLowerCase().includes(lowerSearch) || 
-        r.tags?.some(tag => tag.toLowerCase().includes(lowerSearch))
-      );
-    }
-    if (rollsSelectedFilm !== 'all') rolls = rolls.filter(r => r.film_type === rollsSelectedFilm);
-    
-    rolls.sort((a, b) => {
-      const dateA = a.developed_at || a.completed_at || a.created_at;
-      const dateB = b.developed_at || b.completed_at || b.created_at;
-      switch (rollsSortOrder) {
-        case 'oldest': return new Date(dateA).getTime() - new Date(dateB).getTime();
-        case 'title_asc': return (a.title || '').localeCompare(b.title || '');
-        case 'title_desc': return (b.title || '').localeCompare(a.title || '');
-        case 'newest': default: return new Date(dateB).getTime() - new Date(a.created_at).getTime();
-      }
-    });
-    return rolls;
-  }, [shelfRolls, archivedRolls, searchTerm, rollsSelectedFilm, rollsSortOrder, rollsViewMode]);
-
-  const groupedRolls = useMemo(() => {
-    if (rollsGroupBy === 'date') {
-      const byDay = processedRolls.reduce((acc, roll) => {
-        const dateKey = roll.developed_at || roll.completed_at;
-        if (!dateKey) return acc;
-        const key = new Date(dateKey).toISOString().split('T')[0];
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(roll);
-        return acc;
-      }, {} as Record<string, Roll[]>);
-      
-      const sortedKeys = Object.keys(byDay).sort((a, b) => b.localeCompare(a));
-      
-      const sortedGroups: Record<string, Roll[]> = {};
-      for (const key of sortedKeys) {
-        const date = new Date(key + 'T00:00:00');
-        const displayKey = date.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' });
-        sortedGroups[displayKey] = byDay[key];
-      }
-      return sortedGroups;
-    }
-
-    if (rollsGroupBy === 'none') return { 'All Rolls': processedRolls };
-
-    return processedRolls.reduce((acc, roll) => {
-      let keys: string[] = [];
-      if (rollsGroupBy === 'film_type') keys = [roll.film_type];
-      else if (rollsGroupBy === 'tag') keys = roll.tags?.length ? roll.tags : ['Untagged'];
-      keys.forEach(key => {
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(roll);
-      });
-      return acc;
-    }, {} as Record<string, Roll[]>);
-  }, [processedRolls, rollsGroupBy]);
-
-  const groupEntries = Object.entries(groupedRolls);
 
   const handleSwipe = (direction: 'left' | 'right') => {
     const currentIndex = sectionOrder.indexOf(studioSection);
