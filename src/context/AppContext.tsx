@@ -8,7 +8,7 @@ import { useAlbums } from '../hooks/useAlbums';
 import { useRollsSettings } from '../hooks/useRollsSettings';
 import { usePrintOrders } from '../hooks/usePrintOrders';
 import * as api from '../services/api';
-import { Library, Clock, Printer, Trophy } from 'lucide-react'; // Added Trophy for Challenges
+import { Library, Clock, Printer } from 'lucide-react';
 import { Network } from '@capacitor/network';
 import { showInfoToast, showSuccessToast } from '../utils/toasts';
 import { useSyncEngine } from '../hooks/useSyncEngine';
@@ -25,13 +25,13 @@ export const useAppContext = () => {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // UI State
-  const [currentView, setCurrentView] = useState<string>('studio'); // Default to 'studio'
+  const [currentView, setCurrentView] = useState<string>('rolls');
   const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
   const [showFilmModal, setShowFilmModal] = useState(false);
   const [headerAction, setHeaderAction] = useState<{ icon: React.ElementType, action: () => void } | null>(null);
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [studioSection, setStudioSection] = useState<'darkroom' | 'albums' | 'prints'>('albums'); // Default to 'albums'
+  const [studioSection, setStudioSection] = useState<'rolls' | 'darkroom' | 'prints'>('rolls');
   const [isStudioHeaderSticky, setIsStudioHeaderSticky] = useState(false);
   const [isRollsSettingsOpen, setIsRollsSettingsOpen] = useState(false);
   const [isPrintsSettingsOpen, setIsPrintsSettingsOpen] = useState(false);
@@ -45,8 +45,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
 
   const studioSectionOptions = [
+    { value: 'rolls', icon: Library, description: 'Your collection of developed film.', colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' } },
     { value: 'darkroom', icon: Clock, description: 'Develop your completed rolls.', colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' } },
-    { value: 'albums', icon: Library, description: 'Your collection of developed film, organized into albums.', colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' } },
     { value: 'prints', icon: Printer, description: 'Order prints of your photos.', colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' } },
   ];
 

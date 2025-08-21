@@ -29,7 +29,7 @@ const ChallengesView: React.FC = () => {
 
   return (
     <div className="p-4 space-y-6">
-      {/* Header - Removed as it's now nested */}
+      {/* Header */}
       <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl p-6 text-white">
         <div className="flex items-center justify-between">
           <div>
