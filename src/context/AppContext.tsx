@@ -8,7 +8,7 @@ import { useAlbums } from '../hooks/useAlbums';
 import { useRollsSettings } from '../hooks/useRollsSettings';
 import { usePrintOrders } from '../hooks/usePrintOrders';
 import * as api from '../services/api';
-import { Library, Clock, Printer, Trophy } from 'lucide-react'; // Added Trophy for Challenges
+import { Film, Printer, Clock, Library } from 'lucide-react'; // Updated icons for studio sections
 import { Network } from '@capacitor/network';
 import { showInfoToast, showSuccessToast } from '../utils/toasts';
 import { useSyncEngine } from '../hooks/useSyncEngine';
@@ -31,7 +31,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [headerAction, setHeaderAction] = useState<{ icon: React.ElementType, action: () => void } | null>(null);
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [studioSection, setStudioSection] = useState<'darkroom' | 'albums' | 'prints'>('albums'); // Default to 'albums'
+  // Changed studioSection to 'rolls' as default, combining darkroom and albums
+  const [studioSection, setStudioSection] = useState<'rolls' | 'prints'>('rolls');
   const [isStudioHeaderSticky, setIsStudioHeaderSticky] = useState(false);
   const [isRollsSettingsOpen, setIsRollsSettingsOpen] = useState(false);
   const [isPrintsSettingsOpen, setIsPrintsSettingsOpen] = useState(false);
@@ -44,9 +45,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Data State
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
 
+  // Updated studioSectionOptions to reflect the new combined 'rolls' section
   const studioSectionOptions = [
-    { value: 'darkroom', icon: Clock, description: 'Develop your completed rolls.', colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' } },
-    { value: 'albums', icon: Library, description: 'Your collection of developed film, organized into albums.', colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' } },
+    { value: 'rolls', icon: Film, description: 'Your film rolls and albums.', colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' } },
     { value: 'prints', icon: Printer, description: 'Order prints of your photos.', colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' } },
   ];
 

@@ -1,33 +1,10 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
-import { Roll } from '../types';
-import { Film, Archive, Lock, Library, Clock, Printer } from 'lucide-react'; // Added Library, Clock, Printer
-import RollsControls from './RollsControls';
-import ExpandableSearch from './ExpandableSearch';
-import DevelopingRollCard from './DevelopingRollCard';
+import { Film, Printer } from 'lucide-react'; // Updated icons for studio sections
 import PrintsView from './PrintsView';
-import DarkroomEmptyState from './DarkroomEmptyState';
 import SegmentedControl from './SegmentedControl';
-import RollRow from './RollRow';
-import StickyGroupHeader from './StickyGroupHeader';
-import LibraryView from './LibraryView'; // Import LibraryView
-
-const RollsEmptyState = () => (
-    <div className="text-center py-24 text-neutral-500">
-      <Film className="w-16 h-16 mx-auto mb-4" />
-      <h3 className="text-xl font-bold text-white">Your Shelf is Empty</h3>
-      <p className="mt-2">Developed rolls will appear here, ready to be viewed and organized.</p>
-    </div>
-);
-
-const ArchivedEmptyState = () => (
-  <div className="text-center py-24 text-neutral-500">
-    <Archive className="w-16 h-16 mx-auto mb-4" />
-    <h3 className="text-xl font-bold text-white">No Archived Rolls</h3>
-    <p className="mt-2">You can archive rolls from their detail page to store them here.</p>
-  </div>
-);
+import RollsCombinedView from './RollsCombinedView'; // Import the new combined view
 
 function usePrevious<T>(value: T): T | undefined {
   const ref = useRef<T>();
@@ -37,12 +14,9 @@ function usePrevious<T>(value: T): T | undefined {
   return ref.current;
 }
 
-const StudioView: React.FC = () => { // Renamed from RollsView
-  const { 
+const StudioView: React.FC = () => {
+  const {
     profile,
-    developingRolls, completedRolls,
-    // Removed rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
-    // Removed searchTerm, setSearchTerm, as they will be managed by LibraryView if needed
     studioSection, setStudioSection, studioSectionOptions,
     setIsStudioHeaderSticky,
   } = useAppContext();
@@ -90,8 +64,6 @@ const StudioView: React.FC = () => { // Renamed from RollsView
     }
   }, [sectionOrder, setStudioSection, studioSection]);
 
-  // Removed processedRolls, groupedRolls, groupEntries as they are no longer needed here.
-
   const handleSwipe = (direction: 'left' | 'right') => {
     const currentIndex = sectionOrder.indexOf(studioSection);
     if (direction === 'left' && currentIndex < sectionOrder.length - 1) {
@@ -104,7 +76,6 @@ const StudioView: React.FC = () => { // Renamed from RollsView
   const swipeHandlers = useSwipeable({
       onSwipedLeft: () => handleSwipe('left'),
       onSwipedRight: () => handleSwipe('right'),
-      // Allow the browser to keep handling vertical scrolling for best UX on mobile
       preventScrollOnSwipe: false,
       preventDefaultTouchmoveEvent: false,
       trackMouse: true,
@@ -113,8 +84,7 @@ const StudioView: React.FC = () => { // Renamed from RollsView
 
   const getTitleForStudioSection = (section: typeof studioSection) => {
     switch (section) {
-      case 'albums': return 'Albums'; // Changed from 'rolls' to 'albums'
-      case 'darkroom': return 'Darkroom';
+      case 'rolls': return 'Rolls';
       case 'prints': return 'Prints';
       default: return 'Studio';
     }
@@ -135,20 +105,8 @@ const StudioView: React.FC = () => { // Renamed from RollsView
 
       <div {...swipeHandlers} className="relative flex-1">
         <div key={studioSection} className={animationClass}>
-          {studioSection === 'darkroom' && (
-            <div>
-              {developingRolls.length > 0 ? (
-                <div className="space-y-3">
-                  {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
-                </div>
-              ) : <DarkroomEmptyState />}
-            </div>
-          )}
-
-          {studioSection === 'albums' && ( // New 'albums' section
-            <div className="pt-2">
-              <LibraryView /> {/* Render LibraryView here */}
-            </div>
+          {studioSection === 'rolls' && (
+            <RollsCombinedView />
           )}
 
           {studioSection === 'prints' && (
