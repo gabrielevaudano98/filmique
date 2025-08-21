@@ -196,7 +196,7 @@ const FeedView: React.FC = () => {
   return (
     <div
       {...refreshHandlers}
-      className="w-full min-h-full glass-card transition-colors duration-300"
+      className="w-full min-h-full bg-white text-black dark:bg-neutral-900 dark:text-white transition-colors duration-300"
     >
       {/* Pull-to-refresh indicator */}
       <div className="absolute top-[-60px] left-0 right-0 flex justify-center items-center transition-transform duration-200" style={{ transform: `translateY(${Math.min(pullPosition, PULL_THRESHOLD * 1.5)}px)` }}>
