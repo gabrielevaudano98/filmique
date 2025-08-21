@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, Zap } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import NotificationsBell from './NotificationsBell';
 import SegmentedControl from './SegmentedControl';
@@ -8,7 +8,8 @@ import SyncStatusIndicator from './SyncStatusIndicator';
 const TopBar: React.FC = () => {
   const { 
     notifications, setCurrentView, headerAction, isTopBarVisible, currentView,
-    isStudioHeaderSticky, studioSection, setStudioSection, studioSectionOptions
+    isStudioHeaderSticky, studioSection, setStudioSection, studioSectionOptions,
+    profile
   } = useAppContext();
   
   const unreadCount = notifications.filter(n => !n.is_read).length;
@@ -48,6 +49,12 @@ const TopBar: React.FC = () => {
           </div>
           <h1 className="text-lg font-bold text-white">Filmique</h1>
           <div className="flex items-center gap-2 justify-end">
+            {profile && (
+              <div className="flex items-center px-3 py-1.5 rounded-full bg-brand-amber-start/20 border border-brand-amber-start/50 text-brand-amber-start text-sm font-bold">
+                <span>{profile.credits}</span>
+                <Zap className="w-4 h-4 ml-1" />
+              </div>
+            )}
             {/* Only show settings if not in back-button context */}
             {(!headerAction || !BackButton) && (
               <button
