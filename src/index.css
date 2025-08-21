@@ -375,8 +375,8 @@
 
 /* New top bar glass effect */
 .top-bar-glass {
-  background: linear-gradient(180deg, rgba(10, 10, 12, 0.08), rgba(10, 10, 12, 0.05)); /* Lighter dark gradient */
+  background: linear-gradient(180deg, rgba(50, 50, 55, 0.5), rgba(70, 70, 75, 0.5));
   backdrop-filter: blur(24px) saturate(200%);
   -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border-bottom: 1px solid rgba(255,255,255,0.08); /* subtle light border */
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
