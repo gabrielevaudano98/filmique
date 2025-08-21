@@ -30,9 +30,9 @@ const EmptyPosts: React.FC = () => (
 );
 
 const SmallStat: React.FC<{ value: React.ReactNode; label: string; icon?: React.ElementType }> = ({ value, label, icon: Icon }) => (
-  <div className="flex flex-col items-center px-3 py-2 bg-neutral-800/40 rounded-xl">
+  <div className="flex flex-col items-center px-4 py-2 bg-neutral-800/50 rounded-xl border border-neutral-700/50">
     {Icon && <Icon className="w-4 h-4 text-gray-400 mb-1" />}
-    <div className="text-sm font-bold text-white">{value}</div>
+    <div className="text-xl font-bold text-white">{value}</div>
     <div className="text-xs text-gray-400">{label}</div>
   </div>
 );
@@ -98,23 +98,23 @@ const ProfileView: React.FC = () => {
   return (
     <div className="w-full max-w-6xl mx-auto p-4">
       {/* Profile Header Section */}
-      <div className="bg-neutral-900/30 glass-card rounded-2xl p-6 flex flex-col items-center text-center relative">
+      <div className="bg-white/70 dark:bg-neutral-800/60 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-2xl shadow-none p-6 flex flex-col items-center text-center relative">
         {/* Avatar */}
         <div className="flex-shrink-0 mb-4">
           <input id="avatar-upload" type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
           <label htmlFor="avatar-upload" onClick={handleAvatarClick} className="cursor-pointer">
             <AvatarRing
               src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`}
-              size={120} // Larger avatar
+              size={140} // Larger avatar
               alt={profile.username}
             />
           </label>
         </div>
 
         {/* Username and Name */}
-        <h2 className="text-3xl font-bold leading-tight text-white">{profile.username}</h2>
+        <h2 className="text-4xl font-bold leading-tight text-white">{profile.username}</h2>
         {profile.first_name && (
-          <p className="text-base text-gray-300 mt-1">{profile.first_name} {profile.last_name ?? ''}</p>
+          <p className="text-lg text-gray-300 mt-1">{profile.first_name} {profile.last_name ?? ''}</p>
         )}
 
         {/* Stats Row */}
@@ -127,7 +127,7 @@ const ProfileView: React.FC = () => {
         {/* Edit Profile Button */}
         <button
           onClick={() => setCurrentView('settings')}
-          className="mt-6 w-full max-w-xs py-2.5 px-4 rounded-lg bg-neutral-700 hover:bg-neutral-600 text-white font-semibold transition-colors flex items-center justify-center space-x-2"
+          className="mt-6 w-full max-w-xs py-2.5 px-4 rounded-lg shadow-lg shadow-brand-amber-start/20 text-base font-bold text-white bg-gradient-to-r from-brand-amber-start to-brand-amber-end hover:opacity-90 transition-all flex items-center justify-center space-x-2"
         >
           <Settings className="w-5 h-5" />
           <span>Edit Profile</span>
@@ -145,7 +145,7 @@ const ProfileView: React.FC = () => {
           ) : (
             <div className="flex flex-col items-center gap-3">
               <textarea
-                className="resize-none w-full bg-neutral-800/30 border border-neutral-700 rounded-lg p-2 text-sm text-white text-center"
+                className="resize-none w-full bg-neutral-800/50 border border-neutral-700 rounded-lg p-2 text-sm text-white text-center"
                 rows={2}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
@@ -164,7 +164,7 @@ const ProfileView: React.FC = () => {
       </div>
 
       {/* Gamification Stats (XP, Credits, Streak) - as a separate card below header */}
-      <div className="mt-6 bg-neutral-900/30 glass-card rounded-2xl p-6">
+      <div className="mt-6 bg-white/70 dark:bg-neutral-800/60 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-2xl shadow-none p-6">
         <h3 className="text-xl font-bold text-white mb-4">Your Progress</h3>
         <XPBar xp={profile.xp} level={profile.level} />
         <div className="grid grid-cols-2 gap-4 pt-4 border-t border-neutral-700/50 mt-4">
@@ -204,13 +204,13 @@ const ProfileView: React.FC = () => {
         {activeTab === 'achievements' && (
           <div className="space-y-6">
             {/* Badges */}
-            <div className="bg-neutral-900/30 glass-card p-6 rounded-2xl">
+            <div className="bg-white/70 dark:bg-neutral-800/60 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-2xl shadow-none p-6">
               <h3 className="text-xl font-bold text-white mb-4">Badges</h3>
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
                 {userBadges.length > 0 ? userBadges.map((ub) => (
                   <div key={ub.badges.name} className="flex flex-col items-center text-center">
-                    <div className="w-16 h-16 rounded-full bg-neutral-800 flex items-center justify-center border border-neutral-700">
-                      <BadgeIcon name={ub.badges.icon_name} className="w-8 h-8 text-amber-400" />
+                    <div className="w-20 h-20 rounded-full bg-neutral-800 flex items-center justify-center border border-neutral-700">
+                      <BadgeIcon name={ub.badges.icon_name} className="w-10 h-10 text-amber-400" />
                     </div>
                     <div className="text-sm text-white mt-2 font-medium">{ub.badges.name}</div>
                   </div>
@@ -221,7 +221,7 @@ const ProfileView: React.FC = () => {
             </div>
 
             {/* Challenges */}
-            <div className="bg-neutral-900/30 glass-card p-6 rounded-2xl">
+            <div className="bg-white/70 dark:bg-neutral-800/60 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-2xl shadow-none p-6">
               <h3 className="text-xl font-bold text-white mb-4">Challenges</h3>
               <div className="space-y-4">
                 {challenges && challenges.length > 0 ? challenges.map(c => {
