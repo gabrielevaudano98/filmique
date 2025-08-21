@@ -14,7 +14,7 @@ const ConfirmDeleteModal: React.FC<ConfirmDeleteModalProps> = ({ isOpen, onClose
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
       <div className="bg-white/80 dark:bg-neutral-800/60 backdrop-blur-lg border border-white/40 dark:border-neutral-700/50 rounded-2xl max-w-sm w-full p-6 shadow-none">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-red-500 flex items-center gap-2">

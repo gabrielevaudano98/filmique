@@ -50,7 +50,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4">
         <div className="bg-white/70 dark:bg-neutral-800/60 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-2xl max-w-lg w-full flex flex-col max-h-[80vh] shadow-none">
           <div className="flex-shrink-0 p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
             {step === 'write_caption' && (
@@ -82,7 +82,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                         <Image src={`${thumbnailUrl}${cacheBuster}`} alt="Roll thumbnail" className="w-16 h-16 rounded-md object-cover bg-gray-600 mr-4" />
                         <div>
                           <p className="font-semibold text-black dark:text-white">{roll.title || roll.film_type}</p>
-                          <p className="text-xs text-gray-500">{roll.shots_used} photos • Developed {new Date(roll.developed_at!).toLocaleDateString()}</p>
+                          <p className="text-xs text-gray-500">Developed {new Date(roll.developed_at!).toLocaleDateString()}</p>
                         </div>
                       </button>
                     );

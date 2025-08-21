@@ -40,7 +40,7 @@ const PhotoInfoModal: React.FC<PhotoInfoModalProps> = ({ photo, roll, onClose })
   const geolocation = photo.metadata?.geolocation;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-end z-[70]" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex justify-end z-[70]" onClick={onClose}>
       <div 
         className="w-full max-w-sm bg-neutral-800 h-full shadow-2xl border-l border-neutral-700/50 flex flex-col animate-slide-in-right"
         onClick={e => e.stopPropagation()}

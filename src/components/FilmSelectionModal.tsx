@@ -72,7 +72,7 @@ const FilmSelectionModal: React.FC<{
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-end sm:items-center justify-center z-50 animate-fade-in">
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-end sm:items-center justify-center z-50 animate-fade-in">
         <div className="bg-neutral-900/70 backdrop-blur-2xl border border-neutral-700/50 sm:rounded-2xl w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-md flex flex-col shadow-depth">
           {/* Header */}
           <div className="flex-shrink-0 bg-neutral-900/50 z-10">

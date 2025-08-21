@@ -58,7 +58,7 @@ const PostDevelopmentWizard: React.FC<PostDevelopmentWizardProps> = ({ roll, onC
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-xl flex items-center justify-center z-[70] p-4">
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-xl flex items-center justify-center z-[70] p-4">
         <div className="bg-neutral-800/80 backdrop-blur-2xl border border-neutral-700/50 rounded-2xl max-w-md w-full flex flex-col max-h-[90vh] shadow-2xl animate-modal-enter">
           {/* Header */}
           <div className="flex-shrink-0 p-6 text-center border-b border-neutral-700/50">
