@@ -24,13 +24,13 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({
   const activeIndex = options.findIndex(opt => opt.value === value);
   const isLight = theme === 'light' || (typeof window !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'light');
 
-  // Minimal, glassy, linear indicator
+  // More glassy, premium, and spaced
   const indicatorClass = isLight
-    ? "bg-white/80 border border-white/60"
-    : "bg-neutral-800/80 border border-white/10";
+    ? "bg-white/80 border border-white/60 backdrop-blur-[18px]"
+    : "bg-neutral-800/80 border border-white/10 backdrop-blur-[18px]";
   const wrapperClass = isLight
-    ? "relative grid w-full p-1.5 bg-white/60 border border-white/40 rounded-full backdrop-blur-lg"
-    : "relative grid w-full p-1.5 bg-neutral-800/60 border border-white/10 rounded-full backdrop-blur-lg";
+    ? "relative grid w-full px-2 py-2 bg-white/50 border border-white/40 rounded-full backdrop-blur-[18px]"
+    : "relative grid w-full px-2 py-2 bg-neutral-800/50 border border-white/10 rounded-full backdrop-blur-[18px]";
 
   return (
     <div
@@ -44,8 +44,9 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({
           gridColumn: `${activeIndex + 1}`,
           zIndex: 1,
           boxShadow: isLight
-            ? '0 1px 4px rgba(0,0,0,0.03)'
-            : '0 1px 4px rgba(0,0,0,0.08)',
+            ? '0 1.5px 8px rgba(0,0,0,0.04)'
+            : '0 1.5px 8px rgba(0,0,0,0.10)',
+          filter: 'blur(0.5px)',
         }}
       />
       {options.map((opt, idx) => {
@@ -56,7 +57,7 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({
           <button
             key={opt.value}
             onClick={() => onChange(opt.value)}
-            className={`relative z-10 flex-1 text-sm font-bold text-center transition-colors duration-200 rounded-full flex items-center justify-center
+            className={`relative z-10 flex-1 text-base font-bold text-center transition-colors duration-200 rounded-full flex items-center justify-center
               ${shouldShowLabel ? 'py-2 gap-2' : 'p-2'}
               ${isActive
                 ? isLight
@@ -70,6 +71,9 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({
               background: 'none',
               boxShadow: 'none',
               fontWeight: isActive ? 700 : 500,
+              minHeight: '44px',
+              minWidth: shouldShowLabel ? '90px' : '44px',
+              letterSpacing: '0.01em',
             }}
             aria-label={opt.label || opt.description || opt.value}
           >
