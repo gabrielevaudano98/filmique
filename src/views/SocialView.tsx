@@ -93,6 +93,24 @@ const SocialView: React.FC = () => {
     }
   };
 
+  const handleSwipe = (direction: 'left' | 'right') => {
+    const currentIndex = sectionOrder.indexOf(socialSection);
+    if (direction === 'left' && currentIndex < sectionOrder.length - 1) {
+        setSocialSection(sectionOrder[currentIndex + 1] as any);
+    } else if (direction === 'right' && currentIndex > 0) {
+        setSocialSection(sectionOrder[currentIndex - 1] as any);
+    }
+  };
+
+  const horizontalSwipeHandlers = useSwipeable({
+      onSwipedLeft: () => handleSwipe('left'),
+      onSwipedRight: () => handleSwipe('right'),
+      preventScrollOnSwipe: false,
+      preventDefaultTouchmoveEvent: false,
+      trackMouse: true,
+      trackTouch: true,
+  });
+
   return (
     <div className="w-full min-h-full bg-white/10 text-black dark:bg-neutral-900/10 backdrop-blur-xl border border-white/20 dark:border-neutral-700/50 rounded-2xl transition-colors duration-300 p-4">
       {/* Pull-to-refresh indicator (will be moved to CommunityFeedView) */}

@@ -29,17 +29,7 @@ const ChallengesView: React.FC = () => {
 
   return (
     <div className="p-4 space-y-6">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-purple-500 to-indigo-600 rounded-xl p-6 text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold mb-2">Challenges</h1>
-            <p className="text-purple-100">Complete challenges to earn XP, credits, and badges</p>
-          </div>
-          <Trophy className="w-12 h-12 text-yellow-300" />
-        </div>
-      </div>
-
+      {/* Header - REMOVED as it's now handled by SocialView */}
       {/* User Progress Section */}
       {profile && (
         <div className="bg-gray-800 rounded-xl p-6 space-y-4">
