@@ -121,9 +121,7 @@ const FeedView: React.FC = () => {
   const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
 
   const unpostedDevelopedRolls = useMemo(() => {
-    return completedRolls.filter(roll =>
-      isRollDeveloped(roll) && !postedRollIds.has(roll.id)
-    );
+    return completedRolls.filter(roll => isRollDeveloped(roll) && !postedRollIds.has(roll.id));
   }, [completedRolls, postedRollIds]);
 
   const filteredFeed = useMemo(() => {
@@ -184,6 +182,23 @@ const FeedView: React.FC = () => {
     }
   };
 
+  // ---------- Sticky header sentinel & observer (mimic studio behavior) ----------
+  const observerTriggerRef = useRef<HTMLDivElement | null>(null);
+  const [isHeaderSticky, setIsHeaderSticky] = useState(false);
+
+  useEffect(() => {
+    const el = observerTriggerRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      // follow same logic as studio: when sentinel is out of view and scrolled past top, mark sticky
+      setIsHeaderSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+    }, { threshold: 0, rootMargin: '-80px 0px 0px 0px' });
+
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  // -------------------------------------------------------------------------------
+
   return (
     <div {...refreshHandlers} className="w-full text-gray-100 min-h-full">
       {/* Pull-to-refresh indicator */}
@@ -193,8 +208,11 @@ const FeedView: React.FC = () => {
         </div>
       </div>
 
+      {/* Sentinel that the observer watches */}
+      <div ref={observerTriggerRef} />
+
       {/* Header + icon-only segment control */}
-      <div className="flex items-center justify-between pt-0 pb-4">
+      <div className={`flex items-center justify-between pt-0 pb-4 transition-all ${isHeaderSticky ? 'sticky top-[80px] z-40 bg-neutral-900/80 backdrop-blur-md border-b border-neutral-700/50 px-4 py-3' : ''}`}>
         <h1 className="text-3xl font-bold text-white">{getTitleForSection(feedSection)}</h1>
 
         {/* Moved SegmentedControl to the right */}
@@ -210,7 +228,7 @@ const FeedView: React.FC = () => {
 
       {/* Section content with swipe handlers and animation */}
       <div {...horizontalSwipeHandlers} className="relative flex-1 overflow-hidden">
-        <div key={feedSection} className={`w-full ${animationClass}`}>
+        <div key={feedSection} className={`${animationClass} pt-2`}>
           {feedSection === 'community' && (
             <>
               {/* Recent Stories */}
