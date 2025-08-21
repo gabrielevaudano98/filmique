@@ -83,7 +83,10 @@ body {
   overscroll-behavior-y: contain;
 }
 :root[data-theme='light'] body {
-  background: var(--color-bg-main);
+  background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), url('/src/assets/bg-light.avif');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   color: var(--color-text-primary);
 }
 #root {
