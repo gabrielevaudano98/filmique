@@ -8,7 +8,7 @@ import { useAlbums } from '../hooks/useAlbums';
 import { useRollsSettings } from '../hooks/useRollsSettings';
 import { usePrintOrders } from '../hooks/usePrintOrders';
 import * as api from '../services/api';
-import { Library, Clock, Printer, Trophy } from 'lucide-react';
+import { Library, Clock, Printer, Trophy } from 'lucide-react'; // Added Trophy for Challenges
 import { Network } from '@capacitor/network';
 import { showInfoToast, showSuccessToast } from '../utils/toasts';
 import { useSyncEngine } from '../hooks/useSyncEngine';
@@ -25,13 +25,13 @@ export const useAppContext = () => {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // UI State
-  const [currentView, setCurrentView] = useState<string>('studio');
+  const [currentView, setCurrentView] = useState<string>('studio'); // Default to 'studio'
   const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
   const [showFilmModal, setShowFilmModal] = useState(false);
   const [headerAction, setHeaderAction] = useState<{ icon: React.ElementType, action: () => void } | null>(null);
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [studioSection, setStudioSection] = useState<'darkroom' | 'albums' | 'prints'>('darkroom'); // Changed default to 'darkroom'
+  const [studioSection, setStudioSection] = useState<'darkroom' | 'albums' | 'prints'>('albums'); // Default to 'albums'
   const [isStudioHeaderSticky, setIsStudioHeaderSticky] = useState(false);
   const [isRollsSettingsOpen, setIsRollsSettingsOpen] = useState(false);
   const [isPrintsSettingsOpen, setIsPrintsSettingsOpen] = useState(false);
