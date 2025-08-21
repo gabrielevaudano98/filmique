@@ -9,10 +9,30 @@ interface PrintOrderCardProps {
 }
 
 const statusInfo = {
-  queued: { icon: Clock, label: 'Queued', color: 'text-cyan-400', description: 'Your order is waiting to be processed.' },
-  processing: { icon: Package, label: 'Processing', color: 'text-amber-400', description: 'Your prints are being prepared.' },
-  shipped: { icon: Truck, label: 'Shipped', color: 'text-green-400', description: 'Your order is on its way!' },
-  canceled: { icon: XCircle, label: 'Canceled', color: 'text-red-400', description: 'This order has been canceled.' },
+  queued: {
+    icon: Clock,
+    label: 'Queued',
+    color: 'text-cyan-600 dark:text-cyan-400',
+    bg: 'bg-cyan-100 dark:bg-cyan-900/40',
+  },
+  processing: {
+    icon: Package,
+    label: 'Processing',
+    color: 'text-amber-700 dark:text-amber-400',
+    bg: 'bg-amber-100 dark:bg-amber-900/40',
+  },
+  shipped: {
+    icon: Truck,
+    label: 'Shipped',
+    color: 'text-green-700 dark:text-green-400',
+    bg: 'bg-green-100 dark:bg-green-900/40',
+  },
+  canceled: {
+    icon: XCircle,
+    label: 'Canceled',
+    color: 'text-red-700 dark:text-red-400',
+    bg: 'bg-red-100 dark:bg-red-900/40',
+  },
 };
 
 const PrintOrderCard: React.FC<PrintOrderCardProps> = ({ order }) => {
@@ -21,24 +41,30 @@ const PrintOrderCard: React.FC<PrintOrderCardProps> = ({ order }) => {
   const Icon = info.icon;
 
   return (
-    <div className="bg-white/70 dark:bg-neutral-800/60 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-none">
+    <div className="
+      bg-white/80 dark:bg-neutral-800/60
+      border border-white/40 dark:border-neutral-700/50
+      rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5
+      shadow-none backdrop-blur-lg
+      transition-colors
+    ">
       <Image
         src={order.rolls.photos?.[0]?.thumbnail_url}
         alt={order.rolls.title || 'Roll cover'}
-        className="w-full sm:w-24 h-32 sm:h-24 rounded-lg object-cover bg-neutral-700 flex-shrink-0"
+        className="w-full sm:w-28 h-36 sm:h-28 rounded-xl object-cover bg-neutral-200 dark:bg-neutral-700 flex-shrink-0 border border-neutral-200 dark:border-neutral-700"
       />
-      <div className="flex-1">
-        <h3 className="font-bold text-black dark:text-white">{order.rolls.title || 'Untitled Roll'}</h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400">{order.rolls.film_type} &bull; {order.rolls.shots_used} photos</p>
-        <p className="text-xs text-gray-400 mt-1">Ordered on {new Date(order.created_at).toLocaleDateString()}</p>
+      <div className="flex-1 min-w-0">
+        <h3 className="font-bold text-neutral-900 dark:text-white text-lg">{order.rolls.title || 'Untitled Roll'}</h3>
+        <p className="text-sm text-neutral-600 dark:text-gray-400 mt-1">{order.rolls.film_type} &bull; {order.rolls.shots_used} photos</p>
+        <p className="text-xs text-neutral-400 dark:text-gray-400 mt-1">Ordered on {new Date(order.created_at).toLocaleDateString()}</p>
         
-        <div className="flex items-center gap-2 mt-3">
-          <div className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-full bg-neutral-700/50 ${info.color}`}>
+        <div className="flex items-center gap-3 mt-4 flex-wrap">
+          <div className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-1 rounded-full ${info.bg} ${info.color}`}>
             <Icon className="w-4 h-4" />
             {info.label}
           </div>
-          <div className="flex items-center gap-1 text-sm text-gray-300">
-            <Zap className="w-4 h-4 text-yellow-400" />
+          <div className="flex items-center gap-1 text-sm text-amber-700 dark:text-yellow-400 font-semibold bg-amber-100 dark:bg-transparent px-2 py-1 rounded-full">
+            <Zap className="w-4 h-4" />
             <span>{order.cost} Credits</span>
           </div>
         </div>
@@ -46,7 +72,15 @@ const PrintOrderCard: React.FC<PrintOrderCardProps> = ({ order }) => {
       {order.status === 'queued' && (
         <button 
           onClick={() => cancelPrintOrder(order.id)}
-          className="w-full sm:w-auto bg-red-600/20 text-red-400 hover:bg-red-600/40 hover:text-red-300 text-sm font-bold py-2 px-4 rounded-lg transition-colors"
+          className="
+            w-full sm:w-auto mt-4 sm:mt-0
+            bg-red-100 dark:bg-red-600/20
+            text-red-700 dark:text-red-400
+            hover:bg-red-200 dark:hover:bg-red-600/40
+            font-bold py-2 px-5 rounded-lg transition-colors
+            border border-red-200 dark:border-red-600
+            shadow-none
+          "
         >
           Cancel
         </button>
