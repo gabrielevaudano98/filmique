@@ -51,17 +51,17 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-gray-800 rounded-2xl max-w-lg w-full flex flex-col max-h-[80vh] shadow-2xl">
-          <div className="flex-shrink-0 p-5 border-b border-gray-700 flex items-center justify-between">
+        <div className="bg-white/70 dark:bg-neutral-800/60 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-2xl max-w-lg w-full flex flex-col max-h-[80vh] shadow-none">
+          <div className="flex-shrink-0 p-5 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
             {step === 'write_caption' && (
-              <button onClick={handleBack} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full -ml-2">
+              <button onClick={handleBack} className="p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors rounded-full -ml-2">
                 <ArrowLeft className="w-5 h-5" />
               </button>
             )}
-            <h2 className="text-xl font-bold text-white">
+            <h2 className="text-xl font-bold text-black dark:text-white">
               {step === 'select_roll' ? 'Select a Roll to Post' : 'Write a Caption'}
             </h2>
-            <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full">
+            <button onClick={onClose} className="p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors rounded-full">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -77,12 +77,12 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                       <button
                         key={roll.id}
                         onClick={() => handleSelectRoll(roll)}
-                        className="w-full flex items-center p-3 rounded-lg text-left transition-colors bg-gray-700/50 hover:bg-gray-700"
+                        className="w-full flex items-center p-3 rounded-lg text-left transition-colors bg-gray-100/60 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-700"
                       >
                         <Image src={`${thumbnailUrl}${cacheBuster}`} alt="Roll thumbnail" className="w-16 h-16 rounded-md object-cover bg-gray-600 mr-4" />
                         <div>
-                          <p className="font-semibold text-white">{roll.title || roll.film_type}</p>
-                          <p className="text-xs text-gray-400">{roll.shots_used} photos • Developed {new Date(roll.developed_at!).toLocaleDateString()}</p>
+                          <p className="font-semibold text-black dark:text-white">{roll.title || roll.film_type}</p>
+                          <p className="text-xs text-gray-500">{roll.shots_used} photos • Developed {new Date(roll.developed_at!).toLocaleDateString()}</p>
                         </div>
                       </button>
                     );
@@ -96,8 +96,8 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
             {step === 'write_caption' && selectedRoll && (
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-semibold text-gray-300 mb-2 block">Select Cover Photo</label>
-                  <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto rounded-lg p-1 bg-gray-900/50">
+                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">Select Cover Photo</label>
+                  <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto rounded-lg p-1 bg-gray-100/60 dark:bg-gray-900/50">
                     {selectedRoll.photos?.map(photo => {
                       const cacheBuster = selectedRoll.developed_at ? `?t=${new Date(selectedRoll.developed_at).getTime()}` : '';
                       const isSelected = selectedCoverUrl === photo.url;
@@ -123,15 +123,15 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
                   onChange={(e) => setCaption(e.target.value)}
                   placeholder="Write a caption..."
                   rows={3}
-                  className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:ring-amber-500 focus:border-amber-500"
+                  className="w-full bg-gray-100/60 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-3 text-black dark:text-white focus:ring-amber-500 focus:border-amber-500"
                 />
                 <div>
-                  <label className="text-sm font-semibold text-gray-300 mb-2 block">Add to Album (Optional)</label>
+                  <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">Add to Album (Optional)</label>
                   <div className="flex flex-col space-y-2">
                     <select
                       value={selectedAlbumId || ''}
                       onChange={(e) => setSelectedAlbumId(e.target.value || null)}
-                      className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:ring-amber-500 focus:border-amber-500"
+                      className="w-full bg-gray-100/60 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-black dark:text-white focus:ring-amber-500 focus:border-amber-500"
                     >
                       <option value="">Uncategorized</option>
                       {albums.map(album => (
@@ -149,7 +149,7 @@ const CreatePostModal: React.FC<CreatePostModalProps> = ({ onClose, unpostedRoll
           </div>
 
           {step === 'write_caption' && (
-            <div className="flex-shrink-0 p-5 border-t border-gray-700">
+            <div className="flex-shrink-0 p-5 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={handlePublish}
                 disabled={isLoading || !caption.trim() || !isOnline}

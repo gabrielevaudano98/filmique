@@ -21,16 +21,16 @@ const PrintOrderCard: React.FC<PrintOrderCardProps> = ({ order }) => {
   const Icon = info.icon;
 
   return (
-    <div className="bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+    <div className="bg-white/70 dark:bg-neutral-800/60 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 shadow-none">
       <Image
         src={order.rolls.photos?.[0]?.thumbnail_url}
         alt={order.rolls.title || 'Roll cover'}
         className="w-full sm:w-24 h-32 sm:h-24 rounded-lg object-cover bg-neutral-700 flex-shrink-0"
       />
       <div className="flex-1">
-        <h3 className="font-bold text-white">{order.rolls.title || 'Untitled Roll'}</h3>
-        <p className="text-sm text-gray-400">{order.rolls.film_type} &bull; {order.rolls.shots_used} photos</p>
-        <p className="text-xs text-gray-500 mt-1">Ordered on {new Date(order.created_at).toLocaleDateString()}</p>
+        <h3 className="font-bold text-black dark:text-white">{order.rolls.title || 'Untitled Roll'}</h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">{order.rolls.film_type} &bull; {order.rolls.shots_used} photos</p>
+        <p className="text-xs text-gray-400 mt-1">Ordered on {new Date(order.created_at).toLocaleDateString()}</p>
         
         <div className="flex items-center gap-2 mt-3">
           <div className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1 rounded-full bg-neutral-700/50 ${info.color}`}>

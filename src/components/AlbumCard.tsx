@@ -23,7 +23,7 @@ const AlbumCard: React.FC<AlbumCardProps> = ({ album, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="w-full aspect-[4/5] bg-neutral-800 rounded-xl overflow-hidden group relative text-left flex flex-col justify-end p-4 border border-neutral-700/50 hover:border-brand-amber-start/50 transition-all"
+      className="w-full aspect-[4/5] bg-white/70 dark:bg-neutral-800/60 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-xl overflow-hidden group relative text-left flex flex-col justify-end p-4 hover:border-brand-amber-start/50 transition-all shadow-none"
     >
       <div className="absolute inset-0 bg-neutral-700">
         <Image
