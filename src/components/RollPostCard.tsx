@@ -29,7 +29,7 @@ const RollPostCard: React.FC<RollPostCardProps> = ({ post, onClick }) => {
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
       <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-transparent"></div>
 
-      <div className="absolute bottom-0 left-0 right-0 p-4 text-white flex flex-col justify-end h-full">
+      <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col justify-end h-full">
         <div className="flex items-center space-x-3">
           <AvatarRing src={post.profiles.avatar_url} size={40} />
           <div>
