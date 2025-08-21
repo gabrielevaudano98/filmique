@@ -11,9 +11,10 @@ interface SegmentedControlProps {
   value: string;
   onChange: (value: string) => void;
   theme?: 'light' | 'dark';
+  hideLabels?: boolean; // Added this prop
 }
 
-const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onChange, theme = 'dark' }) => {
+const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onChange, theme = 'dark', hideLabels }) => {
   const activeIndex = options.findIndex(opt => opt.value === value);
   const activeOption = options[activeIndex];
   const isLight = theme === 'light';
@@ -41,10 +42,11 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
       {options.map((opt) => {
         const Icon = opt.icon;
         const isActive = value === opt.value;
-        const hasLabel = opt.label && opt.label.length > 0;
+        // Corrected: Check hideLabels prop here
+        const shouldShowLabel = !hideLabels && opt.label && opt.label.length > 0;
 
         const buttonClasses = `relative z-10 flex-1 text-sm font-bold text-center transition-colors duration-300 rounded-lg flex items-center justify-center
-          ${hasLabel ? 'py-3 gap-2' : 'p-2.5'}
+          ${shouldShowLabel ? 'py-3 gap-2' : 'p-2.5'}
           ${isActive
             ? 'text-white'
             : isLight
@@ -60,7 +62,7 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({ options, value, onC
             aria-label={opt.label || opt.description || opt.value}
           >
             {Icon && <Icon className={`w-5 h-5 transition-transform duration-300 ${isActive ? 'scale-110' : ''}`} />}
-            {hasLabel && <span>{opt.label}</span>}
+            {shouldShowLabel && <span>{opt.label}</span>}
           </button>
         );
       })}
