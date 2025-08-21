@@ -71,7 +71,7 @@ export default {
         'safe-r': 'env(safe-area-inset-right)',
       },
       backgroundImage: {
-        'gradient-pro-panel': 'linear-gradient(180deg, rgba(43,15,6,0.7), rgba(58,25,10,0.7))',
+        'gradient-pro-panel': 'linear-gradient(180deg, rgba(44, 21, 13, 0.8), rgba(93, 39, 13, 0.8))',
       }
     },
   },
