@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, Film, Users, Trophy } from 'lucide-react'; // Added Trophy for Challenges
+import { Camera, Film, Users } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useHaptics } from '../hooks/useHaptics';
 import { ImpactStyle } from '@capacitor/haptics';
@@ -50,8 +50,8 @@ const BottomNavBar: React.FC = () => {
   const { impact } = useHaptics();
 
   const navItems = [
-    { view: 'studio', label: 'Studio', icon: Film }, // Renamed from 'rolls' to 'studio'
-    { view: 'social', label: 'Social', icon: Users }, // Renamed from 'feed' to 'social'
+    { view: 'rolls', label: 'Rolls', icon: Film },
+    { view: 'feed', label: 'Feed', icon: Users },
   ];
 
   const leftItems = navItems.slice(0, 1);

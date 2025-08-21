@@ -4,8 +4,10 @@ import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import CameraView from './components/CameraView';
-import StudioView from './views/StudioView';
-import SocialView from './views/SocialView';
+import RollsView from './components/RollsView';
+import FeedView from './views/FeedView';
+import ChallengesView from './components/ChallengesView';
+import ProfileView from './components/ProfileView';
 import SettingsView from './components/SettingsView';
 import LoginView from './components/LoginView';
 import OtpView from './components/OtpView';
@@ -20,6 +22,7 @@ import UncategorizedRollsView from './components/UncategorizedRollsView';
 import RollCompletionWizard from './components/RollCompletionWizard';
 import PostDevelopmentWizard from './components/PostDevelopmentWizard';
 import RollsSettingsView from './components/RollsSettingsView';
+import LibraryView from './components/LibraryView';
 import SpeedUpModal from './components/SpeedUpModal';
 import { Roll } from './types';
 import SubscriptionView from './components/SubscriptionView';
@@ -30,9 +33,9 @@ import LoadingIndicator from './components/LoadingIndicator';
 const SPEED_UP_COST = 25;
 
 function App() {
-  const {
-    session, profile, isLoading, currentView, setCurrentView, authStep,
-    rollToConfirm, setRollToConfirm,
+  const { 
+    session, profile, isLoading, currentView, setCurrentView, authStep, 
+    rollToConfirm, setRollToConfirm, 
     rollToSpeedUp, setRollToSpeedUp,
     sendToStudio, putOnShelf,
     developedRollForWizard, setDevelopedRollForWizard,
@@ -42,7 +45,6 @@ function App() {
     speedUpDevelopment,
     isSyncStatusModalOpen,
     setStudioSection,
-    setSocialSection,
   } = useAppContext();
 
   useEffect(() => {
@@ -64,13 +66,13 @@ function App() {
       if (rollToConfirm) { setRollToConfirm(null); return; }
 
       switch (currentView) {
-        case 'rollDetail': setSelectedRoll(null); setCurrentView('studio'); setStudioSection('rolls'); break; // Navigate to 'rolls'
-        case 'albumDetail': setSelectedAlbum(null); setCurrentView('studio'); setStudioSection('albums'); break;
-        case 'settings': setCurrentView('social'); setSocialSection('profile'); break;
+        case 'rollDetail': setSelectedRoll(null); setCurrentView('rolls'); break;
+        case 'albumDetail': setSelectedAlbum(null); setCurrentView('profile'); break;
+        case 'settings': setCurrentView('profile'); break;
         case 'subscription': setCurrentView('settings'); break;
-        case 'notifications': setCurrentView('social'); setSocialSection('community'); break;
-        case 'uncategorizedRolls': setCurrentView('studio'); setStudioSection('albums'); break;
-        case 'camera': setCurrentView('studio'); setStudioSection('rolls'); break; // Navigate to 'rolls'
+        case 'notifications': setCurrentView('feed'); break;
+        case 'uncategorizedRolls': setCurrentView('rolls'); break;
+        case 'camera': setCurrentView('rolls'); break;
         default: console.log("Back button pressed on main view. Preventing exit."); break;
       }
     };
@@ -80,35 +82,38 @@ function App() {
   }, [
     isRollsSettingsOpen, developedRollForWizard, rollToConfirm, currentView,
     setIsRollsSettingsOpen, setDevelopedRollForWizard, setRollToConfirm,
-    setCurrentView, setSelectedRoll, setSelectedAlbum, setStudioSection, setSocialSection
+    setCurrentView, setSelectedRoll, setSelectedAlbum
   ]);
 
   const renderCurrentView = () => {
     switch (currentView) {
-      case 'studio': return <StudioView />;
-      case 'social': return <SocialView />;
+      case 'rolls': return <RollsView />;
+      case 'library': return <LibraryView />;
+      case 'feed': return <FeedView />;
+      case 'challenges': return <ChallengesView />;
+      case 'profile': return <ProfileView />;
       case 'settings': return <SettingsView />;
       case 'subscription': return <SubscriptionView />;
       case 'rollDetail': return <RollDetailView />;
       case 'albumDetail': return <AlbumDetailView />;
       case 'notifications': return <NotificationsView />;
       case 'uncategorizedRolls': return <UncategorizedRollsView />;
-      default: return <StudioView />; // Default to StudioView
+      default: return <FeedView />;
     }
   };
 
   const handleWizardSendToStudio = (roll: Roll, title: string) => {
     sendToStudio(roll, title);
     setRollToConfirm(null);
-    setCurrentView('studio');
-    setStudioSection('rolls'); // Navigate to 'rolls'
+    setCurrentView('rolls');
+    setStudioSection('darkroom');
   };
 
   const handleWizardPutOnShelf = (roll: Roll, title: string) => {
     putOnShelf(roll, title);
     setRollToConfirm(null);
-    setCurrentView('studio');
-    setStudioSection('rolls'); // Navigate to 'rolls'
+    setCurrentView('rolls');
+    setStudioSection('rolls');
   };
 
   const handleConfirmSpeedUp = () => {
@@ -130,7 +135,7 @@ function App() {
   if (profile && !profile.has_completed_onboarding) {
     return <OnboardingView />;
   }
-
+  
   const completionWizard = rollToConfirm && <RollCompletionWizard roll={rollToConfirm} onSendToStudio={handleWizardSendToStudio} onPutOnShelf={handleWizardPutOnShelf} />;
   const postDevelopmentWizard = developedRollForWizard && <PostDevelopmentWizard roll={developedRollForWizard} onClose={() => setDevelopedRollForWizard(null)} />;
   const speedUpModal = rollToSpeedUp && <SpeedUpModal isOpen={!!rollToSpeedUp} onClose={() => setRollToSpeedUp(null)} onConfirm={handleConfirmSpeedUp} cost={SPEED_UP_COST} />;

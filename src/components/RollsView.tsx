@@ -1,14 +1,16 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
-import { Film, Archive, Clock } from 'lucide-react';
-import DevelopingRollCard from './DevelopingRollCard';
-import DarkroomEmptyState from './DarkroomEmptyState';
+import { Roll } from '../types';
+import { Film, Archive, Lock } from 'lucide-react';
 import RollsControls from './RollsControls';
 import ExpandableSearch from './ExpandableSearch';
+import DevelopingRollCard from './DevelopingRollCard';
+import PrintsView from './PrintsView';
+import DarkroomEmptyState from './DarkroomEmptyState';
+import SegmentedControl from './SegmentedControl';
 import RollRow from './RollRow';
 import StickyGroupHeader from './StickyGroupHeader';
-import { isRollDeveloped } from '../utils/rollUtils';
-import { Roll } from '../types';
 
 const RollsEmptyState = () => (
     <div className="text-center py-24 text-neutral-500">
@@ -26,13 +28,66 @@ const ArchivedEmptyState = () => (
   </div>
 );
 
+function usePrevious<T>(value: T): T | undefined {
+  const ref = useRef<T>();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
 const RollsView: React.FC = () => {
-  const {
-    developingRolls,
-    completedRolls,
+  const { 
+    profile,
+    developingRolls, completedRolls,
     rollsSortOrder, rollsGroupBy, rollsSelectedFilm, rollsViewMode,
-    searchTerm, setSearchTerm, setIsRollsSettingsOpen
+    searchTerm, setSearchTerm,
+    studioSection, setStudioSection, studioSectionOptions,
+    setIsStudioHeaderSticky,
   } = useAppContext();
+
+  const observerTriggerRef = useRef<HTMLDivElement>(null);
+  const prevSection = usePrevious(studioSection);
+
+  const availableSections = useMemo(() => {
+    if (profile?.experience_mode === 'digital') {
+      return studioSectionOptions.filter(opt => opt.value !== 'prints');
+    }
+    return studioSectionOptions;
+  }, [profile, studioSectionOptions]);
+
+  const sectionOrder = useMemo(() => availableSections.map(opt => opt.value), [availableSections]);
+
+  const direction = useMemo(() => {
+    if (!prevSection) return 'right';
+    const prevIndex = sectionOrder.indexOf(prevSection);
+    const currentIndex = sectionOrder.indexOf(studioSection);
+    if (prevIndex === -1 || currentIndex === -1) return 'right';
+    return currentIndex > prevIndex ? 'left' : 'right';
+  }, [studioSection, prevSection, sectionOrder]);
+
+  const animationClass = direction === 'left' ? 'animate-slide-in-from-right' : 'animate-slide-in-from-left';
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsStudioHeaderSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+      },
+      { threshold: 0, rootMargin: "-80px 0px 0px 0px" } // 80px is h-20
+    );
+
+    const currentTriggerRef = observerTriggerRef.current;
+    if (currentTriggerRef) observer.observe(currentTriggerRef);
+    return () => {
+      if (currentTriggerRef) observer.unobserve(currentTriggerRef);
+    };
+  }, [setIsStudioHeaderSticky]);
+
+  useEffect(() => {
+    if (!sectionOrder.includes(studioSection)) {
+      setStudioSection(sectionOrder[0] as any);
+    }
+  }, [sectionOrder, setStudioSection, studioSection]);
 
   const { shelfRolls, archivedRolls } = useMemo(() => {
     return {
@@ -46,13 +101,13 @@ const RollsView: React.FC = () => {
 
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
-      rolls = rolls.filter(r =>
-        r.title?.toLowerCase().includes(lowerSearch) ||
+      rolls = rolls.filter(r => 
+        r.title?.toLowerCase().includes(lowerSearch) || 
         r.tags?.some(tag => tag.toLowerCase().includes(lowerSearch))
       );
     }
     if (rollsSelectedFilm !== 'all') rolls = rolls.filter(r => r.film_type === rollsSelectedFilm);
-
+    
     rolls.sort((a, b) => {
       const dateA = a.developed_at || a.completed_at || a.created_at;
       const dateB = b.developed_at || b.completed_at || b.created_at;
@@ -76,9 +131,9 @@ const RollsView: React.FC = () => {
         acc[key].push(roll);
         return acc;
       }, {} as Record<string, Roll[]>);
-
+      
       const sortedKeys = Object.keys(byDay).sort((a, b) => b.localeCompare(a));
-
+      
       const sortedGroups: Record<string, Roll[]> = {};
       for (const key of sortedKeys) {
         const date = new Date(key + 'T00:00:00');
@@ -104,48 +159,90 @@ const RollsView: React.FC = () => {
 
   const groupEntries = Object.entries(groupedRolls);
 
+  const handleSwipe = (direction: 'left' | 'right') => {
+    const currentIndex = sectionOrder.indexOf(studioSection);
+    if (direction === 'left' && currentIndex < sectionOrder.length - 1) {
+        setStudioSection(sectionOrder[currentIndex + 1] as any);
+    } else if (direction === 'right' && currentIndex > 0) {
+        setStudioSection(sectionOrder[currentIndex - 1] as any);
+    }
+  };
+
+  const swipeHandlers = useSwipeable({
+      onSwipedLeft: () => handleSwipe('left'),
+      onSwipedRight: () => handleSwipe('right'),
+      // Allow the browser to keep handling vertical scrolling for best UX on mobile
+      preventScrollOnSwipe: false,
+      preventDefaultTouchmoveEvent: false,
+      trackMouse: true,
+      trackTouch: true,
+  });
+
+  const getTitleForStudioSection = (section: typeof studioSection) => {
+    switch (section) {
+      case 'rolls': return 'Rolls';
+      case 'darkroom': return 'Darkroom';
+      case 'prints': return 'Prints';
+      default: return 'Studio';
+    }
+  };
+
   return (
     <div className="flex flex-col w-full">
-      {/* Developing Rolls Section */}
-      <div className="mb-10">
-        <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-          <Clock className="w-6 h-6 text-cyan-400" /> Darkroom
-        </h2>
-        {developingRolls.length > 0 ? (
-          <div className="space-y-3">
-            {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
-          </div>
-        ) : <DarkroomEmptyState />}
+      <div ref={observerTriggerRef} className="flex items-center justify-between pt-0 pb-6">
+        <h1 className="text-3xl font-bold text-white">{getTitleForStudioSection(studioSection)}</h1>
+        <div className="w-auto">
+          <SegmentedControl
+            options={availableSections}
+            value={studioSection}
+            onChange={(val) => setStudioSection(val as any)}
+          />
+        </div>
       </div>
 
-      {/* Developed Rolls Section */}
-      <div className="mt-10">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Film className="w-6 h-6 text-brand-amber-start" /> {rollsViewMode === 'active' ? 'Your Rolls' : 'Archived Rolls'}
-          </h2>
-          <div className="flex items-center gap-2">
-            <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-            <RollsControls />
-          </div>
-        </div>
+      <div {...swipeHandlers} className="relative flex-1">
+        <div key={studioSection} className={animationClass}>
+          {studioSection === 'darkroom' && (
+            <div>
+              {developingRolls.length > 0 ? (
+                <div className="space-y-3">
+                  {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
+                </div>
+              ) : <DarkroomEmptyState />}
+            </div>
+          )}
 
-        {processedRolls.length > 0 ? (
-          <div className="space-y-4">
-            {groupEntries.map(([groupName, rollsInGroup]) => (
-              <div key={groupName}>
-                {rollsGroupBy !== 'none' && <StickyGroupHeader title={groupName} />}
-                <div className="space-y-2">
-                  {rollsInGroup.map(roll => (
-                    <RollRow key={roll.id} roll={roll} />
-                  ))}
+          {studioSection === 'rolls' && (
+            <div>
+              <div className="sticky top-[80px] z-20 pointer-events-none -mx-4 px-4 h-14">
+                <div className="absolute top-0 right-4 h-full pointer-events-auto flex items-center gap-2">
+                  <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
+                  <RollsControls />
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          rollsViewMode === 'active' ? <RollsEmptyState /> : <ArchivedEmptyState />
-        )}
+              <div className="space-y-6 -mt-14">
+                {processedRolls.length > 0 ? (
+                  groupEntries.map(([groupName, rolls]) => (
+                    <div key={groupName}>
+                      <StickyGroupHeader title={groupName} />
+                      <div className="flex flex-col space-y-3 pt-3">
+                        {rolls.map(roll => <RollRow key={roll.id} roll={roll} />)}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
+                )}
+              </div>
+            </div>
+          )}
+
+          {studioSection === 'prints' && (
+            <div>
+              <PrintsView />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

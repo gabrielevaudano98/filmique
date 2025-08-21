@@ -8,14 +8,11 @@ const TopBar: React.FC = () => {
   const { 
     setCurrentView, headerAction, isTopBarVisible, currentView,
     isStudioHeaderSticky, studioSection, setStudioSection, studioSectionOptions,
-    isSocialHeaderSticky, socialSection, setSocialSection, socialSectionOptions, // New social header states
     profile
   } = useAppContext();
   
-  const isStudioView = currentView === 'studio';
-  const isSocialView = currentView === 'social'; // New
+  const isStudioView = currentView === 'rolls';
   const isStudioSticky = isStudioView && isStudioHeaderSticky;
-  const isSocialSticky = isSocialView && isSocialHeaderSticky; // New
 
   const BackButton = headerAction ? headerAction.icon : null;
 
@@ -28,7 +25,7 @@ const TopBar: React.FC = () => {
     >
       <div className="relative flex items-center justify-between px-4 h-20 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">
         {/* Default Header (Filmique, Level/Credits, Settings) */}
-        <div className={`absolute inset-0 flex items-center justify-between px-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] transition-all duration-300 ${isStudioSticky || isSocialSticky ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
+        <div className={`absolute inset-0 flex items-center justify-between px-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] transition-all duration-300 ${isStudioSticky ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
           <div className="flex items-center gap-x-4">
             {headerAction && BackButton ? (
               <button onClick={headerAction.action} className="p-2 transition-colors -ml-2 text-gray-300 hover:text-white">
@@ -61,19 +58,6 @@ const TopBar: React.FC = () => {
               options={studioSectionOptions}
               value={studioSection}
               onChange={(val) => setStudioSection(val as any)}
-              hideLabels={true}
-            />
-          </div>
-        </div>
-
-        {/* Social Sticky Header */}
-        <div className={`absolute inset-0 flex items-center justify-between px-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] transition-all duration-300 ${isSocialSticky ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
-          <h1 className="text-xl font-bold text-white">Social</h1>
-          <div className="w-auto">
-            <SegmentedControl
-              options={socialSectionOptions}
-              value={socialSection}
-              onChange={(val) => setSocialSection(val as any)}
               hideLabels={true}
             />
           </div>

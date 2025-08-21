@@ -285,8 +285,8 @@ export interface AppContextType {
   setIsTopBarVisible: (visible: boolean) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
-  studioSection: 'darkroom' | 'albums' | 'prints'; // Updated type
-  setStudioSection: (section: 'darkroom' | 'albums' | 'prints') => void; // Updated type
+  studioSection: 'rolls' | 'darkroom' | 'prints';
+  setStudioSection: (section: 'rolls' | 'darkroom' | 'prints') => void;
   isStudioHeaderSticky: boolean;
   setIsStudioHeaderSticky: (isSticky: boolean) => void;
   studioSectionOptions: any[];
@@ -304,9 +304,4 @@ export interface AppContextType {
   setIsSyncStatusModalOpen: (isOpen: boolean) => void;
   retryFailedTransaction: (transactionId: number) => Promise<void>;
   deleteFailedTransaction: (transactionId: number) => Promise<void>;
-  socialSection: 'community' | 'profile' | 'challenges'; // New
-  setSocialSection: (section: 'community' | 'profile' | 'challenges') => void; // New
-  isSocialHeaderSticky: boolean; // New
-  setIsSocialHeaderSticky: (isSticky: boolean) => void; // New
-  socialSectionOptions: any[]; // New
 }

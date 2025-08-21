@@ -1,17 +1,14 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Album, Roll } from '../types';
+import { Album } from '../types';
 import AlbumCard from './AlbumCard';
-import { Plus, Library as LibraryIcon } from 'lucide-react'; // Removed Film, Archive
+import { Plus, Library as LibraryIcon } from 'lucide-react';
 import CreateAlbumModal from './CreateAlbumModal';
 import UncategorizedAlbumCard from './UncategorizedAlbumCard';
 import { isRollDeveloped } from '../utils/rollUtils';
-// Removed RollsControls, ExpandableSearch, RollRow, StickyGroupHeader imports
 
 const LibraryView: React.FC = () => {
-  const {
-    albums, setSelectedAlbum, setCurrentView, refetchAlbums, completedRolls,
-  } = useAppContext(); // Removed rolls settings and search terms
+  const { albums, setSelectedAlbum, setCurrentView, refetchAlbums, completedRolls } = useAppContext();
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
@@ -31,7 +28,7 @@ const LibraryView: React.FC = () => {
     <>
       <div className="flex flex-col w-full">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-white">Albums</h1> {/* Changed title to Albums */}
+          <h1 className="text-3xl font-bold text-white">Library</h1>
           <button
             onClick={() => setShowCreateModal(true)}
             className="bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white font-bold p-3 rounded-full shadow-lg shadow-brand-amber-start/20 hover:opacity-90 transition-all"
@@ -41,20 +38,19 @@ const LibraryView: React.FC = () => {
           </button>
         </div>
 
-        {/* Album Grid */}
         {albums.length > 0 || uncategorizedRolls.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {uncategorizedRolls.length > 0 && (
-              <UncategorizedAlbumCard
-                rolls={uncategorizedRolls}
-                onClick={() => setCurrentView('uncategorizedRolls')}
+              <UncategorizedAlbumCard 
+                rolls={uncategorizedRolls} 
+                onClick={() => setCurrentView('uncategorizedRolls')} 
               />
             )}
             {albums.map(album => (
-              <AlbumCard
-                key={album.id}
-                album={album}
-                onClick={() => handleSelectAlbum(album)}
+              <AlbumCard 
+                key={album.id} 
+                album={album} 
+                onClick={() => handleSelectAlbum(album)} 
               />
             ))}
           </div>
