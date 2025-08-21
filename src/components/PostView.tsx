@@ -78,7 +78,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
               <p className="text-gray-700 dark:text-gray-400 text-xs">{post.rolls.film_type}</p>
               {album && (
                 <>
-                  <span className="text-gray-600 text-xs">&bull;</span>
+                  <span className="text-gray-600 dark:text-gray-400 text-xs">&bull;</span>
                   <button onClick={handleAlbumClick} className="text-gray-700 dark:text-gray-400 text-xs hover:underline">
                     {album.title}
                   </button>
@@ -162,7 +162,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
 
         {/* View all comments button */}
         {post.comments.length > 1 && (
-          <button className="text-gray-500 text-sm text-left hover:text-gray-400">
+          <button className="text-gray-500 dark:text-gray-400 text-sm text-left hover:text-gray-400">
             View all {post.comments.length} comments
           </button>
         )}
@@ -170,7 +170,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
         {/* Latest Comment */}
         {latestComment && (
           <div className="flex items-start space-x-3 group">
-            <p className="text-sm text-gray-700 dark:text-gray-300">
+            <p className="text-sm text-gray-700 dark:text-gray-300 flex-grow">
               <span className="font-bold text-black dark:text-white mr-2">{latestComment.profiles.username}</span>
               {latestComment.content}
             </p>
@@ -206,7 +206,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
         </form>
         
         {/* Post Date */}
-        <p className="text-gray-500 text-xs uppercase tracking-wider pt-1">
+        <p className="text-gray-500 dark:text-gray-400 text-xs uppercase tracking-wider pt-1">
           {formatDistanceToNow(post.created_at)}
         </p>
       </div>
