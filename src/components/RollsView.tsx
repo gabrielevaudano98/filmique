@@ -178,10 +178,19 @@ const RollsView: React.FC = () => {
       trackTouch: true,
   });
 
+  const getTitleForStudioSection = (section: typeof studioSection) => {
+    switch (section) {
+      case 'rolls': return 'Rolls';
+      case 'darkroom': return 'Darkroom';
+      case 'prints': return 'Prints';
+      default: return 'Studio';
+    }
+  };
+
   return (
     <div className="flex flex-col w-full">
       <div ref={observerTriggerRef} className="flex items-center justify-between pt-4 pb-6">
-        <h1 className="text-3xl font-bold text-white">Studio</h1>
+        <h1 className="text-3xl font-bold text-white">{getTitleForStudioSection(studioSection)}</h1>
         <div className="w-auto">
           <SegmentedControl
             options={availableSections}
