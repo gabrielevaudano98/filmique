@@ -4,8 +4,8 @@ import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import CameraView from './components/CameraView';
-import StudioView from './components/StudioView';
-import SocialView from './views/SocialView';
+import StudioView from './components/StudioView'; // Renamed from RollsView
+import SocialView from './views/SocialView'; // Renamed from FeedView
 import SettingsView from './components/SettingsView';
 import LoginView from './components/LoginView';
 import OtpView from './components/OtpView';
@@ -63,13 +63,13 @@ function App() {
       if (rollToConfirm) { setRollToConfirm(null); return; }
 
       switch (currentView) {
-        case 'rollDetail': setSelectedRoll(null); setCurrentView('studio'); setStudioSection('rolls'); break; // Navigate to 'rolls' section of Studio
-        case 'albumDetail': setSelectedAlbum(null); setCurrentView('studio'); setStudioSection('rolls'); break; // Navigate to 'rolls' section of Studio
-        case 'settings': setCurrentView('social'); break;
+        case 'rollDetail': setSelectedRoll(null); setCurrentView('studio'); break; // Changed from 'rolls' to 'studio'
+        case 'albumDetail': setSelectedAlbum(null); setCurrentView('studio'); break; // Changed from 'profile' to 'studio'
+        case 'settings': setCurrentView('social'); break; // Changed from 'profile' to 'social'
         case 'subscription': setCurrentView('settings'); break;
-        case 'notifications': setCurrentView('social'); break;
-        case 'uncategorizedRolls': setCurrentView('studio'); setStudioSection('rolls'); break; // Navigate to 'rolls' section of Studio
-        case 'camera': setCurrentView('studio'); setStudioSection('rolls'); break; // Navigate to 'rolls' section of Studio
+        case 'notifications': setCurrentView('social'); break; // Changed from 'feed' to 'social'
+        case 'uncategorizedRolls': setCurrentView('studio'); break; // Changed from 'rolls' to 'studio'
+        case 'camera': setCurrentView('studio'); break; // Changed from 'rolls' to 'studio'
         default: console.log("Back button pressed on main view. Preventing exit."); break;
       }
     };
@@ -79,13 +79,13 @@ function App() {
   }, [
     isRollsSettingsOpen, developedRollForWizard, rollToConfirm, currentView,
     setIsRollsSettingsOpen, setDevelopedRollForWizard, setRollToConfirm,
-    setCurrentView, setSelectedRoll, setSelectedAlbum, setStudioSection
+    setCurrentView, setSelectedRoll, setSelectedAlbum
   ]);
 
   const renderCurrentView = () => {
     switch (currentView) {
-      case 'studio': return <StudioView />;
-      case 'social': return <SocialView />;
+      case 'studio': return <StudioView />; // New Studio view
+      case 'social': return <SocialView />; // New Social view
       case 'settings': return <SettingsView />;
       case 'subscription': return <SubscriptionView />;
       case 'rollDetail': return <RollDetailView />;
@@ -99,15 +99,15 @@ function App() {
   const handleWizardSendToStudio = (roll: Roll, title: string) => {
     sendToStudio(roll, title);
     setRollToConfirm(null);
-    setCurrentView('studio');
-    setStudioSection('rolls'); // Ensure it goes to the rolls section
+    setCurrentView('studio'); // Navigate to new Studio view
+    setStudioSection('darkroom');
   };
 
   const handleWizardPutOnShelf = (roll: Roll, title: string) => {
     putOnShelf(roll, title);
     setRollToConfirm(null);
-    setCurrentView('studio');
-    setStudioSection('rolls'); // Ensure it goes to the rolls section
+    setCurrentView('studio'); // Navigate to new Studio view
+    setStudioSection('albums'); // Changed from 'rolls' to 'albums'
   };
 
   const handleConfirmSpeedUp = () => {
