@@ -65,8 +65,21 @@ const BottomNavBar: React.FC = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-28 flex justify-center z-50 pointer-events-none pb-safe-b">
       <div className="relative flex items-center pointer-events-auto pl-safe-l pr-safe-r w-full">
-        {/* Main glass pill background with semi-transparent theme-aware color */}
-        <div className="floating-nav absolute top-1/2 -translate-y-1/2 h-[72px] w-full bg-white/80 dark:bg-neutral-900/80"></div>
+        {/* Enhanced glass nav pill */}
+        <div
+          className="
+            floating-nav absolute top-1/2 -translate-y-1/2 h-[72px] w-full
+            bg-white/80 dark:bg-neutral-900/80
+            border border-white/30 dark:border-neutral-700/60
+            shadow-lg shadow-black/10 dark:shadow-black/40
+            backdrop-blur-xl
+            transition-all
+          "
+          style={{
+            WebkitBackdropFilter: 'blur(24px) saturate(160%)',
+            backdropFilter: 'blur(24px) saturate(160%)',
+          }}
+        ></div>
 
         <div className="relative flex items-center justify-center px-3 w-full">
           {/* Left Items */}
