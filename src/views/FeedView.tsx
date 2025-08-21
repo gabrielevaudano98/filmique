@@ -148,14 +148,7 @@ const FeedView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setFeedSection('profile')}
-            className="bg-neutral-800/60 backdrop-blur-lg border border-neutral-700/50 rounded-full p-2 shadow-lg text-white hover:bg-neutral-700 transition-colors"
-            aria-label="Profile tab"
-          >
-            <User className="w-5 h-5" />
-          </button>
-
+          {/* Removed the redundant Profile button */}
           <button
             onClick={() => setShowCreatePostModal(true)}
             className="bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white font-bold p-3 rounded-full shadow-lg shadow-brand-amber-start/20 hover:opacity-90 transition-all"
