@@ -67,19 +67,19 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
   const latestComment = post.comments && post.comments.length > 0 ? post.comments[post.comments.length - 1] : null;
 
   return (
-    <div className="bg-gradient-to-b from-gray-800 to-gray-800/80 rounded-2xl overflow-hidden shadow-2xl border border-gray-700/50">
+    <div className="bg-white/80 dark:bg-gradient-to-b dark:from-gray-800 dark:to-gray-800/80 rounded-2xl overflow-hidden shadow-2xl border border-white/40 dark:border-gray-700/50">
       {/* Post Header */}
       <div className="p-4 flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Image src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-10 h-10 rounded-full bg-gray-700 border-2 border-gray-600" loading="lazy" decoding="async" />
+          <Image src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-gray-700 border-2 border-neutral-300 dark:border-gray-600" loading="lazy" decoding="async" />
           <div>
-            <h3 className="font-bold text-white">{post.profiles.username}</h3>
+            <h3 className="font-bold text-black dark:text-white">{post.profiles.username}</h3>
             <div className="flex items-center space-x-2">
-              <p className="text-gray-400 text-xs">{post.rolls.film_type}</p>
+              <p className="text-gray-700 dark:text-gray-400 text-xs">{post.rolls.film_type}</p>
               {album && (
                 <>
                   <span className="text-gray-600 text-xs">&bull;</span>
-                  <button onClick={handleAlbumClick} className="text-gray-400 text-xs hover:underline">
+                  <button onClick={handleAlbumClick} className="text-gray-700 dark:text-gray-400 text-xs hover:underline">
                     {album.title}
                   </button>
                 </>
@@ -90,7 +90,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
       </div>
 
       {isFromPrivateAlbum && (
-        <div className="px-4 pb-2 text-yellow-200 text-xs flex items-center space-x-2">
+        <div className="px-4 pb-2 text-yellow-700 dark:text-yellow-200 text-xs flex items-center space-x-2">
           <Shield className="w-4 h-4 flex-shrink-0" />
           <span>This post is from a {album.type} album. Only this post is public.</span>
         </div>
@@ -102,7 +102,7 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
           <div
             ref={photoContainerRef}
             onScroll={handleScroll}
-            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar aspect-square bg-gray-900"
+            className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar aspect-square bg-neutral-200 dark:bg-gray-900"
           >
             {post.rolls.photos.map((photo: any, index: number) => (
               <div key={photo.id} className="w-full h-full flex-shrink-0 snap-center flex items-center justify-center">
@@ -141,22 +141,22 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
       <div className="p-4 flex flex-col space-y-3">
         {/* Action Buttons */}
         <div className="flex items-center space-x-4">
-          <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} disabled={!isOnline} className={`flex items-center space-x-2 transition-colors rounded-lg ${post.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-400'} disabled:text-gray-600 disabled:cursor-not-allowed`}>
+          <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} disabled={!isOnline} className={`flex items-center space-x-2 transition-colors rounded-lg ${post.isLiked ? 'text-red-500' : 'text-gray-700 dark:text-gray-400 hover:text-red-400'} disabled:text-gray-600 disabled:cursor-not-allowed`}>
             <Heart className={`w-6 h-6 transition-transform duration-200 ${post.isLiked ? 'fill-current scale-110' : ''}`} />
           </button>
-          <button className="flex items-center space-x-2 text-gray-400 hover:text-white">
+          <button className="flex items-center space-x-2 text-gray-700 dark:text-gray-400 hover:text-black dark:hover:text-white">
             <MessageCircle className="w-6 h-6" />
           </button>
         </div>
 
         {/* Likes Count */}
         {post.likes.length > 0 && (
-          <p className="font-bold text-sm text-white">{post.likes.length} {post.likes.length === 1 ? 'like' : 'likes'}</p>
+          <p className="font-bold text-black dark:text-white text-sm">{post.likes.length} {post.likes.length === 1 ? 'like' : 'likes'}</p>
         )}
 
         {/* Caption */}
-        <p className="text-gray-200 text-sm leading-relaxed">
-          <span className="font-bold text-white mr-2">{post.profiles.username}</span>
+        <p className="text-gray-700 dark:text-gray-200 text-sm leading-relaxed">
+          <span className="font-bold text-black dark:text-white mr-2">{post.profiles.username}</span>
           {post.caption}
         </p>
 
@@ -170,8 +170,8 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
         {/* Latest Comment */}
         {latestComment && (
           <div className="flex items-start space-x-3 group">
-            <p className="text-sm text-gray-300">
-              <span className="font-bold text-white mr-2">{latestComment.profiles.username}</span>
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              <span className="font-bold text-black dark:text-white mr-2">{latestComment.profiles.username}</span>
               {latestComment.content}
             </p>
             {latestComment.user_id === profile.id && (
@@ -188,18 +188,18 @@ const PostView: React.FC<PostViewProps> = ({ post }) => {
         )}
 
         {/* Comment Form */}
-        <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-2 border-t border-gray-700/50">
-          <Image src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`} alt="Your avatar" className="w-8 h-8 rounded-full bg-gray-700" loading="lazy" decoding="async" />
+        <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-2 border-t border-neutral-200 dark:border-gray-700/50">
+          <Image src={profile.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile.username}`} alt="Your avatar" className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-gray-700" loading="lazy" decoding="async" />
           <input
             type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder={isOnline ? "Add a comment..." : "Commenting is disabled offline"}
-            className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm"
+            className="flex-1 bg-transparent text-black dark:text-white placeholder-gray-500 focus:outline-none text-sm"
             disabled={!isOnline}
           />
           {commentText.trim() && (
-            <button type="submit" disabled={isSubmittingComment || !isOnline} className="text-amber-400 font-bold text-sm disabled:text-gray-500 transition-colors">
+            <button type="submit" disabled={isSubmittingComment || !isOnline} className="text-brand-amber-start font-bold text-sm disabled:text-gray-500 transition-colors">
               {isSubmittingComment ? 'Posting...' : 'Post'}
             </button>
           )}

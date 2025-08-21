@@ -33,25 +33,25 @@ const RollPostCard: React.FC<RollPostCardProps> = ({ post, onClick }) => {
         <div className="flex items-center space-x-3">
           <AvatarRing src={post.profiles.avatar_url} size={40} />
           <div>
-            <h3 className="font-bold text-base leading-tight">{post.rolls.title}</h3>
-            <p className="text-sm text-gray-300">{post.profiles.username}</p>
+            <h3 className="font-bold text-base leading-tight text-black dark:text-white">{post.rolls.title}</h3>
+            <p className="text-sm text-gray-700 dark:text-gray-300">{post.profiles.username}</p>
           </div>
         </div>
-        <p className="text-sm text-gray-200 mt-3 line-clamp-2">{post.caption}</p>
+        <p className="text-sm text-gray-700 dark:text-gray-200 mt-3 line-clamp-2">{post.caption}</p>
         
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/10">
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-neutral-200 dark:border-white/10">
           <div className="flex items-center space-x-4">
-            <button onClick={(e) => { e.stopPropagation(); handleLike(post.id, post.user_id, post.isLiked); }} className="flex items-center space-x-1.5 text-white">
+            <button onClick={(e) => { e.stopPropagation(); handleLike(post.id, post.user_id, post.isLiked); }} className="flex items-center space-x-1.5 text-black dark:text-white">
               <Heart className={`w-5 h-5 transition-colors ${post.isLiked ? 'text-red-500 fill-current' : 'hover:text-red-400'}`} />
               <span className="text-sm font-medium">{post.likes.length}</span>
             </button>
-            <button onClick={(e) => e.stopPropagation()} className="flex items-center space-x-1.5 text-white">
+            <button onClick={(e) => e.stopPropagation()} className="flex items-center space-x-1.5 text-black dark:text-white">
               <MessageCircle className="w-5 h-5" />
               <span className="text-sm font-medium">{post.comments.length}</span>
             </button>
           </div>
-          <button onClick={(e) => e.stopPropagation()} className="p-2 rounded-full bg-white/10 hover:bg-white/20">
-            <Bookmark className="w-5 h-5" />
+          <button onClick={(e) => e.stopPropagation()} className="p-2 rounded-full bg-neutral-200/50 dark:bg-white/10 hover:bg-neutral-300/50 dark:hover:bg-white/20">
+            <Bookmark className="w-5 h-5 text-black dark:text-white" />
           </button>
         </div>
       </div>

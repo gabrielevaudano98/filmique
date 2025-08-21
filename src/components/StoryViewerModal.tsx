@@ -85,8 +85,8 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
   const currentPhoto = !isCover ? photos[currentIndex] : null;
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-lg flex items-center justify-center z-[100] p-0 sm:p-4" onMouseDown={handleInteractionStart} onMouseUp={handleInteractionEnd} onTouchStart={handleInteractionStart} onTouchEnd={handleInteractionEnd}>
-      <div className="relative aspect-[9/16] w-full max-w-md h-full bg-gray-900 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+    <div className="fixed inset-0 bg-white/90 dark:bg-black/90 backdrop-blur-lg flex items-center justify-center z-[100] p-0 sm:p-4" onMouseDown={handleInteractionStart} onMouseUp={handleInteractionEnd} onTouchStart={handleInteractionStart} onTouchEnd={handleInteractionEnd}>
+      <div className="relative aspect-[9/16] w-full max-w-md h-full bg-white dark:bg-gray-900 sm:rounded-2xl overflow-hidden shadow-2xl flex flex-col">
         {/* Progress Bars */}
         <div className="absolute top-3 left-3 right-3 z-20">
           <div className="flex items-center gap-1">
@@ -105,10 +105,10 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
         {/* Header */}
         <div className="absolute top-6 left-3 right-3 z-20 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Image src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-gray-700" />
-            <span className="text-white font-bold text-sm">{post.profiles.username}</span>
+            <Image src={post.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${post.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-gray-700" />
+            <span className="text-black dark:text-white font-bold text-sm">{post.profiles.username}</span>
           </div>
-          <button onClick={onClose} className="p-2 text-white/80 hover:text-white">
+          <button onClick={onClose} className="p-2 text-gray-700 dark:text-white/80 hover:text-black dark:hover:text-white">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -137,11 +137,11 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
           {/* Footer Actions (Heart, MessageCircle) */}
           {profile && (
             <div className="absolute bottom-6 right-4 z-20 flex flex-col items-center space-y-4">
-              <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className="p-2 rounded-full bg-black/30 flex flex-col items-center text-white space-y-1">
+              <button onClick={() => handleLike(post.id, post.user_id, post.isLiked)} className="p-2 rounded-full bg-white/30 dark:bg-black/30 flex flex-col items-center text-black dark:text-white space-y-1">
                 <Heart className={`w-7 h-7 transition-colors ${post.isLiked ? 'text-red-500 fill-current' : 'hover:text-red-400'}`} />
                 <span className="text-xs font-bold">{post.likes.length}</span>
               </button>
-              <button onClick={handleCommentClick} className="p-2 rounded-full bg-black/30 flex flex-col items-center text-white space-y-1">
+              <button onClick={handleCommentClick} className="p-2 rounded-full bg-white/30 dark:bg-black/30 flex flex-col items-center text-black dark:text-white space-y-1">
                 <MessageCircle className="w-7 h-7" />
                 <span className="text-xs font-bold">{post.comments.length}</span>
               </button>
@@ -150,12 +150,12 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
         </div>
 
         {/* Comment Section */}
-        <div className={`flex-shrink-0 bg-gray-800 rounded-t-2xl flex flex-col p-4 z-30 transition-all duration-300 ease-in-out overflow-hidden ${showComments ? 'flex-1' : 'h-0 opacity-0 pointer-events-none'}`}>
+        <div className={`flex-shrink-0 bg-white dark:bg-gray-800 rounded-t-2xl flex flex-col p-4 z-30 transition-all duration-300 ease-in-out overflow-hidden ${showComments ? 'flex-1' : 'h-0 opacity-0 pointer-events-none'}`}>
           {showComments && ( // Still conditionally render inner content for performance
             <>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-white">Comments ({post.comments.length})</h3>
-                <button onClick={handleCloseComments} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full">
+                <h3 className="text-lg font-bold text-black dark:text-white">Comments ({post.comments.length})</h3>
+                <button onClick={handleCloseComments} className="p-2 text-gray-700 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors rounded-full">
                   <X className="w-5 h-5" />
                 </button>
               </div>
@@ -163,9 +163,9 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
                 {post.comments.length > 0 ? (
                   post.comments.map(comment => (
                     <div key={comment.id} className="flex items-start space-x-3 group">
-                      <Image src={comment.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${comment.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-gray-700 flex-shrink-0" />
-                      <p className="text-sm text-gray-300 flex-grow">
-                        <span className="font-bold text-white mr-2">{comment.profiles.username}</span>
+                      <Image src={comment.profiles.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${comment.profiles.username}`} alt="avatar" className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-gray-700 flex-shrink-0" />
+                      <p className="text-sm text-gray-700 dark:text-gray-300 flex-grow">
+                        <span className="font-bold text-black dark:text-white mr-2">{comment.profiles.username}</span>
                         {comment.content}
                       </p>
                       {comment.user_id === profile?.id && (
@@ -183,17 +183,17 @@ const StoryViewerModal: React.FC<{ post: Post; onClose: () => void; }> = ({ post
                   <p className="text-center text-gray-500 py-4">No comments yet. Be the first!</p>
                 )}
               </div>
-              <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-4 border-t border-gray-700/50 flex-shrink-0">
-                <Image src={profile?.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile?.username}`} alt="Your avatar" className="w-8 h-8 rounded-full bg-gray-700" />
+              <form onSubmit={handleCommentSubmit} className="flex items-center space-x-3 pt-4 border-t border-neutral-200 dark:border-gray-700/50 flex-shrink-0">
+                <Image src={profile?.avatar_url || `https://api.dicebear.com/8.x/initials/svg?seed=${profile?.username}`} alt="Your avatar" className="w-8 h-8 rounded-full bg-neutral-200 dark:bg-gray-700" />
                 <input
                   type="text"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Add a comment..."
-                  className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-sm"
+                  className="flex-1 bg-transparent text-black dark:text-white placeholder-gray-500 focus:outline-none text-sm"
                 />
                 {commentText.trim() && (
-                  <button type="submit" disabled={isSubmittingComment} className="text-amber-400 font-bold text-sm disabled:text-gray-500 transition-colors">
+                  <button type="submit" disabled={isSubmittingComment} className="text-brand-amber-start font-bold text-sm disabled:text-gray-500 transition-colors">
                     {isSubmittingComment ? 'Posting...' : 'Post'}
                   </button>
                 )}

@@ -25,7 +25,7 @@ const SnapshotCard: React.FC<SnapshotCardProps> = ({ post, onClick }) => {
         decoding="async"
       />
       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-        <div className="flex items-center space-x-4 text-white">
+        <div className="flex items-center space-x-4 text-black dark:text-white">
           <div className="flex items-center space-x-1">
             <Heart className="w-5 h-5" />
             <span>{post.likes.length}</span>
