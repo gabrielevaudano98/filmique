@@ -138,7 +138,7 @@ const FeedView: React.FC = () => {
       <div className="flex items-center justify-between pt-4 pb-4">
         <h1 className="text-3xl font-bold text-white">Feed</h1>
 
-        <div className="w-full max-w-lg">
+        <div className="w-auto"> {/* Changed from w-full max-w-lg to w-auto */}
           <SegmentedControl
             options={segmentOptions as any}
             value={feedSection}
@@ -148,7 +148,6 @@ const FeedView: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Removed the redundant Profile button */}
           <button
             onClick={() => setShowCreatePostModal(true)}
             className="bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white font-bold p-3 rounded-full shadow-lg shadow-brand-amber-start/20 hover:opacity-90 transition-all"
