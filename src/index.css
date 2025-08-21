@@ -375,7 +375,7 @@
 
 /* New top bar glass effect */
 .top-bar-glass {
-  background: rgba(15,17,19,0.4); /* neutral-800 at 40% opacity */
+  background: rgba(15,17,19,0.15); /* neutral-800 at 15% opacity for more transparency */
   backdrop-filter: blur(24px) saturate(200%);
   -webkit-backdrop-filter: blur(24px) saturate(200%);
   border-bottom: 1px solid rgba(255,255,255,0.08); /* slightly lighter border */
