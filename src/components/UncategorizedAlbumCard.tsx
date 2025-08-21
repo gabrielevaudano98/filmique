@@ -15,13 +15,13 @@ const UncategorizedAlbumCard: React.FC<UncategorizedAlbumCardProps> = ({ rolls, 
   return (
     <button
       onClick={onClick}
-      className="w-full aspect-[4/5] bg-neutral-800 rounded-xl overflow-hidden group relative text-left flex flex-col justify-between p-4 border border-neutral-700/50 hover:border-brand-amber-start/50 transition-all"
+      className="w-full aspect-[4/5] bg-white/70 dark:bg-neutral-800/60 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-xl overflow-hidden group relative text-left flex flex-col justify-between p-4 hover:border-brand-amber-start/50 transition-all shadow-none"
     >
       <div className="relative z-10 flex-1 flex flex-col justify-start">
         <div className="w-12 h-12 rounded-lg bg-neutral-700 flex items-center justify-center mb-4">
           <Folder className="w-6 h-6 text-gray-400" />
         </div>
-        <h3 className="font-bold text-lg text-white leading-tight">Uncategorized</h3>
+        <h3 className="font-bold text-lg text-black dark:text-white leading-tight">Uncategorized</h3>
         <div className="flex items-center space-x-3 text-xs text-gray-300 mt-1">
           <span className="flex items-center gap-1"><ImageIcon className="w-3 h-3" /> {photoCount} Photos</span>
         </div>

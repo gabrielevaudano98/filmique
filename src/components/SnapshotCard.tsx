@@ -15,7 +15,7 @@ const SnapshotCard: React.FC<SnapshotCardProps> = ({ post, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className="w-full aspect-square bg-neutral-800 rounded-lg overflow-hidden group relative"
+      className="w-full aspect-square bg-white/70 dark:bg-neutral-800/60 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-lg overflow-hidden group relative shadow-none"
     >
       <Image
         src={coverPhotoUrl ? `${coverPhotoUrl}${cacheBuster}` : undefined}

@@ -28,10 +28,10 @@ const AssignAlbumModal: React.FC<AssignAlbumModalProps> = ({ roll, onClose }) =>
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
-        <div className="bg-neutral-800/80 backdrop-blur-lg border border-neutral-700/50 rounded-2xl max-w-sm w-full flex flex-col max-h-[80vh] shadow-2xl animate-modal-enter">
+        <div className="bg-white/70 dark:bg-neutral-800/80 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-2xl max-w-sm w-full flex flex-col max-h-[80vh] shadow-none">
           <div className="flex-shrink-0 p-5 border-b border-neutral-700/50 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white">Assign to Album</h2>
-            <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full">
+            <h2 className="text-xl font-bold text-black dark:text-white">Assign to Album</h2>
+            <button onClick={onClose} className="p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors rounded-full">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -43,7 +43,7 @@ const AssignAlbumModal: React.FC<AssignAlbumModalProps> = ({ roll, onClose }) =>
                 onClick={() => setSelectedAlbumId(album.id)}
                 className={`w-full flex items-center justify-between p-3 rounded-lg text-left transition-colors ${selectedAlbumId === album.id ? 'bg-brand-amber-start/10' : 'bg-neutral-700/50 hover:bg-neutral-700'}`}
               >
-                <span className="font-semibold text-white">{album.title}</span>
+                <span className="font-semibold text-black dark:text-white">{album.title}</span>
                 {selectedAlbumId === album.id && <Check className="w-5 h-5 text-brand-amber-start" />}
               </button>
             ))}

@@ -23,7 +23,7 @@ const VisibilityOption: React.FC<{
     }`}
   >
     <Icon className={`w-5 h-5 mx-auto mb-1 ${selected ? 'text-brand-amber-start' : 'text-gray-400'}`} />
-    <span className={`text-xs font-bold ${selected ? 'text-white' : 'text-gray-300'}`}>{label}</span>
+    <span className={`text-xs font-bold ${selected ? 'text-black dark:text-white' : 'text-gray-300'}`}>{label}</span>
   </button>
 );
 
@@ -60,10 +60,10 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-[80] p-4">
-      <div className="bg-neutral-800/80 backdrop-blur-lg border border-neutral-700/50 rounded-2xl max-w-sm w-full p-6 shadow-2xl animate-modal-enter">
+      <div className="bg-white/70 dark:bg-neutral-800/80 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-2xl max-w-sm w-full p-6 shadow-none">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold text-white">Create New {itemType}</h2>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-white transition-colors rounded-full">
+          <h2 className="text-xl font-bold text-black dark:text-white">Create New {itemType}</h2>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors rounded-full">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -77,7 +77,7 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Summer Vacation '24"
-                className="w-full bg-neutral-700/50 border border-neutral-600 rounded-lg px-4 py-2 text-white focus:ring-brand-amber-start focus:border-brand-amber-start"
+                className="w-full bg-neutral-700/50 border border-neutral-600 rounded-lg px-4 py-2 text-black dark:text-white focus:ring-brand-amber-start focus:border-brand-amber-start"
                 required
               />
             </div>
@@ -87,7 +87,7 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
                 id="parent-album"
                 value={parentAlbumId || ''}
                 onChange={(e) => setParentAlbumId(e.target.value || null)}
-                className="w-full bg-neutral-700/50 border border-neutral-600 rounded-lg px-4 py-2 text-white focus:ring-brand-amber-start focus:border-brand-amber-start"
+                className="w-full bg-neutral-700/50 border border-neutral-600 rounded-lg px-4 py-2 text-black dark:text-white focus:ring-brand-amber-start focus:border-brand-amber-start"
               >
                 <option value="">Root Level</option>
                 {albumOptions.map(opt => (
@@ -109,7 +109,7 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
             )}
           </div>
           <div className="mt-6 flex justify-end space-x-3">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 font-semibold transition-colors">
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 font-semibold transition-colors text-black dark:text-white">
               Cancel
             </button>
             <button
