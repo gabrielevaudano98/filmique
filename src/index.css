@@ -125,7 +125,7 @@ body {
 .fixed.bg-black\/60,
 .fixed.bg-black\/80,
 .fixed.bg-black\/90 {
-  background: var(--color-bg-modal) !important;
+  background: var(--color-bg-overlay) !important;
   backdrop-filter: blur(16px) saturate(120%);
   -webkit-backdrop-filter: blur(16px) saturate(120%);
 }
@@ -133,7 +133,7 @@ body {
 :root[data-theme='light'] .fixed.bg-black\/60,
 :root[data-theme='light'] .fixed.bg-black\/80,
 :root[data-theme='light'] .fixed.bg-black\/90 {
-  background: var(--color-bg-modal) !important;
+  background: var(--color-bg-overlay) !important;
   color: var(--color-text-primary);
 }
 
@@ -254,5 +254,36 @@ input[type="checkbox"]:checked + div:after {
 /* Misc utilities */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Animations */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 300ms cubic-bezier(0.2, 1, 0.35, 1) forwards;
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 300ms ease-out forwards;
+}
 
 /* ... (rest of your animation and utility CSS remains unchanged) ... */
