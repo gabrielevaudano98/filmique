@@ -114,6 +114,7 @@ const StudioView: React.FC = () => { // Renamed from RollsView
   const getTitleForStudioSection = (section: typeof studioSection) => {
     switch (section) {
       case 'albums': return 'Albums'; // Changed from 'rolls' to 'albums'
+      case 'darkroom': return 'Darkroom';
       case 'prints': return 'Prints';
       default: return 'Studio';
     }
@@ -134,7 +135,17 @@ const StudioView: React.FC = () => { // Renamed from RollsView
 
       <div {...swipeHandlers} className="relative flex-1">
         <div key={studioSection} className={animationClass}>
-          {studioSection === 'albums' && ( // Now 'albums' is the default and includes darkroom content
+          {studioSection === 'darkroom' && (
+            <div>
+              {developingRolls.length > 0 ? (
+                <div className="space-y-3">
+                  {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
+                </div>
+              ) : <DarkroomEmptyState />}
+            </div>
+          )}
+
+          {studioSection === 'albums' && ( // New 'albums' section
             <div className="pt-2">
               <LibraryView /> {/* Render LibraryView here */}
             </div>
