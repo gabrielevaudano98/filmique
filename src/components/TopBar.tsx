@@ -34,7 +34,7 @@ const TopBar: React.FC = () => {
       <div className="relative flex items-center justify-between px-4 h-20 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">
         {/* Default Header (Filmique & Bell) */}
         <div className={`absolute inset-0 flex items-center justify-between px-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] transition-all duration-300 ${isStudioSticky ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
-          <div className="w-10">
+          <div className="w-10 flex items-center">
             {headerAction && BackButton ? (
               <button onClick={headerAction.action} className="p-2 transition-colors -ml-2 text-gray-300 hover:text-white">
                 <BackButton className="w-5 h-5" />
@@ -42,18 +42,14 @@ const TopBar: React.FC = () => {
             ) : (
               <SyncStatusIndicator />
             )}
-          </div>
-          <h1 className="text-lg font-bold text-white">Filmique</h1>
-          <div className="flex items-center space-x-2">
-            <button onClick={() => setCurrentView('settings')} className="p-2 text-gray-300 hover:text-white transition-colors" aria-label="Settings">
-              <Settings className="w-6 h-6" />
-            </button>
             <NotificationsBell 
               theme="dark"
               unreadCount={unreadCount} 
               onClick={() => setCurrentView('notifications')} 
             />
           </div>
+          <h1 className="text-lg font-bold text-white">Filmique</h1>
+          <div className="w-10" /> {/* Placeholder for balance */}
         </div>
 
         {/* Studio Sticky Header */}
