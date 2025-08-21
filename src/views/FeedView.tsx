@@ -59,34 +59,10 @@ const FeedView: React.FC = () => {
   const [pullPosition, setPullPosition] = useState(0);
   const PULL_THRESHOLD = 80;
 
-  // State and refs for sticky header
-  const [isFeedHeaderSticky, setIsFeedHeaderSticky] = useState(false);
-  const feedHeaderTriggerRef = useRef<HTMLDivElement>(null);
-  const feedHeaderStickyRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     fetchFeed();
     fetchRecentStories();
   }, [fetchFeed, fetchRecentStories]);
-
-  // Effect for sticky header
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        const shouldBeSticky = !entry.isIntersecting && entry.boundingClientRect.top < 80;
-        if (isFeedHeaderSticky !== shouldBeSticky) {
-          setIsFeedHeaderSticky(shouldBeSticky);
-        }
-      },
-      { threshold: 0, rootMargin: "-80px 0px 0px 0px" }
-    );
-
-    const currentTriggerRef = feedHeaderTriggerRef.current;
-    if (currentTriggerRef) observer.observe(currentTriggerRef);
-    return () => {
-      if (currentTriggerRef) observer.unobserve(currentTriggerRef);
-    };
-  }, [isFeedHeaderSticky]);
 
   const refreshHandlers = useSwipeable({
     onSwiping: (event) => {
@@ -217,8 +193,8 @@ const FeedView: React.FC = () => {
         </div>
       </div>
 
-      {/* Header + icon-only segment control (TRIGGER REF) */}
-      <div ref={feedHeaderTriggerRef} className="flex items-center justify-between pt-0 pb-4">
+      {/* Header + icon-only segment control */}
+      <div className="flex items-center justify-between pt-0 pb-4">
         <h1 className="text-3xl font-bold text-white">{getTitleForSection(feedSection)}</h1>
 
         {/* Moved SegmentedControl to the right */}
@@ -245,9 +221,9 @@ const FeedView: React.FC = () => {
                 </div>
               )}
 
-              {/* Filter pills and Create Post button (STICKY CONTAINER) */}
-              <div ref={feedHeaderStickyRef} className={`sticky top-[80px] z-20 -mx-4 px-4 h-14 flex items-center transition-all duration-300 ${isFeedHeaderSticky ? 'bg-neutral-800/60 backdrop-blur-lg border-b border-neutral-700/50' : 'bg-transparent border-b border-transparent'}`}>
-                <div className="flex space-x-3 overflow-x-auto no-scrollbar w-full">
+              {/* Filter pills and Create Post button */}
+              <div className="mb-6">
+                <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
                   <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
                   <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
                   <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
@@ -257,8 +233,8 @@ const FeedView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Discover feed carousel (CONTENT BELOW STICKY) */}
-              <div className="-mt-14">
+              {/* Discover feed carousel */}
+              <div>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold">Discover Feed</h2>
                 </div>
