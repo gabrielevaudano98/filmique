@@ -191,7 +191,7 @@ const RollsView: React.FC = () => {
     <div className="flex flex-col w-full">
       <div ref={observerTriggerRef} className="flex items-center justify-between pt-0 pb-6">
         <h1 className="text-3xl font-bold text-white">{getTitleForStudioSection(studioSection)}</h1>
-        <div className="w-auto">
+        <div className="w-auto ml-auto flex justify-end">
           <SegmentedControl
             options={availableSections}
             value={studioSection}
