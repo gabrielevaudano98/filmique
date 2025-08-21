@@ -10,14 +10,13 @@ const LevelCreditsDisplay: React.FC<LevelCreditsDisplayProps> = ({ profile }) =>
   if (!profile) return null;
 
   return (
-    <div className="flex items-center rounded-full bg-white/80 dark:bg-neutral-800/60 border border-white/30 dark:border-neutral-700/50 backdrop-blur-lg shadow-none transition-colors">
-      <div className="px-3 py-1.5 text-sm font-bold text-black dark:text-white">
+    <div className="flex items-center rounded-full bg-always-white border border-neutral-300 shadow-sm overflow-hidden">
+      <div className="px-3 py-1.5 text-sm font-bold text-warm-400">
         LV {profile.level}
       </div>
-      <div className="h-full w-px bg-white/20 dark:bg-neutral-700/50"></div> {/* Separator */}
-      <div className="flex items-center px-3 py-1.5 text-sm font-bold text-brand-amber-start">
+      <div className="flex items-center px-3 py-1.5 text-sm font-bold rounded-full bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-warm-900 border border-brand-amber-end">
         <span>{profile.credits}</span>
-        <Zap className="w-4 h-4 ml-1" />
+        <Zap className="w-4 h-4 ml-1 text-accent-coral" />
       </div>
     </div>
   );
