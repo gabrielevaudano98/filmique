@@ -49,12 +49,11 @@ const BottomNavBar: React.FC = () => {
 
   const navItems = [
     { view: 'rolls', label: 'Rolls', icon: Film },
-    { view: 'library', label: 'Library', icon: Library },
     { view: 'feed', label: 'Feed', icon: Users },
   ];
 
   const leftItems = navItems.slice(0, 1);
-  const rightItems = navItems.slice(1, 3);
+  const rightItems = navItems.slice(1, 2); // Adjusted to only include 'Feed'
 
   const handleCameraClick = () => {
     impact(ImpactStyle.Light);

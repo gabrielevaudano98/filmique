@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Plus, User, ArrowDown, Users, Library as LibraryIcon } from 'lucide-react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext, Post } from '../context/AppContext';
@@ -33,6 +33,15 @@ const FilterPill: React.FC<FilterPillProps> = ({ label, isActive, onClick, icon:
   </button>
 );
 
+// Helper hook to get the previous value of a state
+function usePrevious<T>(value: T): T | undefined {
+  const ref = useRef<T>();
+  useEffect(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
 const FeedView: React.FC = () => {
   const { profile, feed, completedRolls, recentStories, fetchFeed, fetchRecentStories } = useAppContext();
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
@@ -40,6 +49,7 @@ const FeedView: React.FC = () => {
 
   // Internal feed sections
   const [feedSection, setFeedSection] = useState<'community' | 'profile' | 'gallery'>('community');
+  const prevFeedSection = usePrevious(feedSection);
 
   const [showFullStoryViewer, setShowFullStoryViewer] = useState(false);
   const [postsForFullStoryViewer, setPostsForFullStoryViewer] = useState<Post[] | null>(null);
@@ -75,6 +85,38 @@ const FeedView: React.FC = () => {
     trackMouse: true,
     trackTouch: true,
   });
+
+  const sectionOrder = useMemo(() => ['community', 'profile', 'gallery'], []);
+
+  const handleHorizontalSwipe = (direction: 'left' | 'right') => {
+    const currentIndex = sectionOrder.indexOf(feedSection);
+    if (direction === 'left' && currentIndex < sectionOrder.length - 1) {
+      setFeedSection(sectionOrder[currentIndex + 1] as any);
+    } else if (direction === 'right' && currentIndex > 0) {
+      setFeedSection(sectionOrder[currentIndex - 1] as any);
+    }
+  };
+
+  const horizontalSwipeHandlers = useSwipeable({
+    onSwipedLeft: () => handleHorizontalSwipe('left'),
+    onSwipedRight: () => handleHorizontalSwipe('right'),
+    preventScrollOnSwipe: false, // Allow vertical scrolling
+    preventDefaultTouchmoveEvent: false,
+    trackMouse: true,
+    trackTouch: true,
+  });
+
+  const animationClass = useMemo(() => {
+    if (!prevFeedSection) return ''; // No animation on initial load
+    const prevIndex = sectionOrder.indexOf(prevFeedSection);
+    const currentIndex = sectionOrder.indexOf(feedSection);
+    if (currentIndex > prevIndex) {
+      return 'animate-slide-in-from-right';
+    } else {
+      return 'animate-slide-in-from-left';
+    }
+  }, [feedSection, prevFeedSection, sectionOrder]);
+
 
   const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
 
@@ -130,7 +172,7 @@ const FeedView: React.FC = () => {
   const segmentOptions = [
     { value: 'community', label: 'Community', icon: Users, colors: { from: 'from-accent-violet', to: 'to-indigo-600', shadow: 'shadow-indigo-500/30' }, description: 'Community' },
     { value: 'profile', label: 'Profile', icon: User, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' }, description: 'Profile' },
-    { value: 'gallery', label: 'Gallery', icon: LibraryIcon, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' }, description: 'Gallery' },
+    { value: 'gallery', label: 'Library', icon: LibraryIcon, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' }, description: 'Gallery' },
   ];
 
   const getTitleForSection = (section: typeof feedSection) => {
@@ -166,62 +208,64 @@ const FeedView: React.FC = () => {
         </div>
       </div>
 
-      {/* Section content */}
-      <div className="mt-4">
-        {feedSection === 'community' && (
-          <>
-            {/* Recent Stories */}
-            {recentStories.size > 0 && (
+      {/* Section content with swipe handlers and animation */}
+      <div {...horizontalSwipeHandlers} className="relative flex-1 overflow-hidden">
+        <div key={feedSection} className={`w-full ${animationClass}`}>
+          {feedSection === 'community' && (
+            <>
+              {/* Recent Stories */}
+              {recentStories.size > 0 && (
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold mb-4">Recent Stories</h2>
+                  <StoryRollsCarousel recentStories={recentStories} onSelectStory={handleSelectStory} />
+                </div>
+              )}
+
+              {/* Filter pills and Create Post button */}
               <div className="mb-6">
-                <h2 className="text-xl font-bold mb-4">Recent Stories</h2>
-                <StoryRollsCarousel recentStories={recentStories} onSelectStory={handleSelectStory} />
+                <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
+                  <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
+                  <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
+                  <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
+                  <FilterPill label="New" isActive={activeFilter === 'new'} onClick={() => setActiveFilter('new')} />
+                  {/* Moved Create Post button here, styled as a FilterPill */}
+                  <FilterPill label="New Post" isActive={false} onClick={() => setShowCreatePostModal(true)} icon={Plus} />
+                </div>
               </div>
-            )}
 
-            {/* Filter pills and Create Post button */}
-            <div className="mb-6">
-              <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
-                <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
-                <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
-                <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
-                <FilterPill label="New" isActive={activeFilter === 'new'} onClick={() => setActiveFilter('new')} />
-                {/* Moved Create Post button here, styled as a FilterPill */}
-                <FilterPill label="New Post" isActive={false} onClick={() => setShowCreatePostModal(true)} icon={Plus} />
+              {/* Discover feed carousel */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold">Discover Feed</h2>
+                </div>
+                <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
+                  {filteredFeed.length > 0 ? (
+                    filteredFeed.map(post => (
+                      <RollPostCard key={post.id} post={post} onClick={() => handleSelectStory(post.user_id, post.id)} />
+                    ))
+                  ) : (
+                    <div className="w-full text-center py-16 text-gray-500">
+                      <p>No posts to show yet.</p>
+                      <p>Follow some users or check back later!</p>
+                    </div>
+                  )}
+                </div>
               </div>
+            </>
+          )}
+
+          {feedSection === 'profile' && (
+            <div className="pt-2">
+              <ProfileView />
             </div>
+          )}
 
-            {/* Discover feed carousel */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold">Discover Feed</h2>
-              </div>
-              <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
-                {filteredFeed.length > 0 ? (
-                  filteredFeed.map(post => (
-                    <RollPostCard key={post.id} post={post} onClick={() => handleSelectStory(post.user_id, post.id)} />
-                  ))
-                ) : (
-                  <div className="w-full text-center py-16 text-gray-500">
-                    <p>No posts to show yet.</p>
-                    <p>Follow some users or check back later!</p>
-                  </div>
-                )}
-              </div>
+          {feedSection === 'gallery' && (
+            <div className="pt-2">
+              <LibraryView />
             </div>
-          </>
-        )}
-
-        {feedSection === 'profile' && (
-          <div className="pt-2">
-            <ProfileView />
-          </div>
-        )}
-
-        {feedSection === 'gallery' && (
-          <div className="pt-2">
-            <LibraryView />
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {showCreatePostModal && (
