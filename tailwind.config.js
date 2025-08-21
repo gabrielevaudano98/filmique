@@ -70,9 +70,6 @@ export default {
         'safe-l': 'env(safe-area-inset-left)',
         'safe-r': 'env(safe-area-inset-right)',
       },
-      backgroundImage: {
-        'gradient-pro-panel': 'linear-gradient(180deg, rgba(43,15,6,0.7), rgba(58,25,10,0.7))',
-      }
     },
   },
   plugins: [],
