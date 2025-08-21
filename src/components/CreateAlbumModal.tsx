@@ -19,11 +19,11 @@ const VisibilityOption: React.FC<{
     type="button"
     onClick={onSelect}
     className={`flex-1 text-center p-3 rounded-lg border-2 transition-all ${
-      selected ? 'bg-brand-amber-start/10 border-brand-amber-start' : 'bg-neutral-700/50 border-transparent hover:border-neutral-600'
+      selected ? 'bg-brand-amber-start/15 border-brand-amber-start text-black dark:text-white' : 'bg-neutral-700/50 border-transparent hover:border-neutral-600 text-gray-300 dark:text-gray-300'
     }`}
   >
     <Icon className={`w-5 h-5 mx-auto mb-1 ${selected ? 'text-brand-amber-start' : 'text-gray-400'}`} />
-    <span className={`text-xs font-bold ${selected ? 'text-black dark:text-white' : 'text-gray-300'}`}>{label}</span>
+    <span className={`text-xs font-bold`}>{label}</span>
   </button>
 );
 
@@ -59,8 +59,8 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-[80] p-4">
-      <div className="bg-white/70 dark:bg-neutral-800/80 backdrop-blur-lg border border-white/30 dark:border-neutral-700/50 rounded-2xl max-w-sm w-full p-6 shadow-none">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[80] p-4">
+      <div className="bg-white/80 dark:bg-neutral-800/60 backdrop-blur-lg border border-white/40 dark:border-neutral-700/50 rounded-2xl max-w-sm w-full p-6 shadow-none">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-bold text-black dark:text-white">Create New {itemType}</h2>
           <button onClick={onClose} className="p-2 text-gray-400 hover:text-black dark:hover:text-white transition-colors rounded-full">
@@ -70,24 +70,24 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="album-title" className="text-sm font-semibold text-gray-300 mb-2 block">{itemType} Title</label>
+              <label htmlFor="album-title" className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">{itemType} Title</label>
               <input
                 id="album-title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Summer Vacation '24"
-                className="w-full bg-neutral-700/50 border border-neutral-600 rounded-lg px-4 py-2 text-black dark:text-white focus:ring-brand-amber-start focus:border-brand-amber-start"
+                className="w-full bg-white/50 dark:bg-neutral-700/50 border border-white/30 dark:border-neutral-600 rounded-lg px-4 py-2 text-black dark:text-white focus:ring-brand-amber-start focus:border-brand-amber-start"
                 required
               />
             </div>
             <div>
-              <label htmlFor="parent-album" className="text-sm font-semibold text-gray-300 mb-2 block">Location (Parent {itemType})</label>
+              <label htmlFor="parent-album" className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">Location (Parent {itemType})</label>
               <select
                 id="parent-album"
                 value={parentAlbumId || ''}
                 onChange={(e) => setParentAlbumId(e.target.value || null)}
-                className="w-full bg-neutral-700/50 border border-neutral-600 rounded-lg px-4 py-2 text-black dark:text-white focus:ring-brand-amber-start focus:border-brand-amber-start"
+                className="w-full bg-white/50 dark:bg-neutral-700/50 border border-white/30 dark:border-neutral-600 rounded-lg px-4 py-2 text-black dark:text-white focus:ring-brand-amber-start focus:border-brand-amber-start"
               >
                 <option value="">Root Level</option>
                 {albumOptions.map(opt => (
@@ -99,7 +99,7 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
             </div>
             {itemType === 'Album' && (
               <div>
-                <label className="text-sm font-semibold text-gray-300 mb-2 block">Visibility</label>
+                <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 block">Visibility</label>
                 <div className="flex items-center space-x-2">
                   <VisibilityOption label="Private" value="private" icon={Lock} selected={visibility === 'private'} onSelect={() => setVisibility('private')} />
                   <VisibilityOption label="Unlisted" value="unlisted" icon={Link2} selected={visibility === 'unlisted'} onSelect={() => setVisibility('unlisted')} />
@@ -109,7 +109,7 @@ const CreateAlbumModal: React.FC<CreateAlbumModalProps> = ({ onClose, parentAlbu
             )}
           </div>
           <div className="mt-6 flex justify-end space-x-3">
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg bg-neutral-700 hover:bg-neutral-600 font-semibold transition-colors text-black dark:text-white">
+            <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg bg-neutral-200 dark:bg-neutral-700 hover:bg-neutral-300 dark:hover:bg-neutral-600 font-semibold transition-colors text-black dark:text-white">
               Cancel
             </button>
             <button
