@@ -194,7 +194,7 @@ const FeedView: React.FC = () => {
       </div>
 
       {/* Header + icon-only segment control */}
-      <div className="flex items-center justify-between pt-0 pb-4">
+      <div className="flex items-center justify-between pt-4 pb-4">
         <h1 className="text-3xl font-bold text-white">{getTitleForSection(feedSection)}</h1>
 
         {/* Moved SegmentedControl to the right */}

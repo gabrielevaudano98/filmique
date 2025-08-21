@@ -13,11 +13,6 @@ const SyncStatusIndicator: React.FC = () => {
   const { syncStatus, setIsSyncStatusModalOpen } = useAppContext();
   const { icon: Icon, color, label, animation } = statusInfo[syncStatus];
 
-  // Only show the indicator if status is 'error' or 'syncing'
-  if (syncStatus === 'offline' || syncStatus === 'synced') {
-    return null;
-  }
-
   const handleClick = () => {
     if (syncStatus === 'error' || syncStatus === 'syncing') {
       setIsSyncStatusModalOpen(true);
