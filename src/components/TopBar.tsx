@@ -18,12 +18,10 @@ const TopBar: React.FC = () => {
 
   const BackButton = headerAction ? headerAction.icon : null;
 
-  const headerClasses = `sticky top-0 z-40 transition-all duration-300 backdrop-blur-lg ${
-    isStudioSticky
-      ? 'bg-neutral-800/60 border-b border-neutral-700/50'
-      : isStudioView
-      ? 'bg-transparent border-b border-transparent'
-      : 'bg-neutral-800/60 border-b border-neutral-700/50'
+  const headerClasses = `sticky top-0 z-40 transition-all duration-300 ${
+    isStudioSticky || !isStudioView // Apply glass effect if sticky OR if not in studio view (i.e., default views)
+      ? 'top-bar-glass' // New class
+      : 'bg-transparent border-b border-transparent' // For non-sticky studio view
   } ${!isTopBarVisible ? '-translate-y-full' : 'translate-y-0'}`;
   
   return (
