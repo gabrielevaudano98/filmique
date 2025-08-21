@@ -28,7 +28,7 @@ const TopBar: React.FC = () => {
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <div className="relative flex items-center justify-between px-4 h-20 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))]">
-        {/* Default Header (Filmique & Bell) */}
+        {/* Default Header (Filmique, Bell, Settings) */}
         <div className={`absolute inset-0 flex items-center justify-between px-4 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] transition-all duration-300 ${isStudioSticky ? 'opacity-0 -translate-y-2 pointer-events-none' : 'opacity-100 translate-y-0'}`}>
           <div className="flex items-center gap-x-4">
             {headerAction && BackButton ? (
@@ -47,7 +47,18 @@ const TopBar: React.FC = () => {
             )}
           </div>
           <h1 className="text-lg font-bold text-white">Filmique</h1>
-          <div className="w-10" />
+          <div className="flex items-center gap-2 justify-end">
+            {/* Only show settings if not in back-button context */}
+            {(!headerAction || !BackButton) && (
+              <button
+                onClick={() => setCurrentView('settings')}
+                aria-label="Settings"
+                className="p-2 rounded-full transition-colors text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-brand-amber-start"
+              >
+                <Settings className="w-6 h-6" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Studio Sticky Header */}
