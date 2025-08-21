@@ -37,7 +37,7 @@ const SubscriptionView: React.FC = () => {
 
       <div className="p-4 sm:p-6 overflow-y-auto no-scrollbar">
         {/* Current Plan */}
-        <div className="rounded-xl p-6 mb-8 border bg-white/70 dark:bg-neutral-800/60 border-white/30 dark:border-neutral-700/50 shadow-lg backdrop-blur-lg">
+        <div className="rounded-xl p-6 mb-8 border bg-white/70 dark:bg-neutral-800/60 border-white/30 dark:border-neutral-700/50 backdrop-blur-lg shadow-none">
           <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">Your Current Plan</h2>
           <p className="text-3xl font-bold text-brand-amber-start mt-1">
             {isPremium ? 'Filmique+' : 'Basic'}
@@ -50,7 +50,7 @@ const SubscriptionView: React.FC = () => {
         {/* Premium Features Settings */}
         <div className="mb-8">
           <h3 className="px-4 pb-2 text-sm font-semibold text-gray-400 dark:text-gray-600 uppercase tracking-wider">Premium Settings</h3>
-          <div className="rounded-xl overflow-hidden border bg-white/70 dark:bg-neutral-800/60 border-white/30 dark:border-neutral-700/50 shadow-lg backdrop-blur-lg">
+          <div className="rounded-xl overflow-hidden border bg-white/70 dark:bg-neutral-800/60 border-white/30 dark:border-neutral-700/50 backdrop-blur-lg shadow-none">
             <SettingsToggleRow
               icon={<Cloud className="w-5 h-5 text-black dark:text-white" />}
               color="bg-blue-500"
@@ -69,7 +69,7 @@ const SubscriptionView: React.FC = () => {
 
         {/* Upgrade Plan */}
         {!isPremium && (
-          <div className="rounded-xl p-6 border bg-gradient-to-br from-brand-amber-start/20 to-white/80 dark:to-neutral-800/20 border-brand-amber-start/30 shadow-lg backdrop-blur-lg">
+          <div className="rounded-xl p-6 border bg-gradient-to-br from-brand-amber-start/20 to-white/80 dark:to-neutral-800/20 border-brand-amber-start/30 backdrop-blur-lg shadow-none">
             <div className="flex items-center space-x-3 mb-4">
               <div className="p-2 bg-brand-amber-start rounded-full">
                 <Star className="w-6 h-6 text-black" />
@@ -84,7 +84,7 @@ const SubscriptionView: React.FC = () => {
             </ul>
             <button 
               onClick={handleComingSoon}
-              className="w-full flex justify-center items-center space-x-2 py-3 px-4 rounded-lg shadow-lg shadow-brand-amber-start/20 text-base font-bold text-white bg-gradient-to-r from-brand-amber-start to-brand-amber-end hover:opacity-90 transition-all"
+              className="w-full flex justify-center items-center space-x-2 py-3 px-4 rounded-lg text-base font-bold text-white bg-gradient-to-r from-brand-amber-start to-brand-amber-end hover:opacity-90 transition-all"
             >
               <Sparkles className="w-5 h-5" />
               <span>Upgrade Now</span>

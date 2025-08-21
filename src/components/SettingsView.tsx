@@ -32,11 +32,12 @@ const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({
   <div className="mb-6">
     <h3 className="px-4 pb-2 text-sm font-semibold text-gray-400 dark:text-gray-600 uppercase tracking-wider">{title}</h3>
     <div className="
-      rounded-xl overflow-hidden shadow-lg
+      rounded-xl overflow-hidden
       bg-white/70 dark:bg-neutral-800/60
       border border-white/30 dark:border-neutral-700/50
       backdrop-blur-lg
       transition-all
+      shadow-none
     ">
       {React.Children.map(children, (child, index) => (
         <>
@@ -59,14 +60,14 @@ const ThemeSelector: React.FC<{
     { value: 'light', icon: Sun, label: 'Light' },
   ];
   return (
-    <div className="flex items-center gap-2 bg-white/60 dark:bg-neutral-800/60 border border-white/30 dark:border-neutral-700/50 rounded-full px-2 py-1 backdrop-blur-md shadow-inner">
+    <div className="flex items-center gap-2 bg-white/60 dark:bg-neutral-800/60 border border-white/30 dark:border-neutral-700/50 rounded-full px-2 py-1 backdrop-blur-md shadow-none">
       {options.map(opt => (
         <button
           key={opt.value}
           onClick={() => setTheme(opt.value)}
           className={`flex items-center justify-center w-8 h-8 rounded-full transition
             ${theme === opt.value
-              ? 'bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-black shadow'
+              ? 'bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-black'
               : 'bg-transparent text-gray-600 dark:text-gray-300 hover:bg-white/30 dark:hover:bg-white/10'
             }`}
           aria-label={opt.label}
@@ -218,7 +219,7 @@ const SettingsView: React.FC = () => {
         <div className="mt-10 space-y-4">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-white/70 dark:bg-neutral-800/60 border border-white/30 dark:border-neutral-700/50 hover:bg-white/90 dark:hover:bg-neutral-700/80 rounded-xl transition-colors font-semibold text-black dark:text-white shadow"
+            className="w-full flex items-center justify-center space-x-2 py-3 px-4 bg-white/70 dark:bg-neutral-800/60 border border-white/30 dark:border-neutral-700/50 hover:bg-white/90 dark:hover:bg-neutral-700/80 rounded-xl transition-colors font-semibold text-black dark:text-white shadow-none"
           >
             <LogOut className="w-5 h-5" />
             <span>Log Out</span>
