@@ -26,12 +26,14 @@ const NavItem: React.FC<{
     >
       <Icon
         className={`w-7 h-7 transition-all duration-300 ease-spring-soft ${
-          isActive ? 'text-brand-amber-start -translate-y-2' : 'text-neutral-400 group-hover:text-white'
+          isActive
+            ? 'text-brand-amber-start -translate-y-2'
+            : 'text-white dark:text-white text-black group-hover:text-brand-amber-start'
         }`}
       />
       <span
         className={`absolute bottom-2 text-[10px] font-bold transition-all duration-300 ease-spring-soft ${
-          isActive ? 'opacity-100 text-brand-amber-start' : 'opacity-0 group-hover:opacity-100 text-white'
+          isActive ? 'opacity-100 text-brand-amber-start' : 'opacity-0 group-hover:opacity-100 text-black dark:text-white'
         }`}
       >
         {label}
@@ -62,11 +64,11 @@ const BottomNavBar: React.FC = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-28 flex justify-center z-50 pointer-events-none pb-safe-b">
-      <div className="relative flex items-center pointer-events-auto pl-safe-l pr-safe-r">
+      <div className="relative flex items-center pointer-events-auto pl-safe-l pr-safe-r w-full">
         {/* Main glass pill background */}
-        <div className="absolute top-1/2 -translate-y-1/2 h-[72px] w-full bg-gradient-to-b from-neutral-800/60 to-neutral-900/70 backdrop-blur-2xl rounded-[36px] border border-white/10 shadow-depth shadow-[inset_0_1px_0_0_rgba(255,255,255,0.07)]"></div>
+        <div className="floating-nav absolute top-1/2 -translate-y-1/2 h-[72px] w-full"></div>
 
-        <div className="relative flex items-center justify-center px-3">
+        <div className="relative flex items-center justify-center px-3 w-full">
           {/* Left Items */}
           <div className="flex items-center gap-2">
             {leftItems.map((item) => (
@@ -86,8 +88,8 @@ const BottomNavBar: React.FC = () => {
               aria-label="Camera"
               className="absolute w-20 h-20 rounded-full bg-gradient-to-br from-brand-amber-start to-brand-amber-end camera-button-glow flex items-center justify-center transition-transform active:scale-95"
             >
-              <div className="w-[72px] h-[72px] rounded-full bg-warm-800 flex items-center justify-center">
-                <Camera className="w-8 h-8 text-white" />
+              <div className="w-[72px] h-[72px] rounded-full bg-warm-800 dark:bg-warm-800 bg-white flex items-center justify-center">
+                <Camera className="w-8 h-8 text-black dark:text-white" />
               </div>
             </button>
           </div>
