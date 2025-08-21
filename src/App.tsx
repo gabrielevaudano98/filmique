@@ -4,10 +4,10 @@ import { App as CapacitorApp } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import CameraView from './components/CameraView';
-import RollsView from './components/RollsView';
-import FeedView from './views/FeedView';
-import ChallengesView from './components/ChallengesView';
-import ProfileView from './components/ProfileView';
+import StudioView from './views/StudioView'; // Renamed from RollsView
+import SocialView from './views/SocialView'; // Renamed from FeedView
+import ChallengesView from './components/ChallengesView'; // Will be moved inside SocialView
+import ProfileView from './components/ProfileView'; // Will be moved inside SocialView
 import SettingsView from './components/SettingsView';
 import LoginView from './components/LoginView';
 import OtpView from './components/OtpView';
@@ -22,7 +22,7 @@ import UncategorizedRollsView from './components/UncategorizedRollsView';
 import RollCompletionWizard from './components/RollCompletionWizard';
 import PostDevelopmentWizard from './components/PostDevelopmentWizard';
 import RollsSettingsView from './components/RollsSettingsView';
-import LibraryView from './components/LibraryView';
+import LibraryView from './components/LibraryView'; // Will be moved inside StudioView
 import SpeedUpModal from './components/SpeedUpModal';
 import { Roll } from './types';
 import SubscriptionView from './components/SubscriptionView';
@@ -45,6 +45,7 @@ function App() {
     speedUpDevelopment,
     isSyncStatusModalOpen,
     setStudioSection,
+    setSocialSection, // New: to manage social sub-sections
   } = useAppContext();
 
   useEffect(() => {
@@ -66,13 +67,13 @@ function App() {
       if (rollToConfirm) { setRollToConfirm(null); return; }
 
       switch (currentView) {
-        case 'rollDetail': setSelectedRoll(null); setCurrentView('rolls'); break;
-        case 'albumDetail': setSelectedAlbum(null); setCurrentView('profile'); break;
-        case 'settings': setCurrentView('profile'); break;
+        case 'rollDetail': setSelectedRoll(null); setCurrentView('studio'); setStudioSection('rolls'); break; // Changed to 'studio'
+        case 'albumDetail': setSelectedAlbum(null); setCurrentView('studio'); setStudioSection('albums'); break; // Changed to 'studio'
+        case 'settings': setCurrentView('social'); setSocialSection('profile'); break; // Changed to 'social'
         case 'subscription': setCurrentView('settings'); break;
-        case 'notifications': setCurrentView('feed'); break;
-        case 'uncategorizedRolls': setCurrentView('rolls'); break;
-        case 'camera': setCurrentView('rolls'); break;
+        case 'notifications': setCurrentView('social'); setSocialSection('community'); break; // Changed to 'social'
+        case 'uncategorizedRolls': setCurrentView('studio'); setStudioSection('albums'); break; // Changed to 'studio'
+        case 'camera': setCurrentView('studio'); setStudioSection('rolls'); break; // Changed to 'studio'
         default: console.log("Back button pressed on main view. Preventing exit."); break;
       }
     };
@@ -82,38 +83,37 @@ function App() {
   }, [
     isRollsSettingsOpen, developedRollForWizard, rollToConfirm, currentView,
     setIsRollsSettingsOpen, setDevelopedRollForWizard, setRollToConfirm,
-    setCurrentView, setSelectedRoll, setSelectedAlbum
+    setCurrentView, setSelectedRoll, setSelectedAlbum, setStudioSection, setSocialSection
   ]);
 
   const renderCurrentView = () => {
     switch (currentView) {
-      case 'rolls': return <RollsView />;
-      case 'library': return <LibraryView />;
-      case 'feed': return <FeedView />;
-      case 'challenges': return <ChallengesView />;
-      case 'profile': return <ProfileView />;
+      case 'studio': return <StudioView />; // New Studio View
+      case 'social': return <SocialView />; // New Social View
+      case 'challenges': return <ChallengesView />; // Will be rendered inside SocialView
+      case 'profile': return <ProfileView />; // Will be rendered inside SocialView
       case 'settings': return <SettingsView />;
       case 'subscription': return <SubscriptionView />;
       case 'rollDetail': return <RollDetailView />;
       case 'albumDetail': return <AlbumDetailView />;
       case 'notifications': return <NotificationsView />;
       case 'uncategorizedRolls': return <UncategorizedRollsView />;
-      default: return <FeedView />;
+      default: return <StudioView />; // Default to StudioView
     }
   };
 
   const handleWizardSendToStudio = (roll: Roll, title: string) => {
     sendToStudio(roll, title);
     setRollToConfirm(null);
-    setCurrentView('rolls');
+    setCurrentView('studio');
     setStudioSection('darkroom');
   };
 
   const handleWizardPutOnShelf = (roll: Roll, title: string) => {
     putOnShelf(roll, title);
     setRollToConfirm(null);
-    setCurrentView('rolls');
-    setStudioSection('rolls');
+    setCurrentView('studio');
+    setStudioSection('albums'); // Changed to 'albums'
   };
 
   const handleConfirmSpeedUp = () => {

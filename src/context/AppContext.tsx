@@ -8,7 +8,7 @@ import { useAlbums } from '../hooks/useAlbums';
 import { useRollsSettings } from '../hooks/useRollsSettings';
 import { usePrintOrders } from '../hooks/usePrintOrders';
 import * as api from '../services/api';
-import { Library, Clock, Printer } from 'lucide-react';
+import { Library, Clock, Printer, Users, User, Trophy } from 'lucide-react'; // Added Users, User, Trophy
 import { Network } from '@capacitor/network';
 import { showInfoToast, showSuccessToast } from '../utils/toasts';
 import { useSyncEngine } from '../hooks/useSyncEngine';
@@ -25,15 +25,22 @@ export const useAppContext = () => {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // UI State
-  const [currentView, setCurrentView] = useState<string>('rolls');
+  const [currentView, setCurrentView] = useState<string>('studio'); // Default to 'studio'
   const [cameraMode, setCameraMode] = useState<'simple' | 'pro'>('simple');
   const [showFilmModal, setShowFilmModal] = useState(false);
   const [headerAction, setHeaderAction] = useState<{ icon: React.ElementType, action: () => void } | null>(null);
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [studioSection, setStudioSection] = useState<'rolls' | 'darkroom' | 'prints'>('rolls');
+  
+  // Studio View Sections
+  const [studioSection, setStudioSection] = useState<'darkroom' | 'albums' | 'prints'>('albums'); // Default to 'albums'
   const [isStudioHeaderSticky, setIsStudioHeaderSticky] = useState(false);
-  const [isRollsSettingsOpen, setIsRollsSettingsOpen] = useState(false);
+  const [isRollsSettingsOpen, setIsRollsSettingsOpen] = useState(false); // Renamed from isRollsSettingsOpen
+  
+  // Social View Sections
+  const [socialSection, setSocialSection] = useState<'community' | 'profile' | 'challenges'>('community'); // New state for Social sections
+  const [isSocialHeaderSticky, setIsSocialHeaderSticky] = useState(false); // New state for Social header sticky
+
   const [isPrintsSettingsOpen, setIsPrintsSettingsOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [printSearchTerm, setPrintSearchTerm] = useState('');
@@ -44,10 +51,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Data State
   const [filmStocks, setFilmStocks] = useState<FilmStock[]>([]);
 
+  // Studio Section Options (for SegmentedControl)
   const studioSectionOptions = [
-    { value: 'rolls', icon: Library, description: 'Your collection of developed film.', colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' } },
-    { value: 'darkroom', icon: Clock, description: 'Develop your completed rolls.', colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' } },
-    { value: 'prints', icon: Printer, description: 'Order prints of your photos.', colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' } },
+    { value: 'darkroom', label: 'Darkroom', icon: Clock, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' }, description: 'Develop your completed rolls.' },
+    { value: 'albums', label: 'Albums', icon: Library, colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' }, description: 'Your collection of developed film.' },
+    { value: 'prints', label: 'Prints', icon: Printer, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' }, description: 'Order prints of your photos.' },
+  ];
+
+  // Social Section Options (for SegmentedControl)
+  const socialSectionOptions = [
+    { value: 'community', label: 'Community', icon: Users, colors: { from: 'from-accent-violet', to: 'to-indigo-600', shadow: 'shadow-indigo-500/30' }, description: 'See posts from other users.' },
+    { value: 'profile', label: 'Profile', icon: User, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' }, description: 'Your personal profile and posts.' },
+    { value: 'challenges', label: 'Challenges', icon: Trophy, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' }, description: 'Complete challenges to earn rewards.' },
   ];
 
   // Modular Hooks
@@ -168,7 +183,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsSyncStatusModalOpen,
     retryFailedTransaction,
     deleteFailedTransaction,
-  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, printOrdersData, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, isRollsSettingsOpen, isOnline, syncStatus, isPrintsSettingsOpen, printSearchTerm, printStatusFilter, printSortOrder, isSyncStatusModalOpen, retryFailedTransaction, deleteFailedTransaction]);
+    socialSection, // New
+    setSocialSection, // New
+    isSocialHeaderSticky, // New
+    setIsSocialHeaderSticky, // New
+    socialSectionOptions, // New
+  }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, printOrdersData, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, studioSectionOptions, isRollsSettingsOpen, isOnline, syncStatus, isPrintsSettingsOpen, printSearchTerm, printStatusFilter, printSortOrder, isSyncStatusModalOpen, retryFailedTransaction, deleteFailedTransaction, socialSection, isSocialHeaderSticky, socialSectionOptions]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;
 };
