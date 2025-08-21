@@ -369,7 +369,8 @@ const CameraView: React.FC = () => {
       <div className="bg-gray-900 select-none flex-shrink-0 flex flex-col justify-center" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         <div className="flex flex-col items-center justify-center">
           {cameraMode === 'pro' && !isNative && (
-            <div className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2 pl-safe-l pr-safe-r">
+            <div className="w-full min-h-[90px] flex flex-col justify-center items-center gap-2 px-2 pl-safe-l pr-safe-r
+              bg-gradient-pro-panel rounded-xl border border-neutral-700/50 shadow-lg">
               <div className="flex items-center justify-center space-x-6">
                 {proControls.map(c => (
                   <button key={c.id} onClick={() => setActiveProControl(activeProControl === c.id ? null : c.id)} className={`flex flex-col items-center gap-1 transition-colors ${activeProControl === c.id ? 'text-amber-400' : 'text-gray-300 hover:text-white'}`}>
