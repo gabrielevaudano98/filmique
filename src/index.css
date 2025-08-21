@@ -1,3 +1,4 @@
+warm-500 with 0.5 alpha">
 @import url('https://fonts.cdnfonts.com/css/sf-pro-display');
 
 @tailwind base;
@@ -375,11 +376,8 @@
 
 /* New top bar glass effect */
 .top-bar-glass {
-  /* Using provided RGB stops with alpha 0.5:
-     - RGB(93,39,13) -> rgba(93,39,13,0.5)
-     - RGB(127,74,52) -> rgba(127,74,52,0.5)
-  */
-  background: linear-gradient(180deg, rgba(93,39,13,0.5), rgba(127,74,52,0.5));
+  /* warm-600 -> warm-500 with 0.5 alpha */
+  background: linear-gradient(180deg, rgba(122,62,25,0.5), rgba(166,90,43,0.5));
   backdrop-filter: blur(24px) saturate(200%);
   -webkit-backdrop-filter: blur(24px) saturate(200%);
   /* Discrete bottom border slightly lighter than the background */
