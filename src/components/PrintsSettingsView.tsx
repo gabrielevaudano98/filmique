@@ -67,7 +67,7 @@ const PrintsSettingsView: React.FC = () => {
   if (!isPrintsSettingsOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 dark:bg-black/60 backdrop-blur-lg flex items-end z-[60]" onClick={handleClose}>
+    <div className="fixed inset-0 bg-black/80 dark:bg-black/80 backdrop-blur-lg flex items-end z-[60]" onClick={handleClose}>
       <div
         onClick={(e) => e.stopPropagation()}
         className="w-full bg-white/80 dark:bg-neutral-800/60 backdrop-blur-lg border-t border-white/40 dark:border-neutral-700/50 rounded-t-2xl shadow-none flex flex-col max-h-[80vh] animate-slide-up text-black dark:text-white"
