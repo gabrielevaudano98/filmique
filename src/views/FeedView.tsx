@@ -59,6 +59,35 @@ const FeedView: React.FC = () => {
   const [pullPosition, setPullPosition] = useState(0);
   const PULL_THRESHOLD = 80;
 
+  // State and refs for sticky filter bar
+  const [isFilterBarSticky, setIsFilterBarSticky] = useState(false);
+  const filterBarSentinelRef = useRef<HTMLDivElement>(null);
+  const filterBarRef = useRef<HTMLDivElement>(null); // Ref for the actual sticky element
+
+  useEffect(() => {
+    let observer: IntersectionObserver;
+    if (filterBarSentinelRef.current) {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          // The filter bar should be sticky when its sentinel is no longer fully visible at the top
+          // and its top edge is at or above the sticky point (80px from top, which is TopBar height).
+          setIsFilterBarSticky(entry.boundingClientRect.top <= 80 && entry.intersectionRatio < 1);
+        },
+        {
+          threshold: [0, 1], // Observe when it enters/leaves the viewport and when it's fully visible
+          rootMargin: '-80px 0px 0px 0px', // Trigger when sentinel hits 80px from top
+        }
+      );
+      observer.observe(filterBarSentinelRef.current);
+    }
+
+    return () => {
+      if (observer && filterBarSentinelRef.current) {
+        observer.unobserve(filterBarSentinelRef.current);
+      }
+    };
+  }, []);
+
   useEffect(() => {
     fetchFeed();
     fetchRecentStories();
@@ -222,19 +251,26 @@ const FeedView: React.FC = () => {
               )}
 
               {/* Filter pills and Create Post button */}
-              <div className="mb-6">
-                <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
-                  <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
-                  <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
-                  <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
-                  <FilterPill label="New" isActive={activeFilter === 'new'} onClick={() => setActiveFilter('new')} />
-                  {/* Moved Create Post button here, styled as a FilterPill */}
-                  <FilterPill label="New Post" isActive={false} onClick={() => setShowCreatePostModal(true)} icon={Plus} />
-                </div>
+              {/* Sentinel for observation */}
+              <div ref={filterBarSentinelRef} className="h-0" /> {/* Invisible sentinel */}
+              <div
+                ref={filterBarRef}
+                className={`flex space-x-3 overflow-x-auto no-scrollbar transition-all duration-300
+                  ${isFilterBarSticky
+                    ? 'sticky top-[80px] z-20 bg-neutral-800/60 backdrop-blur-lg border-b border-neutral-700/50 py-4 px-4 -mx-4'
+                    : 'pb-2 -mx-4 px-4'
+                  }
+                `}
+              >
+                <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
+                <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
+                <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
+                <FilterPill label="New" isActive={activeFilter === 'new'} onClick={() => setActiveFilter('new')} />
+                <FilterPill label="New Post" isActive={false} onClick={() => setShowCreatePostModal(true)} icon={Plus} />
               </div>
 
               {/* Discover feed carousel */}
-              <div>
+              <div className="mb-6"> {/* Apply mb-6 here instead */}
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-xl font-bold">Discover Feed</h2>
                 </div>
