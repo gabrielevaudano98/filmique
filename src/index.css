@@ -107,7 +107,7 @@
   transition: transform var(--motion-short) var(--spring-soft), box-shadow var(--motion-short);
 }
 :root[data-theme='light'] .glass-card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.65));
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(246,174,85,0.06));
   border: 1px solid rgba(0,0,0,0.04);
   color: #222;
   box-shadow: var(--shadow-soft);
@@ -119,7 +119,7 @@
   background: linear-gradient(180deg, rgba(246,174,85,0.12), rgba(255,255,255,0.85));
 }
 :root[data-theme='light'] .glass-card.stacked {
-  background: linear-gradient(180deg, rgba(246,174,85,0.18), rgba(255,255,255,0.95));
+  background: linear-gradient(180deg, rgba(246,174,85,0.18), rgba(255,255,255,0.98));
 }
 
 /* Hero card image overlay for warming and vignette */
@@ -154,6 +154,12 @@
   border-radius: 9999px;
   object-fit: cover;
   border: 2px solid rgba(0,0,0,0.12);
+}
+:root[data-theme='light'] .avatar-ring {
+  box-shadow: 0 6px 18px rgba(246,174,85,0.10);
+}
+:root[data-theme='light'] .avatar-ring > * {
+  border: 2px solid rgba(0,0,0,0.08);
 }
 
 /* Pill CTA — used across header filters and bottom actions */
@@ -201,9 +207,19 @@
   border: 1px solid rgba(255,255,255,0.04);
 }
 :root[data-theme='light'] .floating-nav {
-  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(246,174,85,0.08));
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(246,174,85,0.08));
   box-shadow: var(--shadow-soft);
   border: 1px solid rgba(0,0,0,0.04);
+}
+
+/* Modal backgrounds */
+:root[data-theme='light'] .fixed.bg-black,
+:root[data-theme='light'] .fixed.bg-black\/60,
+:root[data-theme='light'] .fixed.bg-black\/80,
+:root[data-theme='light'] .fixed.bg-black\/90 {
+  background: rgba(255,255,255,0.92) !important;
+  backdrop-filter: blur(16px) saturate(120%);
+  -webkit-backdrop-filter: blur(16px) saturate(120%);
 }
 
 /* Story avatar carousel minor tweaks */
@@ -390,7 +406,7 @@
   -webkit-backdrop-filter: blur(8px) saturate(140%);
 }
 :root[data-theme='light'] .camera-token-loader {
-  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(246,174,85,0.08));
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(246,174,85,0.08));
   color: #222;
   border: 1px solid rgba(0,0,0,0.04);
   box-shadow: 0 10px 30px rgba(246,174,85,0.10);
@@ -443,7 +459,7 @@
   box-shadow: inset 0 -1px 0 rgba(255,255,255,0.02);
 }
 :root[data-theme='light'] .top-bar-glass {
-  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(246,174,85,0.08));
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(246,174,85,0.08));
   border-bottom: 1px solid rgba(0,0,0,0.04);
   color: #222;
 }
