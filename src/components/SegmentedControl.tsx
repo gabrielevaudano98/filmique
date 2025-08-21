@@ -48,7 +48,7 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({
             : '0 1px 4px rgba(0,0,0,0.08)',
         }}
       />
-      <div className="flex w-full items-center justify-between gap-1">
+      <div className="flex w-full items-center justify-between gap-2">
         {options.map((opt, idx) => {
           const Icon = opt.icon;
           const isActive = value === opt.value;
@@ -58,7 +58,7 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({
               key={opt.value}
               onClick={() => onChange(opt.value)}
               className={`relative z-10 flex-1 text-sm font-bold text-center transition-colors duration-200 rounded-full flex items-center justify-center
-                ${shouldShowLabel ? 'py-2 gap-1.5' : 'p-2'}
+                ${shouldShowLabel ? 'py-2 gap-2' : 'p-2'}
                 ${isActive
                   ? isLight
                     ? 'text-black'
@@ -72,9 +72,9 @@ const SegmentedControl: React.FC<SegmentedControlProps> = ({
                 boxShadow: 'none',
                 fontWeight: isActive ? 700 : 500,
                 minWidth: hideLabels ? 44 : undefined, // ensure touch target
-                marginLeft: idx !== 0 ? 4 : 0,
-                marginRight: idx !== options.length - 1 ? 4 : 0,
-                gap: shouldShowLabel ? 6 : 0,
+                marginLeft: idx !== 0 ? 8 : 0,
+                marginRight: idx !== options.length - 1 ? 8 : 0,
+                gap: shouldShowLabel ? 8 : 0,
               }}
               aria-label={opt.label || opt.description || opt.value}
             >
