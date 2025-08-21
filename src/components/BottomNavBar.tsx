@@ -1,5 +1,5 @@
 import React from 'react';
-import { Camera, Film, Users, Library } from 'lucide-react';
+import { Camera, Film, Users } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { useHaptics } from '../hooks/useHaptics';
 import { ImpactStyle } from '@capacitor/haptics';
@@ -55,7 +55,7 @@ const BottomNavBar: React.FC = () => {
   ];
 
   const leftItems = navItems.slice(0, 1);
-  const rightItems = navItems.slice(1, 2); // Adjusted to only include 'Feed'
+  const rightItems = navItems.slice(1, 2);
 
   const handleCameraClick = () => {
     impact(ImpactStyle.Light);
@@ -65,8 +65,8 @@ const BottomNavBar: React.FC = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 h-28 flex justify-center z-50 pointer-events-none pb-safe-b">
       <div className="relative flex items-center pointer-events-auto pl-safe-l pr-safe-r w-full">
-        {/* Main glass pill background */}
-        <div className="floating-nav absolute top-1/2 -translate-y-1/2 h-[72px] w-full"></div>
+        {/* Main glass pill background with semi-transparent theme-aware color */}
+        <div className="floating-nav absolute top-1/2 -translate-y-1/2 h-[72px] w-full bg-white/80 dark:bg-neutral-900/80"></div>
 
         <div className="relative flex items-center justify-center px-3 w-full">
           {/* Left Items */}
