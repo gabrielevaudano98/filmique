@@ -64,13 +64,13 @@ function App() {
       if (rollToConfirm) { setRollToConfirm(null); return; }
 
       switch (currentView) {
-        case 'rollDetail': setSelectedRoll(null); setCurrentView('studio'); setStudioSection('rolls'); break;
+        case 'rollDetail': setSelectedRoll(null); setCurrentView('studio'); setStudioSection('albums'); break; // Changed to albums as default for studio
         case 'albumDetail': setSelectedAlbum(null); setCurrentView('studio'); setStudioSection('albums'); break;
         case 'settings': setCurrentView('social'); setSocialSection('profile'); break;
         case 'subscription': setCurrentView('settings'); break;
         case 'notifications': setCurrentView('social'); setSocialSection('community'); break;
         case 'uncategorizedRolls': setCurrentView('studio'); setStudioSection('albums'); break;
-        case 'camera': setCurrentView('studio'); setStudioSection('rolls'); break;
+        case 'camera': setCurrentView('studio'); setStudioSection('albums'); break; // Changed to albums as default for studio
         default: console.log("Back button pressed on main view. Preventing exit."); break;
       }
     };
