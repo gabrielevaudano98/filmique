@@ -133,6 +133,15 @@ const FeedView: React.FC = () => {
     { value: 'gallery', label: 'Gallery', icon: LibraryIcon, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' }, description: 'Gallery' },
   ];
 
+  const getTitleForSection = (section: typeof feedSection) => {
+    switch (section) {
+      case 'community': return 'Feed';
+      case 'profile': return 'Profile';
+      case 'gallery': return 'Library';
+      default: return 'Feed';
+    }
+  };
+
   return (
     <div {...refreshHandlers} className="w-full text-gray-100 min-h-full">
       {/* Pull-to-refresh indicator */}
@@ -144,7 +153,7 @@ const FeedView: React.FC = () => {
 
       {/* Header + icon-only segment control */}
       <div className="flex items-center justify-between pt-4 pb-4">
-        <h1 className="text-3xl font-bold text-white">Feed</h1>
+        <h1 className="text-3xl font-bold text-white">{getTitleForSection(feedSection)}</h1>
 
         {/* Moved SegmentedControl to the right */}
         <div className="w-auto ml-auto">
