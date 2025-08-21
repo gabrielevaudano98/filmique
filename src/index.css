@@ -375,11 +375,11 @@
 
 /* New top bar glass effect */
 .top-bar-glass {
-  /* Using the exact RGB stops provided with alpha 0.5:
+  /* Using provided RGB stops with alpha 0.5:
      - RGB(93,39,13) -> rgba(93,39,13,0.5)
-     - RGB(44,21,13) -> rgba(44,21,13,0.5)
+     - RGB(127,74,52) -> rgba(127,74,52,0.5)
   */
-  background: linear-gradient(180deg, rgba(93,39,13,0.5), rgba(44,21,13,0.5));
+  background: linear-gradient(180deg, rgba(93,39,13,0.5), rgba(127,74,52,0.5));
   backdrop-filter: blur(24px) saturate(200%);
   -webkit-backdrop-filter: blur(24px) saturate(200%);
   border-bottom: 1px solid rgba(255,255,255,0.08);
