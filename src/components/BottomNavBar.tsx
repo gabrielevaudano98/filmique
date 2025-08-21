@@ -50,8 +50,8 @@ const BottomNavBar: React.FC = () => {
   const { impact } = useHaptics();
 
   const navItems = [
-    { view: 'rolls', label: 'Rolls', icon: Film },
-    { view: 'feed', label: 'Feed', icon: Users },
+    { view: 'studio', label: 'Studio', icon: Film }, // Changed label from 'Rolls' to 'Studio'
+    { view: 'social', label: 'Social', icon: Users }, // Changed label from 'Feed' to 'Social'
   ];
 
   const leftItems = navItems.slice(0, 1);

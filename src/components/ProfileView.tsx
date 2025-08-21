@@ -231,21 +231,76 @@ const ProfileView: React.FC = () => {
                     <div key={c.id} className={`p-4 rounded-lg ${isComplete ? 'bg-green-900/30 border border-green-700' : 'bg-neutral-800/40 border border-neutral-700/30'}`}>
                       <div className="flex items-center justify-between">
                         <div className="min-w-0 flex-1">
-                          <div className="text-base font-semibold text-white truncate">{c.title}</div>
-                          <div className="text-sm text-gray-400 truncate">{c.description}</div>
+                          <div className="flex items-center space-x-2 mb-2">
+                            <h3 className="text-lg font-semibold">{c.title}</h3>
+                            <div className={`px-2 py-1 rounded text-xs font-medium ${
+                              c.type === 'daily' 
+                                ? 'bg-blue-500 bg-opacity-20 text-blue-400'
+                                : c.type === 'weekly'
+                                ? 'bg-purple-500 bg-opacity-20 text-purple-400'
+                                : 'bg-amber-500 bg-opacity-20 text-amber-400'
+                            }`}>
+                              {c.type}
+                            </div>
+                          </div>
+                          <p className="text-gray-400 mb-3">{c.description}</p>
+                          
+                          {/* Progress Bar */}
+                          <div className="mb-3">
+                            <div className="flex items-center justify-between text-sm mb-1">
+                              <span>Progress</span>
+                              <span>{c.progress || 0}/{c.target}</span>
+                            </div>
+                            <div className="bg-gray-700 rounded-full h-2">
+                              <div 
+                                className={`h-2 rounded-full transition-transform duration-300 origin-left ${
+                                  isComplete ? 'bg-green-400' : 'bg-purple-400'
+                                }`}
+                                style={{ transform: `scaleX(${progress / 100})` }}
+                              ></div>
+                            </div>
+                          </div>
+
+                          {/* Rewards */}
+                          <div className="flex items-center space-x-4 text-sm">
+                            <div className="flex items-center space-x-1">
+                              <Star className="w-4 h-4 text-purple-400" />
+                              <span>{c.reward.xp} XP</span>
+                            </div>
+                            <div className="flex items-center space-x-1">
+                              <Zap className="w-4 h-4 text-yellow-400" />
+                              <span>{c.reward.credits} credits</span>
+                            </div>
+                            {c.reward.badge && (
+                              <div className="flex items-center space-x-1">
+                                <Trophy className="w-4 h-4 text-orange-400" />
+                                <span>{c.reward.badge}</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <div className="text-sm text-gray-300 ml-3 flex-shrink-0">{isComplete ? 'Completed' : `${c.progress || 0}/${c.target}`}</div>
-                      </div>
-                      <div className="mt-3 h-2 bg-neutral-700 rounded-full overflow-hidden">
-                        <div style={{ width: `${progress}%` }} className={`h-full ${isComplete ? 'bg-green-400' : 'bg-amber-400'}`}></div>
-                      </div>
-                      <div className="mt-2 text-xs text-gray-400 flex items-center justify-between">
-                        <span>{c.type.charAt(0).toUpperCase() + c.type.slice(1)}</span>
-                        {c.reward.xp > 0 && <span className="flex items-center gap-1"><Sparkles className="w-3 h-3 text-yellow-400" /> {c.reward.xp} XP</span>}
+
+                        <div className="text-right">
+                          {timeRemaining && (
+                            <div className="text-sm text-gray-400 mb-2">
+                              <Clock className="w-4 h-4 inline mr-1" />
+                              {timeRemaining.hours}h {timeRemaining.minutes}m
+                            </div>
+                          )}
+                          {isComplete && (
+                            <button
+                              onClick={() => handleClaimReward(challenge.id)}
+                              className="bg-green-500 hover:bg-green-600 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center space-x-2"
+                            >
+                              <Gift className="w-4 h-4" />
+                              <span>Claim</span>
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
-                }) : <div className="text-center text-gray-500 py-6">No active challenges.</div>}
+                }) : <div className="col-span-full text-center text-gray-500 py-6">No active challenges.</div>}
               </div>
             </div>
           </div>

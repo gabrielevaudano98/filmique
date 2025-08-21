@@ -27,8 +27,9 @@ const LibraryView: React.FC = () => {
   return (
     <>
       <div className="flex flex-col w-full">
+        {/* Removed header/back button as this is now a nested component */}
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold text-white">Library</h1>
+          <h1 className="text-3xl font-bold text-white">Albums</h1> {/* Changed title to Albums */}
           <button
             onClick={() => setShowCreateModal(true)}
             className="bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white font-bold p-3 rounded-full shadow-lg shadow-brand-amber-start/20 hover:opacity-90 transition-all"

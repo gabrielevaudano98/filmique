@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Plus, User, ArrowDown, Users, Library as LibraryIcon } from 'lucide-react';
+import { Plus, User, ArrowDown, Users, Trophy } from 'lucide-react'; // Added Trophy for Challenges
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext, Post } from '../context/AppContext';
 import CreatePostModal from '../components/CreatePostModal';
@@ -10,7 +10,7 @@ import FullStoryViewer from '../components/FullStoryViewer';
 import LoadingIndicator from '../components/LoadingIndicator';
 import SegmentedControl from '../components/SegmentedControl';
 import ProfileView from '../components/ProfileView';
-import LibraryView from '../components/LibraryView';
+import ChallengesView from '../components/ChallengesView'; // Import ChallengesView
 
 interface FilterPillProps {
   label: string;
@@ -42,12 +42,12 @@ function usePrevious<T>(value: T): T | undefined {
   return ref.current;
 }
 
-const FeedView: React.FC = () => {
+const SocialView: React.FC = () => { // Renamed from FeedView
   const { profile, feed, completedRolls, recentStories, fetchFeed, fetchRecentStories } = useAppContext();
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState('discover');
 
-  const [feedSection, setFeedSection] = useState<'community' | 'profile' | 'gallery'>('community');
+  const [feedSection, setFeedSection] = useState<'community' | 'profile' | 'challenges'>('community'); // Changed 'gallery' to 'challenges'
   const prevFeedSection = usePrevious(feedSection);
 
   const [showFullStoryViewer, setShowFullStoryViewer] = useState(false);
@@ -85,7 +85,7 @@ const FeedView: React.FC = () => {
     trackTouch: true,
   });
 
-  const sectionOrder = useMemo(() => ['community', 'profile', 'gallery'], []);
+  const sectionOrder = useMemo(() => ['community', 'profile', 'challenges'], []); // Changed 'gallery' to 'challenges'
 
   const handleHorizontalSwipe = (direction: 'left' | 'right') => {
     const currentIndex = sectionOrder.indexOf(feedSection);
@@ -167,15 +167,15 @@ const FeedView: React.FC = () => {
   const segmentOptions = [
     { value: 'community', label: 'Community', icon: Users, colors: { from: 'from-accent-violet', to: 'to-indigo-600', shadow: 'shadow-indigo-500/30' }, description: 'Community' },
     { value: 'profile', label: 'Profile', icon: User, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' }, description: 'Profile' },
-    { value: 'gallery', label: 'Library', icon: LibraryIcon, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' }, description: 'Gallery' },
+    { value: 'challenges', label: 'Challenges', icon: Trophy, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' }, description: 'Challenges' }, // Changed 'gallery' to 'challenges'
   ];
 
   const getTitleForSection = (section: typeof feedSection) => {
     switch (section) {
-      case 'community': return 'Feed';
+      case 'community': return 'Community'; // Changed from 'Feed' to 'Community'
       case 'profile': return 'Profile';
-      case 'gallery': return 'Library';
-      default: return 'Feed';
+      case 'challenges': return 'Challenges'; // Changed from 'Library' to 'Challenges'
+      default: return 'Social'; // Default to 'Social'
     }
   };
 
@@ -277,9 +277,9 @@ const FeedView: React.FC = () => {
             </div>
           )}
 
-          {feedSection === 'gallery' && (
+          {feedSection === 'challenges' && ( // New 'challenges' section
             <div className="pt-2">
-              <LibraryView />
+              <ChallengesView /> {/* Render ChallengesView here */}
             </div>
           )}
         </div>
@@ -306,4 +306,4 @@ const FeedView: React.FC = () => {
   );
 };
 
-export default FeedView;
+export default SocialView;
