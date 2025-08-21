@@ -16,16 +16,17 @@ interface FilterPillProps {
   label: string;
   isActive: boolean;
   onClick: () => void;
-  icon?: React.ElementType; // Added optional icon prop
+  icon?: React.ElementType;
 }
 
 const FilterPill: React.FC<FilterPillProps> = ({ label, isActive, onClick, icon: Icon }) => (
   <button
     onClick={onClick}
     className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex-shrink-0 whitespace-nowrap flex items-center gap-2
-      ${isActive
-        ? 'bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white shadow-lg shadow-brand-amber-start/20'
-        : 'bg-neutral-800/60 text-gray-300 hover:bg-neutral-700/50 border border-neutral-700/50 dark:bg-neutral-800/60 dark:text-gray-300 dark:hover:bg-neutral-700/50 dark:border-neutral-700/50 bg-neutral-100 text-neutral-700 hover:bg-neutral-200 border-neutral-200'
+      ${
+        isActive
+          ? 'bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white shadow-lg shadow-brand-amber-start/20'
+          : 'bg-neutral-100 dark:bg-neutral-800/60 text-neutral-700 dark:text-gray-300 hover:bg-neutral-200 dark:hover:bg-neutral-700/50 border border-neutral-200 dark:border-neutral-700/50'
       }`}
   >
     {Icon && <Icon className="w-4 h-4" />}
@@ -33,7 +34,6 @@ const FilterPill: React.FC<FilterPillProps> = ({ label, isActive, onClick, icon:
   </button>
 );
 
-// Helper hook to get the previous value of a state
 function usePrevious<T>(value: T): T | undefined {
   const ref = useRef<T>();
   useEffect(() => {
@@ -47,7 +47,6 @@ const FeedView: React.FC = () => {
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [activeFilter, setActiveFilter] = useState('discover');
 
-  // Internal feed sections
   const [feedSection, setFeedSection] = useState<'community' | 'profile' | 'gallery'>('community');
   const prevFeedSection = usePrevious(feedSection);
 
@@ -100,14 +99,14 @@ const FeedView: React.FC = () => {
   const horizontalSwipeHandlers = useSwipeable({
     onSwipedLeft: () => handleHorizontalSwipe('left'),
     onSwipedRight: () => handleHorizontalSwipe('right'),
-    preventScrollOnSwipe: false, // Allow vertical scrolling
+    preventScrollOnSwipe: false,
     preventDefaultTouchmoveEvent: false,
     trackMouse: true,
     trackTouch: true,
   });
 
   const animationClass = useMemo(() => {
-    if (!prevFeedSection) return ''; // No animation on initial load
+    if (!prevFeedSection) return '';
     const prevIndex = sectionOrder.indexOf(prevFeedSection);
     const currentIndex = sectionOrder.indexOf(feedSection);
     if (currentIndex > prevIndex) {
@@ -116,7 +115,6 @@ const FeedView: React.FC = () => {
       return 'animate-slide-in-from-left';
     }
   }, [feedSection, prevFeedSection, sectionOrder]);
-
 
   const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
 
@@ -166,7 +164,6 @@ const FeedView: React.FC = () => {
 
   if (!profile) return null;
 
-  // Segmented control options for the Feed — icons only (labels hidden), descriptions used for accessibility
   const segmentOptions = [
     { value: 'community', label: 'Community', icon: Users, colors: { from: 'from-accent-violet', to: 'to-indigo-600', shadow: 'shadow-indigo-500/30' }, description: 'Community' },
     { value: 'profile', label: 'Profile', icon: User, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' }, description: 'Profile' },
@@ -182,7 +179,6 @@ const FeedView: React.FC = () => {
     }
   };
 
-  // ---------- Sticky header sentinel & observer (mimic studio behavior) ----------
   const observerTriggerRef = useRef<HTMLDivElement | null>(null);
   const [isHeaderSticky, setIsHeaderSticky] = useState(false);
 
@@ -190,19 +186,17 @@ const FeedView: React.FC = () => {
     const el = observerTriggerRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(([entry]) => {
-      // follow same logic as studio: when sentinel is out of view and scrolled past top, mark sticky
       setIsHeaderSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
     }, { threshold: 0, rootMargin: '-80px 0px 0px 0px' });
 
     obs.observe(el);
     return () => obs.disconnect();
   }, []);
-  // -------------------------------------------------------------------------------
 
   return (
     <div
       {...refreshHandlers}
-      className="w-full text-gray-100 min-h-full bg-white text-black dark:bg-neutral-900 dark:text-white transition-colors duration-300"
+      className="w-full min-h-full bg-white text-black dark:bg-neutral-900 dark:text-white transition-colors duration-300"
     >
       {/* Pull-to-refresh indicator */}
       <div className="absolute top-[-60px] left-0 right-0 flex justify-center items-center transition-transform duration-200" style={{ transform: `translateY(${Math.min(pullPosition, PULL_THRESHOLD * 1.5)}px)` }}>
@@ -215,10 +209,8 @@ const FeedView: React.FC = () => {
       <div ref={observerTriggerRef} />
 
       {/* Header + icon-only segment control */}
-      <div className={`flex items-center justify-between pt-0 pb-4 transition-all ${isHeaderSticky ? 'sticky top-[80px] z-40 bg-neutral-900/80 dark:bg-neutral-900/80 border-b border-neutral-700/50 px-4 py-3' : ''}`}>
-        <h1 className="text-3xl font-bold text-white dark:text-black">{getTitleForSection(feedSection)}</h1>
-
-        {/* Moved SegmentedControl to the right */}
+      <div className={`flex items-center justify-between pt-0 pb-4 transition-all ${isHeaderSticky ? 'sticky top-[80px] z-40 bg-white/90 dark:bg-neutral-900/80 border-b border-neutral-200 dark:border-neutral-700/50 px-4 py-3' : ''}`}>
+        <h1 className="text-3xl font-bold text-black dark:text-white">{getTitleForSection(feedSection)}</h1>
         <div className="w-auto ml-auto">
           <SegmentedControl
             options={segmentOptions as any}
@@ -237,7 +229,7 @@ const FeedView: React.FC = () => {
               {/* Recent Stories */}
               {recentStories.size > 0 && (
                 <div className="mb-6">
-                  <h2 className="text-xl font-bold mb-4 text-black dark:text-white">Recent Stories</h2>
+                  <h2 className="text-xl font-bold text-black dark:text-white">Recent Stories</h2>
                   <StoryRollsCarousel recentStories={recentStories} onSelectStory={handleSelectStory} />
                 </div>
               )}
@@ -249,7 +241,6 @@ const FeedView: React.FC = () => {
                   <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
                   <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
                   <FilterPill label="New" isActive={activeFilter === 'new'} onClick={() => setActiveFilter('new')} />
-                  {/* Moved Create Post button here, styled as a FilterPill */}
                   <FilterPill label="New Post" isActive={false} onClick={() => setShowCreatePostModal(true)} icon={Plus} />
                 </div>
               </div>
@@ -262,7 +253,12 @@ const FeedView: React.FC = () => {
                 <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
                   {filteredFeed.length > 0 ? (
                     filteredFeed.map(post => (
-                      <RollPostCard key={post.id} post={post} onClick={() => handleSelectStory(post.user_id, post.id)} />
+                      <div
+                        key={post.id}
+                        className="bg-white dark:bg-neutral-900 rounded-2xl shadow-md border border-neutral-200 dark:border-neutral-800 transition-all duration-200"
+                      >
+                        <RollPostCard post={post} onClick={() => handleSelectStory(post.user_id, post.id)} />
+                      </div>
                     ))
                   ) : (
                     <div className="w-full text-center py-16 text-gray-500">
