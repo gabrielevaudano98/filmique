@@ -33,6 +33,32 @@
   --motion-long: 520ms;
 }
 
+/* Light theme overrides */
+:root[data-theme='light'] {
+  --brand-bg: #f7f7f8;
+  --brand-surface: rgba(255,255,255,0.85);
+  --brand-border: rgba(65, 53, 76, 0.10);
+  --glass-thin: rgba(255,255,255,0.18);
+  --glass-medium: rgba(255,255,255,0.28);
+  --glass-dark: rgba(255,255,255,0.64);
+  --shadow-soft: 0 6px 18px rgba(200,200,210,0.10);
+  --shadow-depth: 0 24px 60px rgba(200,200,210,0.18);
+  --neutral-900: #f7f7f8;
+  --neutral-800: #eaeaea;
+  --neutral-700: #d6d6d8;
+  --neutral-600: #bfc0c2;
+  --neutral-400: #7a7a7a;
+  --neutral-300: #5a5a5a;
+  --neutral-100: #060608;
+  --warm-900: #f0c6ab;
+  --warm-800: #f6ae55;
+  --warm-700: #e98a43;
+  --warm-600: #d46a2e;
+  --warm-500: #a65a2b;
+  --warm-400: #7a3e19;
+  --warm-300: #3a190a;
+}
+
 /* existing base overrides */
 @layer base {
   html {
@@ -42,14 +68,12 @@
   }
   body {
     font-family: 'SF Pro Display', Inter, system-ui;
-    /* Adjusted opacity from 0.7 to 0.4 for a more subtle overlay */
     background-image: linear-gradient(rgba(10, 10, 12, 0.4), rgba(10, 10, 12, 0.4)), url('/src/assets/background.avif');
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
     background-attachment: fixed;
     color: white;
-    /* Prevent viewport bounce */
     position: fixed;
     width: 100%;
     height: 100%;
@@ -59,12 +83,17 @@
   #root {
     position: relative;
     z-index: 1;
-    /* Make root the main scroller */
     height: 100%;
     width: 100%;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
+}
+
+/* Light theme body overrides */
+:root[data-theme='light'] body {
+  color: #222;
+  background-image: linear-gradient(rgba(255,255,255,0.7), rgba(255,255,255,0.7)), url('/src/assets/background.avif');
 }
 
 /* Glass Card — stacked rounded cards with warm translucent surface */
@@ -77,11 +106,20 @@
   -webkit-backdrop-filter: blur(8px) saturate(120%);
   transition: transform var(--motion-short) var(--spring-soft), box-shadow var(--motion-short);
 }
+:root[data-theme='light'] .glass-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.65));
+  border: 1px solid rgba(0,0,0,0.04);
+  color: #222;
+  box-shadow: var(--shadow-soft);
+}
 
 /* Stacked card variant (used on onboarding / hero) */
 .glass-card.stacked {
   transform: translateY(8px);
-  background: linear-gradient(180deg, rgba(58,25,10,0.88), rgba(27,29,32,0.78));
+  background: linear-gradient(180deg, rgba(246,174,85,0.12), rgba(255,255,255,0.85));
+}
+:root[data-theme='light'] .glass-card.stacked {
+  background: linear-gradient(180deg, rgba(246,174,85,0.18), rgba(255,255,255,0.95));
 }
 
 /* Hero card image overlay for warming and vignette */
@@ -97,6 +135,9 @@
   background: linear-gradient(180deg, rgba(0,0,0,0.08), rgba(27,29,32,0.36));
   pointer-events: none;
 }
+:root[data-theme='light'] .card-hero::after {
+  background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(246,174,85,0.08));
+}
 
 /* Avatar ring (gradient ring) */
 .avatar-ring {
@@ -106,13 +147,13 @@
   border-radius: 9999px;
   padding: 3px;
   background: var(--avatar-ring);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.35);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
 }
 .avatar-ring > * {
   display: block;
   border-radius: 9999px;
   object-fit: cover;
-  border: 2px solid rgba(0,0,0,0.35);
+  border: 2px solid rgba(0,0,0,0.12);
 }
 
 /* Pill CTA — used across header filters and bottom actions */
@@ -128,6 +169,11 @@
   box-shadow: 0 6px 28px rgba(214,106,46,0.12), inset 0 -6px 14px rgba(255,255,255,0.02);
   transition: transform var(--motion-micro) var(--curve-quick), box-shadow var(--motion-micro);
 }
+:root[data-theme='light'] .pill-cta {
+  color: #222;
+  background: linear-gradient(90deg, var(--brand-amber-start), var(--brand-amber-mid));
+  box-shadow: 0 6px 18px rgba(246,174,85,0.10);
+}
 .pill-cta:active { transform: translateY(1px) scale(0.997); }
 
 /* Secondary pill (outline) */
@@ -136,6 +182,10 @@
   border: 1px solid rgba(255,255,255,0.06);
   color: var(--warm-300);
   box-shadow: none;
+}
+:root[data-theme='light'] .pill-cta.outline {
+  border: 1px solid rgba(0,0,0,0.08);
+  color: var(--brand-amber-end);
 }
 
 /* Floating bottom nav (glass) */
@@ -149,6 +199,11 @@
   justify-content: center;
   box-shadow: var(--shadow-depth);
   border: 1px solid rgba(255,255,255,0.04);
+}
+:root[data-theme='light'] .floating-nav {
+  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(246,174,85,0.08));
+  box-shadow: var(--shadow-soft);
+  border: 1px solid rgba(0,0,0,0.04);
 }
 
 /* Story avatar carousel minor tweaks */
@@ -334,6 +389,12 @@
   backdrop-filter: blur(8px) saturate(140%);
   -webkit-backdrop-filter: blur(8px) saturate(140%);
 }
+:root[data-theme='light'] .camera-token-loader {
+  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(246,174,85,0.08));
+  color: #222;
+  border: 1px solid rgba(0,0,0,0.04);
+  box-shadow: 0 10px 30px rgba(246,174,85,0.10);
+}
 
 /* SVG base */
 .camera-token-svg { display: block; }
@@ -375,15 +436,14 @@
 
 /* New top bar glass effect */
 .top-bar-glass {
-  /* Using provided RGB stops with alpha 0.5:
-     - RGB(93,39,13) -> rgba(93,39,13,0.5)
-     - RGB(127,74,52) -> rgba(127,74,52,0.5)
-  */
   background: linear-gradient(180deg, rgba(93,39,13,0.5), rgba(127,74,52,0.5));
   backdrop-filter: blur(24px) saturate(200%);
   -webkit-backdrop-filter: blur(24px) saturate(200%);
-  /* Discrete bottom border slightly lighter than the background */
   border-bottom: 1px solid rgba(255,255,255,0.06);
-  /* Very subtle inset rim to add depth without drawing attention */
   box-shadow: inset 0 -1px 0 rgba(255,255,255,0.02);
+}
+:root[data-theme='light'] .top-bar-glass {
+  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(246,174,85,0.08));
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+  color: #222;
 }

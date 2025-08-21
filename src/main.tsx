@@ -4,6 +4,7 @@ import App from './App.tsx';
 import './index.css';
 import { AppProvider } from './context/AppContext';
 import ToastProvider from './components/ToastProvider.tsx';
+import { ThemeProvider } from './context/ThemeContext';
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -17,9 +18,11 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AppProvider>
-      <ToastProvider />
-      <App />
-    </AppProvider>
+    <ThemeProvider>
+      <AppProvider>
+        <ToastProvider />
+        <App />
+      </AppProvider>
+    </ThemeProvider>
   </StrictMode>
 );

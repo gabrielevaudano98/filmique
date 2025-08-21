@@ -1,12 +1,13 @@
 import React from 'react';
 import {
-  UserCircle, Star, Bell, Camera as CameraIcon, ShieldCheck, HelpCircle, Info, ChevronRight, LogOut, Trash2, ArrowLeft, MapPin, Film
+  UserCircle, Star, Bell, Camera as CameraIcon, ShieldCheck, HelpCircle, Info, ChevronRight, LogOut, Trash2, ArrowLeft, MapPin, Film, Sun, Moon, Monitor
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { supabase } from '../integrations/supabase/client';
 import toast from 'react-hot-toast';
 import SettingsToggleRow from './SettingsToggleRow';
 import TextSegmentedControl from './TextSegmentedControl';
+import { useTheme } from '../context/ThemeContext';
 
 const SettingsRow: React.FC<{
   icon: React.ReactNode;
@@ -43,6 +44,7 @@ const SettingsGroup: React.FC<{ title: string; children: React.ReactNode }> = ({
 
 const SettingsView: React.FC = () => {
   const { profile, setCurrentView, updateProfileDetails, refreshProfile } = useAppContext();
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -77,6 +79,12 @@ const SettingsView: React.FC = () => {
     { value: 'authentic', label: 'Authentic' },
   ];
 
+  const themeOptions = [
+    { value: 'auto', label: 'Auto', icon: Monitor },
+    { value: 'dark', label: 'Dark', icon: Moon },
+    { value: 'light', label: 'Light', icon: Sun },
+  ];
+
   return (
     <div className="flex-1 flex flex-col bg-transparent text-white">
        <div className="flex items-center p-4 border-b border-neutral-700/50 bg-neutral-800/60 backdrop-blur-lg">
@@ -87,6 +95,34 @@ const SettingsView: React.FC = () => {
         <div className="w-6 h-6"></div>
       </div>
       <div className="p-4 sm:p-6 overflow-y-auto no-scrollbar">
+        <SettingsGroup title="Appearance">
+          <div className="p-4 flex flex-col gap-2">
+            <div className="flex items-center gap-4">
+              <span className="font-semibold text-gray-300">Theme</span>
+              <div className="flex-1">
+                <div className="flex gap-2">
+                  {themeOptions.map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setTheme(opt.value as any)}
+                      className={`flex items-center gap-1 px-3 py-2 rounded-lg font-bold text-sm transition ${
+                        theme === opt.value
+                          ? 'bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-black shadow'
+                          : 'bg-neutral-800/60 text-gray-300 hover:bg-neutral-700/60'
+                      }`}
+                      aria-label={opt.label}
+                    >
+                      <opt.icon className="w-4 h-4" />
+                      <span>{opt.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <span className="text-xs text-gray-400 ml-2">{resolvedTheme === 'dark' ? 'Dark' : 'Light'} mode</span>
+            </div>
+          </div>
+        </SettingsGroup>
+
         <SettingsGroup title="Account">
           <SettingsRow
             icon={<UserCircle className="w-5 h-5 text-white" />}
