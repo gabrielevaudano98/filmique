@@ -12,15 +12,23 @@ import SegmentedControl from '../components/SegmentedControl';
 import ProfileView from '../components/ProfileView';
 import LibraryView from '../components/LibraryView';
 
-const FilterPill: React.FC<{ label: string; isActive: boolean; onClick: () => void; }> = ({ label, isActive, onClick }) => (
+interface FilterPillProps {
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+  icon?: React.ElementType; // Added optional icon prop
+}
+
+const FilterPill: React.FC<FilterPillProps> = ({ label, isActive, onClick, icon: Icon }) => (
   <button
     onClick={onClick}
-    className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex-shrink-0 whitespace-nowrap
+    className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 flex-shrink-0 whitespace-nowrap flex items-center gap-2
       ${isActive
         ? 'bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white shadow-lg shadow-brand-amber-start/20'
         : 'bg-neutral-800/60 text-gray-300 hover:bg-neutral-700/50 border border-neutral-700/50'
       }`}
   >
+    {Icon && <Icon className="w-4 h-4" />}
     {label}
   </button>
 );
@@ -138,23 +146,14 @@ const FeedView: React.FC = () => {
       <div className="flex items-center justify-between pt-4 pb-4">
         <h1 className="text-3xl font-bold text-white">Feed</h1>
 
-        <div className="w-auto"> {/* Changed from w-full max-w-lg to w-auto */}
+        {/* Moved SegmentedControl to the right */}
+        <div className="w-auto ml-auto">
           <SegmentedControl
             options={segmentOptions as any}
             value={feedSection}
             onChange={(val: string) => setFeedSection(val as any)}
             hideLabels={true}
           />
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowCreatePostModal(true)}
-            className="bg-gradient-to-r from-brand-amber-start to-brand-amber-end text-white font-bold p-3 rounded-full shadow-lg shadow-brand-amber-start/20 hover:opacity-90 transition-all"
-            aria-label="Create New Post"
-          >
-            <Plus className="w-5 h-5" />
-          </button>
         </div>
       </div>
 
@@ -170,13 +169,15 @@ const FeedView: React.FC = () => {
               </div>
             )}
 
-            {/* Filter pills */}
+            {/* Filter pills and Create Post button */}
             <div className="mb-6">
               <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
                 <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
                 <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
                 <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
                 <FilterPill label="New" isActive={activeFilter === 'new'} onClick={() => setActiveFilter('new')} />
+                {/* Moved Create Post button here, styled as a FilterPill */}
+                <FilterPill label="New Post" isActive={false} onClick={() => setShowCreatePostModal(true)} icon={Plus} />
               </div>
             </div>
 
