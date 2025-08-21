@@ -211,7 +211,7 @@ const FeedView: React.FC = () => {
       {/* Header + icon-only segment control */}
       <div className={`flex items-center justify-between pt-0 pb-4 transition-all ${isHeaderSticky ? 'sticky top-[80px] z-40 bg-white/90 dark:bg-neutral-900/80 border-b border-neutral-200 dark:border-neutral-700/50 px-4 py-3' : ''}`}>
         <h1 className="text-3xl font-bold text-black dark:text-white">{getTitleForSection(feedSection)}</h1>
-        <div className="w-auto ml-auto flex justify-end">
+        <div className="w-auto ml-auto">
           <SegmentedControl
             options={segmentOptions as any}
             value={feedSection}
