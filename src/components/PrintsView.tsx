@@ -52,7 +52,6 @@ const PrintsView: React.FC = () => {
     <div className="flex flex-col w-full">
       <div className="mb-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-white">Print Orders</h1>
           <div className="flex items-center gap-2">
             <ExpandableSearch searchTerm={printSearchTerm} onSearchTermChange={setPrintSearchTerm} />
             <button
@@ -64,7 +63,6 @@ const PrintsView: React.FC = () => {
             </button>
           </div>
         </div>
-        <p className="text-gray-400 mt-1">Track the status of your ordered prints.</p>
       </div>
 
       {filteredAndSortedOrders.length > 0 ? (
