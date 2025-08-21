@@ -3,14 +3,15 @@ import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
 import { Roll } from '../types';
 import { Film, Archive, Lock } from 'lucide-react';
-import RollsControls from './RollsControls';
-import ExpandableSearch from './ExpandableSearch';
-import DevelopingRollCard from './DevelopingRollCard';
-import PrintsView from './PrintsView';
-import DarkroomEmptyState from './DarkroomEmptyState';
-import SegmentedControl from './SegmentedControl';
-import RollRow from './RollRow';
-import StickyGroupHeader from './StickyGroupHeader';
+import RollsControls from '../components/RollsControls'; // Keep for now, will move to LibraryView
+import ExpandableSearch from '../components/ExpandableSearch'; // Keep for now, will move to LibraryView
+import DevelopingRollCard from '../components/DevelopingRollCard';
+import PrintsView from '../components/PrintsView';
+import DarkroomEmptyState from '../components/DarkroomEmptyState';
+import SegmentedControl from '../components/SegmentedControl';
+import RollRow from '../components/RollRow'; // Will be used by LibraryView
+import StickyGroupHeader from '../components/StickyGroupHeader'; // Will be used by LibraryView
+import LibraryView from '../components/LibraryView'; // Import LibraryView
 
 const RollsEmptyState = () => (
     <div className="text-center py-24 text-neutral-500">
@@ -36,7 +37,7 @@ function usePrevious<T>(value: T): T | undefined {
   return ref.current;
 }
 
-const RollsView: React.FC = () => {
+const StudioView: React.FC = () => {
   const { 
     profile,
     developingRolls, completedRolls,
@@ -89,6 +90,7 @@ const RollsView: React.FC = () => {
     }
   }, [sectionOrder, setStudioSection, studioSection]);
 
+  // The following memoized rolls logic will be moved to LibraryView in the next step
   const { shelfRolls, archivedRolls } = useMemo(() => {
     return {
       shelfRolls: completedRolls.filter(r => !r.is_archived),
@@ -180,7 +182,7 @@ const RollsView: React.FC = () => {
 
   const getTitleForStudioSection = (section: typeof studioSection) => {
     switch (section) {
-      case 'rolls': return 'Rolls';
+      case 'albums': return 'Albums';
       case 'darkroom': return 'Darkroom';
       case 'prints': return 'Prints';
       default: return 'Studio';
@@ -196,6 +198,7 @@ const RollsView: React.FC = () => {
             options={availableSections}
             value={studioSection}
             onChange={(val) => setStudioSection(val as any)}
+            hideLabels={true}
           />
         </div>
       </div>
@@ -212,28 +215,9 @@ const RollsView: React.FC = () => {
             </div>
           )}
 
-          {studioSection === 'rolls' && (
-            <div>
-              <div className="sticky top-[80px] z-20 pointer-events-none -mx-4 px-4 h-14">
-                <div className="absolute top-0 right-4 h-full pointer-events-auto flex items-center gap-2">
-                  <ExpandableSearch searchTerm={searchTerm} onSearchTermChange={setSearchTerm} />
-                  <RollsControls />
-                </div>
-              </div>
-              <div className="space-y-6 -mt-14">
-                {processedRolls.length > 0 ? (
-                  groupEntries.map(([groupName, rolls]) => (
-                    <div key={groupName}>
-                      <StickyGroupHeader title={groupName} />
-                      <div className="flex flex-col space-y-3 pt-3">
-                        {rolls.map(roll => <RollRow key={roll.id} roll={roll} />)}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  rollsViewMode === 'archived' ? <ArchivedEmptyState /> : <RollsEmptyState />
-                )}
-              </div>
+          {studioSection === 'albums' && (
+            <div className="pt-2">
+              <LibraryView />
             </div>
           )}
 
@@ -248,4 +232,4 @@ const RollsView: React.FC = () => {
   );
 };
 
-export default RollsView;
+export default StudioView;

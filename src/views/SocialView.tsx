@@ -1,16 +1,17 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Plus, User, ArrowDown, Users, Library as LibraryIcon } from 'lucide-react';
+import { Plus, User, ArrowDown, Users, Library as LibraryIcon, Trophy } from 'lucide-react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext, Post } from '../context/AppContext';
-import CreatePostModal from '../components/CreatePostModal';
-import RollPostCard from '../components/RollPostCard';
-import { isRollDeveloped } from '../utils/rollUtils';
-import StoryRollsCarousel from '../components/StoryRollsCarousel';
-import FullStoryViewer from '../components/FullStoryViewer';
+import CreatePostModal from '../components/CreatePostModal'; // Will be used by CommunityFeedView
+import RollPostCard from '../components/RollPostCard'; // Will be used by CommunityFeedView
+import { isRollDeveloped } from '../utils/rollUtils'; // Will be used by CommunityFeedView
+import StoryRollsCarousel from '../components/StoryRollsCarousel'; // Will be used by CommunityFeedView
+import FullStoryViewer from '../components/FullStoryViewer'; // Will be used by CommunityFeedView
 import LoadingIndicator from '../components/LoadingIndicator';
 import SegmentedControl from '../components/SegmentedControl';
 import ProfileView from '../components/ProfileView';
-import LibraryView from '../components/LibraryView';
+import ChallengesView from '../components/ChallengesView';
+import CommunityFeedView from '../components/CommunityFeedView'; // New component for the main feed content
 
 interface FilterPillProps {
   label: string;
@@ -42,180 +43,76 @@ function usePrevious<T>(value: T): T | undefined {
   return ref.current;
 }
 
-const FeedView: React.FC = () => {
-  const { profile, feed, completedRolls, recentStories, fetchFeed, fetchRecentStories } = useAppContext();
-  const [showCreatePostModal, setShowCreatePostModal] = useState(false);
-  const [activeFilter, setActiveFilter] = useState('discover');
-
-  const [feedSection, setFeedSection] = useState<'community' | 'profile' | 'gallery'>('community');
-  const prevFeedSection = usePrevious(feedSection);
-
-  const [showFullStoryViewer, setShowFullStoryViewer] = useState(false);
-  const [postsForFullStoryViewer, setPostsForFullStoryViewer] = useState<Post[] | null>(null);
-  const [initialStoryPostIndex, setInitialStoryPostIndex] = useState(0);
-
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [pullPosition, setPullPosition] = useState(0);
-  const PULL_THRESHOLD = 80;
-
-  useEffect(() => {
-    fetchFeed();
-    fetchRecentStories();
-  }, [fetchFeed, fetchRecentStories]);
-
-  const refreshHandlers = useSwipeable({
-    onSwiping: (event) => {
-      const mainScroller = document.getElementById('root');
-      if (event.dir === 'Down' && mainScroller && mainScroller.scrollTop === 0) {
-        setPullPosition(event.deltaY);
-      }
-    },
-    onSwiped: (event) => {
-      const mainScroller = document.getElementById('root');
-      if (event.dir === 'Down' && mainScroller && mainScroller.scrollTop === 0 && event.deltaY > PULL_THRESHOLD) {
-        setIsRefreshing(true);
-        Promise.all([fetchFeed(), fetchRecentStories()]).finally(() => {
-          setIsRefreshing(false);
-        });
-      }
-      setPullPosition(0);
-    },
-    preventScrollOnSwipe: false,
-    trackMouse: true,
-    trackTouch: true,
-  });
-
-  const sectionOrder = useMemo(() => ['community', 'profile', 'gallery'], []);
-
-  const handleHorizontalSwipe = (direction: 'left' | 'right') => {
-    const currentIndex = sectionOrder.indexOf(feedSection);
-    if (direction === 'left' && currentIndex < sectionOrder.length - 1) {
-      setFeedSection(sectionOrder[currentIndex + 1] as any);
-    } else if (direction === 'right' && currentIndex > 0) {
-      setFeedSection(sectionOrder[currentIndex - 1] as any);
-    }
-  };
-
-  const horizontalSwipeHandlers = useSwipeable({
-    onSwipedLeft: () => handleHorizontalSwipe('left'),
-    onSwipedRight: () => handleHorizontalSwipe('right'),
-    preventScrollOnSwipe: false,
-    preventDefaultTouchmoveEvent: false,
-    trackMouse: true,
-    trackTouch: true,
-  });
-
-  const animationClass = useMemo(() => {
-    if (!prevFeedSection) return '';
-    const prevIndex = sectionOrder.indexOf(prevFeedSection);
-    const currentIndex = sectionOrder.indexOf(feedSection);
-    if (currentIndex > prevIndex) {
-      return 'animate-slide-in-from-right';
-    } else {
-      return 'animate-slide-in-from-left';
-    }
-  }, [feedSection, prevFeedSection, sectionOrder]);
-
-  const postedRollIds = useMemo(() => new Set(feed.map(p => p.roll_id)), [feed]);
-
-  const unpostedDevelopedRolls = useMemo(() => {
-    return completedRolls.filter(roll => isRollDeveloped(roll) && !postedRollIds.has(roll.id));
-  }, [completedRolls, postedRollIds]);
-
-  const filteredFeed = useMemo(() => {
-    switch (activeFilter) {
-      case 'following':
-        return feed.filter(post => post.isFollowed);
-      case 'new':
-        return [...feed].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      case 'trending':
-        return [...feed].sort((a, b) => (b.likes.length + b.comments.length) - (a.likes.length + a.comments.length));
-      case 'discover':
-      default:
-        return feed;
-    }
-  }, [feed, activeFilter]);
-
-  const handleSelectStory = (userId: string, postId: string) => {
-    let postsToShow: Post[] = [];
-    let initialIdx = 0;
-
-    const userStories = recentStories.get(userId);
-    if (userStories) {
-      postsToShow = userStories.posts;
-      initialIdx = postsToShow.findIndex(p => p.id === postId);
-    }
-
-    if (initialIdx === -1 || postsToShow.length === 0) {
-      postsToShow = feed.filter(p => p.user_id === userId)
-        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
-
-      initialIdx = postsToShow.findIndex(p => p.id === postId);
-    }
-
-    if (initialIdx !== -1 && postsToShow.length > 0) {
-      setPostsForFullStoryViewer(postsToShow);
-      setInitialStoryPostIndex(initialIdx);
-      setShowFullStoryViewer(true);
-    } else {
-      console.warn("Could not find post in any sequence for story viewer:", postId);
-    }
-  };
-
-  if (!profile) return null;
-
-  const segmentOptions = [
-    { value: 'community', label: 'Community', icon: Users, colors: { from: 'from-accent-violet', to: 'to-indigo-600', shadow: 'shadow-indigo-500/30' }, description: 'Community' },
-    { value: 'profile', label: 'Profile', icon: User, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' }, description: 'Profile' },
-    { value: 'gallery', label: 'Library', icon: LibraryIcon, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' }, description: 'Gallery' },
-  ];
-
-  const getTitleForSection = (section: typeof feedSection) => {
-    switch (section) {
-      case 'community': return 'Feed';
-      case 'profile': return 'Profile';
-      case 'gallery': return 'Library';
-      default: return 'Feed';
-    }
-  };
+const SocialView: React.FC = () => {
+  const { 
+    profile,
+    socialSection, setSocialSection, socialSectionOptions,
+    setIsSocialHeaderSticky,
+  } = useAppContext();
 
   const observerTriggerRef = useRef<HTMLDivElement | null>(null);
-  const [isHeaderSticky, setIsHeaderSticky] = useState(false);
+  const prevSection = usePrevious(socialSection);
+
+  const sectionOrder = useMemo(() => socialSectionOptions.map(opt => opt.value), [socialSectionOptions]);
+
+  const direction = useMemo(() => {
+    if (!prevSection) return 'right';
+    const prevIndex = sectionOrder.indexOf(prevSection);
+    const currentIndex = sectionOrder.indexOf(socialSection);
+    if (prevIndex === -1 || currentIndex === -1) return 'right';
+    return currentIndex > prevIndex ? 'left' : 'right';
+  }, [socialSection, prevSection, sectionOrder]);
+
+  const animationClass = direction === 'left' ? 'animate-slide-in-from-right' : 'animate-slide-in-from-left';
 
   useEffect(() => {
     const el = observerTriggerRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(([entry]) => {
-      setIsHeaderSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
-    }, { threshold: 0, rootMargin: '-80px 0px 0px 0px' });
+      setIsSocialHeaderSticky(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+    }, { threshold: 0, rootMargin: '-80px 0px 0px 0px' }); // Adjust rootMargin if TopBar height changes
 
     obs.observe(el);
     return () => obs.disconnect();
-  }, []);
+  }, [setIsSocialHeaderSticky]);
+
+  useEffect(() => {
+    if (!sectionOrder.includes(socialSection)) {
+      setSocialSection(sectionOrder[0] as any);
+    }
+  }, [sectionOrder, setSocialSection, socialSection]);
+
+  if (!profile) return null;
+
+  const getTitleForSocialSection = (section: typeof socialSection) => {
+    switch (section) {
+      case 'community': return 'Community';
+      case 'profile': return 'Profile';
+      case 'challenges': return 'Challenges';
+      default: return 'Social';
+    }
+  };
 
   return (
-    <div
-      {...refreshHandlers}
-      className="w-full min-h-full bg-white/10 text-black dark:bg-neutral-900/10 backdrop-blur-xl border border-white/20 dark:border-neutral-700/50 rounded-2xl transition-colors duration-300 p-4"
-    >
-      {/* Pull-to-refresh indicator */}
-      <div className="absolute top-[-60px] left-0 right-0 flex justify-center items-center transition-transform duration-200" style={{ transform: `translateY(${Math.min(pullPosition, PULL_THRESHOLD * 1.5)}px)` }}>
+    <div className="w-full min-h-full bg-white/10 text-black dark:bg-neutral-900/10 backdrop-blur-xl border border-white/20 dark:border-neutral-700/50 rounded-2xl transition-colors duration-300 p-4">
+      {/* Pull-to-refresh indicator (will be moved to CommunityFeedView) */}
+      {/* <div className="absolute top-[-60px] left-0 right-0 flex justify-center items-center transition-transform duration-200" style={{ transform: `translateY(${Math.min(pullPosition, PULL_THRESHOLD * 1.5)}px)` }}>
         <div className="p-3 bg-neutral-800 rounded-full shadow-lg" style={{ opacity: Math.min(pullPosition / PULL_THRESHOLD, 1), transform: `rotate(${Math.min(pullPosition, PULL_THRESHOLD) * 2}deg)` }}>
           {isRefreshing ? <LoadingIndicator size={22} /> : <ArrowDown className="w-6 h-6 text-white" />}
         </div>
-      </div>
+      </div> */}
 
       {/* Sentinel that the observer watches */}
       <div ref={observerTriggerRef} />
 
       {/* Header + icon-only segment control */}
-      <div className={`flex items-center justify-between pt-0 pb-4 transition-all ${isHeaderSticky ? 'sticky top-[80px] z-40 bg-white/90 dark:bg-neutral-900/80 border-b border-neutral-200 dark:border-neutral-700/50 px-4 py-3' : ''}`}>
-        <h1 className="text-3xl font-bold text-black dark:text-white">{getTitleForSection(feedSection)}</h1>
+      <div className={`flex items-center justify-between pt-0 pb-4 transition-all ${setIsSocialHeaderSticky ? 'sticky top-[80px] z-40 bg-white/90 dark:bg-neutral-900/80 border-b border-neutral-200 dark:border-neutral-700/50 px-4 py-3' : ''}`}>
+        <h1 className="text-3xl font-bold text-black dark:text-white">{getTitleForSocialSection(socialSection)}</h1>
         <div className="w-auto ml-auto">
           <SegmentedControl
-            options={segmentOptions as any}
-            value={feedSection}
-            onChange={(val: string) => setFeedSection(val as any)}
+            options={socialSectionOptions as any}
+            value={socialSection}
+            onChange={(val: string) => setSocialSection(val as any)}
             hideLabels={true}
           />
         </div>
@@ -223,87 +120,26 @@ const FeedView: React.FC = () => {
 
       {/* Section content with swipe handlers and animation */}
       <div {...horizontalSwipeHandlers} className="relative flex-1 overflow-hidden">
-        <div key={feedSection} className={`${animationClass} pt-2`}>
-          {feedSection === 'community' && (
-            <>
-              {/* Recent Stories */}
-              {recentStories.size > 0 && (
-                <div className="mb-6">
-                  <h2 className="text-xl font-bold text-black dark:text-white">Recent Stories</h2>
-                  <StoryRollsCarousel recentStories={recentStories} onSelectStory={handleSelectStory} />
-                </div>
-              )}
-
-              {/* Filter pills and Create Post button */}
-              <div className="mb-6">
-                <div className="flex space-x-3 overflow-x-auto no-scrollbar pb-2">
-                  <FilterPill label="Discover" isActive={activeFilter === 'discover'} onClick={() => setActiveFilter('discover')} />
-                  <FilterPill label="Following" isActive={activeFilter === 'following'} onClick={() => setActiveFilter('following')} />
-                  <FilterPill label="Trending" isActive={activeFilter === 'trending'} onClick={() => setActiveFilter('trending')} />
-                  <FilterPill label="New" isActive={activeFilter === 'new'} onClick={() => setActiveFilter('new')} />
-                  <FilterPill label="New Post" isActive={false} onClick={() => setShowCreatePostModal(true)} icon={Plus} />
-                </div>
-              </div>
-
-              {/* Discover feed carousel */}
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold text-black dark:text-white">Discover Feed</h2>
-                </div>
-                <div className="flex space-x-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4">
-                  {filteredFeed.length > 0 ? (
-                    filteredFeed.map(post => (
-                      <div
-                        key={post.id}
-                        className="bg-white dark:bg-neutral-900 rounded-2xl shadow-md border border-neutral-200 dark:border-neutral-800 transition-all duration-200"
-                      >
-                        <RollPostCard post={post} onClick={() => handleSelectStory(post.user_id, post.id)} />
-                      </div>
-                    ))
-                  ) : (
-                    <div className="w-full text-center py-16 text-gray-500">
-                      <p>No posts to show yet.</p>
-                      <p>Follow some users or check back later!</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </>
+        <div key={socialSection} className={`${animationClass} pt-2`}>
+          {socialSection === 'community' && (
+            <CommunityFeedView />
           )}
 
-          {feedSection === 'profile' && (
+          {socialSection === 'profile' && (
             <div className="pt-2">
               <ProfileView />
             </div>
           )}
 
-          {feedSection === 'gallery' && (
+          {socialSection === 'challenges' && (
             <div className="pt-2">
-              <LibraryView />
+              <ChallengesView />
             </div>
           )}
         </div>
       </div>
-
-      {showCreatePostModal && (
-        <CreatePostModal
-          onClose={() => setShowCreatePostModal(false)}
-          unpostedRolls={unpostedDevelopedRolls}
-        />
-      )}
-
-      {showFullStoryViewer && postsForFullStoryViewer && (
-        <FullStoryViewer
-          posts={postsForFullStoryViewer}
-          initialPostIndex={initialStoryPostIndex}
-          onClose={() => {
-            setShowFullStoryViewer(false);
-            setPostsForFullStoryViewer(null);
-          }}
-        />
-      )}
     </div>
   );
 };
 
-export default FeedView;
+export default SocialView;
