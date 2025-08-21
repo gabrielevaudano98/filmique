@@ -44,7 +44,8 @@ export default {
         // Semantic
         'brand-bg': '#060608',
         'brand-surface': 'rgba(28, 28, 32, 0.7)',
-        'brand-border': 'rgba(65, 53, 76, 0.5)'
+        'brand-border': 'rgba(65, 53, 76, 0.5)',
+        'always-white': '#FFFFFF', // New color for elements that should always be white
       },
       fontFamily: {
         sans: ['"SF Pro Display"', 'Inter', 'system-ui'],
