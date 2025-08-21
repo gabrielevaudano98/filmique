@@ -1,13 +1,10 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { useSwipeable } from 'react-swipeable';
 import { useAppContext } from '../context/AppContext';
-import { Roll } from '../types';
-import { Film, Archive, Lock } from 'lucide-react';
-import DevelopingRollCard from '../components/DevelopingRollCard';
 import PrintsView from '../components/PrintsView';
-import DarkroomEmptyState from '../components/DarkroomEmptyState';
 import SegmentedControl from '../components/SegmentedControl';
-import LibraryView from '../components/LibraryView'; // Import LibraryView
+import LibraryView from '../components/LibraryView';
+import RollsView from '../components/RollsView'; // Import the new RollsView
 
 function usePrevious<T>(value: T): T | undefined {
   const ref = useRef<T>();
@@ -18,9 +15,8 @@ function usePrevious<T>(value: T): T | undefined {
 }
 
 const StudioView: React.FC = () => {
-  const { 
+  const {
     profile,
-    developingRolls,
     studioSection, setStudioSection, studioSectionOptions,
     setIsStudioHeaderSticky,
   } = useAppContext();
@@ -80,7 +76,6 @@ const StudioView: React.FC = () => {
   const swipeHandlers = useSwipeable({
       onSwipedLeft: () => handleSwipe('left'),
       onSwipedRight: () => handleSwipe('right'),
-      // Allow the browser to keep handling vertical scrolling for best UX on mobile
       preventScrollOnSwipe: false,
       preventDefaultTouchmoveEvent: false,
       trackMouse: true,
@@ -89,8 +84,8 @@ const StudioView: React.FC = () => {
 
   const getTitleForStudioSection = (section: typeof studioSection) => {
     switch (section) {
+      case 'rolls': return 'Rolls'; // New title for combined rolls
       case 'albums': return 'Albums';
-      case 'darkroom': return 'Darkroom';
       case 'prints': return 'Prints';
       default: return 'Studio';
     }
@@ -112,13 +107,9 @@ const StudioView: React.FC = () => {
 
       <div {...swipeHandlers} className="relative flex-1">
         <div key={studioSection} className={animationClass}>
-          {studioSection === 'darkroom' && (
-            <div>
-              {developingRolls.length > 0 ? (
-                <div className="space-y-3">
-                  {developingRolls.map(roll => <DevelopingRollCard key={roll.id} roll={roll} />)}
-                </div>
-              ) : <DarkroomEmptyState />}
+          {studioSection === 'rolls' && ( // Render new RollsView
+            <div className="pt-2">
+              <RollsView />
             </div>
           )}
 

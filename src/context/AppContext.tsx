@@ -8,7 +8,7 @@ import { useAlbums } from '../hooks/useAlbums';
 import { useRollsSettings } from '../hooks/useRollsSettings';
 import { usePrintOrders } from '../hooks/usePrintOrders';
 import * as api from '../services/api';
-import { Library, Clock, Printer, Users, User, Trophy } from 'lucide-react'; // Added Users, User, Trophy
+import { Library, Clock, Printer, Users, User, Trophy, Film } from 'lucide-react'; // Added Film icon
 import { Network } from '@capacitor/network';
 import { showInfoToast, showSuccessToast } from '../utils/toasts';
 import { useSyncEngine } from '../hooks/useSyncEngine';
@@ -31,15 +31,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [headerAction, setHeaderAction] = useState<{ icon: React.ElementType, action: () => void } | null>(null);
   const [isTopBarVisible, setIsTopBarVisible] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  
+
   // Studio View Sections
-  const [studioSection, setStudioSection] = useState<'darkroom' | 'albums' | 'prints'>('albums'); // Default to 'albums'
+  const [studioSection, setStudioSection] = useState<'rolls' | 'albums' | 'prints'>('rolls'); // Default to 'rolls'
   const [isStudioHeaderSticky, setIsStudioHeaderSticky] = useState(false);
-  const [isRollsSettingsOpen, setIsRollsSettingsOpen] = useState(false); // Renamed from isRollsSettingsOpen
-  
+  const [isRollsSettingsOpen, setIsRollsSettingsOpen] = useState(false);
+
   // Social View Sections
-  const [socialSection, setSocialSection] = useState<'community' | 'profile' | 'challenges'>('community'); // New state for Social sections
-  const [isSocialHeaderSticky, setIsSocialHeaderSticky] = useState(false); // New state for Social header sticky
+  const [socialSection, setSocialSection] = useState<'community' | 'profile' | 'challenges'>('community');
+  const [isSocialHeaderSticky, setIsSocialHeaderSticky] = useState(false);
 
   const [isPrintsSettingsOpen, setIsPrintsSettingsOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
@@ -53,8 +53,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Studio Section Options (for SegmentedControl)
   const studioSectionOptions = [
-    { value: 'darkroom', label: 'Darkroom', icon: Clock, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' }, description: 'Develop your completed rolls.' },
-    { value: 'albums', label: 'Albums', icon: Library, colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' }, description: 'Your collection of developed film.' },
+    { value: 'rolls', label: 'Rolls', icon: Film, colors: { from: 'from-brand-amber-start', to: 'to-brand-amber-end', shadow: 'shadow-brand-amber-end/40' }, description: 'Your film rolls, developing and developed.' },
+    { value: 'albums', label: 'Albums', icon: Library, colors: { from: 'from-accent-violet', to: 'to-blue-500', shadow: 'shadow-blue-500/30' }, description: 'Your collection of organized photos.' },
     { value: 'prints', label: 'Prints', icon: Printer, colors: { from: 'from-accent-teal', to: 'to-emerald-500', shadow: 'shadow-emerald-500/30' }, description: 'Order prints of your photos.' },
   ];
 
@@ -183,11 +183,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setIsSyncStatusModalOpen,
     retryFailedTransaction,
     deleteFailedTransaction,
-    socialSection, // New
-    setSocialSection, // New
-    isSocialHeaderSticky, // New
-    setIsSocialHeaderSticky, // New
-    socialSectionOptions, // New
+    socialSection,
+    setSocialSection,
+    isSocialHeaderSticky,
+    setIsSocialHeaderSticky,
+    socialSectionOptions,
   }), [auth, profileData, rollsAndPhotos, social, albumsData, rollsSettings, printOrdersData, filmStocks, currentView, cameraMode, showFilmModal, headerAction, isTopBarVisible, searchTerm, studioSection, isStudioHeaderSticky, studioSectionOptions, isRollsSettingsOpen, isOnline, syncStatus, isPrintsSettingsOpen, printSearchTerm, printStatusFilter, printSortOrder, isSyncStatusModalOpen, retryFailedTransaction, deleteFailedTransaction, socialSection, isSocialHeaderSticky, socialSectionOptions]);
 
   return <AppContext.Provider value={value as AppContextType}>{children}</AppContext.Provider>;

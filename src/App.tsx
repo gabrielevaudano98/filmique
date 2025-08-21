@@ -30,9 +30,9 @@ import LoadingIndicator from './components/LoadingIndicator';
 const SPEED_UP_COST = 25;
 
 function App() {
-  const { 
-    session, profile, isLoading, currentView, setCurrentView, authStep, 
-    rollToConfirm, setRollToConfirm, 
+  const {
+    session, profile, isLoading, currentView, setCurrentView, authStep,
+    rollToConfirm, setRollToConfirm,
     rollToSpeedUp, setRollToSpeedUp,
     sendToStudio, putOnShelf,
     developedRollForWizard, setDevelopedRollForWizard,
@@ -64,13 +64,13 @@ function App() {
       if (rollToConfirm) { setRollToConfirm(null); return; }
 
       switch (currentView) {
-        case 'rollDetail': setSelectedRoll(null); setCurrentView('studio'); setStudioSection('albums'); break; // Changed to albums as default for studio
+        case 'rollDetail': setSelectedRoll(null); setCurrentView('studio'); setStudioSection('rolls'); break; // Navigate to 'rolls'
         case 'albumDetail': setSelectedAlbum(null); setCurrentView('studio'); setStudioSection('albums'); break;
         case 'settings': setCurrentView('social'); setSocialSection('profile'); break;
         case 'subscription': setCurrentView('settings'); break;
         case 'notifications': setCurrentView('social'); setSocialSection('community'); break;
         case 'uncategorizedRolls': setCurrentView('studio'); setStudioSection('albums'); break;
-        case 'camera': setCurrentView('studio'); setStudioSection('albums'); break; // Changed to albums as default for studio
+        case 'camera': setCurrentView('studio'); setStudioSection('rolls'); break; // Navigate to 'rolls'
         default: console.log("Back button pressed on main view. Preventing exit."); break;
       }
     };
@@ -101,14 +101,14 @@ function App() {
     sendToStudio(roll, title);
     setRollToConfirm(null);
     setCurrentView('studio');
-    setStudioSection('darkroom');
+    setStudioSection('rolls'); // Navigate to 'rolls'
   };
 
   const handleWizardPutOnShelf = (roll: Roll, title: string) => {
     putOnShelf(roll, title);
     setRollToConfirm(null);
     setCurrentView('studio');
-    setStudioSection('albums');
+    setStudioSection('rolls'); // Navigate to 'rolls'
   };
 
   const handleConfirmSpeedUp = () => {
@@ -130,7 +130,7 @@ function App() {
   if (profile && !profile.has_completed_onboarding) {
     return <OnboardingView />;
   }
-  
+
   const completionWizard = rollToConfirm && <RollCompletionWizard roll={rollToConfirm} onSendToStudio={handleWizardSendToStudio} onPutOnShelf={handleWizardPutOnShelf} />;
   const postDevelopmentWizard = developedRollForWizard && <PostDevelopmentWizard roll={developedRollForWizard} onClose={() => setDevelopedRollForWizard(null)} />;
   const speedUpModal = rollToSpeedUp && <SpeedUpModal isOpen={!!rollToSpeedUp} onClose={() => setRollToSpeedUp(null)} onConfirm={handleConfirmSpeedUp} cost={SPEED_UP_COST} />;
